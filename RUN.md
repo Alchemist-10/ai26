@@ -45,7 +45,8 @@ uv run run.py
 | `AI26_FRONTEND_PORT` | `5174` | Frontend port and API CORS origins |
 | `AI26_API_TARGET` | `http://127.0.0.1:8001` | Optional frontend proxy override |
 | `AI26_FOOTAGE_ROOT` | `backend/data/footage` | Original input root |
-| `AI26_DATA_ROOT` | `backend/data` | SQLite and content-addressed JPEG storage |
+| `AI26_DATA_ROOT` | `backend/data` | SQLite, JPEG storage and default managed source root |
+| `AI26_SOURCE_ROOT` | `<AI26_DATA_ROOT>/sources` | Optional managed recorded imports; same value for CLI/API |
 | `AI26_PROCESSING_ENABLED` | `1` | Set `0` for API/fixture tests without models |
 | `AI26_TOTAL_INFERENCE_FPS` | `2` | Total scheduled sampling budget, clamped 0.1–10 |
 | `AI26_TIMEZONE` | `Asia/Kolkata` | Calendar/time interpretation for query intents |
@@ -69,9 +70,11 @@ numberplate-vids/clip_2_00_30-01_00.mp4
 
 Alternatively supply H.264 MP4 proxies at `backend/static/playback/CAM-07.mp4`,
 `CAM-08.mp4`, and `CAM-09.mp4`. Additional clips and data are ignored by Git.
-Originals take precedence for inference; H.264 proxies take precedence for browser
-playback. Camera locations are demo metadata. Replacing inputs requires updating
-`backend/cameras.py` and independently validating locations and recording clocks.
+Managed imports take precedence over these defaults after restart. Use the
+[recorded-source import command](docs/SOURCE_IMPORT.md) to validate/copy a clip and
+prepare its browser playback without editing Python. Within the original defaults,
+originals take precedence for inference and H.264 proxies for playback. Camera
+metadata and recording clocks still require independent validation.
 
 The nine configured cameras stay visible; availability explicitly reports six
 available and three missing until supplied. Missing video/stream returns 404;

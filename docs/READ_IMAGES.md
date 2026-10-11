@@ -99,3 +99,8 @@ were removed. The sampling/thread budgets and small browser previews are unchang
 See [raw validation](validation/read-artifacts-validation.json),
 [capture comparison](validation/read-artifacts-performance.json),
 [model provenance](PROVENANCE.md) and the [full checklist](PROGRESS.md).
+
+The source import extension adds camera/source resolver code to new pipeline
+provenance, for nine component hashes. The 113-test and seven-component records
+above remain evidence of this image milestone; current validation is in
+[SOURCE_IMPORT.md](SOURCE_IMPORT.md).

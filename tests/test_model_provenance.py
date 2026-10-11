@@ -60,7 +60,7 @@ class ModelFiles(unittest.TestCase):
             provenance.verify_model_files([(path,record)])
 
     def test_pipeline_components_are_exact_and_change_with_source(self):
-        names=('inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py')
+        names=('inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py','cameras.py','source_catalog.py')
         for name in names: (self.root/name).write_text(name)
         first=provenance.pipeline_components(self.root)
         self.assertEqual(set(first),set(names))
@@ -153,7 +153,7 @@ class InferenceProvenance(unittest.TestCase):
         for read in reads:
             self.assertEqual(read['model_metadata']['model_files'],metadata['model_files'])
             self.assertEqual(set(read['model_metadata']['pipeline_components_sha256']),
-                             {'inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py'})
+                             {'inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py','cameras.py','source_catalog.py'})
 
     def test_initialized_frames_do_not_repeat_hash_or_package_metadata_io(self):
         import numpy as np

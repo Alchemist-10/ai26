@@ -34,6 +34,17 @@ names remain local claims; source onboarding is separate. The page is lazy loade
 shares the catalog and adds no polling or video playback. See `docs/SETTINGS.md`
 and `AI26_SETTINGS_VALIDATION.json`.
 
+## Recorded source import update
+
+The offline source command probes a supplied clip, preserves its original bytes,
+prepares bounded browser-safe playback and publishes a hashed release manifest.
+Explicit replacement retains older releases; bindings activate only on restart.
+Existing processor/import ownership blocks conflicting work. Conversion and
+publication failures preserve the prior source. The importer adds no API polling,
+models or browser uploads. Source upload UI, real plate footage and clock/location
+validation remain separate. See `docs/SOURCE_IMPORT.md` and
+`AI26_SOURCE_IMPORT_VALIDATION.json`.
+
 ## Per-read image update
 
 New sampled reads attempt matching frame/crop JPEGs regardless of confidence or
@@ -53,7 +64,7 @@ summarize exact/missing model coverage consistently in JSON/ZIP/print; old repor
 remain compatible. Two real ONNX sessions executed on blank inputs only. This is
 execution verification, not OCR accuracy. See `docs/PROVENANCE.md` and
 `AI26_PROVENANCE_VALIDATION.json` in the delivery. New reads now also identify
-processing and artifact code, for seven component hashes in total.
+processing and artifact code, for nine component hashes in total, including camera/source resolution.
 
 ## Tracking update
 
@@ -64,7 +75,7 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
 
 ## Validation
 
-- 113 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 128 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -80,6 +91,11 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
   draft navigation and API outage/restart recovery. Main catalog was unchanged;
   six idle seconds added no configuration requests. Desktop/mobile had no horizontal
   overflow. The temporary database contained no observations.
+- Two generated color clips passed real FFmpeg conversion, immutable original
+  hashes, API range responses, restart activation and no-op processor decoding.
+  Fifteen import contract tests cover failures/replacement/cached bindings.
+  No generated footage entered the main app. Source resolution hashes at startup,
+  never in API catalog polling or per-frame selection.
 - Earlier browser mobile checks at 390×844 verified camera wall, investigation and alerts,
   disabled empty export, and focus trapping/Escape restoration.
 - An earlier isolated synthetic fixture on 5175/8002 exercised browser report creation,
@@ -103,7 +119,8 @@ local results. Short runtime samples do not establish sustained throughput.
    evaluate exact/fuzzy identity links (P1-14–16, EV-06).
 4. Calibrate traffic counts/density/speed and historical segment baselines;
    evaluate rules on positive and negative real cases (P2-01–04, EV-07–09).
-5. Complete source onboarding and authenticated escalation where needed.
+5. Complete source upload/management UI and authenticated escalation where needed.
+   Offline recorded-source onboarding is implemented.
    Metadata settings UI, metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
    pixels, registry verification, signed evidence, RTSP capture or production auth
@@ -138,9 +155,9 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-02 | Done | Define inference ownership so multiple viewers do not create duplicate processing/event streams. | Streams/snapshots only consume cache; two-consumer regression and exclusive Linux data-directory ownership lock. |
 | P1-03 | Done | Add a typed observation schema with stable event IDs and per-track passage IDs. | Typed finite observations, deterministic idempotent read IDs, per-session local passage IDs. |
 | P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay source position and processing time are separate; original capture times and synchronized clocks are missing. |
-| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-3 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; source onboarding and authenticated calibration remain separate work. |
+| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-3 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; offline source onboarding and metadata editing work; source upload UI and authenticated calibration remain separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
-| P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and seven component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |
+| P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and nine component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |
 | P1-09 | Done | Reset camera and panel errors after input changes or successful recovery. | Camera change/success clears focused-feed failures; API panels clear errors after recovery. Missing-to-available thumbnail remount supported. |
 | P1-10 | Done | Return correct HTTP status/error schemas for invalid cameras, plates and request bodies. | Known invalid cameras/missing sources 404; invalid bodies/plates/times 422; unready snapshot 503; JSON error envelope. |

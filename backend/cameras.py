@@ -98,10 +98,17 @@ CAMERAS = [
 
 CAMERAS_BY_ID = {c["id"]: c for c in CAMERAS}
 
+# Bindings are immutable for this process. Import publication takes effect only
+# on restart, so an open decoder and browser playback cannot switch independently.
+from source_catalog import load_catalog
+MANAGED_SOURCES = load_catalog(CAMERAS_BY_ID)
+
 
 def camera_source(camera_id: str) -> Path:
     """Use original footage when available, otherwise a repo-local proxy."""
     camera = CAMERAS_BY_ID[camera_id]
+    if camera_id in MANAGED_SOURCES:
+        return MANAGED_SOURCES[camera_id]['original']
     source = Path(camera["path"])
     if source.exists():
         return source
@@ -112,5 +119,7 @@ def camera_source(camera_id: str) -> Path:
 def camera_playback_source(camera_id: str) -> Path:
     """Use the browser-safe proxy for playback, even when original footage exists."""
     camera = CAMERAS_BY_ID[camera_id]
+    if camera_id in MANAGED_SOURCES:
+        return MANAGED_SOURCES[camera_id]['playback']
     proxy = PLAYBACK_ROOT / f"{camera_id}.mp4"
     return proxy if proxy.exists() else Path(camera["path"])

@@ -93,3 +93,10 @@ The constructor contracts were checked against the official
 [Open Image Models factory](https://github.com/ankandrew/open-image-models/blob/main/open_image_models/detection/factory.py)
 and [FastPlateOCR recognizer](https://github.com/ankandrew/fast-plate-ocr/blob/master/fast_plate_ocr/inference/plate_recognizer.py),
 as well as the installed locked package sources.
+
+## Source import extension
+
+New reads now also hash cameras.py and source_catalog.py, for nine named components.
+Earlier validation records describe their original five/seven-component scope.
+See [SOURCE_IMPORT.md](SOURCE_IMPORT.md) for managed original/proxy manifests and
+128-test current validation. Older stored provenance is not rewritten.

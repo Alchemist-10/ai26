@@ -47,7 +47,7 @@ Label confirmation records a local assertion. Repository defaults may already
 carry a confirmed flag, so history exposes their actual metadata source.
 Coordinates, recording clocks and travel-time constraints remain uncalibrated.
 Reviewer identity is unauthenticated. This is a local prototype metadata editor,
-not source onboarding, authorization or an independent survey workflow.
+not the source import command, an upload UI, authorization or an independent survey workflow.
 
 ## Performance and validation
 

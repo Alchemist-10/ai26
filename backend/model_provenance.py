@@ -47,7 +47,7 @@ def verify_model_files(files):
 
 def pipeline_components(root):
     # Explicit coverage, rather than implying that one source file covers the whole app.
-    names=('inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py')
+    names=('inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py','cameras.py','source_catalog.py')
     return {name:file_sha256(Path(root)/name) for name in names}
 
 
