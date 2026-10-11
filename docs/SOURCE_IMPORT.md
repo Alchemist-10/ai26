@@ -137,6 +137,10 @@ settings page and brings the isolated backend suite to 140 tests. The 128-test
 conversion/import milestone above remains historical evidence. The browser
 preparation milestone now has 157 backend tests, including 17 new streaming,
 worker and offline-selection contracts; see [SOURCE_UPLOADS.md](SOURCE_UPLOADS.md).
-The current [browser-selection milestone](SOURCE_SELECTION.md) has 170 backend
+The [browser-selection milestone](SOURCE_SELECTION.md) has 170 backend
 tests, including 13 new selection/rollback contracts. Historical counts above
 describe their own milestones.
+
+The subsequent [sampling-budget milestone](RUNTIME_PROFILE.md) brings the backend
+suite to 182 tests; source-import and selection counts above describe their own
+validation snapshots.

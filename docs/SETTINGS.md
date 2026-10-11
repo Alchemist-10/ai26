@@ -90,7 +90,9 @@ describes the inspection endpoint and historical 140-test milestone. The later
 [SOURCE_UPLOADS.md](SOURCE_UPLOADS.md) adds browser preparation/check/cancel,
 retained receipts and offline selection/restart (157-test milestone). The later
 [SOURCE_SELECTION.md](SOURCE_SELECTION.md) adds browser selection and retained-parent
-rollback with stale-request recovery; the current suite has 170 tests.
+rollback with stale-request recovery (170-test milestone). The latest
+[RUNTIME_PROFILE.md](RUNTIME_PROFILE.md) documents the sampling-budget correction
+and current 182-test suite.
 Upload drafts survive source refresh and navigation; active preparation disables
 source refresh and camera/current-revision switching until checked terminal.
 The earlier 113-test and 13.56 kB figures above describe the metadata-only milestone.

@@ -118,3 +118,6 @@ pending restart, rollback and stale recovery. Document width stayed within each
 viewport; Settings contained no video elements. Six idle seconds added zero source
 status/preparation/selection requests. Visual review status is recorded separately.
 These checks do not establish real OCR/identity accuracy or sustained performance.
+
+The later [sampling-budget milestone](RUNTIME_PROFILE.md) has 182 backend tests.
+The 170-test figures above remain this source-selection milestone's evidence.
