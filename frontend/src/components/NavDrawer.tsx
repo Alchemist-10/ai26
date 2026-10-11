@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { MapIcon, History, TriangleAlert, ChartColumn, Gauge, MessageSquare, LayoutGrid, X, ShieldCheck } from "lucide-react"
+import { MapIcon, History, TriangleAlert, ChartColumn, Gauge, MessageSquare, LayoutGrid, Settings, X, ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
 
@@ -11,6 +11,7 @@ const NAV: { id: Page; label: string; icon: typeof MapIcon; blurb: string }[] = 
   { id: "alerts", label: "Alerts", icon: TriangleAlert, blurb: "Route-anomaly rules" },
   { id: "analytics", label: "Analytics", icon: ChartColumn, blurb: "Stats + congestion map" },
   { id: "query", label: "Ask the Grid", icon: MessageSquare, blurb: "Natural-language query" },
+  { id: "settings", label: "Camera settings", icon: Settings, blurb: "Metadata and revision history" },
 ]
 
 export function NavDrawer({

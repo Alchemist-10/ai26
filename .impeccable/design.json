@@ -1,0 +1,284 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-11T05:41:39.716107+00:00",
+  "title": "Design System: AI26",
+  "extensions": {
+    "colorMeta": {
+      "background": {
+        "role": "neutral",
+        "displayName": "Background"
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Foreground"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border"
+      },
+      "black": {
+        "role": "neutral",
+        "displayName": "Black"
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White"
+      },
+      "zinc-200": {
+        "role": "neutral",
+        "displayName": "Zinc 200"
+      },
+      "zinc-300": {
+        "role": "neutral",
+        "displayName": "Zinc 300"
+      },
+      "zinc-400": {
+        "role": "neutral",
+        "displayName": "Zinc 400"
+      },
+      "zinc-500": {
+        "role": "neutral",
+        "displayName": "Zinc 500"
+      },
+      "zinc-600": {
+        "role": "neutral",
+        "displayName": "Zinc 600"
+      },
+      "zinc-700": {
+        "role": "neutral",
+        "displayName": "Zinc 700"
+      },
+      "zinc-800": {
+        "role": "neutral",
+        "displayName": "Zinc 800"
+      },
+      "zinc-900": {
+        "role": "neutral",
+        "displayName": "Zinc 900",
+        "tonalRamp": [
+          "oklch(14.1% 0.005 285.823)",
+          "oklch(21% 0.006 285.885)",
+          "oklch(27.4% 0.006 286.033)",
+          "oklch(37% 0.013 285.805)",
+          "oklch(44.2% 0.017 285.786)",
+          "oklch(55.2% 0.016 285.938)",
+          "oklch(87.1% 0.006 286.286)",
+          "oklch(92% 0.004 286.32)"
+        ]
+      },
+      "zinc-950": {
+        "role": "neutral",
+        "displayName": "Zinc 950"
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary teal"
+      },
+      "teal-100": {
+        "role": "primary",
+        "displayName": "Teal 100"
+      },
+      "teal-400": {
+        "role": "primary",
+        "displayName": "Teal 400"
+      },
+      "teal-500": {
+        "role": "primary",
+        "displayName": "Teal 500",
+        "tonalRamp": [
+          "oklch(27.7% 0.046 192.524)",
+          "oklch(38.6% 0.063 188.416)",
+          "oklch(43.7% 0.078 188.216)",
+          "oklch(51.1% 0.096 186.391)",
+          "oklch(60% 0.118 184.704)",
+          "oklch(70.4% 0.14 182.503)",
+          "oklch(85.5% 0.138 181.071)",
+          "oklch(95.3% 0.051 180.801)"
+        ]
+      },
+      "teal-950": {
+        "role": "primary",
+        "displayName": "Teal 950"
+      },
+      "red-100": {
+        "role": "error",
+        "displayName": "Red 100"
+      },
+      "red-200": {
+        "role": "error",
+        "displayName": "Red 200"
+      },
+      "red-400": {
+        "role": "error",
+        "displayName": "Red 400",
+        "tonalRamp": [
+          "oklch(25.8% 0.092 26.042)",
+          "oklch(39.6% 0.141 25.723)",
+          "oklch(44.4% 0.177 26.899)",
+          "oklch(50.5% 0.213 27.518)",
+          "oklch(57.7% 0.245 27.325)",
+          "oklch(63.7% 0.237 25.331)",
+          "oklch(80.8% 0.114 19.571)",
+          "oklch(93.6% 0.032 17.717)"
+        ]
+      },
+      "red-950": {
+        "role": "error",
+        "displayName": "Red 950"
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Camera settings title."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Form and history section headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explanations and metadata; relaxed line height where applied."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Visible form labels and actions."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Native fields, select, and textarea."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shell-active-small",
+        "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "purpose": "Inherited active navigation and identity mark; settings has no card shadows."
+      }
+    ],
+    "motion": [
+      {
+        "name": "drawer-duration",
+        "value": "200ms",
+        "purpose": "Inherited drawer opacity and transform transitions."
+      },
+      {
+        "name": "navigation-duration",
+        "value": "150ms",
+        "purpose": "Inherited navigation state transitions."
+      },
+      {
+        "name": "standard-easing",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Tailwind default transitions used by the shell."
+      },
+      {
+        "name": "drawer-ease-out",
+        "value": "cubic-bezier(0, 0, 0.2, 1)",
+        "purpose": "Drawer transform."
+      },
+      {
+        "name": "reduced-motion-duration",
+        "value": "0.01ms",
+        "purpose": "Existing global reduced-motion override; scroll-behavior becomes auto."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "40rem"
+      },
+      {
+        "name": "md",
+        "value": "48rem"
+      },
+      {
+        "name": "lg",
+        "value": "64rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Save new revision",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary settings action; saving creates a retained revision.",
+      "html": "<button class=\"ds-save\" type=\"button\">Save new revision</button>",
+      "css": ".ds-save{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);min-height:2.75rem;border-radius:.25rem;padding:.5rem .75rem;font-size:.875rem;font-weight:500;line-height:1.25rem;cursor:pointer;border:1px solid #fff;background:#fff;color:#000}.ds-save:hover{background:oklch(92% 0.004 286.32)}.ds-save:focus-visible {outline:2px solid var(--ring,#38d1c2);outline-offset:3px;}.ds-save:disabled{cursor:not-allowed;opacity:.5}"
+    },
+    {
+      "name": "Secondary settings action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Refresh, discard, view, and explicit review actions.",
+      "html": "<button class=\"ds-secondary\" type=\"button\">View revision</button>",
+      "css": ".ds-secondary{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);min-height:2.75rem;border-radius:.25rem;padding:.5rem .75rem;font-size:.875rem;font-weight:500;line-height:1.25rem;cursor:pointer;border:1px solid oklch(44.2% 0.017 285.786);background:transparent;color:#fff}.ds-secondary:hover{background:oklch(27.4% 0.006 286.033)}.ds-secondary:focus-visible {outline:2px solid var(--ring,#38d1c2);outline-offset:3px;}.ds-secondary:disabled{cursor:not-allowed;opacity:.5}"
+    },
+    {
+      "name": "Labelled metadata input",
+      "kind": "input",
+      "refersTo": "metadata-input",
+      "description": "Native labelled field; base-size text and global focus outline.",
+      "html": "<label class=\"ds-label\" for=\"ds-location\">Location label<input class=\"ds-field\" id=\"ds-location\" value=\"Subhash Chandra Bose Jn\" /></label>",
+      "css": ".ds-label{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);display:block;color:#fff;font-size:.875rem;font-weight:500;line-height:1.25rem}.ds-field{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);width:100%;min-width:0;border:1px solid oklch(37% 0.013 285.805);border-radius:.25rem;background:oklch(21% 0.006 285.885);padding:.5rem .75rem;font-size:1rem;line-height:1.5rem;color:#fff;display:block;margin-top:.5rem}.ds-field:focus-visible {outline:2px solid var(--ring,#38d1c2);outline-offset:3px;}.ds-field:disabled{opacity:.5}"
+    },
+    {
+      "name": "Camera settings navigation",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Inherited drawer items: light active treatment and zinc hover.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Sidebar navigation\"><button class=\"ds-nav-item ds-nav-active\" type=\"button\" aria-current=\"page\"><span class=\"ds-nav-label\">Camera settings</span><span class=\"ds-nav-detail\">Metadata and revision history</span></button><button class=\"ds-nav-item\" type=\"button\"><span class=\"ds-nav-label\">Alerts</span><span class=\"ds-nav-detail\">Route-anomaly rules</span></button></nav>",
+      "css": ".ds-nav{display:grid;gap:.25rem;background:#000;padding:.75rem}.ds-nav-item{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);display:flex;flex-direction:column;gap:.125rem;text-align:left;border:1px solid transparent;border-radius:.5rem;padding:.625rem .75rem;background:transparent;color:oklch(70.5% 0.015 286.067);transition:all 150ms cubic-bezier(.4,0,.2,1)}.ds-nav-label{font-size:.875rem;font-weight:500;line-height:1.25;color:oklch(92% 0.004 286.32)}.ds-nav-detail{font-size:11px;line-height:1.25;color:oklch(55.2% 0.016 285.938)}.ds-nav-item:hover{border-color:oklch(27.4% .006 286.033 / .8);background:oklch(21% .006 285.885 / .9);color:#fff}.ds-nav-active,.ds-nav-active:hover{border-color:#fff;background:#fff;color:#000;box-shadow:0 1px 3px 0 rgb(0 0 0 / .1),0 1px 2px -1px rgb(0 0 0 / .1)}.ds-nav-active .ds-nav-label{color:#000;font-weight:600}.ds-nav-active .ds-nav-detail{color:oklch(44.2% .017 285.786)}.ds-nav-item:focus-visible {outline:2px solid var(--ring,#38d1c2);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-nav-item{transition-duration:.01ms}}"
+    },
+    {
+      "name": "Source availability chip",
+      "kind": "chip",
+      "refersTo": "availability-chip",
+      "description": "Existing header source availability context.",
+      "html": "<span class=\"ds-chip\"><span class=\"ds-dot\"></span>6/9 sources available</span>",
+      "css": ".ds-chip{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);display:inline-flex;align-items:center;gap:.375rem;border:1px solid rgb(255 255 255 / .2);border-radius:.375rem;background:oklch(21% .006 285.885);color:oklch(92% .004 286.32);padding:.25rem .625rem;font-size:.75rem;line-height:1rem;font-weight:500}.ds-dot{width:.375rem;height:.375rem;border-radius:9999px;background:#fff}"
+    },
+    {
+      "name": "Incumbent bordered alert container",
+      "kind": "card",
+      "refersTo": "bordered-container",
+      "description": "Existing AlertsPanel container vocabulary; settings uses dividers instead.",
+      "html": "<article class=\"ds-card\"><p class=\"ds-card-detail\">warning \u00b7 route review</p><h2 class=\"ds-card-title\">Review camera transition</h2><p class=\"ds-card-detail\">Review prompt from recorded inputs.</p></article>",
+      "css": ".ds-card{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);border:1px solid oklch(27.4% .006 286.033);border-radius:.25rem;padding:1rem;color:#fff;background:#000}.ds-card-title{margin:.5rem 0;font-size:1rem;line-height:1.5rem;font-weight:600}.ds-card-detail{margin:0;font-size:.875rem;line-height:1.25rem;color:oklch(70.5% .015 286.067)}"
+    },
+    {
+      "name": "Settings status notice",
+      "kind": "custom",
+      "refersTo": "status-notice",
+      "description": "Revision status; clears when draft metadata is edited.",
+      "html": "<p class=\"ds-notice\" role=\"status\">Saved revision 5. Historical observations keep their original metadata.</p>",
+      "css": ".ds-notice{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);border:1px solid oklch(70.4% .14 182.503 / .4);border-radius:.25rem;background:oklch(27.7% .046 192.524 / .3);padding:.75rem;color:oklch(95.3% .051 180.801);font-size:.875rem;line-height:1.25rem}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Unrecorded",
+    "overview": "This record covers the inherited AI26 dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.\n\nThe implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Native labelled metadata fields sit beside retained revision history on desktop and above it on mobile. Screenshots show an internally scrolling section beneath the application header.",
+    "keyCharacteristics": [
+      "Black and zinc surfaces with white actions.",
+      "IBM Plex Sans for this shell and form.",
+      "Visible labels, native controls, and explicit revision review.",
+      "A persistent header with internal content scrolling."
+    ],
+    "rules": [],
+    "dos": [
+      "Do continue the black/zinc settings surface and existing Plex Sans typography.",
+      "Do preserve visible field labels, native control semantics, and the shared teal focus outline.",
+      "Do stack settings and history on narrow screens; keep the desktop 3:2 column arrangement.",
+      "Do keep revision identity and draft state visible; clear old success/no-save notices when a draft field changes.",
+      "Do retain AI26 naming and the boundary between metadata settings and deployment configuration."
+    ],
+    "donts": [
+      "Don't import Godseye branding or infer a new shared identity.",
+      "Don't turn this settings layout into a mandatory composition for every AI26 page.",
+      "Don't replace revision history with an editable snapshot or hide the explicit concurrent-save review.",
+      "Don't add media or new settings polling as decoration or imply that operator confirmation establishes calibration.",
+      "Don't treat these screenshots as whole-document coverage or this pass as new global validation."
+    ]
+  }
+}

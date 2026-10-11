@@ -34,6 +34,8 @@ CPU PyTorch on Linux. After the first installation, restart with
   and a configurable 2 GiB image budget.
 - True empty investigations, explicit walkthrough selection, time filters, and
   distinct accepted/rejected/unresolved candidate paths.
+- Camera settings with audited metadata edits, read-only revision history, preserved
+  drafts and explicit concurrent-save recovery.
 - Editable local watchlists, zone sightings, elapsed-time dwell rules, and review.
 - Actual processing health, sampled passage counts, and computed accepted-link
   flow counts. Model confidence is labeled separately from measured accuracy.
@@ -64,6 +66,7 @@ investigations never receive its observations automatically.
 | `docs/IMPLEMENTATION.md` | Data contracts, architecture and current limits |
 | `docs/PROGRESS.md` | Full implementation checklist with completion evidence |
 | `docs/PERSISTENCE.md` | Camera revision and stored journey decision API |
+| `docs/SETTINGS.md` | Metadata editor, draft/conflict recovery and browser validation |
 | `docs/PROVENANCE.md` | Exact model/config identity, report coverage and validation limits |
 | `docs/READ_IMAGES.md` | Per-read images, failure coverage, storage budget and measured capture cost |
 | `docs/IMPORT.md` | Import provenance and separation from the SIH project |

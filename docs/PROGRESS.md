@@ -14,7 +14,7 @@ Shared background six-camera processing; durable SQLite observations/passages;
 per-track OCR abstention; real empty investigations; editable persistent local
 rules and review; truthful camera health/activity; bounded historical query
 intents; immutable evidence JSON/ZIP/print; source/derivative hashes; report expiry and artifact leases; cached camera previews;
-revisioned camera metadata and queried decision history; CPU lockfile; clean launcher shutdown/restart; regression and evaluation tooling.
+revisioned camera metadata, settings editor with draft/conflict recovery and queried decision history; CPU lockfile; clean launcher shutdown/restart; regression and evaluation tooling.
 
 ## Persistence update
 
@@ -23,6 +23,16 @@ link decisions. New observations preserve configuration snapshots; legacy metada
 fallback is explicit. Source routes remain fixed, calibration remains unverified,
 and stored decisions are historical conclusions rather than verified identity.
 See `docs/PERSISTENCE.md` and `AI26_PERSISTENCE_VALIDATION.json` in the delivery.
+
+## Camera settings update
+
+Camera settings edits location labels, coordinates and label confirmation through
+the revisioned API. Unsaved drafts survive internal navigation and catalog refresh;
+stale/unconfirmed saves require latest-revision review and a separate explicit save.
+Read-only history exposes metadata source and unverified calibration. Reviewer
+names remain local claims; source onboarding is separate. The page is lazy loaded,
+shares the catalog and adds no polling or video playback. See `docs/SETTINGS.md`
+and `AI26_SETTINGS_VALIDATION.json`.
 
 ## Per-read image update
 
@@ -66,6 +76,10 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
   constructed reads per frame; this adds storage/CPU work and does not establish sustained FPS.
 - A separate synthetic report browser check displayed 2-of-3 image coverage and
   its legacy gap on desktop/mobile. Fixture services/data/tab were removed.
+- Isolated metadata browser checks verified saves, immutable history, stale edits,
+  draft navigation and API outage/restart recovery. Main catalog was unchanged;
+  six idle seconds added no configuration requests. Desktop/mobile had no horizontal
+  overflow. The temporary database contained no observations.
 - Earlier browser mobile checks at 390×844 verified camera wall, investigation and alerts,
   disabled empty export, and focus trapping/Escape restoration.
 - An earlier isolated synthetic fixture on 5175/8002 exercised browser report creation,
@@ -89,8 +103,8 @@ local results. Short runtime samples do not establish sustained throughput.
    evaluate exact/fuzzy identity links (P1-14–16, EV-06).
 4. Calibrate traffic counts/density/speed and historical segment baselines;
    evaluate rules on positive and negative real cases (P2-01–04, EV-07–09).
-5. Complete source onboarding/configuration UI and authenticated escalation where
-   needed. Metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
+5. Complete source onboarding and authenticated escalation where needed.
+   Metadata settings UI, metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
    pixels, registry verification, signed evidence, RTSP capture or production auth
    is represented as implemented.

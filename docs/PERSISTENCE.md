@@ -36,9 +36,10 @@ persisted catalog; duplicate matching names require a camera ID.
 
 Reviewer names are unauthenticated local claims. `location_confirmed` is a local
 label assertion, not coordinate or clock validation. `calibration_status` remains
-`unverified`; metadata edits cannot change it. There is currently no settings screen
-for this API, no dynamic source onboarding, and no independent survey/calibration
-workflow.
+`unverified`; metadata edits cannot change it. The [Camera settings page](SETTINGS.md)
+edits metadata and inspects saved revisions with explicit stale-save recovery.
+Dynamic source onboarding and an independent survey/calibration workflow remain
+separate work.
 
 ## Historical observations and links
 

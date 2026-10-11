@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { lazy, Suspense, useCallback, useState } from "react"
 import { usePolling } from "@/hooks/usePolling"
 import { Menu, ShieldCheck } from "lucide-react"
 import { getCameras, type Camera } from "@/lib/api"
@@ -13,7 +13,9 @@ import { QueryPage } from "@/pages/QueryPage"
 import { CongestionPage } from "@/pages/CongestionPage"
 import { IntroSplash } from "@/components/IntroSplash"
 
-export type Page = "cameras" | "map" | "congestion" | "timeline" | "alerts" | "analytics" | "query"
+const CameraSettings = lazy(() => import("@/pages/CameraSettings"))
+
+export type Page = "cameras" | "map" | "congestion" | "timeline" | "alerts" | "analytics" | "query" | "settings"
 
 const TITLES: Record<Page, string> = {
   cameras: "Camera Wall",
@@ -23,6 +25,7 @@ const TITLES: Record<Page, string> = {
   alerts: "Alerts",
   analytics: "Analytics",
   query: "Ask the Grid",
+  settings: "Camera settings",
 }
 
 export default function App() {
@@ -31,6 +34,7 @@ export default function App() {
   const [focused, setFocused] = useState<string>("CAM-01")
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [page, setPage] = useState<Page>("cameras")
+  const [settingsVisited, setSettingsVisited] = useState(false)
   const [introVisible, setIntroVisible] = useState(() => !window.matchMedia("(prefers-reduced-motion: reduce)").matches)
 
   usePolling(async signal => {
@@ -44,6 +48,7 @@ export default function App() {
   const focusedCam = cameras.find((c) => c.id === focused)
 
   function navigate(p: Page) {
+    if (p === "settings") setSettingsVisited(true)
     setPage(p)
     setDrawerOpen(false)
   }
@@ -102,6 +107,13 @@ export default function App() {
         {page === "alerts" && <AlertsPanel />}
         {page === "analytics" && <AnalyticsPanel cameras={cameras} />}
         {page === "query" && <QueryPage />}
+        {settingsVisited && (
+          <div hidden={page !== "settings"} className="h-full">
+            <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading camera settings…</p>}>
+              <CameraSettings cameras={cameras} initialCamera={focused} />
+            </Suspense>
+          </div>
+        )}
       </main>
     </div>
   )

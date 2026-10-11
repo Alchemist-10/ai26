@@ -8,6 +8,27 @@ export interface Camera {
   source_available: boolean
   health: CameraHealth
 }
+export interface CameraConfiguration {
+  id: string
+  kind: "vehicle" | "plate"
+  location: string
+  location_confirmed: boolean
+  lat: number
+  lon: number
+  revision: number
+  metadata_source: string
+  calibration_status: string
+  updated_at: number
+}
+export interface CameraConfigurationUpdate {
+  expected_revision: number
+  location: string
+  location_confirmed: boolean
+  lat: number
+  lon: number
+  reviewer: string
+  reason: string
+}
 export interface CameraHealth {
   camera_id: string
   status: string
@@ -104,17 +125,37 @@ export interface EvidenceReport {
   trajectory: Trajectory
 }
 
+export class ApiError extends Error {
+  readonly status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+  }
+}
+
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init)
   if (!response.ok) {
     const body = await response.json().catch(() => null)
-    throw new Error(body?.error?.message ?? `Request failed (${response.status})`)
+    throw new ApiError(body?.error?.message ?? `Request failed (${response.status})`, response.status)
   }
   return response.json() as Promise<T>
 }
 
 export async function getCameras(signal?: AbortSignal): Promise<Camera[]> {
   return requestJson<Camera[]>("/api/cameras", { signal })
+}
+
+export function getCameraConfiguration(cameraId: string, revision?: number, signal?: AbortSignal): Promise<CameraConfiguration> {
+  const query = revision === undefined ? "" : `?revision=${revision}`
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/configuration${query}`, { signal })
+}
+
+export function saveCameraConfiguration(cameraId: string, change: CameraConfigurationUpdate): Promise<CameraConfiguration> {
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/configuration`, {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(change),
+  })
 }
 
 export async function getEvents(params: { camera?: string; plate?: string; limit?: number } = {}, signal?: AbortSignal): Promise<DetectionEvent[]> {
