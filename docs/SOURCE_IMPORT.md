@@ -51,8 +51,9 @@ byte allowance plus 16 MiB; this conservative check can be reduced with a smalle
 Add `--prepare` to retain a validated release without modifying `active.json`.
 This mode permits the existing processor to continue; it still acquires source
 import ownership, validates both files and requires explicit replacement. The JSON
-result includes `activation_required: true`. With the processor stopped, select
-using `select_source.py CAMERA RELEASE --expected-current PREVIOUS_OR_default`,
+result includes `activation_required: true`. Select from a ready browser preparation or use retained-parent rollback in
+[Camera settings](SOURCE_SELECTION.md), then restart on the host. For an arbitrary
+CLI-prepared release, with the processor stopped, select using `select_source.py CAMERA RELEASE --expected-current PREVIOUS_OR_default`,
 then restart the API. The selector rehashes files and rejects a stale managed
 selection; an already selected release is idempotent. This is the same preparation
 path used by [browser uploads](SOURCE_UPLOADS.md). Normal import without
@@ -103,7 +104,8 @@ not occur during catalog polling or per-frame source selection. Startup hashes
 both files, and the processor separately fingerprints its opened original, so
 large files add startup I/O.
 
-To restore an earlier release while the app is stopped, use its retained
+Browser rollback can select a displayed retained parent for the next restart.
+For invalid-pointer or configured-default recovery while the app is stopped, use its retained
 `manifest.json` to restore `active.json`, then restart. Startup verifies the
 selected files. Keep a copy of the prior active manifest when performing manual
 recovery. The CLI is not a database backup/restore or forensic custody system.
@@ -135,3 +137,6 @@ settings page and brings the isolated backend suite to 140 tests. The 128-test
 conversion/import milestone above remains historical evidence. The browser
 preparation milestone now has 157 backend tests, including 17 new streaming,
 worker and offline-selection contracts; see [SOURCE_UPLOADS.md](SOURCE_UPLOADS.md).
+The current [browser-selection milestone](SOURCE_SELECTION.md) has 170 backend
+tests, including 13 new selection/rollback contracts. Historical counts above
+describe their own milestones.

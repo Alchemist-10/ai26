@@ -54,7 +54,11 @@ export interface CameraSourceStatus {
     inference: { filename: string; available: boolean; bytes: number | null; size_matches_import: boolean | null }
     playback: { filename: string; available: boolean; bytes: number | null; size_matches_import: boolean | null }
   }
-  selection: { status: "current" | "restart_required" | "invalid"; release: SourceRelease | null; error: string | null }
+  selection: {
+    status: "current" | "restart_required" | "invalid"; release: SourceRelease | null; error: string | null
+    token: string | null
+    last_action: { id: string | null; intent: string | null; reviewer: string | null; reason: string | null; from_release: string | null; to_release: string | null; selected_at: number | null } | null
+  }
   history: { releases: SourceRelease[]; more: boolean; error: string | null }
   verification: string
 }
@@ -80,6 +84,12 @@ export function getSourcePreparation(jobId: string, signal?: AbortSignal): Promi
 }
 export function cancelSourcePreparation(jobId: string): Promise<SourcePreparation> {
   return requestJson(`/api/source-preparations/${encodeURIComponent(jobId)}/cancel`, {method:"POST"})
+}
+export function selectCameraSource(cameraId: string, release: string, expectedToken: string, intent: "select" | "rollback", reviewer: string, reason: string): Promise<{source:CameraSourceStatus;already_selected:boolean}> {
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/source/selection`, {
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({release,expected_token:expectedToken,intent,reviewer,reason}),
+  })
 }
 export interface CameraHealth {
   camera_id: string

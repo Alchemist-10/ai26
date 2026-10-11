@@ -176,3 +176,13 @@ fragment tracks or overcount passages. Vehicle/plate tracks remain separate;
 learned appearance and validated vehicle/plate linkage are not implemented.
 
 See `TRACKING.md` for synthetic tests, timing samples and evaluation requirements.
+
+## Managed source selection
+
+Browser upload prepares an immutable release outside the running binding. Source
+inspection separates cached original/playback from next-startup selection. The
+selection POST rehashes both files in a worker thread under source import ownership,
+checks a canonical metadata token, and atomically publishes a linked local selection
+record with the pointer. Rollback uses only the displayed retained parent chain.
+Source roles activate together on host restart; a pending selection never changes
+per-frame or playback resolution. See [SOURCE_SELECTION.md](SOURCE_SELECTION.md).

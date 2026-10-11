@@ -127,7 +127,7 @@ export default function CameraSettings({ cameras, initialCamera }: { cameras: Ca
             </select>
           </label>
           <button type="button" className={button} disabled={dirty || busy || loading || sourceBusy} onClick={() => { setConfig(null); setLoading(true); setError(""); setLoadVersion(value => value + 1); setNotice(""); setHistory(null); setHistoryError("") }}>Refresh current revision</button>
-          <p id="camera-selection-help" className="text-sm text-zinc-300 sm:col-span-2">{sourceBusy ? "Finish or cancel preparation and check its status before switching cameras. You can navigate to another page while it runs." : dirty ? "Save or discard your draft before switching cameras. It stays here when you navigate to another page." : "Choose a camera to inspect its footage and metadata. Detector types remain fixed."}</p>
+          <p id="camera-selection-help" className="text-sm text-zinc-300 sm:col-span-2">{sourceBusy ? "A footage operation is active. Finish selection, or cancel preparation and check its status, before switching cameras. You can navigate to another page while it runs." : dirty ? "Save or discard your draft before switching cameras. It stays here when you navigate to another page." : "Choose a camera to inspect its footage and metadata. Detector types remain fixed."}</p>
         </div>
         {loading && <p role="status" className="mt-4 text-sm text-zinc-300">Loading configuration…</p>}
         {error && <p role="alert" className="mt-4 rounded border border-red-400/40 bg-red-950/40 p-3 text-sm leading-relaxed text-red-100">{error}</p>}

@@ -18,7 +18,7 @@ from cameras import CAMERAS_BY_ID, camera_playback_source, camera_source
 from events import derive_alerts, evidence_report, flows, get_events, get_trajectory, stats, store
 from nlquery import answer as nl_answer
 from processing import processor
-from schemas import QueryRequest, ReviewRequest, RuleConfig, CameraConfigurationUpdate
+from schemas import QueryRequest, ReviewRequest, RuleConfig, CameraConfigurationUpdate, SourceSelectionRequest
 from stream import mjpeg_generator, snapshot_frame
 from plate_format import normalize_plate
 from repository import canonical_json
@@ -27,6 +27,8 @@ from maintenance import Maintenance
 from source_status import source_status
 from source_uploads import uploads, parse_metadata, UploadBusy
 from starlette.requests import ClientDisconnect
+from source_selection import select_for_restart, SelectionConflict
+from import_source import ImportBusy
 
 
 @asynccontextmanager
@@ -108,6 +110,15 @@ async def prepare_camera_source(camera_id:str,request:Request):
 def source_preparation(job_id:str):
     try: return uploads.get(job_id)
     except KeyError as error: raise HTTPException(404,'Preparation unavailable') from error
+
+@app.post('/api/cameras/{camera_id}/source/selection')
+def select_camera_source(camera_id:str,body:SourceSelectionRequest):
+    check_camera(camera_id)
+    try: result=select_for_restart(camera_id,body.model_dump())
+    except (SelectionConflict,ImportBusy) as error: raise HTTPException(409,str(error)) from error
+    except (ValueError,OSError) as error:
+        raise HTTPException(422,'Imported files or selection records could not be verified or written. Running footage is unchanged; check host files before retrying.') from error
+    return {**result,'source':source_status(camera_id)}
 
 @app.post('/api/source-preparations/{job_id}/cancel')
 def cancel_source_preparation(job_id:str):

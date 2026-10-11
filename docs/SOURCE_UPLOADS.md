@@ -3,8 +3,8 @@
 Camera settings → Source footage → **Import or replace recorded footage** now
 accepts a file from the browser. Preparation preserves original bytes and creates
 validated playback in an inactive retained release. Running inference and playback
-keep their cached source. **Ready does not mean active.** Selection remains a
-host command with the processor stopped, followed by API restart.
+keep their cached source. **Ready does not mean active.** Select a ready release in settings, then restart
+the app on the host. An offline host selector is also available.
 
 ## Operator workflow
 
@@ -18,20 +18,24 @@ host command with the processor stopped, followed by API restart.
    Camera selection and source/current-revision refresh stay disabled until a
    terminal state is checked; other pages remain usable. Draft fields survive
    internal navigation and source refresh, but not browser reload.
-3. At **ready**, follow the camera/release-specific command displayed. Export the
-   same `AI26_DATA_ROOT` / `AI26_SOURCE_ROOT` used by the API, stop the app with
-   Ctrl+C and run, from the repository root:
+3. At **ready**, enter the selection reviewer and reason, then choose **Select
+   for restart**. Both files are rehashed and the displayed selection token must
+   still match. A stale or unconfirmed request preserves the entries and requires
+   **Refresh source status** before another explicit attempt. Stop the app with
+   Ctrl+C on the host, then run `uv run run.py --skip-install` using the same
+   exported `AI26_DATA_ROOT` / `AI26_SOURCE_ROOT`. See [SOURCE_SELECTION.md](SOURCE_SELECTION.md).
+
+   **Select with a host command instead** retains the offline path:
 
    ```bash
    uv run --frozen --directory backend python select_source.py CAM-07 RELEASE_ID --expected-current PREVIOUS_RELEASE_ID_OR_default
    uv run run.py --skip-install
    ```
 
-   Replace the capitalized placeholders with the values shown in settings.
-   Selection verifies both file hashes, acquires processor/import ownership and
-   rejects a managed release selection changed since preparation. Repeating an
-   already selected release is idempotent. `default` means no managed pointer;
-   it does not fingerprint changes to configured/bundled default files.
+   Stop the processor first. Replace placeholders with the values shown in settings.
+   This CLI checks the expected release ID, not the browser's metadata token, and
+   does not create browser selection records. `default` means no managed pointer;
+   it does not fingerprint configured/bundled files.
 4. Refresh source status after restart. Both original inference and derivative
    playback activate together. The preparation then reports running. Original
    recording clocks, content, site and plate/OCR accuracy remain unverified.
@@ -39,7 +43,7 @@ host command with the processor stopped, followed by API restart.
 Only the most recent returned job ID per camera is stored in browser localStorage.
 Reopening the same camera fetches that receipt once; file/name/reason drafts are
 lost on reload. Server terminal receipts survive restart. There is no job browser,
-resume of an interrupted transfer, live activation, rollback control, new-camera
+resume of an interrupted transfer, live activation, new-camera
 creation or RTSP ingestion. An API failure during a check preserves the current
 job and offers manual retry. If the transfer response is lost after acceptance,
 the browser may not know its ID: inspect host receipts before retrying to avoid
@@ -119,3 +123,7 @@ and user 786×758 showed no horizontal overflow, 16px fields and zero videos.
 Six idle seconds added zero source/preparation requests. The finish reviewer
 returned **ship** at upload-extension scope. These are synthetic workflow checks,
 not real plate/OCR accuracy or sustained conversion/inference measurements.
+
+The later [source-selection milestone](SOURCE_SELECTION.md) adds browser selection
+and retained-parent rollback. Its suite has 170 tests; the 157-test figures above
+remain the preparation milestone's historical evidence.

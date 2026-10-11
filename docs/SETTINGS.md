@@ -5,7 +5,7 @@ location label, latitude/longitude or label confirmation, enter a reviewer name
 and reason, then **Save new revision**. The camera ID, detector kind and video
 source selection remain fixed for the running process. The source section inspects
 running/selected footage; browser upload prepares an inactive release, followed
-by offline host selection/restart. Missing files are displayed
+by browser selection and host restart. Missing files are displayed
 explicitly; editing their metadata does not supply footage.
 
 The editor uses the existing GET/PUT camera configuration API. Every successful
@@ -88,7 +88,9 @@ bounded import history and offline command guidance above the metadata form.
 Its refresh preserves the form draft. [SOURCE_STATUS.md](SOURCE_STATUS.md)
 describes the inspection endpoint and historical 140-test milestone. The later
 [SOURCE_UPLOADS.md](SOURCE_UPLOADS.md) adds browser preparation/check/cancel,
-retained receipts and offline selection/restart; the current suite has 157 tests.
+retained receipts and offline selection/restart (157-test milestone). The later
+[SOURCE_SELECTION.md](SOURCE_SELECTION.md) adds browser selection and retained-parent
+rollback with stale-request recovery; the current suite has 170 tests.
 Upload drafts survive source refresh and navigation; active preparation disables
 source refresh and camera/current-revision switching until checked terminal.
 The earlier 113-test and 13.56 kB figures above describe the metadata-only milestone.

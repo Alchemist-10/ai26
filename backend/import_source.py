@@ -54,12 +54,15 @@ def transcode(source, destination, timeout, max_bytes):
                    capture_output=True, text=True, timeout=timeout, check=True)
 
 
+class ImportBusy(ValueError): pass
+
+
 @contextmanager
 def exclusive(path, message):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open('a+') as owner:
         try: fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error: raise ValueError(message) from error
+        except BlockingIOError as error: raise ImportBusy(message) from error
         try: yield
         finally: fcntl.flock(owner, fcntl.LOCK_UN)
 

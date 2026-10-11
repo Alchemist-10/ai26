@@ -7,6 +7,7 @@ from pathlib import Path
 
 import cameras
 from source_catalog import SOURCE_ROOT, MAX_MANIFEST_BYTES, load_source
+from source_selection import selection_token, same_release_manifest
 
 HISTORY_LIMIT = 10
 
@@ -98,11 +99,16 @@ def source_status(camera_id, root=SOURCE_ROOT):
         active_id = active_manifest['release'] if binding else None
         selected_id = selected['manifest']['release'] if selected else None
         # Same release with edited manifest fields is also a pending change.
-        status = 'current' if active_id == selected_id and (not binding or active_manifest == selected['manifest']) else 'restart_required'
-        selection = {'status': status, 'release': release_summary(selected['manifest']) if selected else None, 'error': None}
+        status = 'current' if active_id == selected_id and (not binding or same_release_manifest(active_manifest,selected['manifest'])) else 'restart_required'
+        marker=selected['manifest'].get('source_selection') if selected else None
+        if not isinstance(marker,dict): marker=None
+        claim={key:text(marker.get(key)) for key in ('id','intent','reviewer','reason','from_release','to_release')} if marker else None
+        if claim: claim['selected_at']=number(marker.get('selected_at'))
+        selection = {'status': status, 'release': release_summary(selected['manifest']) if selected else None,
+                     'error': None,'token':selection_token(selected),'last_action':claim}
         history = recent_releases(camera_id, selected, root)
     except (OSError, ValueError):
-        selection = {'status': 'invalid', 'release': None,
+        selection = {'status': 'invalid', 'release': None,'token':None,'last_action':None,
                      'error': 'The selected import is missing or invalid. Restore a retained manifest while the app is stopped before restarting.'}
         history = {'releases': [], 'more': False, 'error': 'History could not be loaded from the selected import.'}
     return {'camera_id': camera_id, 'checked_at': time.time(), 'time_basis': 'replay_clock',

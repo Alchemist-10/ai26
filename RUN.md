@@ -74,8 +74,9 @@ Managed imports take precedence over these defaults after restart. Use the
 [recorded-source import command](docs/SOURCE_IMPORT.md) to validate/copy a clip and
 prepare its browser playback without editing Python. Camera settings also offers
 [streamed browser preparation](docs/SOURCE_UPLOADS.md), bounded to 128 MiB, with
-manual check/cancel. Ready releases require stopped-processor host selection and
-restart; they never switch a running feed automatically. Within the original defaults,
+manual check/cancel. Ready releases can be [selected in settings](docs/SOURCE_SELECTION.md),
+including rollback to a retained parent. Selection preserves running inference and
+playback until a host restart. The offline selector still requires the processor stopped. Within the original defaults,
 originals take precedence for inference and H.264 proxies for playback. Camera
 metadata and recording clocks still require independent validation.
 

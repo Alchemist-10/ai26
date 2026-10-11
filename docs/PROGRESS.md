@@ -40,8 +40,8 @@ Camera settings now separates the running inference/playback files from a select
 import pending API restart. It exposes missing/changed files, invalid selections,
 bounded parent-chain history, hashes/operator claims and host-command guidance.
 Manual source refresh preserves metadata drafts and adds no polling, video/model
-loads or video hashing. Browser preparation is now implemented; activation/rollback controls remain
-pending. Twelve new contracts plus synthetic browser outage/restart checks pass;
+loads or video hashing. Browser preparation, selection and retained-parent rollback
+are now implemented; activation still requires host restart. Twelve new contracts plus synthetic browser outage/restart checks pass;
 six idle seconds added zero source requests. See `docs/SOURCE_STATUS.md` and
 `AI26_SOURCE_STATUS_VALIDATION.json`.
 
@@ -57,8 +57,24 @@ Seventeen new contracts, actual synthetic browser uploads, failure/retry, cancel
 502 recovery and restart activation pass. Six idle seconds added zero preparation/source
 requests. Desktop/mobile/user captures received ship at extension scope.
 Ready videos/receipts are retained without aggregate cleanup; original clocks, real
-plate footage, authenticated source administration and activation/rollback UI remain
+plate footage, authenticated source administration and host restart management remain
 separate. See `docs/SOURCE_UPLOADS.md` and `AI26_SOURCE_UPLOADS_VALIDATION.json`.
+
+## Browser selection and rollback update
+
+A ready browser upload can now be selected for the next restart. Displayed parent
+history supports retained-release rollback. Both files are rehashed under source
+import ownership; canonical metadata tokens reject stale requests and returning
+to the same release after another selection. Local reviewer/reason records are
+linked on disk. Running original inference and playback remain cached until host
+restart; reverting a pending selection to the running release clears the notice.
+The separate POST adds no SQL writes, polling, media or ML workers. Thirteen new
+contracts and actual synthetic browser selection/rollback with stale recovery
+pass; two host restarts activated both roles, six linked selection records were
+retained and the fixture database had zero observations/audit rows. Six idle
+seconds added zero source/preparation requests. See `docs/SOURCE_SELECTION.md`
+and `AI26_SOURCE_SELECTION_VALIDATION.json`. Host restart controls, authenticated
+operator identity, full history UI and video cleanup remain separate work.
 
 ## Recorded source import update
 
@@ -67,7 +83,7 @@ prepares bounded browser-safe playback and publishes a hashed release manifest.
 Explicit replacement retains older releases; bindings activate only on restart.
 Existing processor/import ownership blocks conflicting work. Conversion and
 publication failures preserve the prior source. The importer adds no API polling,
-models. Browser preparation is described below; real plate footage, activation/rollback UI and clock/location
+models. Browser preparation/selection are implemented; real plate footage and clock/location
 validation remain separate. See `docs/SOURCE_IMPORT.md` and
 `AI26_SOURCE_IMPORT_VALIDATION.json`.
 
@@ -101,7 +117,7 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
 
 ## Validation
 
-- 157 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 170 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -145,8 +161,9 @@ local results. Short runtime samples do not establish sustained throughput.
    evaluate exact/fuzzy identity links (P1-14–16, EV-06).
 4. Calibrate traffic counts/density/speed and historical segment baselines;
    evaluate rules on positive and negative real cases (P2-01–04, EV-07–09).
-5. Complete source activation/rollback UI and authenticated escalation where needed.
-   Offline recorded-source onboarding is implemented.
+5. Add authenticated source administration and host restart management where needed.
+   Browser preparation, selection and retained-parent rollback are implemented;
+   activation continues to require a host restart.
    Metadata settings UI, metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
    pixels, registry verification, signed evidence, RTSP capture or production auth
@@ -181,7 +198,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-02 | Done | Define inference ownership so multiple viewers do not create duplicate processing/event streams. | Streams/snapshots only consume cache; two-consumer regression and exclusive Linux data-directory ownership lock. |
 | P1-03 | Done | Add a typed observation schema with stable event IDs and per-track passage IDs. | Typed finite observations, deterministic idempotent read IDs, per-session local passage IDs. |
 | P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay source position and processing time are separate; original capture times and synchronized clocks are missing. |
-| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-3 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; offline source onboarding and metadata editing work; browser source preparation and offline selection work; activation/rollback UI and authenticated calibration remain separate work. |
+| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-3 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; offline source onboarding and metadata editing work; browser source preparation, selection and retained-parent rollback work; activation requires host restart, and authenticated calibration remains separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
 | P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and nine component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |

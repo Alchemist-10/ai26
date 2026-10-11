@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { getCameraSourceStatus, type CameraSourceStatus, type SourceRelease } from "@/lib/api"
 import SourceUpload from "@/components/settings/SourceUpload"
+import { SourceRollback } from "@/components/settings/SourceSelection"
 
 const button = "min-h-11 rounded border border-zinc-600 px-3 py-2 text-sm font-medium hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
 const sourceNames = { managed: "Imported original", configured_original: "Configured original", bundled_proxy: "Bundled playback copy", missing: "No footage available" }
@@ -30,6 +31,11 @@ export default function CameraSources({ cameraId,sourceBusy,onBusyChange }: { ca
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(true)
   const [refresh, setRefresh] = useState(0)
+  const [uploadBusy,setUploadBusy]=useState(false)
+  const [selectionBusy,setSelectionBusy]=useState(false)
+  useEffect(()=>{onBusyChange(uploadBusy || selectionBusy)},[uploadBusy,selectionBusy,onBusyChange])
+  useEffect(()=>()=>onBusyChange(false),[onBusyChange])
+  function selectedSource(value:CameraSourceStatus) {setSource(value);setError("")}
   useEffect(() => {
     const controller = new AbortController()
     getCameraSourceStatus(cameraId, controller.signal).then(result => {
@@ -55,14 +61,19 @@ export default function CameraSources({ cameraId,sourceBusy,onBusyChange }: { ca
         <div><h3 className="font-medium">Browser playback</h3><p className="mt-1 break-all text-zinc-300">{active.playback.available ? `${active.playback.filename} · ${bytes(active.playback.bytes)}` : "Playback file missing"}</p><p className="mt-1 text-zinc-300">Recorded replay; original capture clocks are unverified.</p></div>
       </div>
       {(active.inference.size_matches_import === false || active.playback.size_matches_import === false) && <p role="alert" className="mt-3 rounded border border-red-400/40 bg-red-950/40 p-3 text-sm text-red-100">A running import file is missing or its size has changed. Restore the original release files before restarting.</p>}
-      {selected.status === "restart_required" && <p role="status" className="mt-3 rounded border border-teal-500/40 bg-teal-950/30 p-3 text-sm leading-relaxed text-teal-100">Restart required. {selected.release ? "A different import is selected." : "The imported selection was removed; configured footage will be used."} Running inference and playback keep their current source until the API restarts.</p>}
+      {selected.status === "restart_required" && <div role="status" className="mt-3 rounded border border-teal-500/40 bg-teal-950/30 p-3 text-sm leading-relaxed text-teal-100"><p>Restart required. {selected.release ? "A different import is selected." : "The imported selection was removed; configured footage will be used."} Running inference and playback keep their current source until the API restarts.</p><p className="mt-2">On the API host, stop the app with Ctrl+C, then run <code>uv run run.py --skip-install</code> with the same data/source settings. Refresh source status afterwards.</p></div>}
       {selected.error && <p role="alert" className="mt-3 rounded border border-red-400/40 bg-red-950/40 p-3 text-sm leading-relaxed text-red-100">{selected.error} The running source has not been switched.</p>}
+      {selected.last_action && <details className="mt-3 text-sm"><summary className="min-h-11 cursor-pointer py-3 font-medium">Last browser selection · {selected.last_action.intent === "rollback" ? "Earlier import" : "Prepared import"}</summary>
+        <p className="break-words leading-relaxed text-zinc-300">{selected.last_action.selected_at ? new Date(selected.last_action.selected_at*1000).toLocaleString() : "Date unavailable"} · {selected.last_action.reviewer || "Reviewer unavailable"}</p>
+        <p className="mt-2 break-words leading-relaxed">{selected.last_action.reason || "Reason unavailable"}</p>
+        <p className="mt-2 leading-relaxed text-zinc-300">Local unauthenticated claim. This records selection, not activation or verified content.</p>
+      </details>}
       {active.release && <details className="mt-4 text-sm"><summary className="min-h-11 cursor-pointer py-3 font-medium">Running import · {active.release.release}</summary><ReleaseDetails release={active.release} /></details>}
       <p className="mt-3 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Checked {new Date(current.checked_at * 1000).toLocaleTimeString()}. {current.verification}</p>
       {active.kind === "bundled_proxy" && <p className="mt-2 text-sm leading-relaxed text-zinc-300">Inference currently uses the bundled playback copy. Original recording bytes are not available for this source.</p>}
       <details className="mt-4 border-t border-zinc-800 pt-2 text-sm">
         <summary className="min-h-11 cursor-pointer py-3 font-medium">Import or replace recorded footage</summary>
-        <SourceUpload cameraId={cameraId} source={current} onBusyChange={onBusyChange} />
+        <SourceUpload cameraId={cameraId} source={current} disabled={loading || selectionBusy} onBusyChange={setUploadBusy} onSelectionBusyChange={setSelectionBusy} onSelected={selectedSource} />
         <details className="mt-4 border-t border-zinc-800 pt-2">
         <summary className="min-h-11 cursor-pointer py-3 font-medium">Import a file already on the API host</summary>
         <ol className="list-decimal space-y-3 pl-5 leading-relaxed text-zinc-300">
@@ -72,7 +83,7 @@ export default function CameraSources({ cameraId,sourceBusy,onBusyChange }: { ca
           <li>Restart the app with <code>uv run run.py --skip-install</code>, then refresh source status. Review location metadata separately; importing footage does not verify its location.</li>
         </ol>
         </details>
-        <p className="mt-3 leading-relaxed text-zinc-300">Live source switching and automatic video cleanup are not available. Original files and prior imports are retained.</p>
+        <p className="mt-3 leading-relaxed text-zinc-300">Selection takes effect after host restart. Live source switching and automatic video cleanup are not available. Original files and prior imports are retained.</p>
       </details>
       <details className="mt-2 border-t border-zinc-800 pt-2 text-sm">
         <summary className="min-h-11 cursor-pointer py-3 font-medium">Recent imported releases · {current.history.releases.length}{current.history.more ? "+" : ""}</summary>
@@ -84,6 +95,7 @@ export default function CameraSources({ cameraId,sourceBusy,onBusyChange }: { ca
             <ReleaseDetails release={release} />
           </details></li>)}
         </ul>
+        <SourceRollback cameraId={cameraId} source={current} disabled={loading || uploadBusy || selectionBusy} onBusyChange={setSelectionBusy} onSelected={selectedSource} />
         <p className="mt-2 leading-relaxed text-zinc-300">Up to ten releases from the selected import’s parent chain. {current.history.more ? "Older releases remain on the host." : "Unlinked releases are not listed."} History metadata and retained files have not been revalidated here.</p>
       </details>
     </>}

@@ -59,3 +59,11 @@ class CameraConfigurationUpdate(BaseModel):
     lon: float = Field(ge=-180, le=180)
     reviewer: StrictStr = Field(min_length=1, max_length=100)
     reason: StrictStr = Field(min_length=1, max_length=1000)
+
+class SourceSelectionRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+    release: StrictStr = Field(pattern=r'^[0-9a-f]{32}$')
+    expected_token: StrictStr = Field(pattern=r'^(default|[0-9a-f]{64})$')
+    intent: Literal['select', 'rollback']
+    reviewer: StrictStr = Field(min_length=1, max_length=100)
+    reason: StrictStr = Field(min_length=1, max_length=1000)

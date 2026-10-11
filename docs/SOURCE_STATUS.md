@@ -21,7 +21,9 @@ The API process keeps the managed binding loaded at startup. A new active.json
 selection remains pending until restart, so the page shows **Restart required**
 while the inference and playback roles still describe the previous release. A
 removed pointer also requires restart to return to configured/bundled defaults.
-Changing manifest fields under the same release ID is a pending change too.
+Changing manifest fields under the same release ID is a pending change too; the
+local selection-record marker is excluded from this comparison, so reverting a
+pending selection to the already-running release clears the restart notice.
 An invalid selected manifest produces recovery guidance while retaining the
 running binding. Source inspection never silently activates or repairs it.
 
@@ -46,13 +48,14 @@ as the app. See [SOURCE_IMPORT.md](SOURCE_IMPORT.md) and
 [SOURCE_UPLOADS.md](SOURCE_UPLOADS.md) for bounds, cancellation and recovery.
 While an upload/preparation is active, source refresh and camera selection are
 disabled until a terminal job check. An idle refresh preserves both upload and
-metadata drafts. Browser activation/rollback controls, new camera creation, RTSP
-and authenticated source administration remain pending.
+metadata drafts. Browser [selection and retained-parent rollback](SOURCE_SELECTION.md) are now available.
+Host restart is still required for activation. New camera creation, RTSP and
+authenticated source administration remain pending.
 
 ## API contract and bounded work
 
 `GET /api/cameras/{camera_id}/source` returns camera_id, checked_at, time_basis,
-active source roles/release, selection status/release/error, history and verification
+active source roles/release, selection status/release/error/token/last_action, history and verification
 scope. Unknown catalog IDs return 404 using the standard JSON error envelope.
 Invalid selections return 200 with selection.status=invalid so the active binding
 can still be inspected. No SQL writes or configuration revisions are created.
@@ -64,7 +67,11 @@ invalid identities and cycles, and retains already-read history when a parent
 fails. Requests perform bounded metadata reads and file stats rather than video
 hashing or decode. The endpoint is part of the existing local unauthenticated
 prototype API; the inspection route itself never mutates a source. The later
-browser preparation route is separately documented in SOURCE_UPLOADS.md.
+browser preparation route is separately documented in SOURCE_UPLOADS.md. The
+selection token is a canonical metadata fingerprint, not a fresh video hash.
+Last browser selection projects only the local reviewer/reason and selection
+metadata; it records a request, not activation or an authenticated review. The
+separate POST in [SOURCE_SELECTION.md](SOURCE_SELECTION.md) rehashes both files.
 
 ## Validation scope
 
