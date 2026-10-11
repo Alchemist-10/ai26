@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 from math import asin, cos, radians, sin, sqrt
 from collections import Counter
+import re
 
 from cameras import CAMERAS_BY_ID
 from plate_format import normalize_plate
@@ -138,14 +139,36 @@ def _evidence_report(plate, since=None, until=None):
     for artifact in artifacts.values():
         if artifact_bytes(artifact['sha256'], now + REPORT_RETENTION_SECONDS) is None:
             raise ValueError('A source artifact is missing; choose an available evidence interval')
-    report = {'report_id': f'EVD-{uuid.uuid4().hex[:12].upper()}', 'version': 1,
+    report = {'report_id': f'EVD-{uuid.uuid4().hex[:12].upper()}', 'version': 2,
               'generated_at': now, 'expires_at': now + REPORT_RETENTION_SECONDS,
               'retention': 'Report expires after 24 hours; referenced artifacts protected until report expiry; other source artifacts retained for 7 days',
               'trajectory': trajectory, 'raw_reads': raw_reads, 'raw_read_count':raw_total, 'artifacts': list(artifacts.values()),
-              'limitations': ['Candidate links do not verify vehicle identity.', 'Frame/crop JPEGs are decoded image derivatives; source clip digests identify their recording.', 'SHA-256 covers this JSON manifest and referenced artifact digests; it is not a digital signature.']}
+              'model_provenance': summarize_read_models(raw_reads),
+              'limitations': ['Candidate links do not verify vehicle identity.', 'Frame/crop JPEGs are decoded image derivatives; source clip digests identify their recording.', 'SHA-256 covers this JSON manifest and referenced artifact digests; it is not a digital signature.',
+                              'Model-file digests identify loaded bytes, not accuracy or authenticity. Older/manual reads can lack exact model provenance; weights are not included in the evidence ZIP.']}
     report['package_hash'] = hashlib.sha256(canonical_json(report).encode()).hexdigest()
     store.put_report(report)
     return report
+
+
+def summarize_read_models(reads):
+    sets={}; missing=0; exact=0
+    required={'plate_detector_weights','ocr_weights','ocr_configuration'}
+    for read in reads:
+        metadata=read.get('model_metadata')
+        if not isinstance(metadata,dict) or not metadata:
+            missing+=1; continue
+        digest=hashlib.sha256(canonical_json(metadata).encode()).hexdigest()
+        if digest not in sets: sets[digest]={'model_set_id':digest,'read_count':0,'metadata':metadata}
+        sets[digest]['read_count']+=1
+        files=metadata.get('model_files',[])
+        valid={f.get('role') for f in files if isinstance(f,dict) and isinstance(f.get('role'),str) and
+               isinstance(f.get('sha256'),str) and re.fullmatch(r'[a-f0-9]{64}',f['sha256']) and
+               isinstance(f.get('size'),int) and not isinstance(f['size'],bool) and f['size']>0} if isinstance(files,list) else set()
+        if metadata.get('weight_provenance_status')=='hashed_loaded_files' and required<=valid: exact+=1
+    return {'total_reads':len(reads),'reads_missing_model_metadata':missing,
+            'reads_with_exact_alpr_files':exact,'reads_without_exact_alpr_files':len(reads)-exact,
+            'model_sets':[sets[key] for key in sorted(sets)]}
 
 
 def _alert(rule, subject, event, severity, summary, detail, support=None):

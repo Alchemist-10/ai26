@@ -1,4 +1,4 @@
-# AI26 implementation progress — 9 October 2026
+# AI26 implementation progress — 11 October 2026
 
 This records the current reliability, tracking, persistence and performance implementation. Accuracy release gates remain open.
 The original audit/plan remain the baseline. AI26 alone was changed; the Godseye
@@ -24,6 +24,16 @@ fallback is explicit. Source routes remain fixed, calibration remains unverified
 and stored decisions are historical conclusions rather than verified identity.
 See `docs/PERSISTENCE.md` and `AI26_PERSISTENCE_VALIDATION.json` in the delivery.
 
+## Model provenance update
+
+ALPR loads hashed detector/OCR/config snapshots once, records package/provider
+and thread settings, and preserves them on all raw reads. Version-2 reports
+summarize exact/missing model coverage consistently in JSON/ZIP/print; old reports
+remain compatible. Two real ONNX sessions executed on blank inputs only. This is
+execution verification, not OCR accuracy. See `docs/PROVENANCE.md` and
+`AI26_PROVENANCE_VALIDATION.json` in the delivery. Full per-read frame coverage
+remains pending.
+
 ## Tracking update
 
 Local motion/box global assignment, elapsed-time expiry and ambiguity abstention
@@ -33,7 +43,7 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
 
 ## Validation
 
-- 82 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 96 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -62,8 +72,8 @@ local results. Short runtime samples do not establish sustained throughput.
    evaluate exact/fuzzy identity links (P1-14–16, EV-06).
 4. Calibrate traffic counts/density/speed and historical segment baselines;
    evaluate rules on positive and negative real cases (P2-01–04, EV-07–09).
-5. Complete exact ALPR weight provenance, source onboarding/configuration UI and
-   authenticated escalation where needed. Metadata/link persistence is implemented.
+5. Complete per-read frame artifact coverage, source onboarding/configuration UI and
+   authenticated escalation where needed. Metadata/link persistence and exact ALPR model provenance are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
    pixels, registry verification, signed evidence, RTSP capture or production auth
    is represented as implemented.
@@ -99,7 +109,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay source position and processing time are separate; original capture times and synchronized clocks are missing. |
 | P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-3 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; source onboarding and authenticated calibration remain separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
-| P1-07 | Partial | Store source-frame and plate-crop references with hashes and model/version metadata. | Selected frame/crop digests, source SHA and pipeline/model versions retained; exact ALPR weight digests and per-read frame coverage remain. |
+| P1-07 | Partial | Store source-frame and plate-crop references with hashes and model/version metadata. | Exact YOLO and ALPR detector/OCR/config digests, five inference/tracking/fusion/format/loader component hashes, selected frame/crop digests and source SHA retained; full per-read frame artifact coverage remains pending. |
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |
 | P1-09 | Done | Reset camera and panel errors after input changes or successful recovery. | Camera change/success clears focused-feed failures; API panels clear errors after recovery. Missing-to-available thumbnail remount supported. |
 | P1-10 | Done | Return correct HTTP status/error schemas for invalid cameras, plates and request bodies. | Known invalid cameras/missing sources 404; invalid bodies/plates/times 422; unready snapshot 503; JSON error envelope. |
@@ -177,7 +187,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Local SQLite audit and independent minute retention jobs exist; tamper-resistant audit and secrets/TLS remain pending. |
 | OP-05 | Pending | Container/Compose setup, database backups and production frontend-to-API routing. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-06 | Pending | Edge model export/quantization and benchmark on actual target hardware. | Optional production/edge work; not implemented for this local course prototype. |
-| OP-07 | Partial | Canary/model-version pinning, rollback and branch-level disablement. | Dependency/model identifiers and processing-disable switch exist; canary rollout/model rollback are absent. |
+| OP-07 | Partial | Canary/model-version pinning, rollback and branch-level disablement. | Frozen dependencies, exact loaded model/config identifiers and processing-disable switch exist; canary rollout/model rollback are absent. |
 | OP-08 | Partial | Operational monitoring and sustained reliability/recovery tests. | Basic health, retry and restart smoke exist; operational monitoring and sustained recovery runs remain. |
 
 ## Practical limitations

@@ -17,7 +17,9 @@
 5. The processor saves selected unannotated-frame/crop JPEG derivatives with
    SHA-256 references. Observations contain replay position, processing time,
    session/frame IDs, source clip digest, and model/version metadata. YOLO records
-   checkpoint and pipeline digests; exact ALPR weight digests remain pending.
+   checkpoint and pipeline component digests. ALPR lazily loads hashed copies of
+   detector/OCR/config files and records their digests, package versions and
+   execution providers; see [model provenance](PROVENANCE.md).
 6. Stream/snapshot endpoints read cached annotated JPEGs; previews use cached
    320-pixel JPEGs with ETag revalidation. MJPEG consumers wait asynchronously. MP4 playback never runs
    inference. Health reports availability, errors, FPS, frame age and latency.
@@ -100,6 +102,8 @@ road density, traffic speed or historical weekday/hour baselines.
 
 ## Reports and retention
 
+New version-2 reports also store a deduplicated model-provenance summary with
+missing/exact-file coverage. Version-1 reports retain their original snapshots.
 Each report stores its exact interval, deduplicated supporting observations, all
 raw reads from those passages, raw/canonical OCR, link decisions, artifact references,
 provenance, timestamps and limitations. More than 5,000 raw reads requires a shorter

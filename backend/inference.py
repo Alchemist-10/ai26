@@ -7,11 +7,11 @@ from collections import defaultdict
 
 import cv2
 import torch
-from fast_alpr import ALPR
 from ultralytics import YOLO
 
 from plate_format import normalize_plate
 from tracking import CentroidTracker, TRACKER_VERSION
+from model_provenance import load_plate_model, pipeline_components
 
 VEHICLE_CLASS_IDS = {2, 3, 5, 7}  # car, motorcycle, bus, truck (COCO)
 DEVICE = 0 if torch.cuda.is_available() else "cpu"
@@ -31,15 +31,25 @@ _yolo = YOLO(str(_checkpoint))
 with _checkpoint.open('rb') as _model_file:
     _checkpoint_hash = hashlib.file_digest(_model_file, 'sha256').hexdigest()
 _pipeline_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+_pipeline_components = pipeline_components(Path(__file__).parent)
 _model_metadata = {"checkpoint_sha256": _checkpoint_hash, "torch_version": str(torch.__version__), "cpu_threads": CPU_THREADS, "tracker_version": TRACKER_VERSION,
-                   "ultralytics_version": version("ultralytics"), "pipeline_sha256": _pipeline_hash}
+                   "ultralytics_version": version("ultralytics"), "pipeline_sha256": _pipeline_hash,
+                   "pipeline_components_sha256":_pipeline_components}
 _alpr = None
+_alpr_metadata = None
+_fast_alpr_version = version('fast-alpr')
 
 def _plate_model():
-    global _alpr
+    global _alpr, _alpr_metadata
     if _alpr is None:
-        _alpr = ALPR(detector_model="yolo-v9-t-384-license-plate-end2end", ocr_model="global-plates-mobile-vit-v2-model")
+        model,metadata = load_plate_model(cpu_threads=CPU_THREADS,device=DEVICE)
+        _alpr, _alpr_metadata = model,metadata
     return _alpr
+
+def _plate_metadata():
+    return {**(_alpr_metadata or {'weight_provenance_status':'unavailable'}),
+            'fast_alpr_version':_fast_alpr_version, 'pipeline_sha256':_pipeline_hash,
+            'pipeline_components_sha256':_pipeline_components, 'tracker_version':TRACKER_VERSION}
 
 def reset_camera(camera_id):
     _vehicle_trackers.pop(camera_id, None)
@@ -96,6 +106,7 @@ def annotate_vehicle_frame(frame, camera_id: str):
 def annotate_plate_frame(frame, camera_id: str):
     """Runs real Fast-ALPR plate detection+OCR, draws boxes, returns (frame, detections)."""
     results = _plate_model().predict(frame)
+    model_metadata = _plate_metadata()
     detections = []
     raw_detections = []
     for res in results:
@@ -137,7 +148,7 @@ def annotate_plate_frame(frame, camera_id: str):
                                "confidence": round(ocr_conf, 3), "bbox": [x1,y1,x2,y2],
                                "track_id": detection["track_id"], "association_status": detection["association_status"],
                                "association_cost": detection["association_cost"], "ts": time.time(),
-                               "model_metadata": {"fast_alpr_version":version("fast-alpr"), "pipeline_sha256":_pipeline_hash, "tracker_version":TRACKER_VERSION}})
+                               "model_metadata": model_metadata})
             continue
 
         plate_norm = str(normalized["plate_norm"])
@@ -152,7 +163,7 @@ def annotate_plate_frame(frame, camera_id: str):
             "camera_id": camera_id,
             "kind": "plate",
             **consensus,
-            "model_metadata": {"fast_alpr_version":version("fast-alpr"), "pipeline_sha256":_pipeline_hash, "tracker_version":TRACKER_VERSION},
+            "model_metadata": model_metadata,
             "plate": plate_norm,
             "plate_norm": plate_norm,
             "plate_raw": plate_text,

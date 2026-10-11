@@ -13,8 +13,10 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "fast-alpr" },
+    { name = "fast-plate-ocr" },
     { name = "fastapi" },
     { name = "onnxruntime" },
+    { name = "open-image-models" },
     { name = "opencv-python" },
     { name = "pydantic" },
     { name = "python-multipart" },
@@ -36,8 +38,10 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fast-alpr" },
+    { name = "fast-plate-ocr", specifier = "==1.1.0" },
     { name = "fastapi" },
     { name = "onnxruntime" },
+    { name = "open-image-models", specifier = "==0.6.0" },
     { name = "opencv-python" },
     { name = "pydantic" },
     { name = "python-multipart" },

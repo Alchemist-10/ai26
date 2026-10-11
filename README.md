@@ -28,7 +28,8 @@ CPU PyTorch on Linux. After the first installation, restart with
   local rules, versioned camera metadata, queried journey decisions, report snapshots,
   and audit records that survive API restart.
 - Per-camera/per-track OCR consensus with abstention on conflicting reads;
-  raw, failed, and canonical OCR reads remain separate.
+  raw, failed, and canonical OCR reads remain separate. Exact ALPR weight/config
+  digests and pipeline component hashes identify newly processed reads.
 - True empty investigations, explicit walkthrough selection, time filters, and
   distinct accepted/rejected/unresolved candidate paths.
 - Editable local watchlists, zone sightings, elapsed-time dwell rules, and review.
@@ -61,6 +62,7 @@ investigations never receive its observations automatically.
 | `docs/IMPLEMENTATION.md` | Data contracts, architecture and current limits |
 | `docs/PROGRESS.md` | Full implementation checklist with completion evidence |
 | `docs/PERSISTENCE.md` | Camera revision and stored journey decision API |
+| `docs/PROVENANCE.md` | Exact model/config identity, report coverage and validation limits |
 | `docs/IMPORT.md` | Import provenance and separation from the SIH project |
 
 Camera metadata revisions and queried journey-link history are durable in schema 3.
