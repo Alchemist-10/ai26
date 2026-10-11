@@ -14,12 +14,14 @@
 4. Typed ingestion writes immutable frame reads and camera-local passage summaries
    to SQLite WAL. Retries of the same session/frame/kind/track are idempotent.
    A contradictory supported identity invalidates its passage for identity queries.
-5. The processor saves selected unannotated-frame/crop JPEG derivatives with
+5. The processor attempts current unannotated-frame/crop JPEG derivatives for every new sampled read with
    SHA-256 references. Observations contain replay position, processing time,
    session/frame IDs, source clip digest, and model/version metadata. YOLO records
    checkpoint and pipeline component digests. ALPR lazily loads hashed copies of
    detector/OCR/config files and records their digests, package versions and
-   execution providers; see [model provenance](PROVENANCE.md).
+   execution providers; see [model provenance](PROVENANCE.md). Frame capture is
+   shared per processed frame, crop bounds are clipped, and write/capacity failures
+   retain raw reads with explicit incomplete image status. See [per-read images](READ_IMAGES.md).
 6. Stream/snapshot endpoints read cached annotated JPEGs; previews use cached
    320-pixel JPEGs with ETag revalidation. MJPEG consumers wait asynchronously. MP4 playback never runs
    inference. Health reports availability, errors, FPS, frame age and latency.
@@ -102,8 +104,10 @@ road density, traffic speed or historical weekday/hour baselines.
 
 ## Reports and retention
 
-New version-2 reports also store a deduplicated model-provenance summary with
-missing/exact-file coverage. Version-1 reports retain their original snapshots.
+Reports since version 2 store a deduplicated model-provenance summary with
+missing/exact-file coverage. New version-3 reports also store current sampled-read
+frame/crop coverage and explicit legacy/failure counts. Version-1/2 reports retain
+their original snapshots.
 Each report stores its exact interval, deduplicated supporting observations, all
 raw reads from those passages, raw/canonical OCR, link decisions, artifact references,
 provenance, timestamps and limitations. More than 5,000 raw reads requires a shorter

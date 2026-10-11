@@ -29,7 +29,9 @@ CPU PyTorch on Linux. After the first installation, restart with
   and audit records that survive API restart.
 - Per-camera/per-track OCR consensus with abstention on conflicting reads;
   raw, failed, and canonical OCR reads remain separate. Exact ALPR weight/config
-  digests and pipeline component hashes identify newly processed reads.
+  digests and pipeline component hashes identify newly processed reads. Each new
+  sampled read attempts its own frame/crop capture, with explicit missing coverage
+  and a configurable 2 GiB image budget.
 - True empty investigations, explicit walkthrough selection, time filters, and
   distinct accepted/rejected/unresolved candidate paths.
 - Editable local watchlists, zone sightings, elapsed-time dwell rules, and review.
@@ -63,6 +65,7 @@ investigations never receive its observations automatically.
 | `docs/PROGRESS.md` | Full implementation checklist with completion evidence |
 | `docs/PERSISTENCE.md` | Camera revision and stored journey decision API |
 | `docs/PROVENANCE.md` | Exact model/config identity, report coverage and validation limits |
+| `docs/READ_IMAGES.md` | Per-read images, failure coverage, storage budget and measured capture cost |
 | `docs/IMPORT.md` | Import provenance and separation from the SIH project |
 
 Camera metadata revisions and queried journey-link history are durable in schema 3.

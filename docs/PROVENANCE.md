@@ -1,5 +1,10 @@
 # Exact model provenance — 11 October 2026
 
+This records the provenance milestone (96 tests) before the per-read image update.
+Current reports are version 3 and reads hash seven components, including
+`processing.py` and `artifacts.py`; see [per-read images](READ_IMAGES.md) for the
+113-test current validation, capture coverage and storage limits.
+
 New plate reads identify the exact detector ONNX, OCR ONNX and OCR configuration
 bytes used by the inference session. The selected models remain
 `yolo-v9-t-384-license-plate-end2end` and `global-plates-mobile-vit-v2-model`.
@@ -75,8 +80,9 @@ unavailable, so no real plate OCR or identity accuracy is measured.
 
 Digests identify bytes; they do not authenticate a model, verify its accuracy or
 provide a signed chain of custody. Older/manual reads cannot have their original
-weights reconstructed. Frame/crop evidence is still selectively captured rather
-than archived for every read (P1-07 remains partial). The local model cache has no
+weights reconstructed. At this milestone, frame/crop evidence was selectively captured. The subsequent
+[per-read image update](READ_IMAGES.md) completes capture attempts for new sampled
+reads and reports legacy/capacity/write gaps explicitly (P1-07 done in that scope). The local model cache has no
 automatic expiry and should be preserved for reproducibility.
 
 See [raw provenance validation](validation/provenance-validation.json),

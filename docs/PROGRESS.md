@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **39 done, 23 partial, 18 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **40 done, 22 partial, 18 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -24,15 +24,26 @@ fallback is explicit. Source routes remain fixed, calibration remains unverified
 and stored decisions are historical conclusions rather than verified identity.
 See `docs/PERSISTENCE.md` and `AI26_PERSISTENCE_VALIDATION.json` in the delivery.
 
+## Per-read image update
+
+New sampled reads attempt matching frame/crop JPEGs regardless of confidence or
+identity status. The shared frame is encoded once; identical crop requests are
+reused within that frame. Crop bounds and camera/session/frame/source references
+are explicit. Write/encode/capacity failures preserve raw reads with incomplete
+capture status. A configurable 2 GiB image budget preserves existing/leased files;
+minute retention reconciles the cached usage index. Version-3 reports record
+exact and missing image coverage; older reports are never backfilled.
+See `docs/READ_IMAGES.md` and `AI26_READ_ARTIFACT_VALIDATION.json` in the delivery.
+
 ## Model provenance update
 
 ALPR loads hashed detector/OCR/config snapshots once, records package/provider
-and thread settings, and preserves them on all raw reads. Version-2 reports
+and thread settings, and preserves them on all raw reads. Reports since version 2
 summarize exact/missing model coverage consistently in JSON/ZIP/print; old reports
 remain compatible. Two real ONNX sessions executed on blank inputs only. This is
 execution verification, not OCR accuracy. See `docs/PROVENANCE.md` and
-`AI26_PROVENANCE_VALIDATION.json` in the delivery. Full per-read frame coverage
-remains pending.
+`AI26_PROVENANCE_VALIDATION.json` in the delivery. New reads now also identify
+processing and artifact code, for seven component hashes in total.
 
 ## Tracking update
 
@@ -43,12 +54,18 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
 
 ## Validation
 
-- 96 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 113 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
 - Live restart retained all ten sampled observation IDs; all six available cameras
   returned decodable JPEG snapshots. No old service children survived launcher stop.
+- Twenty live reads had all 40 image hashes recreated from decoded source pixels;
+  seventeen new tests cover per-read capture, failure, immutable coverage and storage budget.
+- Short isolated capture timings were 4.381 / 6.220 / 18.353 ms median for 1 / 8 / 64
+  constructed reads per frame; this adds storage/CPU work and does not establish sustained FPS.
+- A separate synthetic report browser check displayed 2-of-3 image coverage and
+  its legacy gap on desktop/mobile. Fixture services/data/tab were removed.
 - Earlier browser mobile checks at 390×844 verified camera wall, investigation and alerts,
   disabled empty export, and focus trapping/Escape restoration.
 - An earlier isolated synthetic fixture on 5175/8002 exercised browser report creation,
@@ -72,8 +89,8 @@ local results. Short runtime samples do not establish sustained throughput.
    evaluate exact/fuzzy identity links (P1-14–16, EV-06).
 4. Calibrate traffic counts/density/speed and historical segment baselines;
    evaluate rules on positive and negative real cases (P2-01–04, EV-07–09).
-5. Complete per-read frame artifact coverage, source onboarding/configuration UI and
-   authenticated escalation where needed. Metadata/link persistence and exact ALPR model provenance are implemented.
+5. Complete source onboarding/configuration UI and authenticated escalation where
+   needed. Metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
    pixels, registry verification, signed evidence, RTSP capture or production auth
    is represented as implemented.
@@ -109,7 +126,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay source position and processing time are separate; original capture times and synchronized clocks are missing. |
 | P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-3 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; source onboarding and authenticated calibration remain separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
-| P1-07 | Partial | Store source-frame and plate-crop references with hashes and model/version metadata. | Exact YOLO and ALPR detector/OCR/config digests, five inference/tracking/fusion/format/loader component hashes, selected frame/crop digests and source SHA retained; full per-read frame artifact coverage remains pending. |
+| P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and seven component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |
 | P1-09 | Done | Reset camera and panel errors after input changes or successful recovery. | Camera change/success clears focused-feed failures; API panels clear errors after recovery. Missing-to-available thumbnail remount supported. |
 | P1-10 | Done | Return correct HTTP status/error schemas for invalid cameras, plates and request bodies. | Known invalid cameras/missing sources 404; invalid bodies/plates/times 422; unready snapshot 503; JSON error envelope. |
@@ -139,7 +156,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P2-07 | Partial | Connect a real human-review/escalation workflow; add notifications only if required by the project. | Local acknowledgement/review/dismissal works; authenticated reviewer identity, escalation and notifications are pending. |
 | P2-08 | Done | Package evidence observations, raw/canonical OCR, frames/crops, accepted/rejected paths and metadata consistently. | Manifest/raw reads/canonical strings/artifacts/link decisions/provenance packaged consistently with verified digests; derivative and coverage limits stated. |
 | P2-09 | Done | Provide direct JSON/package download and a dedicated PDF/print layout with matching report data. | Browser JSON/ZIP downloads verified; dedicated print contains the same stored snapshot and raw reads. PDF uses the browser print dialog. |
-| P2-10 | Done | Enforce defined retention/expiry rather than displaying a retention string. | 24-hour report expiry, seven-day source cleanup, version-2 artifact leases, and independent maintenance; boundary and processing-disabled tests pass. |
+| P2-10 | Done | Enforce defined retention/expiry rather than displaying a retention string. | 24-hour report expiry, seven-day source cleanup, schema-2 artifact leases, and independent maintenance; boundary and processing-disabled tests pass. |
 | P2-11 | Partial | Add report access/audit records and signing if independently verifiable evidence is required. | Local report access and review audit records exist; digital signing and independently verifiable audit chain do not. |
 | P2-12 | Done | Keep demonstrations separate from live queries, including colors, confidence values and statuses. | Synthetic walkthrough/alerts are explicit selection; real queries never substitute them or export them as observed evidence. |
 | P2-13 | Done | Test query, camera recovery, empty investigation and evidence export flows end to end. | Browser empty investigation, focused missing-to-working camera recovery, keyboard/mobile and isolated synthetic report downloads/print verified; API query regressions pass. |
@@ -168,7 +185,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | --- | --- | --- | --- |
 | RS-01 | Pending | Rule-based scene/plate quality and weather router with an unchanged raw-reference branch. | Optional research work; no implementation or measured evaluation claimed. |
 | RS-02 | Pending | Classical CLAHE/gamma/white-balance/Retinex/dark-channel enhancement and restrained sharpening. | Optional research work; no implementation or measured evaluation claimed. |
-| RS-03 | Partial | Per-track best-shot/top-k frame selection and OCR character-level consensus. | Confidence-selected artifact caching and per-track full-string votes exist; top-k quality scoring and character consensus are pending. |
+| RS-03 | Partial | Per-track best-shot/top-k frame selection and OCR character-level consensus. | Best-confidence passage summaries and per-track full-string votes exist; all new sampled reads retain their own image context. Top-k quality scoring and character consensus are pending. |
 | RS-04 | Pending | Frame alignment/optical flow, probabilistic fusion and calibrated plate confidence. | Optional research work; no implementation or measured evaluation claimed. |
 | RS-05 | Pending | Collect adverse-weather data and build a controlled degradation generator. | Optional research work; no implementation or measured evaluation claimed. |
 | RS-06 | Pending | Train/evaluate a quality classifier, dehazing and deblurring models, and Indian-plate OCR adaptation. | Optional research work; no implementation or measured evaluation claimed. |
@@ -198,7 +215,7 @@ links abstain from physical speed/accepted-flow claims. No held-out accuracy can
 be reported. CPU sampling is sparse, not full-frame-rate processing. Counts are
 local tracked passages; plate and vehicle association remains unvalidated.
 
-Artifacts are selected JPEG derivatives, not a full original-frame archive. Their
+New images are sampled-read JPEG derivatives, not a full original-frame archive. Legacy/manual reads retain explicit coverage gaps. Image write/capacity failures preserve raw reads with missing-image status. The default 2 GiB budget applies to managed image writes, not the database, model cache or videos. Their
 seven-day source lifetime is extended by active report leases until report expiry.
 Missing/corrupt source images reject report creation; later manual file removal or
 corruption makes downloads fail explicitly rather than hiding missing evidence. SQLite reviewer/audit data is local and unauthenticated. Hashes

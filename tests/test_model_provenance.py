@@ -60,7 +60,7 @@ class ModelFiles(unittest.TestCase):
             provenance.verify_model_files([(path,record)])
 
     def test_pipeline_components_are_exact_and_change_with_source(self):
-        names=('inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py')
+        names=('inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py')
         for name in names: (self.root/name).write_text(name)
         first=provenance.pipeline_components(self.root)
         self.assertEqual(set(first),set(names))
@@ -153,7 +153,7 @@ class InferenceProvenance(unittest.TestCase):
         for read in reads:
             self.assertEqual(read['model_metadata']['model_files'],metadata['model_files'])
             self.assertEqual(set(read['model_metadata']['pipeline_components_sha256']),
-                             {'inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py'})
+                             {'inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py'})
 
     def test_initialized_frames_do_not_repeat_hash_or_package_metadata_io(self):
         import numpy as np
@@ -205,7 +205,7 @@ class ReportProvenance(unittest.TestCase):
                                    'bbox':[0,0,20,20],'ts':now-2+index,'session_id':'fixture','track_id':1,
                                    'frame_id':index,'model_metadata':metadata,'source_mode':'synthetic fixture'}])
             report=events.evidence_report('KL07AB1234',now-10,now+1)
-            self.assertEqual(report['version'],2)
+            self.assertEqual(report['version'],3)
             self.assertEqual(report['model_provenance']['reads_with_exact_alpr_files'],2)
             client=TestClient(main.app);route='/api/reports/'+report['report_id']
             before=client.get(route).content
@@ -234,7 +234,7 @@ class ReportProvenance(unittest.TestCase):
             events.add_events([{'camera_id':'CAM-07','kind':'plate','plate':'KL07AB1234','confidence':.9,
                                'bbox':[0,0,20,20],'ts':now}])
             original=events.evidence_report('KL07AB1234',now-1,now+1)
-            legacy={k:v for k,v in original.items() if k not in ('model_provenance','package_hash')}
+            legacy={k:v for k,v in original.items() if k not in ('model_provenance','artifact_coverage','package_hash')}
             legacy.update(version=1,report_id='EVD-LEGACY-FIXTURE')
             legacy['package_hash']=hashlib.sha256(canonical_json(legacy).encode()).hexdigest()
             repository.put_report(legacy)

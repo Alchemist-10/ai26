@@ -11,7 +11,7 @@ from pathlib import Path
 import cv2
 from cameras import CAMERAS, camera_source
 from events import add_events, derive_alerts, store
-from artifacts import save_image
+from artifacts import capture_read_images, storage_usage
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +45,6 @@ class Processor:
         self.latest = {}
         self.thumbnails = {}
         self.epochs = {}
-        self.best = {}
         self.retry_at = {}
         self.source_hashes = {}
         self.capture_generation = {}
@@ -82,7 +81,8 @@ class Processor:
         with self.lock:
             return [{**s, 'frame_age_seconds':round(now-s['last_frame_at'],2) if s['last_frame_at'] else None,
                      'processed_fps':round(s['frames']/max(now-self.started,1),3),
-                     'inference_owner':'single-process round-robin', 'sampling_budget_fps':self.rate}
+                     'inference_owner':'single-process round-robin', 'sampling_budget_fps':self.rate,
+                     'artifact_storage':storage_usage()}
                     for s in self.state.values()]
 
     def jpeg(self, camera):
@@ -137,7 +137,6 @@ class Processor:
                     from inference import reset_camera
                     reset_camera(camera_id)
                 self.epochs[camera_id]=epoch
-                self.best={k:v for k,v in self.best.items() if k[0]!=camera_id}
                 store.start_session({'id':session,'camera_id':camera_id,'started_at':now,
                                      'source_sha256':self.source_hashes[camera_id], 'source_mode':'recorded',
                                      'time_basis':'replay_clock','loop_epoch':epoch,'run_id':self.run_id})
@@ -154,16 +153,9 @@ class Processor:
                                  processed_at=processing_time,source_mode='recorded',time_basis='replay_clock',
                                  source_sha256=self.source_hashes[camera_id],frame_size=[width,height],
                                  model_version='yolov8n.pt' if detection['kind']=='vehicle' else 'fast-alpr:global-plates-mobile-vit-v2')
-                key=(camera_id,session,detection['kind'],detection['track_id'])
-                previous=self.best.get(key)
-                if not previous or detection['confidence']>previous[0]+.05:
-                    x1,y1,x2,y2=detection['bbox']
-                    crop=raw[max(0,y1):min(height,y2),max(0,x1):min(width,x2)]
-                    refs=[save_image(raw,'unannotated-frame-jpeg')]
-                    if crop.size: refs.append(save_image(crop,'plate-crop' if detection['kind']=='plate' else 'vehicle-crop'))
-                    refs=[{**r,'frame_id':frame_id,'session_id':session,'camera_id':camera_id,'source_time_seconds':frame_id/fps} for r in refs if r]
-                    self.best[key]=(detection['confidence'],refs)
-                detection['artifacts']=self.best[key][1]
+            capture_began=time.monotonic()
+            artifact_metrics=capture_read_images(raw,detections)
+            artifact_ms=round((time.monotonic()-capture_began)*1000,1)
             inserted=add_events(detections)
             if inserted: derive_alerts()
             ok,buf=cv2.imencode('.jpg',frame,[cv2.IMWRITE_JPEG_QUALITY,80])
@@ -178,10 +170,8 @@ class Processor:
                 s.update(status='processing',error=None,last_frame_at=processing_time,
                          last_event_at=processing_time if detections else s['last_event_at'],
                          frames=s['frames']+1,latency_ms=round((time.monotonic()-began)*1000,1),
+                         artifact_capture_ms=artifact_ms,artifact_capture=artifact_metrics,
                          session_id=session,frame_id=frame_id,source_time_seconds=frame_id/fps)
-            # Track IDs monotonically increase within an epoch; cap artifact-reference cache as well.
-            if len(self.best)>2000:
-                self.best=dict(list(self.best.items())[-1000:])
         except Exception as exc:
             log.exception('Camera %s processing failed',camera_id)
             self._set(camera_id,status='error',error=str(exc)[:200])
