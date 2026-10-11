@@ -76,3 +76,15 @@ Implementation references: [React effect cleanup](https://react.dev/reference/re
 [Page Visibility](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API),
 [Torch intra-op threads](https://docs.pytorch.org/docs/2.14/generated/torch.set_num_threads.html),
 and [OpenCV capture thread settings](https://docs.opencv.org/4.13.0/d4/d15/group__videoio__flags__base.html).
+
+## Sampling-budget correction — 11 October 2026
+
+A later update fixes slot allocation: missing sources and retry backoff no longer
+spend inference intervals, while all-unavailable sweeps still sleep. Health now
+contains bounded six-phase timings, failure/overrun counters and a processor run
+identity. A local read-only profiler records counter deltas, health latency and
+optional Linux CPU/RSS. See [RUNTIME_PROFILE.md](RUNTIME_PROFILE.md) and
+[Current validation](validation/sampling-budget-validation.json). The 55-test and
+short CPU/browser observations above remain the earlier milestone's evidence;
+the current backend suite has 182 tests. Current measurements do not establish
+full-rate detection, long-term throughput or real plate accuracy.

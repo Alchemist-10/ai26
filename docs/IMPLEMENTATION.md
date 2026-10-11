@@ -186,3 +186,14 @@ checks a canonical metadata token, and atomically publishes a linked local selec
 record with the pointer. Rollback uses only the displayed retained parent chain.
 Source roles activate together on host restart; a pending selection never changes
 per-frame or playback resolution. See [SOURCE_SELECTION.md](SOURCE_SELECTION.md).
+
+## Processing timing and scheduling
+
+Only attempted source/decode/inference work consumes a sampling slot. Missing or
+backoff sources are checked in round-robin order without a slot delay; sweeps with
+no attempts sleep one second. Failed attempts still spend a slot and use the
+existing retry deadline. Successful phase timings use a bounded 64-sample window
+per camera; failed/overrun attempts and first-success timing remain separate.
+Health uses a monotonic FPS denominator and a stable run ID for counter-window
+verification. The read-only profiler adds no producer or source mutation. See
+[RUNTIME_PROFILE.md](RUNTIME_PROFILE.md).

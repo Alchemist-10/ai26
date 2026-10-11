@@ -6,6 +6,7 @@ import os
 import threading
 import time
 import uuid
+from collections import deque
 from pathlib import Path
 
 import cv2
@@ -38,10 +39,15 @@ class Processor:
         self.thread = None
         self.run_id = uuid.uuid4().hex
         self.started = time.time()
+        self.started_monotonic = time.monotonic()
         self.captures = {}
         self.state = {c['id']: {'camera_id':c['id'], 'status':'idle', 'frames':0, 'last_frame_at':None,
                       'last_event_at':None, 'error':None, 'source_available':False, 'queue_depth':0,
-                      'source_mode':'recorded', 'time_basis':'replay_clock'} for c in self.cameras}
+                      'source_mode':'recorded', 'time_basis':'replay_clock',
+                      'attempts':0,'failed_attempts':0,'budget_overruns':0,
+                      'missing_source_checks':0,'retry_backoff_checks':0} for c in self.cameras}
+        self.timing_windows = {c['id']:deque(maxlen=64) for c in self.cameras}
+        self.first_timings = {}
         self.latest = {}
         self.thumbnails = {}
         self.epochs = {}
@@ -78,12 +84,43 @@ class Processor:
 
     def health(self):
         now=time.time()
+        elapsed=time.monotonic()-self.started_monotonic
         with self.lock:
             return [{**s, 'frame_age_seconds':round(now-s['last_frame_at'],2) if s['last_frame_at'] else None,
-                     'processed_fps':round(s['frames']/max(now-self.started,1),3),
+                     'processed_fps':round(s['frames']/max(elapsed,1),3),
                      'inference_owner':'single-process round-robin', 'sampling_budget_fps':self.rate,
+                     'processor_run_id':self.run_id,
+                     'timing':self.timing_summary(s['camera_id']),
                      'artifact_storage':storage_usage()}
                     for s in self.state.values()]
+
+    def timing_summary(self, camera):
+        # At most 64 successful samples per camera; health never accumulates data.
+        records=self.timing_windows[camera]
+        def summary(values):
+            ordered=sorted(values)
+            return {'p50_ms':round(ordered[math.ceil(len(ordered)*.5)-1],3),
+                    'p95_ms':round(ordered[math.ceil(len(ordered)*.95)-1],3),
+                    'max_ms':round(ordered[-1],3)} if ordered else None
+        return {'window_capacity':64,'successful_samples':len(records),
+                'first_success':self.first_timings.get(camera),
+                'total':summary([r['total_ms'] for r in records]),
+                'phases':{phase:summary([r['phases_ms'][phase] for r in records])
+                          for phase in ('source','decode','inference','artifacts','persistence','jpeg')},
+                'scope':'Recent successful sampled attempts; first success is per camera, not an independently cold model run.'}
+
+    def record_attempt(self, camera, began, phases, success):
+        elapsed=(time.monotonic()-began)*1000
+        record={'total_ms':round(elapsed,3),'phases_ms':{key:round(value,3) for key,value in phases.items()}}
+        with self.lock:
+            state=self.state[camera]
+            state['attempts']+=1
+            state['failed_attempts']+=not success
+            state['budget_overruns']+=elapsed>1000/self.rate
+            state['last_attempt']={**record,'succeeded':success}
+            if success:
+                self.first_timings.setdefault(camera,record)
+                self.timing_windows[camera].append(record)
 
     def jpeg(self, camera):
         with self.lock:
@@ -102,15 +139,25 @@ class Processor:
 
     def step(self, camera):
         camera_id=camera['id']; now=time.time()
+        began_attempt=time.monotonic()
         path=Path(self.source(camera_id))
         if not path.is_file():
+            with self.lock:
+                self.state[camera_id]['missing_source_checks']+=1
             self._set(camera_id,status='unavailable',source_available=False,error='Source file missing')
             self.latest.pop(camera_id,None)
             cap=self.captures.pop(camera_id,None)
             if cap: cap.release()
-            return
+            return False
         self._set(camera_id,source_available=True)
-        if self.retry_at.get(camera_id,0)>now: return
+        if self.retry_at.get(camera_id,0)>now:
+            with self.lock: self.state[camera_id]['retry_backoff_checks']+=1
+            return False
+        phases={};phase='source';phase_began=began_attempt;success=False
+        def mark(next_phase):
+            nonlocal phase,phase_began
+            ended=time.monotonic();phases[phase]=(ended-phase_began)*1000
+            phase=next_phase;phase_began=ended
         try:
             reopened = False
             if camera_id not in self.captures:
@@ -124,7 +171,7 @@ class Processor:
                 reopened = generation > 1
             cap=self.captures[camera_id]
             fps=cap.get(cv2.CAP_PROP_FPS); frames=cap.get(cv2.CAP_PROP_FRAME_COUNT)
-            if not math.isfinite(fps) or fps<=0 or frames<=0: raise RuntimeError('Invalid source duration/frame rate')
+            if not math.isfinite(fps) or fps<=0 or not math.isfinite(frames) or frames<=0: raise RuntimeError('Invalid source duration/frame rate')
             duration=frames/fps
             offset=(now-self.started)+int(camera_id.rsplit('-',1)[-1])*4.5
             epoch=int(offset//duration)
@@ -140,12 +187,15 @@ class Processor:
                 store.start_session({'id':session,'camera_id':camera_id,'started_at':now,
                                      'source_sha256':self.source_hashes[camera_id], 'source_mode':'recorded',
                                      'time_basis':'replay_clock','loop_epoch':epoch,'run_id':self.run_id})
+            mark('decode')
             cap.set(cv2.CAP_PROP_POS_FRAMES,frame_id)
             ok,raw=cap.read()
             if not ok: raise RuntimeError('Source frame could not be decoded')
             self._set(camera_id,status='loading',error=None)
+            mark('inference')
             began=time.monotonic()
             frame,detections=self.annotator(raw.copy(),camera['kind'],camera_id)
+            mark('artifacts')
             processing_time=time.time()
             height,width=raw.shape[:2]
             for detection in detections:
@@ -156,8 +206,10 @@ class Processor:
             capture_began=time.monotonic()
             artifact_metrics=capture_read_images(raw,detections)
             artifact_ms=round((time.monotonic()-capture_began)*1000,1)
+            mark('persistence')
             inserted=add_events(detections)
             if inserted: derive_alerts()
+            mark('jpeg')
             ok,buf=cv2.imencode('.jpg',frame,[cv2.IMWRITE_JPEG_QUALITY,80])
             if not ok: raise RuntimeError('Annotated image could not be encoded')
             preview=cv2.resize(frame,(320,max(1,round(height*320/width))),interpolation=cv2.INTER_AREA)
@@ -172,12 +224,17 @@ class Processor:
                          frames=s['frames']+1,latency_ms=round((time.monotonic()-began)*1000,1),
                          artifact_capture_ms=artifact_ms,artifact_capture=artifact_metrics,
                          session_id=session,frame_id=frame_id,source_time_seconds=frame_id/fps)
+            success=True
         except Exception as exc:
             log.exception('Camera %s processing failed',camera_id)
             self._set(camera_id,status='error',error=str(exc)[:200])
             self.retry_at[camera_id]=time.time()+10
             cap=self.captures.pop(camera_id,None)
             if cap: cap.release()
+        finally:
+            phases[phase]=(time.monotonic()-phase_began)*1000
+            self.record_attempt(camera_id,began_attempt,phases,success)
+        return True
 
     def run(self):
         try:
@@ -185,11 +242,16 @@ class Processor:
                 if not self.cameras:
                     self.stop_event.wait(1)
                     continue
+                attempted=False
                 for camera in self.cameras:
                     if self.stop_event.is_set(): break
                     began=time.monotonic()
-                    self.step(camera)
-                    self.stop_event.wait(max(0,1/self.rate-(time.monotonic()-began)))
+                    if self.step(camera):
+                        attempted=True
+                        self.stop_event.wait(max(0,1/self.rate-(time.monotonic()-began)))
+                # Missing/backoff sources do not consume inference slots. An all-
+                # unavailable sweep still sleeps, so discovery never busy-spins.
+                if not attempted: self.stop_event.wait(1)
         finally:
             for cap in self.captures.values(): cap.release()
             self.captures.clear()

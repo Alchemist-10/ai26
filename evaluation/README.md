@@ -36,3 +36,11 @@ positive/negative pair selection, hardware and inference settings with results.
 The runner does not verify split independence or replace manual labeling. Add
 held-out conditions and balanced rule/link negative cases
 before making reliability claims. No detector/OCR benchmark target is claimed met.
+
+## Runtime observation
+
+`profile_runtime.py` samples an already-running local API and optionally a Linux
+API PID. It writes endpoint latency, camera counter deltas, bounded timing windows
+and CPU/RSS conditions. It is separate from labeled accuracy evaluation, creates
+no model/processor and writes only the requested output. See
+[Runtime profiling](../docs/RUNTIME_PROFILE.md) for bounds, command and limits.

@@ -42,6 +42,8 @@ CPU PyTorch on Linux. After the first installation, restart with
   audited metadata edits, read-only revision history, preserved
   drafts and explicit concurrent-save recovery.
 - Editable local watchlists, zone sightings, elapsed-time dwell rules, and review.
+- Available cameras share the configured sampling budget without missing/retry slots;
+  bounded phase timings and a read-only runtime profiler expose processing costs.
 - Actual processing health, sampled passage counts, and computed accepted-link
   flow counts. Model confidence is labeled separately from measured accuracy.
 - Bounded rule-based plate/camera/class/date queries; no LLM or registry lookup.
@@ -76,6 +78,7 @@ investigations never receive its observations automatically.
 | `docs/SOURCE_STATUS.md` | Read-only source inspection, pending imports and history |
 | `docs/SOURCE_UPLOADS.md` | Streamed browser preparation, cancellation and retained receipts |
 | `docs/SOURCE_SELECTION.md` | Browser selection, retained-parent rollback and host restart |
+| `docs/RUNTIME_PROFILE.md` | Sampling budget, bounded timing metrics and runtime profiling |
 | `docs/PROVENANCE.md` | Exact model/config identity, report coverage and validation limits |
 | `docs/READ_IMAGES.md` | Per-read images, failure coverage, storage budget and measured capture cost |
 | `docs/IMPORT.md` | Import provenance and separation from the SIH project |

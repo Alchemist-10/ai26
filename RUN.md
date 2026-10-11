@@ -147,3 +147,23 @@ polling. The source video and inference sample positions may differ after seekin
 FFmpeg decode thread per source and retains the total sampling budget configured
 by `AI26_TOTAL_INFERENCE_FPS`. Changing this budget trades CPU and temporal coverage;
 benchmark on the target machine before claiming throughput or detection accuracy.
+
+## Runtime profiling
+
+Missing cameras and sources in retry backoff do not consume inference slots.
+Available cameras share `AI26_TOTAL_INFERENCE_FPS`; slow attempts complete without
+a catch-up queue, and an all-unavailable sweep waits one second. Health exposes
+bounded per-camera source/decode/inference/artifact/persistence/JPEG timings,
+failed attempts and budget overruns. These are sampled processing costs, not
+browser frame drops or accuracy.
+
+Run the [read-only profiler](docs/RUNTIME_PROFILE.md) while the app runs:
+
+```bash
+uv run --frozen --directory backend python ../evaluation/profile_runtime.py \
+  --duration 120 --output ../evaluation/results/runtime.json
+```
+
+An optional Linux `--pid API_PROCESS_PID` samples CPU/RSS without signaling the
+process. The profile uses actual counter deltas and marks restarts/unavailable
+counters as unverified. It adds no inference worker or persistent app polling.

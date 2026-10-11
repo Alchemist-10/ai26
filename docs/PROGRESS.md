@@ -108,6 +108,20 @@ execution verification, not OCR accuracy. See `docs/PROVENANCE.md` and
 `AI26_PROVENANCE_VALIDATION.json` in the delivery. New reads now also identify
 processing and artifact code, for nine component hashes in total, including camera/source resolution.
 
+## Sampling budget and profiling update
+
+Missing cameras and retry backoff no longer consume inference slots. Available
+cameras retain round-robin fairness; slow attempts do not enqueue catch-up work,
+and a sweep with no work sleeps. Bounded 64-sample windows report six phases,
+first-success timing and successful percentiles, with separate failure/overrun
+counters. FPS uses monotonic time. A local read-only profiler records counter
+deltas, endpoint latency and optional Linux CPU/RSS, rejecting unverified restart
+windows and process identity changes. Twelve new contracts pass. A 30-second
+baseline and 120-second six-camera profile use the same two-attempt budget; their
+load and replay positions are not controlled. See `docs/RUNTIME_PROFILE.md` and
+`AI26_SAMPLING_BUDGET_VALIDATION.json`. Actual source/browser drops, independently
+cold OCR, long-duration load, low-end devices and accuracy remain unmeasured.
+
 ## Tracking update
 
 Local motion/box global assignment, elapsed-time expiry and ambiguity abstention
@@ -117,7 +131,7 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
 
 ## Validation
 
-- 170 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 182 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -204,7 +218,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |
 | P1-09 | Done | Reset camera and panel errors after input changes or successful recovery. | Camera change/success clears focused-feed failures; API panels clear errors after recovery. Missing-to-available thumbnail remount supported. |
 | P1-10 | Done | Return correct HTTP status/error schemas for invalid cameras, plates and request bodies. | Known invalid cameras/missing sources 404; invalid bodies/plates/times 422; unready snapshot 503; JSON error envelope. |
-| P1-11 | Done | Add actual health/FPS/frame-age/queue/last-event metrics per camera. | Real per-camera frame age, FPS, latency, last read, source/error state; queue depth zero for the no-queue architecture. |
+| P1-11 | Done | Add actual health/FPS/frame-age/queue/last-event metrics per camera. | Real per-camera frame age, monotonic FPS, bounded six-phase timings, failed/overrun attempt counters, last read and source/error state; missing/retry cameras do not consume sampling slots. Queue depth zero for the no-queue architecture. |
 | P1-12 | Done | Separate local tracking from cross-camera identity; improve association under occlusion and clip loops. | Motion/box global assignment, ambiguity abstention, elapsed-time expiry and loop/reopen resets are tested; this is heuristic local tracking, with real occlusion/ID accuracy still unmeasured. |
 | P1-13 | Done | Deduplicate repeated same-track plate reads and retain corrections without silently overwriting evidence. | Immutable raw reads, deduplicated plate passages and conflict exclusion; uncertain corrections do not silently become supported identity. |
 | P1-14 | Pending | Add plate matching confidence and fuzzy matching with measured false-link limits. | Measured fuzzy matching/confidence and false-link limits require labeled identity data. |
@@ -248,7 +262,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | EV-06 | Partial | Measure accepted/rejected trajectory-link precision and impossible-travel false alerts. | Positive/negative link evaluation implemented; real false-link/false-alert estimates pending. |
 | EV-07 | Partial | Evaluate loitering/restricted-zone/watchlist rules with both positive and negative cases. | Positive/negative dwell, watchlist/review and zone configuration tests; labeled footage-level rule evaluation pending. |
 | EV-08 | Partial | Validate derived traffic metrics against independent counts or known synthetic ground truth. | Known synthetic passage fixtures verify deduplication; independent real traffic counts/calibration pending. |
-| EV-09 | Partial | Benchmark warm/cold inference latency, sustained multi-stream throughput, dropped frames and memory. | Short CPU health/RSS/snapshot smoke recorded; cold/warm/sustained profiling and dropped-frame accounting pending. |
+| EV-09 | Partial | Benchmark warm/cold inference latency, sustained multi-stream throughput, dropped frames and memory. | Bounded phase timing and a read-only CPU/RSS/counter profiler implemented; 30-second before and 120-second six-camera after samples recorded. Independently cold OCR, long-duration load and actual capture/browser dropped-frame accounting remain pending. |
 | EV-10 | Done | Test page changes, multiple clients, restart, idle expiry, duplicate events, bad input and model-download failure. | Isolated tests cover multiple consumers, restart, idle expiry, duplicates, invalid input, corrupt capture, replay boundaries and simulated model-download failure; live launcher restart verified. |
 | EV-11 | Partial | Record sample sizes, hardware, conditions and failure cases; do not infer accuracy from the current smoke tests. | Runtime conditions and synthetic sample sizes documented; held-out accuracy samples/failure strata remain absent. |
 | EV-12 | Done | Add CI for regression/build checks and a reproducible evaluation command. | Pinned-action CPU/backend/frontend CI workflow and reproducible evaluation CLI; local equivalent checks pass. Remote result recorded separately. |
