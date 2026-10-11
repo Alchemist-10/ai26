@@ -21,7 +21,21 @@ def load_source(camera_id, root=SOURCE_ROOT, *, verify=False):
     root = Path(root).resolve()
     pointer = root / camera_id / 'active.json'
     if not pointer.exists() and not pointer.is_symlink(): return None
+    return load_manifest(camera_id, root, pointer, verify=verify)
+
+
+def load_release(camera_id, release, root=SOURCE_ROOT, *, verify=False):
+    if not re.fullmatch(r'CAM-[0-9]{2}', camera_id) or not re.fullmatch(r'[0-9a-f]{32}', release):
+        raise ValueError('Invalid release identity')
+    root = Path(root).resolve()
+    binding = load_manifest(camera_id, root, root / camera_id / 'releases' / release / 'manifest.json', verify=verify)
+    if binding['manifest']['release'] != release: raise ValueError('Release identity mismatch')
+    return binding
+
+
+def load_manifest(camera_id, root, pointer, *, verify=False):
     try:
+        if not pointer.resolve().is_relative_to(root): raise ValueError('Manifest escapes managed root')
         with pointer.open('rb') as stream:
             raw = stream.read(MAX_MANIFEST_BYTES + 1)
         if len(raw) > MAX_MANIFEST_BYTES: raise ValueError('Source manifest is too large')
@@ -29,7 +43,7 @@ def load_source(camera_id, root=SOURCE_ROOT, *, verify=False):
         release = manifest['release']
         if type(manifest['version']) is not int or manifest['version'] != 1 or manifest['camera_id'] != camera_id or not re.fullmatch(r'[0-9a-f]{32}', release):
             raise ValueError('Invalid source binding identity/version')
-        base = (pointer.parent / 'releases' / release).resolve()
+        base = (root / camera_id / 'releases' / release).resolve()
         if not base.is_relative_to(root): raise ValueError('Source release escapes managed root')
         for role, name in [('original', 'original.media'), ('playback', 'playback.mp4')]:
             info = manifest[role]; path = (base / name).resolve()

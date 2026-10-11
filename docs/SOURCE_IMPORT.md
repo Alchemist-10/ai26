@@ -5,7 +5,8 @@ command. This supplies a managed original and a separate browser playback copy
 without editing Python source or overwriting the bundled clips. It does not supply
 missing real footage automatically, add cameras, enable RTSP, validate a plate or
 calibrate locations/clocks. The browser settings page now [inspects source status/history](SOURCE_STATUS.md)
-and edits metadata; upload and release activation controls are not implemented.
+and edits metadata. [Browser uploads](SOURCE_UPLOADS.md) prepare inactive releases;
+activation still uses the host command and restart.
 
 ## Use the command
 
@@ -44,6 +45,18 @@ and leaves configured originals and bundled proxies untouched. Set `--max-bytes`
 3600) for the local workload. Imports require free space for twice the configured
 byte allowance plus 16 MiB; this conservative check can be reduced with a smaller
 `--max-bytes`. There is no aggregate imported-video budget or automatic cleanup.
+
+## Prepare without selecting
+
+Add `--prepare` to retain a validated release without modifying `active.json`.
+This mode permits the existing processor to continue; it still acquires source
+import ownership, validates both files and requires explicit replacement. The JSON
+result includes `activation_required: true`. With the processor stopped, select
+using `select_source.py CAMERA RELEASE --expected-current PREVIOUS_OR_default`,
+then restart the API. The selector rehashes files and rejects a stale managed
+selection; an already selected release is idempotent. This is the same preparation
+path used by [browser uploads](SOURCE_UPLOADS.md). Normal import without
+`--prepare` retains the original stop/import/restart behavior.
 
 ## What is validated and preserved
 
@@ -119,4 +132,6 @@ managed-source resolver; older read/report provenance remains immutable.
 
 The later [source-inspection milestone](SOURCE_STATUS.md) extends the browser
 settings page and brings the isolated backend suite to 140 tests. The 128-test
-conversion/import milestone above remains historical evidence.
+conversion/import milestone above remains historical evidence. The browser
+preparation milestone now has 157 backend tests, including 17 new streaming,
+worker and offline-selection contracts; see [SOURCE_UPLOADS.md](SOURCE_UPLOADS.md).

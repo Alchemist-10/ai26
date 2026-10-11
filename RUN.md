@@ -72,7 +72,10 @@ Alternatively supply H.264 MP4 proxies at `backend/static/playback/CAM-07.mp4`,
 `CAM-08.mp4`, and `CAM-09.mp4`. Additional clips and data are ignored by Git.
 Managed imports take precedence over these defaults after restart. Use the
 [recorded-source import command](docs/SOURCE_IMPORT.md) to validate/copy a clip and
-prepare its browser playback without editing Python. Within the original defaults,
+prepare its browser playback without editing Python. Camera settings also offers
+[streamed browser preparation](docs/SOURCE_UPLOADS.md), bounded to 128 MiB, with
+manual check/cancel. Ready releases require stopped-processor host selection and
+restart; they never switch a running feed automatically. Within the original defaults,
 originals take precedence for inference and H.264 proxies for playback. Camera
 metadata and recording clocks still require independent validation.
 

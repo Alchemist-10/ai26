@@ -40,10 +40,25 @@ Camera settings now separates the running inference/playback files from a select
 import pending API restart. It exposes missing/changed files, invalid selections,
 bounded parent-chain history, hashes/operator claims and host-command guidance.
 Manual source refresh preserves metadata drafts and adds no polling, video/model
-loads or video hashing. Browser uploads and activation/rollback controls remain
+loads or video hashing. Browser preparation is now implemented; activation/rollback controls remain
 pending. Twelve new contracts plus synthetic browser outage/restart checks pass;
 six idle seconds added zero source requests. See `docs/SOURCE_STATUS.md` and
 `AI26_SOURCE_STATUS_VALIDATION.json`.
+
+## Browser source preparation update
+
+Camera settings streams a clip up to 128 MiB into an inactive validated release.
+Current inference/playback remain cached; one owned worker process handles bounded
+conversion with manual status/cancel and cleanup. Receipt IDs survive browser/API
+restart; interrupted requests and stale or corrupted selections reject explicitly.
+The host selector rehashes files with processor/import ownership, then API restart
+activates both roles. No polling timers/media/ML workers or SQLite writes are added.
+Seventeen new contracts, actual synthetic browser uploads, failure/retry, cancellation,
+502 recovery and restart activation pass. Six idle seconds added zero preparation/source
+requests. Desktop/mobile/user captures received ship at extension scope.
+Ready videos/receipts are retained without aggregate cleanup; original clocks, real
+plate footage, authenticated source administration and activation/rollback UI remain
+separate. See `docs/SOURCE_UPLOADS.md` and `AI26_SOURCE_UPLOADS_VALIDATION.json`.
 
 ## Recorded source import update
 
@@ -52,7 +67,7 @@ prepares bounded browser-safe playback and publishes a hashed release manifest.
 Explicit replacement retains older releases; bindings activate only on restart.
 Existing processor/import ownership blocks conflicting work. Conversion and
 publication failures preserve the prior source. The importer adds no API polling,
-models or browser uploads. Source upload UI, real plate footage and clock/location
+models. Browser preparation is described below; real plate footage, activation/rollback UI and clock/location
 validation remain separate. See `docs/SOURCE_IMPORT.md` and
 `AI26_SOURCE_IMPORT_VALIDATION.json`.
 
@@ -86,7 +101,7 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
 
 ## Validation
 
-- 140 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 157 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -130,7 +145,7 @@ local results. Short runtime samples do not establish sustained throughput.
    evaluate exact/fuzzy identity links (P1-14–16, EV-06).
 4. Calibrate traffic counts/density/speed and historical segment baselines;
    evaluate rules on positive and negative real cases (P2-01–04, EV-07–09).
-5. Complete source upload/activation UI and authenticated escalation where needed.
+5. Complete source activation/rollback UI and authenticated escalation where needed.
    Offline recorded-source onboarding is implemented.
    Metadata settings UI, metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
@@ -166,7 +181,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-02 | Done | Define inference ownership so multiple viewers do not create duplicate processing/event streams. | Streams/snapshots only consume cache; two-consumer regression and exclusive Linux data-directory ownership lock. |
 | P1-03 | Done | Add a typed observation schema with stable event IDs and per-track passage IDs. | Typed finite observations, deterministic idempotent read IDs, per-session local passage IDs. |
 | P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay source position and processing time are separate; original capture times and synchronized clocks are missing. |
-| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-3 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; offline source onboarding and metadata editing work; source upload UI and authenticated calibration remain separate work. |
+| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-3 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; offline source onboarding and metadata editing work; browser source preparation and offline selection work; activation/rollback UI and authenticated calibration remain separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
 | P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and nine component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |

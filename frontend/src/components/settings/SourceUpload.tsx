@@ -1,0 +1,99 @@
+import { useEffect, useRef, useState, type FormEvent } from "react"
+import { cancelSourcePreparation, getSourcePreparation, prepareCameraSource, type CameraSourceStatus, type SourcePreparation } from "@/lib/api"
+
+const control="w-full min-w-0 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-base text-white disabled:opacity-50"
+const button="min-h-11 rounded border border-zinc-600 px-3 py-2 text-sm font-medium hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+const maxBytes=128*1024*1024
+function message(error: unknown) { return error instanceof Error ? error.message : "Preparation unavailable" }
+function storedId(camera: string) { try { const id=localStorage.getItem(`ai26:source-preparation:${camera}`); return id && /^[0-9a-f]{32}$/.test(id) ? id : null } catch { return null } }
+
+export default function SourceUpload({cameraId,source,onBusyChange}: {cameraId:string;source:CameraSourceStatus;onBusyChange:(busy:boolean)=>void}) {
+  const [file,setFile]=useState<File|null>(null)
+  const [reviewer,setReviewer]=useState("")
+  const [reason,setReason]=useState("")
+  const [replace,setReplace]=useState(false)
+  const [job,setJob]=useState<SourcePreparation|null>(null)
+  const [error,setError]=useState("")
+  const [busy,setBusy]=useState(false)
+  const [initialId]=useState(()=>storedId(cameraId))
+  const [checking,setChecking]=useState(!!initialId)
+  const transfer=useRef<AbortController|null>(null)
+  const needsReplace=source.active.inference.available || !!source.selection.release
+  const preparing=job?.status==="preparing" || job?.status==="uploading"
+  const release=job?.release
+  const selected=release && source.selection.release?.release===release.release
+  const running=release && source.active.release?.release===release.release
+
+  useEffect(()=>{
+    const controller=new AbortController()
+    if(initialId) getSourcePreparation(initialId,controller.signal).then(result=>{
+      if(!controller.signal.aborted) { setJob(result);onBusyChange(result.status==="preparing" || result.status==="uploading") }
+    }).catch(error=>{if(!controller.signal.aborted)setError(`Could not restore preparation: ${message(error)}. Choose a file to start again.`)})
+      .finally(()=>{if(!controller.signal.aborted)setChecking(false)})
+    return ()=>{ controller.abort();transfer.current?.abort();onBusyChange(false) }
+  },[initialId,onBusyChange])
+
+  async function upload(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if(!file || busy || preparing || checking) return
+    if(!file.size || file.size>maxBytes) {setError("Choose a nonempty video up to 128 MiB.");return}
+    if(file.name.length>200 || !reviewer.trim() || !reason.trim()) {setError("Enter your name and reason. The filename must be at most 200 characters.");return}
+    if(needsReplace && !replace) {setError("Confirm replacement of this camera’s existing footage before preparing a new clip.");return}
+    setBusy(true);onBusyChange(true);setError("");setJob(null)
+    const controller=new AbortController();transfer.current=controller
+    let keepBusy=false
+    try {
+      const result=await prepareCameraSource(cameraId,file,reviewer.trim(),reason.trim(),replace,controller.signal)
+      setJob(result);keepBusy=result.status==="preparing" || result.status==="uploading"
+      try {localStorage.setItem(`ai26:source-preparation:${cameraId}`,result.job_id)} catch { /* Receipt ID remains visible if storage is unavailable. */ }
+    } catch(error) {setError(controller.signal.aborted ? "Upload cancelled. Existing footage is unchanged." : message(error))}
+    finally {setBusy(false);onBusyChange(keepBusy);transfer.current=null}
+  }
+  async function check() {
+    if(!job) return
+    setChecking(true);setError("")
+    try {const result=await getSourcePreparation(job.job_id);setJob(result);onBusyChange(result.status==="preparing" || result.status==="uploading")}
+    catch(error) {setError(`Could not check preparation: ${message(error)}. Try checking again.`)}
+    finally {setChecking(false)}
+  }
+  async function cancel() {
+    if(!job) return
+    setChecking(true);setError("")
+    try {const result=await cancelSourcePreparation(job.job_id);setJob(result);onBusyChange(result.status==="preparing" || result.status==="uploading")}
+    catch(error) {setError(`Cancellation could not be confirmed: ${message(error)}. Check preparation again.`)}
+    finally {setChecking(false)}
+  }
+
+  return <div className="mt-4 border-t border-zinc-800 pt-4">
+    <h3 className="font-medium">Prepare footage from your browser</h3>
+    <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Upload a clip up to 128 MiB. AI26 preserves its bytes and prepares a separate playback copy. Current inference and playback continue using their existing source. Selection requires a host command and restart.</p>
+    <form onSubmit={upload} className="mt-4">
+      <fieldset disabled={busy || preparing || checking} className="grid min-w-0 gap-4 sm:grid-cols-2">
+        <label htmlFor="source-upload-file" className="block text-sm font-medium sm:col-span-2">Recorded video
+          <input id="source-upload-file" type="file" accept="video/*,.mp4,.mkv,.avi,.mov,.webm" required className={`${control} mt-2 file:mr-3 file:rounded file:border-0 file:bg-zinc-700 file:px-3 file:py-1 file:text-white`} onChange={event=>{setFile(event.target.files?.[0]??null);setError("")}} />
+        </label>
+        <label htmlFor="source-upload-reviewer" className="block text-sm font-medium">Your name
+          <input id="source-upload-reviewer" required maxLength={100} value={reviewer} className={`${control} mt-2`} onChange={event=>setReviewer(event.target.value)} />
+        </label>
+        <label htmlFor="source-upload-reason" className="block text-sm font-medium">Reason for this footage
+          <input id="source-upload-reason" required maxLength={1000} value={reason} className={`${control} mt-2`} onChange={event=>setReason(event.target.value)} />
+        </label>
+        {needsReplace && <label htmlFor="source-upload-replace" className="flex min-h-11 items-start gap-3 text-sm leading-relaxed sm:col-span-2"><input id="source-upload-replace" type="checkbox" required checked={replace} className="mt-1 h-5 w-5 shrink-0 accent-teal-400" onChange={event=>setReplace(event.target.checked)} />I intend to replace this camera’s footage after validation, selection and restart.</label>}
+        <p className="text-sm leading-relaxed text-zinc-300 sm:col-span-2">One clip can be prepared at a time. Names and reasons are local claims; upload does not verify this camera’s location or recording clock. Ready releases remain on the host until managed separately.</p>
+        <button type="submit" className={`${button} w-fit border-white bg-white text-black hover:bg-zinc-200`} disabled={!file}>{busy ? "Uploading clip…" : "Upload and prepare clip"}</button>
+      </fieldset>
+    </form>
+    {busy && <div className="mt-3 flex flex-wrap items-center gap-3"><p role="status" className="text-sm text-zinc-300">Uploading clip. This can take up to two minutes.</p><button type="button" className={button} onClick={()=>transfer.current?.abort()}>Cancel upload</button></div>}
+    {error && <p role="alert" className="mt-3 rounded border border-red-400/40 bg-red-950/40 p-3 text-sm text-red-100">{error}</p>}
+    {job && <div className="mt-4 text-sm">
+      <p className="break-words text-zinc-300">{job.filename} · Preparation <span className="break-all font-mono">{job.job_id}</span></p>
+      <p role={job.status==="failed" ? "alert" : "status"} className={`mt-2 leading-relaxed ${job.status==="failed" ? "rounded border border-red-400/40 bg-red-950/40 p-3 text-red-100" : ""}`}>{preparing ? "Preparing and validating playback. Check when ready; the current camera source is unchanged." : job.status==="ready" ? running ? "This prepared release is running." : selected ? "This release is selected. Restart the API to activate it." : "Prepared footage is ready for host selection. It is not active." : job.status==="cancelled" ? "Preparation cancelled. Current footage is unchanged." : job.error || "Preparation failed. Choose a readable clip and retry."}</p>
+      <div className="mt-3 flex flex-wrap gap-3"><button type="button" className={button} disabled={checking} onClick={check}>{checking ? "Checking preparation…" : "Check preparation"}</button>{preparing && <button type="button" className={button} disabled={checking} onClick={cancel}>Cancel preparation</button>}</div>
+      {release && !running && !selected && <div className="mt-4 rounded border border-teal-500/40 bg-teal-950/30 p-3 text-teal-100">
+        <p className="leading-relaxed">On the API host, use the same data/source settings. Stop the app with Ctrl+C, select this release, then restart. Selection rechecks file hashes and rejects an imported selection changed since preparation.</p>
+        <code className="mt-3 block whitespace-pre-wrap break-all font-mono">uv run --frozen --directory backend python select_source.py {cameraId} {release.release} --expected-current {release.previous_release || "default"}</code>
+        <p className="mt-3">Restart with <code>uv run run.py --skip-install</code> and refresh source status. Validation was performed at preparation time; actual content and original clocks remain unverified.</p>
+      </div>}
+    </div>}
+  </div>
+}

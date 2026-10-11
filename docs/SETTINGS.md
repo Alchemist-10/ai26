@@ -4,7 +4,8 @@ Open **Camera settings** from the navigation drawer. Select a camera, change its
 location label, latitude/longitude or label confirmation, enter a reviewer name
 and reason, then **Save new revision**. The camera ID, detector kind and video
 source selection remain fixed for the running process. The source section inspects
-running/selected footage; import uses the offline host command. Missing files are displayed
+running/selected footage; browser upload prepares an inactive release, followed
+by offline host selection/restart. Missing files are displayed
 explicitly; editing their metadata does not supply footage.
 
 The editor uses the existing GET/PUT camera configuration API. Every successful
@@ -48,7 +49,7 @@ Label confirmation records a local assertion. Repository defaults may already
 carry a confirmed flag, so history exposes their actual metadata source.
 Coordinates, recording clocks and travel-time constraints remain uncalibrated.
 Reviewer identity is unauthenticated. This is a local prototype metadata editor,
-not the source import command, an upload UI, authorization or an independent survey workflow.
+separate from the source upload/import workflow, authorization or an independent survey workflow.
 
 ## Metadata editor validation (prior milestone)
 
@@ -84,7 +85,10 @@ this milestone does not add an automated frontend testing framework.
 
 Settings now includes read-only footage roles, pending-restart/error states,
 bounded import history and offline command guidance above the metadata form.
-Its refresh preserves the form draft. This is source inspection rather than
-browser upload or live activation. [SOURCE_STATUS.md](SOURCE_STATUS.md) describes
-the endpoint, request bounds, current 140-test suite and desktop/mobile checks.
+Its refresh preserves the form draft. [SOURCE_STATUS.md](SOURCE_STATUS.md)
+describes the inspection endpoint and historical 140-test milestone. The later
+[SOURCE_UPLOADS.md](SOURCE_UPLOADS.md) adds browser preparation/check/cancel,
+retained receipts and offline selection/restart; the current suite has 157 tests.
+Upload drafts survive source refresh and navigation; active preparation disables
+source refresh and camera/current-revision switching until checked terminal.
 The earlier 113-test and 13.56 kB figures above describe the metadata-only milestone.

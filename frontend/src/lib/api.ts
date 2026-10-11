@@ -58,6 +58,29 @@ export interface CameraSourceStatus {
   history: { releases: SourceRelease[]; more: boolean; error: string | null }
   verification: string
 }
+export interface SourcePreparation {
+  job_id: string
+  camera_id: string
+  filename: string
+  status: "uploading" | "preparing" | "ready" | "failed" | "cancelled"
+  created_at: number
+  error: string | null
+  release: SourceRelease | null
+}
+export function prepareCameraSource(cameraId: string, file: File, reviewer: string, reason: string, replace: boolean, signal: AbortSignal): Promise<SourcePreparation> {
+  const metadata = JSON.stringify({filename:file.name,bytes:file.size,reviewer,reason,replace})
+  const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(metadata)))
+  if (encoded.length > 8192) return Promise.reject(new Error("Upload details are too long. Shorten the filename or reason."))
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/source/prepare`, {
+    method:"POST",headers:{"Content-Type":"application/octet-stream","X-AI26-Upload":encoded},body:file,signal,
+  })
+}
+export function getSourcePreparation(jobId: string, signal?: AbortSignal): Promise<SourcePreparation> {
+  return requestJson(`/api/source-preparations/${encodeURIComponent(jobId)}`, {signal})
+}
+export function cancelSourcePreparation(jobId: string): Promise<SourcePreparation> {
+  return requestJson(`/api/source-preparations/${encodeURIComponent(jobId)}/cancel`, {method:"POST"})
+}
 export interface CameraHealth {
   camera_id: string
   status: string

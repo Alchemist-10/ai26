@@ -1,12 +1,13 @@
 """Offline recorded-source onboarding. No ML, SQL writes or live source switching."""
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import fcntl
 import json
 import math
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -87,7 +88,7 @@ def inspect_source(source, max_bytes):
     return path, probe(path)
 
 
-def import_source(camera, source, reviewer=None, reason=None, *, replace=False, check=False,
+def import_source(camera, source, reviewer=None, reason=None, *, replace=False, check=False, prepare=False,
                   source_root=SOURCE_ROOT, data_root=DATA_ROOT, max_bytes=DEFAULT_MAX_BYTES, timeout=600):
     if camera not in CAMERAS_BY_ID: raise ValueError('Unknown camera; choose an existing catalog ID')
     if not check and (not isinstance(reviewer,str) or not 1 <= len(reviewer.strip()) <= 100 or not isinstance(reason,str) or not 1 <= len(reason.strip()) <= 1000):
@@ -98,7 +99,7 @@ def import_source(camera, source, reviewer=None, reason=None, *, replace=False, 
         return {'check_only':True,'camera_id':camera,'bytes':source.stat().st_size,'sha256':file_digest(source),
                 'video':metadata,'scope':'Probe/fingerprint only; full decode and playback conversion have not run'}
     root, data = Path(source_root).resolve(), Path(data_root).resolve()
-    with exclusive(data/'.processing.lock','Stop the processor before importing into this data directory'), \
+    with (nullcontext() if prepare else exclusive(data/'.processing.lock','Stop the processor before importing into this data directory')), \
          exclusive(root/'.import.lock','Another source import is in progress'):
         existing = load_source(camera,root)
         if not replace and (existing or camera_source(camera).is_file()):
@@ -127,7 +128,7 @@ def import_source(camera, source, reviewer=None, reason=None, *, replace=False, 
             # Validate the staged bytes actually used for conversion, not just the input path.
             original_video=probe(original)
             tool_version=ffmpeg_version()
-            print('Preparing and validating browser playback; inference remains stopped…',file=sys.stderr,flush=True)
+            print('Preparing and validating browser playback; existing selection is unchanged…' if prepare else 'Preparing and validating browser playback; inference remains stopped…',file=sys.stderr,flush=True)
             transcode(original,playback,timeout,max_bytes)
             if not playback.is_file() or not 0 < playback.stat().st_size < max_bytes: raise ValueError('Playback conversion hit its size limit or produced no video')
             playback_video=probe(playback)
@@ -138,6 +139,7 @@ def import_source(camera, source, reviewer=None, reason=None, *, replace=False, 
                 raise ValueError('Playback frame count differs from the source')
             release=uuid.uuid4().hex
             manifest={'version':1,'camera_id':camera,'release':release,'imported_at':time.time(),
+                      'prepared_without_activation':prepare,
                       'reviewer':reviewer.strip(),'reason':reason.strip(),'time_basis':'replay_clock',
                       'scope':'Local operator import; content, location and original clocks unverified',
                       'conversion':{'recipe':'h264-preview-v1','ffmpeg_version':tool_version,
@@ -150,9 +152,9 @@ def import_source(camera, source, reviewer=None, reason=None, *, replace=False, 
             with playback.open('rb') as stream: os.fsync(stream.fileno())
             published=releases/release;staging.rename(published)
             sync_directory(releases)
-            atomic_json(folder/'active.json',manifest)
+            if not prepare: atomic_json(folder/'active.json',manifest)
             # Prior releases are deliberately retained; no implicit deletion/retention policy.
-            return {**manifest,'restart_required':True}
+            return {**manifest,'restart_required':True,'activation_required':prepare}
         except BaseException:
             # An interrupted return after pointer publication must not delete the
             # now-active release. Failed publication before replace leaves old data.
@@ -169,14 +171,18 @@ def main(argv=None):
     parser.add_argument('camera',choices=sorted(CAMERAS_BY_ID));parser.add_argument('file',type=Path)
     parser.add_argument('--reviewer');parser.add_argument('--reason')
     parser.add_argument('--replace',action='store_true');parser.add_argument('--check',action='store_true')
+    parser.add_argument('--prepare',action='store_true',help='Prepare a retained release without changing active.json; processing may continue')
     parser.add_argument('--max-bytes',type=int,default=DEFAULT_MAX_BYTES);parser.add_argument('--timeout',type=float,default=600)
     args=parser.parse_args(argv)
     try:
-        result=import_source(args.camera,args.file,args.reviewer,args.reason,replace=args.replace,check=args.check,max_bytes=args.max_bytes,timeout=args.timeout)
+        result=import_source(args.camera,args.file,args.reviewer,args.reason,replace=args.replace,check=args.check,prepare=args.prepare,max_bytes=args.max_bytes,timeout=args.timeout)
     except (OSError,ValueError,subprocess.SubprocessError) as error:
         detail=error.stderr[-1500:] if isinstance(error,subprocess.CalledProcessError) and error.stderr else str(error)
         print(f'Import failed: {detail}',file=sys.stderr);return 1
     print(json.dumps(result,indent=2,allow_nan=False));return 0
 
 
-if __name__=='__main__':sys.exit(main())
+if __name__=='__main__':
+    def interrupted(signum, frame): raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, interrupted)
+    sys.exit(main())

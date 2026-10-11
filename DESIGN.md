@@ -1,6 +1,6 @@
 ---
 name: AI26
-description: inherited dark shell and Camera settings metadata and source inspection interface
+description: inherited dark shell and Camera settings metadata, source inspection, and browser clip preparation interface
 colors:
   background: "#080d12"
   foreground: "#e7eef0"
@@ -110,7 +110,7 @@ components:
 
 This record covers the inherited AI26 dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.
 
-The implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Source inspection precedes native labelled metadata fields, which sit beside retained revision history on desktop and above it on mobile. Source details use native disclosures within the same internally scrolling section beneath the application header.
+The implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Source inspection precedes native labelled metadata fields, which sit beside retained revision history on desktop and above it on mobile. Source details use native disclosures within the same internally scrolling section beneath the application header. The Operate direction extends these settings: source inspection leads into browser upload inside the import disclosure, then a separate nested disclosure gives host-file guidance. Metadata editing remains a separate workflow.
 
 **Creative North Star:** Unrecorded.
 
@@ -122,9 +122,11 @@ The implemented surface uses black backgrounds, zinc controls and dividers, whit
 - Separate running inference and browser sources with explicit restart status.
 - A persistent header with internal content scrolling.
 
-Source of truth: `frontend/src/index.css`, `frontend/src/App.tsx`, `frontend/src/components/NavDrawer.tsx`, `frontend/src/pages/CameraSettings.tsx`, `frontend/src/components/settings/CameraSources.tsx`, and incumbent controls in `frontend/src/components/panels/AlertsPanel.tsx`. Tailwind utility values resolve from the installed `frontend/node_modules/tailwindcss/theme.css`; its OKLCH values remain canonical. The five earlier metadata screenshots in `.impeccable/review/` remain evidence for that pass and its notice-lifecycle fix.
+Source of truth: `frontend/src/index.css`, `frontend/src/App.tsx`, `frontend/src/components/NavDrawer.tsx`, `frontend/src/pages/CameraSettings.tsx`, `frontend/src/components/settings/CameraSources.tsx`, `frontend/src/components/settings/SourceUpload.tsx`, `frontend/src/lib/api.ts`, and incumbent controls in `frontend/src/components/panels/AlertsPanel.tsx`. Tailwind utility values resolve from the installed `frontend/node_modules/tailwindcss/theme.css`; its OKLCH values remain canonical. The five earlier metadata screenshots in `.impeccable/review/` remain evidence for that pass and its notice-lifecycle fix.
 
 The source extension has six reviewed viewport captures in `.impeccable/review/`: `source-desktop.png` and `source-desktop-history.png` (1280×720), `source-user-786.png` (786×758), and `source-mobile.png`, `source-mobile-pending.png`, and `source-mobile-history.png` (390×844). These cover internal section scroll positions, visible source summaries, missing footage, pending restart, expanded release history, wrapped identifiers, and keyboard focus. Import guidance remained collapsed and source error notices were not captured; their visual treatments are documented from the component source. Separate browser DOM/API checks used an isolated synthetic fixture with processing disabled and zero observations: source-status error/retry, invalid-selection recovery, the expanded host-command disclosure with CAM-07 and `--replace`, and activation of the selected import after API restart followed by source refresh. That refresh cleared pending and recovered error notices. These checks do not add screenshot coverage. The source finish review disposition is ship; its scope is this extension, not new global validation or whole-document coverage.
+
+The browser-upload extension has seven reviewed captures in `.impeccable/review/`: `upload-desktop-ready.png`, `upload-desktop-command.png`, and `upload-desktop-failed.png` (1280×720); `upload-mobile-form.png`, `upload-mobile-ready.png`, and `upload-mobile-failed.png` (nominal 390×844, actual 390×843); and `upload-user-786.png` (786×758). These are internal scrolled viewports covering the native upload form, ready receipt, wrapping host-selection command, and failed preparation. They are not whole-page captures. The scoped finish reviewer returned ship in five sections with no requested fixes; the reported single detector run returned `[]`. This records the supplied review evidence, not a new browser/test/detector run, whole-app approval, or measured sustained performance.
 
 ## Colors
 
@@ -159,7 +161,7 @@ The application fills the viewport, clips the outer document, and leaves the hea
 
 Settings begins with title and explanation, a camera selector/refresh row, current revision metadata, then source inspection followed by the editing form and metadata history. At 40rem, the selector and refresh action share a row and coordinate fields form two equal columns. At 64rem, metadata and history become 3:2 columns with a 2rem gap. Below that, history follows the form with a top divider. Flexible button rows wrap instead of forcing horizontal overflow. These compositions belong to Camera settings; other pages retain their existing layouts.
 
-The source section spans the content width with zinc top and bottom dividers and 1.5rem vertical spacing. Its heading and manual refresh action wrap as needed. At 40rem, inference and browser playback form two equal columns; below that they stack. Release details use a label/value grid at that breakpoint and stack below it. Long release identifiers, filenames, hashes, and command examples wrap inside the available width. Disclosures begin closed; their summaries retain a minimum height of 2.75rem.
+The source section spans the content width with zinc top and bottom dividers and 1.5rem vertical spacing. Its heading and manual refresh action wrap as needed. At 40rem, inference and browser playback form two equal columns; below that they stack. Release details use a label/value grid at that breakpoint and stack below it. Long release identifiers, filenames, hashes, and command examples wrap inside the available width. Disclosures begin closed; their summaries retain a minimum height of 2.75rem. Inside the import disclosure, the upload file field spans the form width; name and reason become two columns at 40rem and stack below it. Explicit replacement confirmation spans both columns. Preparation actions wrap, and long receipt IDs and host commands break within the available width.
 
 The drawer is fixed at 18rem wide and contains its own scrolling navigation. Header context badges are progressively hidden below the small and medium breakpoints. Settings buttons have a minimum height of 2.75rem.
 
@@ -179,7 +181,7 @@ The primary settings action uses white with black text and a light zinc hover. S
 
 ### Inputs / Fields
 
-Native input, number, select, checkbox, and textarea controls have visible associated labels. Fields use a dark zinc fill and zinc border with white text. Focus uses the global teal outline (2px with 3px offset). Disabled controls reduce opacity. The form communicates location, coordinate, reviewer, and reason requirements through native attributes and explicit error copy. Operator confirmation is an assertion; the adjacent text retains the calibration limits.
+Native input, number, select, checkbox, textarea, and file controls have visible associated labels. Fields use a dark zinc fill and zinc border with white text. Focus uses the global teal outline (2px with 3px offset). Disabled controls reduce opacity. The form communicates location, coordinate, reviewer, and reason requirements through native attributes and explicit error copy. Operator confirmation is an assertion; the adjacent text retains the calibration limits.
 
 ### Cards / Containers
 
@@ -195,15 +197,25 @@ Header availability chips use zinc surfaces, light text, thin borders, and a sma
 
 ### Metadata revisions
 
-The settings form remains mounted after its first visit so draft state survives navigation within AI26. Browser reload or closure still loses the draft. A dirty draft disables camera switching and current-revision refresh; source-status refresh remains independent of that draft. Discarding is explicit. Revision history is read-only and does not replace the draft. A concurrent or unconfirmed save preserves the draft and requires explicit latest-revision review before saving again. Keeping a draft or loading latest values is a separate decision from saving. Existing observations retain their captured revision.
+The settings form remains mounted after its first visit so draft state survives navigation within AI26. Browser reload or closure still loses the draft. A dirty draft disables camera switching and current-revision refresh; source-status refresh remains independent of that draft. Upload/preparation also disables source-status refresh, camera switching, and current-revision refresh; the metadata form stays independent of source preparation. Discarding is explicit. Revision history is read-only and does not replace the draft. A concurrent or unconfirmed save preserves the draft and requires explicit latest-revision review before saving again. Keeping a draft or loading latest values is a separate decision from saving. Existing observations retain their captured revision.
 
 ### Source inspection
 
-Source footage is a read-only inspection section. Inference source and browser playback are separate summaries with filenames, sizes, missing-file messages, and recorded-replay context. A manual refresh checks source status; it has its own loading label and is available independently of metadata draft changes. The section adds no video, background timer, or automatic polling.
+Source footage is a read-only inspection section. Inference source and browser playback are separate summaries with filenames, sizes, missing-file messages, and recorded-replay context. A manual refresh checks source status; it has its own loading label and is available independently of metadata draft changes, while upload/preparation temporarily disables it. Refresh retains the upload component and its draft. The section adds no video, background timer, or automatic polling.
 
 Running imports and selected imports remain distinct. A teal `role="status"` notice explains when a selection requires an API restart and that running inference and playback retain their current source until then. Red `role="alert"` notices communicate status-fetch failure with manual retry guidance, changed or missing running files, and invalid selected imports without implying that the running source switched. The checked timestamp is paired with the returned verification scope; file presence/size, startup hash checks, pending selection, and history are not presented as interchangeable assurances.
 
-Native `details`/`summary` disclosures expose running-import metadata, offline import instructions, and recent releases. Nested release summaries identify Running, Selected for restart, or Earlier import. Expanded details show the import date, local operator claim and reason, video dimensions/rate/duration, file sizes, and original/playback hashes. History is bounded to up to ten releases from the selected import's parent chain; retained older or unlinked files and unvalidated history remain explicit. Offline commands use wrapping zinc code blocks and a check → stop/import → restart/refresh sequence. Import guidance keeps footage provenance and location metadata review separate and states the local unauthenticated nature of operator claims.
+Native `details`/`summary` disclosures expose running-import metadata, browser preparation with separate host-file import guidance, and recent releases. Nested release summaries identify Running, Selected for restart, or Earlier import. Expanded details show the import date, local operator claim and reason, video dimensions/rate/duration, file sizes, and original/playback hashes. History is bounded to up to ten releases from the selected import's parent chain; retained older or unlinked files and unvalidated history remain explicit. Offline commands use wrapping zinc code blocks and a check → stop/import → restart/refresh sequence. Import guidance keeps footage provenance and location metadata review separate and states the local unauthenticated nature of operator claims.
+
+### Browser clip preparation
+
+The upload is a separate mutation workflow within the source section; source inspection remains read-only. A native file picker accepts recorded video, followed by visible name and reason fields and required explicit replacement confirmation when existing or selected footage is present. Files must be nonempty and no larger than 128 MiB; filenames are limited to 200 characters, names to 100, and reasons to 1000. The white Upload and prepare clip action uses the incumbent settings button; the native file-picker button has a zinc fill. Names and reasons remain local claims rather than verified provenance or location.
+
+Uploading disables the upload fieldset and exposes a status label plus Cancel upload. Preparation uses explicit Check preparation and Cancel preparation actions, with checking labels and disabled repeated actions. Failed preparation and request failures use the established red alert treatment; cancellation and ready receipts use explicit status copy. No progress percentage is invented. The receipt keeps its filename and wrapping monospace job ID visible. Manual Check preparation updates the receipt and releases the busy state when it reports ready, failed, or cancelled; a preparation that is still running keeps the controls guarded. This workflow introduces no timers, automatic polling, media previews, or model loads.
+
+Ready footage is an inactive release until a host operator selects it and restarts. A teal instruction block gives the camera-specific `select_source.py` command with `--expected-current`, explains stopping the app and hash revalidation at selection, then gives restart and source-refresh instructions. Selected-for-restart and already-running receipts use distinct copy. Preparation-time validation does not verify actual content or original clocks. Browser activation and rollback are unavailable; retained ready releases require separate host management. Existing inference and playback continue throughout preparation.
+
+The app keeps Camera settings mounted after first use, so the file, name, reason, and replacement draft survive navigation to other AI26 pages and source-status refresh. These drafts are lost on browser reload; changing cameras remounts the source workflow. Only the job ID is saved under a camera-specific localStorage key, allowing a status restoration attempt when that same camera is revisited after reload. This does not persist the upload file or claim fields, and a failed restoration asks the user to choose a file again. Metadata drafts have their own lifecycle and can still be edited while source preparation runs.
 
 ## Do's and Don'ts
 
@@ -214,7 +226,8 @@ Native `details`/`summary` disclosures expose running-import metadata, offline i
 - **Do** stack settings and history on narrow screens; keep the desktop 3:2 column arrangement.
 - **Do** keep revision identity and draft state visible; clear old success/no-save notices when a draft field changes.
 - **Do** retain AI26 naming and the boundary between metadata settings and deployment configuration.
-- **Do** distinguish running sources from selections awaiting restart in Camera settings, and keep source refresh independent of metadata drafts.
+- **Do** distinguish running sources, inactive prepared releases, and selections awaiting restart in Camera settings; keep source refresh independent of metadata drafts and guarded during upload/preparation.
+- **Do** keep browser preparation separate from host selection/restart and location metadata editing, with explicit replacement and manual preparation checks.
 
 ### Don't:
 
@@ -223,3 +236,4 @@ Native `details`/`summary` disclosures expose running-import metadata, offline i
 - **Don't** replace revision history with an editable snapshot or hide the explicit concurrent-save review.
 - **Don't** add media or new settings polling as decoration or imply that operator confirmation establishes calibration.
 - **Don't** treat these screenshots as whole-document coverage or this pass as new global validation.
+- **Don't** imply that upload activates footage, persists file/name/reason drafts across reload, verifies source clocks, or provides browser rollback.

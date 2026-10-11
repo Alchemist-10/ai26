@@ -25,6 +25,8 @@ from repository import canonical_json
 from artifacts import artifact_bytes
 from maintenance import Maintenance
 from source_status import source_status
+from source_uploads import uploads, parse_metadata, UploadBusy
+from starlette.requests import ClientDisconnect
 
 
 @asynccontextmanager
@@ -35,6 +37,7 @@ async def lifespan(app):
         if os.environ.get('AI26_PROCESSING_ENABLED','1')=='1': processor.start()
         yield
     finally:
+        await asyncio.to_thread(uploads.close)
         await asyncio.to_thread(processor.stop)
         await asyncio.to_thread(janitor.stop)
 
@@ -85,6 +88,31 @@ def camera_configuration(camera_id:str, revision:Annotated[int|None,Query(ge=1)]
 def camera_source_status(camera_id:str):
     check_camera(camera_id)
     return source_status(camera_id)
+
+@app.post('/api/cameras/{camera_id}/source/prepare',status_code=202)
+async def prepare_camera_source(camera_id:str,request:Request):
+    check_camera(camera_id)
+    if request.headers.get('content-type','').split(';')[0]!='application/octet-stream': raise HTTPException(415,'Send a raw video file')
+    try:
+        metadata=parse_metadata(request.headers.get('x-ai26-upload'))
+        if request.headers.get('content-length') and int(request.headers['content-length'])!=metadata['bytes']: raise ValueError('Upload size header does not match the file')
+        job,path=await uploads.reserve_async(camera_id,metadata)
+    except UploadBusy as error: raise HTTPException(409,str(error)) from error
+    except (ValueError,OSError) as error: raise HTTPException(422,str(error)) from error
+    try: return await uploads.receive(request,job,path)
+    except ClientDisconnect as error: raise HTTPException(400,'Upload interrupted') from error
+    except TimeoutError as error: raise HTTPException(408,'Upload timed out') from error
+    except (ValueError,OSError) as error: raise HTTPException(422,str(error)) from error
+
+@app.get('/api/source-preparations/{job_id}')
+def source_preparation(job_id:str):
+    try: return uploads.get(job_id)
+    except KeyError as error: raise HTTPException(404,'Preparation unavailable') from error
+
+@app.post('/api/source-preparations/{job_id}/cancel')
+def cancel_source_preparation(job_id:str):
+    try: return uploads.cancel(job_id)
+    except KeyError as error: raise HTTPException(404,'Preparation unavailable') from error
 
 @app.put('/api/cameras/{camera_id}/configuration')
 def update_camera_configuration(camera_id:str, body:CameraConfigurationUpdate):

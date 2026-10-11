@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { getCameraSourceStatus, type CameraSourceStatus, type SourceRelease } from "@/lib/api"
+import SourceUpload from "@/components/settings/SourceUpload"
 
 const button = "min-h-11 rounded border border-zinc-600 px-3 py-2 text-sm font-medium hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
 const sourceNames = { managed: "Imported original", configured_original: "Configured original", bundled_proxy: "Bundled playback copy", missing: "No footage available" }
@@ -24,7 +25,7 @@ function ReleaseDetails({ release }: { release: SourceRelease }) {
   </dl>
 }
 
-export default function CameraSources({ cameraId }: { cameraId: string }) {
+export default function CameraSources({ cameraId,sourceBusy,onBusyChange }: { cameraId: string;sourceBusy:boolean;onBusyChange:(busy:boolean)=>void }) {
   const [source, setSource] = useState<CameraSourceStatus | null>(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(true)
@@ -45,7 +46,7 @@ export default function CameraSources({ cameraId }: { cameraId: string }) {
   return <section aria-labelledby="camera-source-title" className="mt-6 min-w-0 border-y border-zinc-800 py-6">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h2 id="camera-source-title" className="text-lg font-semibold">Source footage</h2>
-      <button type="button" className={button} disabled={loading} onClick={() => { setLoading(true); setError(""); setSource(null); setRefresh(value => value + 1) }}>{loading ? "Checking sources…" : "Refresh source status"}</button>
+      <button type="button" className={button} disabled={loading || sourceBusy} onClick={() => { setLoading(true); setError(""); setRefresh(value => value + 1) }}>{loading ? "Checking sources…" : "Refresh source status"}</button>
     </div>
     {error && <p role="alert" className="mt-3 rounded border border-red-400/40 bg-red-950/40 p-3 text-sm text-red-100">Could not check footage: {error}. Refresh source status to try again.</p>}
     {current && active && selected && <>
@@ -61,13 +62,17 @@ export default function CameraSources({ cameraId }: { cameraId: string }) {
       {active.kind === "bundled_proxy" && <p className="mt-2 text-sm leading-relaxed text-zinc-300">Inference currently uses the bundled playback copy. Original recording bytes are not available for this source.</p>}
       <details className="mt-4 border-t border-zinc-800 pt-2 text-sm">
         <summary className="min-h-11 cursor-pointer py-3 font-medium">Import or replace recorded footage</summary>
+        <SourceUpload cameraId={cameraId} source={current} onBusyChange={onBusyChange} />
+        <details className="mt-4 border-t border-zinc-800 pt-2">
+        <summary className="min-h-11 cursor-pointer py-3 font-medium">Import a file already on the API host</summary>
         <ol className="list-decimal space-y-3 pl-5 leading-relaxed text-zinc-300">
           <li>On the API host, install FFmpeg with libx264 and ffprobe. Open a terminal in the AI26 repository and export the same data/source settings as the app.</li>
           <li>Check your file first. Replace the example path with the file’s absolute path.<code className="mt-2 block whitespace-pre-wrap break-all rounded bg-zinc-900 p-3 font-mono text-white">{command} --check</code></li>
           <li>Stop the app with Ctrl+C in its terminal. Import the file, supplying your name and reason. Use <code>--replace</code> only when replacing existing footage.<code className="mt-2 block whitespace-pre-wrap break-all rounded bg-zinc-900 p-3 font-mono text-white">{command}{active.inference.available || selected.release ? " --replace" : ""} --reviewer "Your name" --reason "Why this footage belongs to this camera"</code></li>
           <li>Restart the app with <code>uv run run.py --skip-install</code>, then refresh source status. Review location metadata separately; importing footage does not verify its location.</li>
         </ol>
-        <p className="mt-3 leading-relaxed text-zinc-300">This page inspects sources. Uploads, live source switching and automatic video cleanup are not available. Original files and prior imports are retained. Import records are local, unauthenticated operator claims.</p>
+        </details>
+        <p className="mt-3 leading-relaxed text-zinc-300">Live source switching and automatic video cleanup are not available. Original files and prior imports are retained.</p>
       </details>
       <details className="mt-2 border-t border-zinc-800 pt-2 text-sm">
         <summary className="min-h-11 cursor-pointer py-3 font-medium">Recent imported releases · {current.history.releases.length}{current.history.more ? "+" : ""}</summary>

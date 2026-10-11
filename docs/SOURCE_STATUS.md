@@ -40,10 +40,14 @@ files are not checked by the history reader. Prior originals/playback copies
 remain on disk; there is no automatic imported-video cleanup.
 
 Follow **Import or replace recorded footage** for check, stop, import and restart
-commands on the API host. Example paths/names must be replaced. Use the same
-exported data/source settings as the app. See [SOURCE_IMPORT.md](SOURCE_IMPORT.md)
-for bounds and recovery. Browser upload, release activation/rollback controls,
-new camera creation, RTSP and authenticated source administration remain pending.
+commands on the API host, or prepare a file through the browser upload form.
+Example paths/names must be replaced. Use the same exported data/source settings
+as the app. See [SOURCE_IMPORT.md](SOURCE_IMPORT.md) and
+[SOURCE_UPLOADS.md](SOURCE_UPLOADS.md) for bounds, cancellation and recovery.
+While an upload/preparation is active, source refresh and camera selection are
+disabled until a terminal job check. An idle refresh preserves both upload and
+metadata drafts. Browser activation/rollback controls, new camera creation, RTSP
+and authenticated source administration remain pending.
 
 ## API contract and bounded work
 
@@ -59,7 +63,8 @@ to 64 KiB each. Parent traversal is limited to ten releases, rejects path escape
 invalid identities and cycles, and retains already-read history when a parent
 fails. Requests perform bounded metadata reads and file stats rather than video
 hashing or decode. The endpoint is part of the existing local unauthenticated
-prototype API and adds no source mutation route.
+prototype API; the inspection route itself never mutates a source. The later
+browser preparation route is separately documented in SOURCE_UPLOADS.md.
 
 ## Validation scope
 
