@@ -1,6 +1,6 @@
 ---
 name: AI26
-description: inherited dark shell and Camera settings metadata interface
+description: inherited dark shell and Camera settings metadata and source inspection interface
 colors:
   background: "#080d12"
   foreground: "#e7eef0"
@@ -110,7 +110,7 @@ components:
 
 This record covers the inherited AI26 dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.
 
-The implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Native labelled metadata fields sit beside retained revision history on desktop and above it on mobile. Screenshots show an internally scrolling section beneath the application header.
+The implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Source inspection precedes native labelled metadata fields, which sit beside retained revision history on desktop and above it on mobile. Source details use native disclosures within the same internally scrolling section beneath the application header.
 
 **Creative North Star:** Unrecorded.
 
@@ -119,9 +119,12 @@ The implemented surface uses black backgrounds, zinc controls and dividers, whit
 - Black and zinc surfaces with white actions.
 - IBM Plex Sans for this shell and form.
 - Visible labels, native controls, and explicit revision review.
+- Separate running inference and browser sources with explicit restart status.
 - A persistent header with internal content scrolling.
 
-Source of truth: `frontend/src/index.css`, `frontend/src/App.tsx`, `frontend/src/components/NavDrawer.tsx`, `frontend/src/pages/CameraSettings.tsx`, and incumbent controls in `frontend/src/components/panels/AlertsPanel.tsx`. Tailwind utility values resolve from the installed `frontend/node_modules/tailwindcss/theme.css`; its OKLCH values remain canonical. The five existing `.impeccable/review/` screenshots are viewport samples: desktop and desktop-lower at 1280×720; mobile, mobile-form, and mobile-history at 390×844. They cover internal section scroll positions, not a full document. The finish verdict is limited to the notice-lifecycle fix; no new global validation is claimed.
+Source of truth: `frontend/src/index.css`, `frontend/src/App.tsx`, `frontend/src/components/NavDrawer.tsx`, `frontend/src/pages/CameraSettings.tsx`, `frontend/src/components/settings/CameraSources.tsx`, and incumbent controls in `frontend/src/components/panels/AlertsPanel.tsx`. Tailwind utility values resolve from the installed `frontend/node_modules/tailwindcss/theme.css`; its OKLCH values remain canonical. The five earlier metadata screenshots in `.impeccable/review/` remain evidence for that pass and its notice-lifecycle fix.
+
+The source extension has six reviewed viewport captures in `.impeccable/review/`: `source-desktop.png` and `source-desktop-history.png` (1280×720), `source-user-786.png` (786×758), and `source-mobile.png`, `source-mobile-pending.png`, and `source-mobile-history.png` (390×844). These cover internal section scroll positions, visible source summaries, missing footage, pending restart, expanded release history, wrapped identifiers, and keyboard focus. Import guidance remained collapsed and source error notices were not captured; their visual treatments are documented from the component source. Separate browser DOM/API checks used an isolated synthetic fixture with processing disabled and zero observations: source-status error/retry, invalid-selection recovery, the expanded host-command disclosure with CAM-07 and `--replace`, and activation of the selected import after API restart followed by source refresh. That refresh cleared pending and recovered error notices. These checks do not add screenshot coverage. The source finish review disposition is ship; its scope is this extension, not new global validation or whole-document coverage.
 
 ## Colors
 
@@ -140,10 +143,10 @@ Error notices use the existing red scale with translucent border and background.
 
 ## Typography
 
-The shell and settings use **IBM Plex Sans** with system sans fallbacks. The global stylesheet also defines IBM Plex Mono, but it is not the settings field face. Coordinates use tabular numerals within Plex Sans. No display type role or new font pairing is established here.
+The shell and settings use **IBM Plex Sans** with system sans fallbacks. The global stylesheet also defines IBM Plex Mono; source hashes and offline command examples use it, while settings fields retain Plex Sans. Coordinates and source video metadata use tabular numerals within Plex Sans. No display type role or new font pairing is established here.
 
 - **Headline:** Camera settings page title.
-- **Title:** Location metadata and Revision history section headings.
+- **Title:** Source footage, Location metadata, and Revision history section headings.
 - **Body:** Explanatory text uses the small size, often with relaxed line height; ordinary metadata uses the small default line height.
 - **Label:** Form labels and button copy use medium weight.
 - **Control:** Text inputs, number inputs, select, and textarea use the base size.
@@ -154,7 +157,9 @@ The inherited AI26 wordmark uses a bold small face with wide letter spacing (0.2
 
 The application fills the viewport, clips the outer document, and leaves the header above a flexible main region. Camera settings fills that region and scrolls internally. Its centered content is capped at 64rem, with padding of 1rem below the small breakpoint and 1.5rem above it. Explanatory copy is capped at 70ch where implemented.
 
-Settings begins with title and explanation, a camera selector/refresh row, current revision metadata, then the editing form and history. At 40rem, the selector and refresh action share a row and coordinate fields form two equal columns. At 64rem, metadata and history become 3:2 columns with a 2rem gap. Below that, history follows the form with a top divider. Flexible button rows wrap instead of forcing horizontal overflow. These compositions belong to Camera settings; other pages retain their existing layouts.
+Settings begins with title and explanation, a camera selector/refresh row, current revision metadata, then source inspection followed by the editing form and metadata history. At 40rem, the selector and refresh action share a row and coordinate fields form two equal columns. At 64rem, metadata and history become 3:2 columns with a 2rem gap. Below that, history follows the form with a top divider. Flexible button rows wrap instead of forcing horizontal overflow. These compositions belong to Camera settings; other pages retain their existing layouts.
+
+The source section spans the content width with zinc top and bottom dividers and 1.5rem vertical spacing. Its heading and manual refresh action wrap as needed. At 40rem, inference and browser playback form two equal columns; below that they stack. Release details use a label/value grid at that breakpoint and stack below it. Long release identifiers, filenames, hashes, and command examples wrap inside the available width. Disclosures begin closed; their summaries retain a minimum height of 2.75rem.
 
 The drawer is fixed at 18rem wide and contains its own scrolling navigation. Header context badges are progressively hidden below the small and medium breakpoints. Settings buttons have a minimum height of 2.75rem.
 
@@ -190,7 +195,15 @@ Header availability chips use zinc surfaces, light text, thin borders, and a sma
 
 ### Metadata revisions
 
-The settings form remains mounted after its first visit so draft state survives navigation within AI26. Browser reload or closure still loses the draft. A dirty draft disables camera switching and refresh; discarding is explicit. Revision history is read-only and does not replace the draft. A concurrent or unconfirmed save preserves the draft and requires explicit latest-revision review before saving again. Keeping a draft or loading latest values is a separate decision from saving. Existing observations retain their captured revision.
+The settings form remains mounted after its first visit so draft state survives navigation within AI26. Browser reload or closure still loses the draft. A dirty draft disables camera switching and current-revision refresh; source-status refresh remains independent of that draft. Discarding is explicit. Revision history is read-only and does not replace the draft. A concurrent or unconfirmed save preserves the draft and requires explicit latest-revision review before saving again. Keeping a draft or loading latest values is a separate decision from saving. Existing observations retain their captured revision.
+
+### Source inspection
+
+Source footage is a read-only inspection section. Inference source and browser playback are separate summaries with filenames, sizes, missing-file messages, and recorded-replay context. A manual refresh checks source status; it has its own loading label and is available independently of metadata draft changes. The section adds no video, background timer, or automatic polling.
+
+Running imports and selected imports remain distinct. A teal `role="status"` notice explains when a selection requires an API restart and that running inference and playback retain their current source until then. Red `role="alert"` notices communicate status-fetch failure with manual retry guidance, changed or missing running files, and invalid selected imports without implying that the running source switched. The checked timestamp is paired with the returned verification scope; file presence/size, startup hash checks, pending selection, and history are not presented as interchangeable assurances.
+
+Native `details`/`summary` disclosures expose running-import metadata, offline import instructions, and recent releases. Nested release summaries identify Running, Selected for restart, or Earlier import. Expanded details show the import date, local operator claim and reason, video dimensions/rate/duration, file sizes, and original/playback hashes. History is bounded to up to ten releases from the selected import's parent chain; retained older or unlinked files and unvalidated history remain explicit. Offline commands use wrapping zinc code blocks and a check → stop/import → restart/refresh sequence. Import guidance keeps footage provenance and location metadata review separate and states the local unauthenticated nature of operator claims.
 
 ## Do's and Don'ts
 
@@ -201,6 +214,7 @@ The settings form remains mounted after its first visit so draft state survives 
 - **Do** stack settings and history on narrow screens; keep the desktop 3:2 column arrangement.
 - **Do** keep revision identity and draft state visible; clear old success/no-save notices when a draft field changes.
 - **Do** retain AI26 naming and the boundary between metadata settings and deployment configuration.
+- **Do** distinguish running sources from selections awaiting restart in Camera settings, and keep source refresh independent of metadata drafts.
 
 ### Don't:
 

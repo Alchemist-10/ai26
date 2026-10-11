@@ -36,7 +36,8 @@ CPU PyTorch on Linux. After the first installation, restart with
   distinct accepted/rejected/unresolved candidate paths.
 - Offline recorded-source onboarding with original-byte preservation, validated
   browser playback, explicit replacement and restart activation.
-- Camera settings with audited metadata edits, read-only revision history, preserved
+- Camera settings with source inspection/pending-restart status, bounded import history,
+  audited metadata edits, read-only revision history, preserved
   drafts and explicit concurrent-save recovery.
 - Editable local watchlists, zone sightings, elapsed-time dwell rules, and review.
 - Actual processing health, sampled passage counts, and computed accepted-link
@@ -70,6 +71,7 @@ investigations never receive its observations automatically.
 | `docs/PERSISTENCE.md` | Camera revision and stored journey decision API |
 | `docs/SETTINGS.md` | Metadata editor, draft/conflict recovery and browser validation |
 | `docs/SOURCE_IMPORT.md` | Validated recorded footage import, activation and recovery |
+| `docs/SOURCE_STATUS.md` | Read-only source inspection, pending imports and history |
 | `docs/PROVENANCE.md` | Exact model/config identity, report coverage and validation limits |
 | `docs/READ_IMAGES.md` | Per-read images, failure coverage, storage budget and measured capture cost |
 | `docs/IMPORT.md` | Import provenance and separation from the SIH project |

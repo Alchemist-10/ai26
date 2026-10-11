@@ -39,7 +39,8 @@ label assertion, not coordinate or clock validation. `calibration_status` remain
 `unverified`; metadata edits cannot change it. The [Camera settings page](SETTINGS.md)
 edits metadata and inspects saved revisions with explicit stale-save recovery.
 Recorded sources can now be imported through the [offline command](SOURCE_IMPORT.md).
-Dynamic source upload/management UI and an independent survey/calibration workflow
+Read-only [source inspection/history](SOURCE_STATUS.md) is available in settings.
+Source upload/activation UI and an independent survey/calibration workflow
 remain separate work.
 
 ## Historical observations and links

@@ -7,6 +7,7 @@ from pathlib import Path
 
 DATA_ROOT = Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data'))
 SOURCE_ROOT = Path(os.environ.get('AI26_SOURCE_ROOT', DATA_ROOT / 'sources'))
+MAX_MANIFEST_BYTES = 64 * 1024
 
 
 def file_digest(path):
@@ -21,7 +22,10 @@ def load_source(camera_id, root=SOURCE_ROOT, *, verify=False):
     pointer = root / camera_id / 'active.json'
     if not pointer.exists() and not pointer.is_symlink(): return None
     try:
-        manifest = json.loads(pointer.read_text())
+        with pointer.open('rb') as stream:
+            raw = stream.read(MAX_MANIFEST_BYTES + 1)
+        if len(raw) > MAX_MANIFEST_BYTES: raise ValueError('Source manifest is too large')
+        manifest = json.loads(raw)
         release = manifest['release']
         if type(manifest['version']) is not int or manifest['version'] != 1 or manifest['camera_id'] != camera_id or not re.fullmatch(r'[0-9a-f]{32}', release):
             raise ValueError('Invalid source binding identity/version')

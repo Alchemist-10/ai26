@@ -4,8 +4,8 @@ AI26 now accepts a recorded clip for an existing camera through an offline local
 command. This supplies a managed original and a separate browser playback copy
 without editing Python source or overwriting the bundled clips. It does not supply
 missing real footage automatically, add cameras, enable RTSP, validate a plate or
-calibrate locations/clocks. The browser settings page still edits metadata only;
-a source upload/management screen is not implemented.
+calibrate locations/clocks. The browser settings page now [inspects source status/history](SOURCE_STATUS.md)
+and edits metadata; upload and release activation controls are not implemented.
 
 ## Use the command
 
@@ -116,3 +116,7 @@ All 128 backend tests and frontend lint/build pass. After the main app's clean
 restart, ten sampled historical observation IDs were retained and six snapshots
 decoded. New reads record nine named component digests, including the camera and
 managed-source resolver; older read/report provenance remains immutable.
+
+The later [source-inspection milestone](SOURCE_STATUS.md) extends the browser
+settings page and brings the isolated backend suite to 140 tests. The 128-test
+conversion/import milestone above remains historical evidence.

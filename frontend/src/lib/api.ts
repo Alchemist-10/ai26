@@ -29,6 +29,35 @@ export interface CameraConfigurationUpdate {
   reviewer: string
   reason: string
 }
+export interface SourceRelease {
+  release: string
+  reviewer: string | null
+  reason: string | null
+  imported_at: number | null
+  time_basis: string | null
+  previous_release: string | null
+  original: SourceFileMetadata
+  playback: SourceFileMetadata
+}
+export interface SourceFileMetadata {
+  bytes: number | null
+  sha256: string | null
+  video: { width: number | null; height: number | null; fps: number | null; duration_seconds: number | null; frame_count: number | null }
+}
+export interface CameraSourceStatus {
+  camera_id: string
+  checked_at: number
+  time_basis: string
+  active: {
+    kind: "managed" | "configured_original" | "bundled_proxy" | "missing"
+    release: SourceRelease | null
+    inference: { filename: string; available: boolean; bytes: number | null; size_matches_import: boolean | null }
+    playback: { filename: string; available: boolean; bytes: number | null; size_matches_import: boolean | null }
+  }
+  selection: { status: "current" | "restart_required" | "invalid"; release: SourceRelease | null; error: string | null }
+  history: { releases: SourceRelease[]; more: boolean; error: string | null }
+  verification: string
+}
 export interface CameraHealth {
   camera_id: string
   status: string
@@ -150,6 +179,10 @@ export async function getCameras(signal?: AbortSignal): Promise<Camera[]> {
 export function getCameraConfiguration(cameraId: string, revision?: number, signal?: AbortSignal): Promise<CameraConfiguration> {
   const query = revision === undefined ? "" : `?revision=${revision}`
   return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/configuration${query}`, { signal })
+}
+
+export function getCameraSourceStatus(cameraId: string, signal?: AbortSignal): Promise<CameraSourceStatus> {
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/source`, { signal })
 }
 
 export function saveCameraConfiguration(cameraId: string, change: CameraConfigurationUpdate): Promise<CameraConfiguration> {

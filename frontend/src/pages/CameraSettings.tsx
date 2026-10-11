@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { ApiError, getCameraConfiguration, saveCameraConfiguration, type Camera, type CameraConfiguration } from "@/lib/api"
+import CameraSources from "@/components/settings/CameraSources"
 
 const control = "w-full min-w-0 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-base text-white disabled:opacity-50"
 const button = "min-h-11 rounded border border-zinc-600 px-3 py-2 text-sm font-medium hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
@@ -116,7 +117,7 @@ export default function CameraSettings({ cameras, initialCamera }: { cameras: Ca
     <section aria-labelledby="camera-settings-title" className="h-full overflow-y-auto bg-black p-4 text-white sm:p-6">
       <div className="mx-auto max-w-5xl pb-8">
         <h1 id="camera-settings-title" className="text-2xl font-semibold">Camera settings</h1>
-        <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Edit a camera’s location metadata and review saved revisions. Changes apply to future observations; existing evidence keeps the revision captured with it.</p>
+        <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Inspect source footage, edit location metadata and review saved revisions. Metadata changes apply to future observations; existing evidence keeps the revision captured with it.</p>
         <div className="mt-6 grid gap-3 border-b border-zinc-800 pb-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <label className="block text-sm font-medium" htmlFor="settings-camera">Camera
             <select id="settings-camera" className={`${control} mt-2`} value={selected} disabled={dirty || busy || loading} aria-describedby="camera-selection-help" onChange={event => selectCamera(event.target.value)}>
@@ -125,7 +126,7 @@ export default function CameraSettings({ cameras, initialCamera }: { cameras: Ca
             </select>
           </label>
           <button type="button" className={button} disabled={dirty || busy || loading} onClick={() => { setConfig(null); setLoading(true); setError(""); setLoadVersion(value => value + 1); setNotice(""); setHistory(null); setHistoryError("") }}>Refresh current revision</button>
-          <p id="camera-selection-help" className="text-sm text-zinc-300 sm:col-span-2">{dirty ? "Save or discard your draft before switching cameras. It stays here when you navigate to another page." : "Choose a camera to load its metadata. Source files and detector types are managed in deployment configuration."}</p>
+          <p id="camera-selection-help" className="text-sm text-zinc-300 sm:col-span-2">{dirty ? "Save or discard your draft before switching cameras. It stays here when you navigate to another page." : "Choose a camera to inspect its footage and metadata. Detector types remain fixed."}</p>
         </div>
         {loading && <p role="status" className="mt-4 text-sm text-zinc-300">Loading configuration…</p>}
         {error && <p role="alert" className="mt-4 rounded border border-red-400/40 bg-red-950/40 p-3 text-sm leading-relaxed text-red-100">{error}</p>}
@@ -138,6 +139,7 @@ export default function CameraSettings({ cameras, initialCamera }: { cameras: Ca
           </div>
           <p className="mt-2 text-sm text-zinc-300">Saved: {savedAt(config)} · Calibration: {config.calibration_status}</p>
           <p className="mt-2 break-words text-sm text-zinc-300">Metadata source: {config.metadata_source}</p>
+          <CameraSources key={selected} cameraId={selected} />
           <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="min-w-0">
               <h2 className="text-lg font-semibold">Location metadata</h2>
@@ -211,7 +213,7 @@ export default function CameraSettings({ cameras, initialCamera }: { cameras: Ca
                   <div><dt className="text-zinc-300">Saved</dt><dd>{savedAt(history)}</dd></div>
                 </dl>
               </div>}
-              <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Video source onboarding and detector changes are separate deployment tasks. This page edits catalog metadata only.</p>
+              <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Footage imports use the local host command above. This form edits location metadata; detector types stay fixed.</p>
             </aside>
           </div>
         </>}

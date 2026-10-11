@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-11T05:41:39.716107+00:00",
+  "generatedAt": "2026-10-11T07:37:55.718178+00:00",
   "title": "Design System: AI26",
   "extensions": {
     "colorMeta": {
@@ -134,7 +134,7 @@
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Form and history section headings."
+        "purpose": "Metadata, source footage, and history section headings."
       },
       "body": {
         "displayName": "Body",
@@ -251,18 +251,26 @@
       "name": "Settings status notice",
       "kind": "custom",
       "refersTo": "status-notice",
-      "description": "Revision status; clears when draft metadata is edited.",
+      "description": "Teal status treatment for revision notices and source restart notices; revision notices clear when their metadata draft is edited.",
       "html": "<p class=\"ds-notice\" role=\"status\">Saved revision 5. Historical observations keep their original metadata.</p>",
       "css": ".ds-notice{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);border:1px solid oklch(70.4% .14 182.503 / .4);border-radius:.25rem;background:oklch(27.7% .046 192.524 / .3);padding:.75rem;color:oklch(95.3% .051 180.801);font-size:.875rem;line-height:1.25rem}"
+    },
+    {
+      "name": "Source release disclosure",
+      "kind": "custom",
+      "description": "Native collapsed source history; running and selected-for-restart releases remain explicit, with wrapping metadata when expanded.",
+      "html": "<details class=\"ds-source-history\"><summary class=\"ds-source-summary\">Recent imported releases \u00b7 2</summary><ul class=\"ds-source-list\"><li class=\"ds-source-release\"><details><summary class=\"ds-source-summary\">478c834117994cf6bc1400d335bebfe8 \u00b7 Selected for restart</summary><dl class=\"ds-source-meta\"><dt>Operator claim</dt><dd>Synthetic validation operator</dd><dt>Reason</dt><dd>Generated color clip; no plate identity</dd><dt>Video metadata</dt><dd class=\"ds-source-numeric\">320 \u00d7 240 \u00b7 10 fps \u00b7 1 seconds</dd><dt>Original SHA-256</dt><dd class=\"ds-source-hash\">f2ae68e65b196af5308685905b2c881c15eb5b91cdcbd53b6b55e1da08aea297</dd></dl></details></li><li class=\"ds-source-release\"><details><summary class=\"ds-source-summary\">e1742de6a9f34f84893a9a5fcda0b83d \u00b7 Running</summary><dl class=\"ds-source-meta\"><dt>Original</dt><dd>1.86 KiB</dd><dt>Playback copy</dt><dd>1.85 KiB</dd></dl></details></li></ul><p class=\"ds-source-note\">Up to ten releases from the selected import\u2019s parent chain. Unlinked releases are not listed. History metadata and retained files have not been revalidated here.</p></details>",
+      "css": ".ds-source-history{font-family:var(--font-sans,\"IBM Plex Sans\",system-ui,sans-serif);min-width:0;border-top:1px solid oklch(27.4% .006 286.033);padding-top:.5rem;background:#000;color:#fff;font-size:.875rem;line-height:1.25rem}.ds-source-summary{min-height:2.75rem;cursor:pointer;padding:.75rem 0;font-weight:500;overflow-wrap:anywhere}.ds-source-summary:focus-visible{outline:2px solid var(--ring,#38d1c2);outline-offset:3px}.ds-source-list{list-style:none;padding:0;margin:0}.ds-source-release{padding:.75rem 0}.ds-source-release+.ds-source-release{border-top:1px solid oklch(27.4% .006 286.033)}.ds-source-release .ds-source-summary{padding:.5rem 0}.ds-source-meta{display:grid;gap:.5rem;margin:.75rem 0 0;line-height:1.625}.ds-source-meta dt,.ds-source-note{color:oklch(87.1% .006 286.286)}.ds-source-meta dd{min-width:0;margin:0;overflow-wrap:anywhere}.ds-source-hash{font-family:var(--font-mono,\"IBM Plex Mono\",ui-monospace,monospace);word-break:break-all}.ds-source-numeric{font-variant-numeric:tabular-nums}.ds-source-note{margin:.5rem 0 0;line-height:1.625}@media(min-width:40rem){.ds-source-meta{grid-template-columns:auto minmax(0,1fr);column-gap:1rem}}"
     }
   ],
   "narrative": {
     "northStar": "Unrecorded",
-    "overview": "This record covers the inherited AI26 dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.\n\nThe implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Native labelled metadata fields sit beside retained revision history on desktop and above it on mobile. Screenshots show an internally scrolling section beneath the application header.",
+    "overview": "This record covers the inherited AI26 dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.\n\nThe implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Source inspection precedes native labelled metadata fields, which sit beside retained revision history on desktop and above it on mobile. Source details use native disclosures within the same internally scrolling section beneath the application header.",
     "keyCharacteristics": [
       "Black and zinc surfaces with white actions.",
       "IBM Plex Sans for this shell and form.",
       "Visible labels, native controls, and explicit revision review.",
+      "Separate running inference and browser sources with explicit restart status.",
       "A persistent header with internal content scrolling."
     ],
     "rules": [],
@@ -271,7 +279,8 @@
       "Do preserve visible field labels, native control semantics, and the shared teal focus outline.",
       "Do stack settings and history on narrow screens; keep the desktop 3:2 column arrangement.",
       "Do keep revision identity and draft state visible; clear old success/no-save notices when a draft field changes.",
-      "Do retain AI26 naming and the boundary between metadata settings and deployment configuration."
+      "Do retain AI26 naming and the boundary between metadata settings and deployment configuration.",
+      "Do distinguish running sources from selections awaiting restart in Camera settings, and keep source refresh independent of metadata drafts."
     ],
     "donts": [
       "Don't import Godseye branding or infer a new shared identity.",

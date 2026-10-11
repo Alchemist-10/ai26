@@ -1,9 +1,10 @@
-# Camera metadata settings
+# Camera settings
 
 Open **Camera settings** from the navigation drawer. Select a camera, change its
 location label, latitude/longitude or label confirmation, enter a reviewer name
 and reason, then **Save new revision**. The camera ID, detector kind and video
-source remain deployment configuration. Missing source files are displayed
+source selection remain fixed for the running process. The source section inspects
+running/selected footage; import uses the offline host command. Missing files are displayed
 explicitly; editing their metadata does not supply footage.
 
 The editor uses the existing GET/PUT camera configuration API. Every successful
@@ -49,7 +50,7 @@ Coordinates, recording clocks and travel-time constraints remain uncalibrated.
 Reviewer identity is unauthenticated. This is a local prototype metadata editor,
 not the source import command, an upload UI, authorization or an independent survey workflow.
 
-## Performance and validation
+## Metadata editor validation (prior milestone)
 
 The settings bundle loads on the first visit. It reuses App's catalog and adds
 no polling, media playback, inference workers or dependencies. Configuration GETs
@@ -78,3 +79,12 @@ All 113 existing isolated backend tests passed, including the persistence API
 contracts. Frontend lint and production build passed with the two existing shared
 component Fast Refresh warnings. Browser integration checks are manual proof;
 this milestone does not add an automated frontend testing framework.
+
+## Source inspection extension
+
+Settings now includes read-only footage roles, pending-restart/error states,
+bounded import history and offline command guidance above the metadata form.
+Its refresh preserves the form draft. This is source inspection rather than
+browser upload or live activation. [SOURCE_STATUS.md](SOURCE_STATUS.md) describes
+the endpoint, request bounds, current 140-test suite and desktop/mobile checks.
+The earlier 113-test and 13.56 kB figures above describe the metadata-only milestone.

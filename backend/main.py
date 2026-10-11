@@ -24,6 +24,7 @@ from plate_format import normalize_plate
 from repository import canonical_json
 from artifacts import artifact_bytes
 from maintenance import Maintenance
+from source_status import source_status
 
 
 @asynccontextmanager
@@ -79,6 +80,11 @@ def camera_configuration(camera_id:str, revision:Annotated[int|None,Query(ge=1)]
     config=store.camera_configuration(camera_id,revision)
     if config is None: raise HTTPException(404,'Camera configuration revision unavailable')
     return config
+
+@app.get('/api/cameras/{camera_id}/source')
+def camera_source_status(camera_id:str):
+    check_camera(camera_id)
+    return source_status(camera_id)
 
 @app.put('/api/cameras/{camera_id}/configuration')
 def update_camera_configuration(camera_id:str, body:CameraConfigurationUpdate):

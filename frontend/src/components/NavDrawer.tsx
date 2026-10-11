@@ -11,7 +11,7 @@ const NAV: { id: Page; label: string; icon: typeof MapIcon; blurb: string }[] = 
   { id: "alerts", label: "Alerts", icon: TriangleAlert, blurb: "Route-anomaly rules" },
   { id: "analytics", label: "Analytics", icon: ChartColumn, blurb: "Stats + congestion map" },
   { id: "query", label: "Ask the Grid", icon: MessageSquare, blurb: "Natural-language query" },
-  { id: "settings", label: "Camera settings", icon: Settings, blurb: "Metadata and revision history" },
+  { id: "settings", label: "Camera settings", icon: Settings, blurb: "Footage, metadata and history" },
 ]
 
 export function NavDrawer({
