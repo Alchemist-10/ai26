@@ -119,5 +119,5 @@ viewport; Settings contained no video elements. Six idle seconds added zero sour
 status/preparation/selection requests. Visual review status is recorded separately.
 These checks do not establish real OCR/identity accuracy or sustained performance.
 
-The later [sampling-budget milestone](RUNTIME_PROFILE.md) has 182 backend tests.
+The later [sampling-budget milestone](RUNTIME_PROFILE.md) had 182 backend tests.
 The 170-test figures above remain this source-selection milestone's evidence.

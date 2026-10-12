@@ -86,5 +86,19 @@ identity. A local read-only profiler records counter deltas, health latency and
 optional Linux CPU/RSS. See [RUNTIME_PROFILE.md](RUNTIME_PROFILE.md) and
 [Current validation](validation/sampling-budget-validation.json). The 55-test and
 short CPU/browser observations above remain the earlier milestone's evidence;
-the current backend suite has 182 tests. Current measurements do not establish
+that milestone had 182 tests. Current measurements do not establish
 full-rate detection, long-term throughput or real plate accuracy.
+
+## Bounded forward decode — 12 October 2026
+
+A decode-only comparison of 24 target indices per bundled clip found bounded
+forward advancement faster than always seeking under the sampled local load.
+All 144 raw frame hashes matched the existing method. The implemented decoder
+was then checked against those same hashes and a moving, colour-changing MJPG
+fixture decoded sequentially as a frame-index reference. Nearby advancement is
+bounded and requires verified cursor/target positions; resets, larger jumps and
+unsupported positions retain seeks. The current backend suite has 190 tests.
+See [DECODE_SAMPLING.md](DECODE_SAMPLING.md) and its validation for actual
+measurement conditions. These comparisons do not establish OCR accuracy or
+full-frame-rate throughput. Main-service concurrency was not sampled during the
+preliminary comparison and is not claimed.

@@ -78,7 +78,8 @@ The already-running processor continues its normal database/image writes.
 Twelve isolated contracts cover scheduler fairness, missing/backoff work, idle
 waits, slow/failing attempts, bounded telemetry, monotonic FPS, local-origin/response
 validation, counter restarts, endpoint outage recovery, PID reuse/procfs parsing
-and late sampling. The complete backend suite has 182 passing tests.
+and late sampling. That profiling milestone recorded 182 passing tests. The later
+[decoder milestone](DECODE_SAMPLING.md) has the current 190-test suite.
 
 The local before/after measurement uses the six bundled vehicle clips and the same
 two-attempt budget under normal desktop load. It is not aligned to identical replay

@@ -197,3 +197,14 @@ per camera; failed/overrun attempts and first-success timing remain separate.
 Health uses a monotonic FPS denominator and a stable run ID for counter-window
 verification. The read-only profiler adds no producer or source mutation. See
 [RUNTIME_PROFILE.md](RUNTIME_PROFILE.md).
+
+## Bounded recorded-frame advancement
+
+The owner can reuse a verified decoder position for nearby increasing sample
+indices. It performs at most 128 explicit grab calls, then retrieves the target
+once and verifies the next frame position. Initial, backward, repeated, large
+or unverified positions use seeking. Failure removes the cursor and enters the
+existing error/backoff/reopen path before any observation is inserted. Decode
+state is per camera and cleared on missing source, failure, reopen and shutdown.
+No extra reader, worker or full-frame archive is added. See
+[DECODE_SAMPLING.md](DECODE_SAMPLING.md).

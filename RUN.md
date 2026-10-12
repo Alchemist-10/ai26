@@ -49,6 +49,7 @@ uv run run.py
 | `AI26_SOURCE_ROOT` | `<AI26_DATA_ROOT>/sources` | Optional managed recorded imports; same value for CLI/API |
 | `AI26_PROCESSING_ENABLED` | `1` | Set `0` for API/fixture tests without models |
 | `AI26_TOTAL_INFERENCE_FPS` | `2` | Total scheduled sampling budget, clamped 0.1–10 |
+| `AI26_FORWARD_DECODE_MAX_FRAMES` | `128` | Maximum explicit forward grab calls per sample, clamped 0–128; 0 uses seeking |
 | `AI26_TIMEZONE` | `Asia/Kolkata` | Calendar/time interpretation for query intents |
 
 Sampling is sequential and skips through recorded clips using elapsed replay
@@ -167,3 +168,9 @@ uv run --frozen --directory backend python ../evaluation/profile_runtime.py \
 An optional Linux `--pid API_PROCESS_PID` samples CPU/RSS without signaling the
 process. The profile uses actual counter deltas and marks restarts/unavailable
 counters as unverified. It adds no inference worker or persistent app polling.
+
+Recorded sampling uses bounded forward grabs from a verified decoder position for
+nearby targets. Initial/backward/repeated/large targets use the existing seek path.
+The hard forward limit is 128 calls, including the target frame; set
+`AI26_FORWARD_DECODE_MAX_FRAMES=0` to disable the optimization. Read
+[DECODE_SAMPLING.md](docs/DECODE_SAMPLING.md) for target verification and limits.

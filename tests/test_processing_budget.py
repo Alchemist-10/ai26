@@ -57,7 +57,9 @@ class Budget(unittest.TestCase):
     def test_real_missing_and_retry_checks_do_not_count_as_attempts(self):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/'clip';p=self.processor([1]);p.source=lambda _:path
-            self.assertFalse(p.step(p.cameras[0]));path.write_bytes(b'fixture');p.retry_at['CAM-01']=processing.time.time()+20
+            p.decode_next['CAM-01']=9
+            self.assertFalse(p.step(p.cameras[0]));self.assertNotIn('CAM-01',p.decode_next)
+            path.write_bytes(b'fixture');p.retry_at['CAM-01']=processing.time.time()+20
             self.assertFalse(p.step(p.cameras[0]));h=p.health()[0]
             self.assertEqual(h['missing_source_checks'],1);self.assertEqual(h['retry_backoff_checks'],1);self.assertEqual(h['attempts'],0);self.assertIsNone(h['timing']['total'])
     def test_success_and_failure_timings_are_separate_and_no_health_accumulation(self):

@@ -1,4 +1,4 @@
-# AI26 implementation progress — 11 October 2026
+# AI26 implementation progress — 12 October 2026
 
 This records the current reliability, tracking, persistence and performance implementation. Accuracy release gates remain open.
 The original audit/plan remain the baseline. AI26 alone was changed; the Godseye
@@ -122,6 +122,18 @@ load and replay positions are not controlled. See `docs/RUNTIME_PROFILE.md` and
 `AI26_SAMPLING_BUDGET_VALIDATION.json`. Actual source/browser drops, independently
 cold OCR, long-duration load, low-end devices and accuracy remain unmeasured.
 
+## Recorded decode update
+
+Nearby increasing source-frame targets now use bounded forward grabs from a
+verified decoder position, retrieving only the target. At most 128 explicit calls
+are allowed; resets, repeats, backward/large targets and unverified positions use
+seeking. Failure clears the per-camera cursor before existing retry/reopen handling.
+Eight new contracts pass, all 144 bundled-clip targets matched existing pixel
+hashes, and 11 target indices matched an independent sequentially decoded numbered
+fixture. No extra decoder, inference worker or database migration is added. See
+`docs/DECODE_SAMPLING.md` and `AI26_DECODE_VALIDATION.json`. Variable-rate source
+clock calibration, playback drops, low-end devices and real accuracy remain open.
+
 ## Tracking update
 
 Local motion/box global assignment, elapsed-time expiry and ambiguity abstention
@@ -131,7 +143,7 @@ constructed failure cases and limits. Real identity/count accuracy is unmeasured
 
 ## Validation
 
-- 182 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 190 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -262,7 +274,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | EV-06 | Partial | Measure accepted/rejected trajectory-link precision and impossible-travel false alerts. | Positive/negative link evaluation implemented; real false-link/false-alert estimates pending. |
 | EV-07 | Partial | Evaluate loitering/restricted-zone/watchlist rules with both positive and negative cases. | Positive/negative dwell, watchlist/review and zone configuration tests; labeled footage-level rule evaluation pending. |
 | EV-08 | Partial | Validate derived traffic metrics against independent counts or known synthetic ground truth. | Known synthetic passage fixtures verify deduplication; independent real traffic counts/calibration pending. |
-| EV-09 | Partial | Benchmark warm/cold inference latency, sustained multi-stream throughput, dropped frames and memory. | Bounded phase timing and a read-only CPU/RSS/counter profiler implemented; 30-second before and 120-second six-camera after samples recorded. Independently cold OCR, long-duration load and actual capture/browser dropped-frame accounting remain pending. |
+| EV-09 | Partial | Benchmark warm/cold inference latency, sustained multi-stream throughput, dropped frames and memory. | Bounded timings, read-only CPU/RSS/counter profiling and verified forward decode implemented; six-camera runtime samples and 144 same-frame decoder checks recorded. Independently cold OCR, long-duration load and actual capture/browser dropped-frame accounting remain pending. |
 | EV-10 | Done | Test page changes, multiple clients, restart, idle expiry, duplicate events, bad input and model-download failure. | Isolated tests cover multiple consumers, restart, idle expiry, duplicates, invalid input, corrupt capture, replay boundaries and simulated model-download failure; live launcher restart verified. |
 | EV-11 | Partial | Record sample sizes, hardware, conditions and failure cases; do not infer accuracy from the current smoke tests. | Runtime conditions and synthetic sample sizes documented; held-out accuracy samples/failure strata remain absent. |
 | EV-12 | Done | Add CI for regression/build checks and a reproducible evaluation command. | Pinned-action CPU/backend/frontend CI workflow and reproducible evaluation CLI; local equivalent checks pass. Remote result recorded separately. |

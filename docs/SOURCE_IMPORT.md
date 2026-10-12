@@ -141,6 +141,6 @@ The [browser-selection milestone](SOURCE_SELECTION.md) has 170 backend
 tests, including 13 new selection/rollback contracts. Historical counts above
 describe their own milestones.
 
-The subsequent [sampling-budget milestone](RUNTIME_PROFILE.md) brings the backend
+The subsequent [sampling-budget milestone](RUNTIME_PROFILE.md) brought the backend
 suite to 182 tests; source-import and selection counts above describe their own
 validation snapshots.

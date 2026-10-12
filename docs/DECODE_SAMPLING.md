@@ -1,0 +1,83 @@
+# Bounded recorded-frame decoding — 12 October 2026
+
+Each camera keeps one owned OpenCV/FFmpeg reader. The replay sampler still chooses
+a source-frame index from its existing replay clock. A nearby increasing target
+can now advance the reader with bounded `grab` calls, then `retrieve` only the target,
+instead of repeatedly seeking back to a codec keyframe and decoding forward again.
+There is no extra reader, inference worker, full-frame archive or frontend timer.
+The total sampling budget remains unchanged.
+
+## Cursor and failure rules
+
+The first sample uses seek/read. Only a successful read whose next decoder position
+matches target + 1 supplies a known cursor. Forward mode also requires the current
+OpenCV cursor to match that remembered value. At most
+`AI26_FORWARD_DECODE_MAX_FRAMES` explicit grab calls, including the target, are
+allowed. The default/hard maximum is 128; values are clamped to 0–128 and 0 disables
+forward mode. A gap of 127 intermediate indices uses 128 calls; a larger gap seeks.
+
+Repeated targets, backward targets, replay resets, unknown/drifted starting positions
+and larger jumps retain seek/read. Forward retrieval must verify its resulting
+next-frame position; failure abstains before observation/image insertion and
+enters the existing error/backoff/reopen path. Failed seek/grab/retrieve attempts
+clear the remembered cursor. Missing source, fresh reopen and shutdown clear it too.
+Each camera has independent cursor state. Unsupported position reporting keeps the
+seek path; it does not enable unchecked forward advancement.
+
+Health exposes forward_decode_max_frames, decode_mode, decode_grabbed_frames and
+decode_position_verified. The last field is null for an unfinished/failed decoding
+operation and false when seek/read succeeds without usable cursor reporting.
+The grab field describes explicit advancement/read calls, not all internal codec
+work or dropped frames. Existing source/frame timestamps and frame/crop capture
+remain unchanged. An OpenCV position check is not capture-clock calibration.
+
+The method follows [OpenCV's grab/retrieve/read contract](https://docs.opencv.org/4.13.0/d8/dfe/classcv_1_1VideoCapture.html).
+The find-docs service lookup failed; the official version-matched reference and
+actual installed OpenCV 4.13.0 behavior were checked directly.
+
+## Pixel and index validation
+
+A preliminary decode-only comparison used 24 indices per bundled camera, including
+wraps, with one FFmpeg decode thread. All 144 bounded-forward raw frame SHA-256
+values matched always-seek values. Target positions were identical; hashes are
+computed outside the timed decoding interval. Main-service concurrency was not
+sampled during that preliminary test and is not claimed. Benchmark order and
+background desktop load were uncontrolled.
+
+The final implementation was checked against all 144 same-source reference hashes.
+An independent 180-frame moving, colour-changing MJPG fixture had 180 unique frames
+when decoded sequentially. Eleven sample indices, including adjacent, forward,
+large, backward, repeated and end-of-file targets, matched those canonical hashes.
+The fixture database/media were disposable and removed; no generated footage entered
+the main app. Pixel equivalence is a decoder contract, not detector/OCR accuracy.
+
+Eight new contracts cover cursor use, exact advancement count, maximum/repeated/
+backward/large targets, unknown and changed positions, grab/retrieve/seek failures,
+post-retrieval drift, per-camera isolation and disabling/clamping the option. Existing
+missing-source cleanup now also checks cursor removal. All 190 backend tests pass.
+
+## Runtime sample and limits
+
+The existing app services were absent when the new startup check began. Both ports
+were closed; the app was restored with processing enabled, all ten previously
+sampled historical observation IDs remained, and six snapshots decoded. This was
+a startup recovery, not a newly measured graceful shutdown. The source catalog and
+metadata/source selections stayed unchanged; CAM-07–09 remain missing.
+
+A subsequent requested 120-second read-only profile sampled the actual Python
+uvicorn PID. The verified counter window and phase/CPU/RSS measurements are in
+[Decode validation](validation/decode-validation.json). The current run reached
+about 2.00 completed samples/sec with zero failed attempts, health failures or
+budget overruns during that window. Timing windows retain at most 64 successful
+samples per camera; first-success timing remains separate. More work or different
+footage/load can change these results.
+
+The prior scheduler profile ran on another day under different desktop load; its
+CPU/FPS numbers are context, not a controlled optimization comparison. The paired
+same-index decoder checks provide the narrower measured timing evidence. Decode
+medians varied by clip and benchmark order. Native playback frame drops, UI
+INP/LCP/CLS, physical low-end devices, throttled networks, long-duration soak,
+independently cold OCR, VFR/capture-clock calibration and held-out accuracy remain
+unmeasured. Sparse replay sampling intentionally omits source frames. Imported
+recordings with short keyframe spacing or different codecs may favor seeks; use
+0 to disable this optimization when measured on such inputs.

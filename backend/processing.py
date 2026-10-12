@@ -54,6 +54,8 @@ class Processor:
         self.retry_at = {}
         self.source_hashes = {}
         self.capture_generation = {}
+        self.decode_next = {}
+        self.forward_decode_limit = max(0,min(128,int(os.environ.get('AI26_FORWARD_DECODE_MAX_FRAMES','128'))))
         self.owner_file = None
 
     def start(self):
@@ -90,6 +92,7 @@ class Processor:
                      'processed_fps':round(s['frames']/max(elapsed,1),3),
                      'inference_owner':'single-process round-robin', 'sampling_budget_fps':self.rate,
                      'processor_run_id':self.run_id,
+                     'forward_decode_max_frames':self.forward_decode_limit,
                      'timing':self.timing_summary(s['camera_id']),
                      'artifact_storage':storage_usage()}
                     for s in self.state.values()]
@@ -122,6 +125,29 @@ class Processor:
                 self.first_timings.setdefault(camera,record)
                 self.timing_windows[camera].append(record)
 
+    def decode_frame(self, camera, cap, target):
+        """Use bounded grabs only from a previously verified decoder position."""
+        previous=self.decode_next.pop(camera,None)
+        position=cap.get(cv2.CAP_PROP_POS_FRAMES)
+        gap=target-previous if previous is not None else None
+        forward=(self.forward_decode_limit>0 and gap is not None and 0<=gap<self.forward_decode_limit
+                 and math.isfinite(position) and abs(position-previous)<.01)
+        self._set(camera,decode_mode='forward' if forward else 'seek',decode_grabbed_frames=gap+1 if forward else 1,decode_position_verified=None)
+        if forward:
+            for _ in range(gap+1):
+                if not cap.grab(): raise RuntimeError('Forward source frame could not be grabbed')
+            ok,frame=cap.retrieve()
+        else:
+            if not cap.set(cv2.CAP_PROP_POS_FRAMES,target): raise RuntimeError('Source frame could not be sought')
+            ok,frame=cap.read()
+        if not ok or frame is None: raise RuntimeError('Source frame could not be decoded')
+        position=cap.get(cv2.CAP_PROP_POS_FRAMES)
+        verified=math.isfinite(position) and abs(position-(target+1))<.01
+        if forward and not verified: raise RuntimeError('Forward decoded position could not be verified')
+        if verified: self.decode_next[camera]=target+1
+        self._set(camera,decode_position_verified=verified)
+        return frame
+
     def jpeg(self, camera):
         with self.lock:
             value=self.latest.get(camera)
@@ -147,6 +173,7 @@ class Processor:
             self._set(camera_id,status='unavailable',source_available=False,error='Source file missing')
             self.latest.pop(camera_id,None)
             cap=self.captures.pop(camera_id,None)
+            self.decode_next.pop(camera_id,None)
             if cap: cap.release()
             return False
         self._set(camera_id,source_available=True)
@@ -161,6 +188,7 @@ class Processor:
         try:
             reopened = False
             if camera_id not in self.captures:
+                self.decode_next.pop(camera_id,None)
                 cap=cv2.VideoCapture(str(path),cv2.CAP_FFMPEG,[cv2.CAP_PROP_N_THREADS,1])
                 if not cap.isOpened(): cap.release(); raise RuntimeError('Source could not be opened')
                 self.captures[camera_id]=cap
@@ -188,9 +216,7 @@ class Processor:
                                      'source_sha256':self.source_hashes[camera_id], 'source_mode':'recorded',
                                      'time_basis':'replay_clock','loop_epoch':epoch,'run_id':self.run_id})
             mark('decode')
-            cap.set(cv2.CAP_PROP_POS_FRAMES,frame_id)
-            ok,raw=cap.read()
-            if not ok: raise RuntimeError('Source frame could not be decoded')
+            raw=self.decode_frame(camera_id,cap,frame_id)
             self._set(camera_id,status='loading',error=None)
             mark('inference')
             began=time.monotonic()
@@ -230,6 +256,7 @@ class Processor:
             self._set(camera_id,status='error',error=str(exc)[:200])
             self.retry_at[camera_id]=time.time()+10
             cap=self.captures.pop(camera_id,None)
+            self.decode_next.pop(camera_id,None)
             if cap: cap.release()
         finally:
             phases[phase]=(time.monotonic()-phase_began)*1000
@@ -255,6 +282,7 @@ class Processor:
         finally:
             for cap in self.captures.values(): cap.release()
             self.captures.clear()
+            self.decode_next.clear()
             if self.owner_file:
                 self.owner_file.close()
                 self.owner_file = None
