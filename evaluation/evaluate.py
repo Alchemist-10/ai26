@@ -1,8 +1,21 @@
 """Evaluate explicit labeled JSONL records. Synthetic fixtures never establish model accuracy."""
 import argparse
 import json
+import importlib.util
 from pathlib import Path
-from dataset_manifest import ManifestError, validate_manifest
+try:
+    from .dataset_manifest import ManifestError, validate_manifest
+except ImportError:
+    try:
+        from dataset_manifest import ManifestError, validate_manifest
+    except ImportError:
+        spec = importlib.util.spec_from_file_location(
+            "dataset_manifest", Path(__file__).with_name("dataset_manifest.py"))
+        if spec is None or spec.loader is None:
+            raise
+        dataset_manifest = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(dataset_manifest)
+        ManifestError, validate_manifest = dataset_manifest.ManifestError, dataset_manifest.validate_manifest
 
 
 def iou(a,b):
