@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "dataset_id": "replace-with-dataset-name-and-version",
+  "split_dimensions": [
+    "vehicle_id",
+    "camera_id",
+    "location_id",
+    "session_id"
+  ],
+  "clips": [],
+  "missing_inputs": [
+    {
+      "camera_id": "CAM-07",
+      "reason": "Readable plate footage and original capture metadata have not been supplied."
+    },
+    {
+      "camera_id": "CAM-08",
+      "reason": "Readable plate footage and original capture metadata have not been supplied."
+    },
+    {
+      "camera_id": "CAM-09",
+      "reason": "Readable plate footage and original capture metadata have not been supplied."
+    }
+  ]
+}

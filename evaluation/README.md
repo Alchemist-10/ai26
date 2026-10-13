@@ -6,6 +6,34 @@ Run from the repository root:
 python evaluation/evaluate.py --records evaluation/example.jsonl --output evaluation/results/fixture.json
 ```
 
+## Dataset manifest
+
+Start from [`dataset-manifest.template.json`](dataset-manifest.template.json),
+then record each supplied clip's relative path and SHA-256, camera/location/session,
+split, clock and coordinate status, recording conditions, and manual vehicle/plate
+labels. Paths must resolve inside the manifest directory. Keep the same vehicle,
+camera, location, and recording session in only one split. Do not use adjacent
+frames or repeated clips as independent examples.
+
+Validate current inputs and report missing work:
+
+```bash
+python evaluation/dataset_manifest.py evaluation/dataset-manifest.json
+```
+
+Use `--require-ready` in an evaluation job to fail until files and labels exist
+and all three splits are represented. `ready` means the manifest is structurally
+complete and clip hashes match; it does not establish annotation quality, sufficient
+sample size, or model accuracy. A dataset whose coordinates or capture clocks are
+not independently validated is not ready for cross-camera travel evaluation. The
+manifest records those declarations; the validator does not independently prove
+coordinate survey or clock synchronization.
+
+Non-synthetic evaluation records must include `clip_id`, `camera`, and `session`,
+and the evaluator requires `--manifest`. It checks that every record maps to a
+manifest clip in the test split and that camera/session match the clip. Synthetic
+fixtures remain available without a manifest and are reported as synthetic.
+
 The included records are **synthetic correctness fixtures**, not model accuracy.
 Supply held-out, manually labeled prediction records to measure the real models.
 Each line has a unique sample_id and optional expected_plate/predicted_plate,

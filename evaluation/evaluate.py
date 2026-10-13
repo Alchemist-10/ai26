@@ -2,6 +2,7 @@
 import argparse
 import json
 from pathlib import Path
+from dataset_manifest import ManifestError, validate_manifest
 
 
 def iou(a,b):
@@ -104,7 +105,29 @@ def evaluate(records):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--records',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--manifest',type=Path,help='validated dataset manifest; required for non-synthetic records')
     args=parser.parse_args();records=[json.loads(line) for line in args.records.read_text().splitlines() if line.strip()]
+    real_records=[record for record in records if not record.get('synthetic',False)]
+    if real_records and args.manifest is None:
+        parser.error('non-synthetic evaluation requires --manifest so test split and source clip can be checked')
+    if args.manifest is not None:
+        try:
+            manifest_report=validate_manifest(args.manifest)
+        except ManifestError as error:
+            parser.error(f'invalid dataset manifest: {error}')
+        if manifest_report['status'] != 'ready':
+            parser.error('dataset manifest is incomplete; use labeled clips in all three disjoint splits')
+        manifest=json.loads(args.manifest.read_text(encoding='utf-8'))
+        clips={clip['clip_id']:clip for clip in manifest['clips']}
+        for index,record in enumerate(real_records):
+            clip_id=record.get('clip_id')
+            if not isinstance(clip_id,str) or clip_id not in clips:
+                parser.error(f'record {record.get("sample_id", index)!r} must reference a manifest clip_id')
+            clip=clips[clip_id]
+            if clip['split'] != 'test':
+                parser.error(f'record {record.get("sample_id", index)!r} uses a non-test clip')
+            if record.get('camera') != clip['camera_id'] or record.get('session') != clip['session_id']:
+                parser.error(f'record {record.get("sample_id", index)!r} camera/session do not match its clip')
     result=evaluate(records);args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(result,indent=2)+'\n')
     print(f'{len(records)} records evaluated; synthetic={result["synthetic"]}; output={args.output}')

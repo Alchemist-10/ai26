@@ -1,4 +1,4 @@
-# AI26 implementation progress — 12 October 2026
+# AI26 implementation progress — 13 October 2026
 
 This records the current reliability, tracking, persistence and performance implementation. Accuracy release gates remain open.
 The original audit/plan remain the baseline. AI26 alone was changed; the Godseye
@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **40 done, 22 partial, 18 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **40 done, 23 partial, 17 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -141,6 +141,18 @@ are implemented and tested. The evaluator measures visible-track fragmentation
 and checks frame order within camera/session. See `docs/TRACKING.md` for timing,
 constructed failure cases and limits. Real identity/count accuracy is unmeasured.
 
+## Dataset manifest update
+
+Evaluation now has a versioned manifest template and a standard-library validator
+for clip SHA-256, relative-path safety, explicit recording/coordinate conditions,
+manual plate-label coverage and split separation by vehicle, camera, location and
+recording session. `--require-ready` keeps incomplete input from entering a claimed
+evaluation. The current manifest remains a draft because CAM-07–09 readable footage,
+original capture metadata and held-out labels are still absent. Non-synthetic
+evaluation records must map to manifest clips in the held-out test split with
+matching camera/session IDs. This validates data organization only; it does not
+claim OCR accuracy. See `evaluation/README.md`.
+
 ## Validation
 
 - 190 isolated backend tests pass with the frozen Python 3.12 CPU environment.
@@ -266,7 +278,7 @@ local results. Short runtime samples do not establish sustained throughput.
 
 | ID | Status | Task | Evidence / remaining work |
 | --- | --- | --- | --- |
-| EV-01 | Pending | Prepare labeled vehicle/plate data and split by vehicle, camera/location and recording session. | No labeled held-out vehicle/plate dataset or vehicle/camera/session splits supplied. |
+| EV-01 | Partial | Prepare labeled vehicle/plate data and split by vehicle, camera/location and recording session. | Dataset manifest template and validator verify clip SHA-256, explicit labels/conditions and disjoint vehicle/camera/location/session splits. No labeled held-out clips have been supplied, so accuracy evaluation remains pending. |
 | EV-02 | Partial | Measure vehicle precision/recall and false positives rather than quoting model confidence. | IoU-matched detector precision/recall evaluator implemented; no real labeled measurements. |
 | EV-03 | Partial | Measure exact plate-string accuracy and rejected/invalid read rates on readable and difficult footage. | Exact string/abstention evaluator implemented; no real OCR accuracy or difficult-input strata. |
 | EV-04 | Partial | Compare per-track fusion against single-frame OCR; verify it never mixes identities. | Consensus isolation/conflict regression passes; measured single-frame versus fusion ablation is pending. |
