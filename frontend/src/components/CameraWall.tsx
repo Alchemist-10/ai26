@@ -97,6 +97,8 @@ export function CameraWall({
                   key={`${cam.id}-${cam.source_available}`}
                   cameraId={cam.id}
                   available={cam.source_available}
+                  processingEnabled={cam.health.processing_enabled}
+                  processingStatus={cam.health.status}
                   className="h-full w-full object-cover"
                 />
 

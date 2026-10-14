@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from "react"
 import { usePolling } from "@/hooks/usePolling"
 import { scopedResourceUrl } from "@/lib/api"
 
-export const CameraThumb = memo(function CameraThumb({ cameraId, available, className }: { cameraId: string; available: boolean; className?: string }) {
+export const CameraThumb = memo(function CameraThumb({ cameraId, available, processingEnabled, processingStatus, className }: { cameraId: string; available: boolean; processingEnabled: boolean; processingStatus: string; className?: string }) {
   const [image, setImage] = useState("")
   const [failed, setFailed] = useState(false)
   const etag = useRef("")
@@ -22,8 +22,11 @@ export const CameraThumb = memo(function CameraThumb({ cameraId, available, clas
       setImage(next); setFailed(false)
       if (previous) URL.revokeObjectURL(previous)
     } catch { if (!signal.aborted) setFailed(true) }
-  }, 3000, available)
+  }, 3000, available && processingEnabled && ["loading", "processing"].includes(processingStatus))
   useEffect(() => () => { if (objectUrl.current) URL.revokeObjectURL(objectUrl.current) }, [])
-  if (!available || failed || !image) return <div role="img" aria-label={`${cameraId} ${available ? "preview unavailable" : "source missing"}`} className="flex h-full items-center justify-center bg-zinc-950 text-xs text-zinc-500">{available ? "Preview preparing" : "Source missing"}</div>
+  if (!available || !processingEnabled || !["loading", "processing"].includes(processingStatus) || failed || !image) {
+    const message = !available ? "Source missing" : !processingEnabled ? "Processing paused" : processingStatus === "error" ? "Processing error" : failed ? "Preview unavailable" : "Preview preparing"
+    return <div role="img" aria-label={`${cameraId} ${message}`} className="flex h-full items-center justify-center bg-zinc-950 text-xs text-zinc-500">{message}</div>
+  }
   return <img src={image} alt={`${cameraId} sampled preview`} className={className} decoding="async" />
 })

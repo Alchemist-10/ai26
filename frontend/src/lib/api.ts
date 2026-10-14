@@ -100,6 +100,7 @@ export function selectCameraSource(cameraId: string, release: string, expectedTo
 export interface CameraHealth {
   camera_id: string
   status: string
+  processing_enabled: boolean
   last_frame_at: number | null
   frame_age_seconds: number | null
   processed_fps: number

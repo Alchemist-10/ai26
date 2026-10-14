@@ -89,6 +89,23 @@ short CPU/browser observations above remain the earlier milestone's evidence;
 that milestone had 182 tests. Current measurements do not establish
 full-rate detection, long-term throughput or real plate accuracy.
 
+## Disabled-processor preview polling — 14 October 2026
+
+The local app was running with `AI26_PROCESSING_ENABLED=0`. Before the UI checked
+processor health, its six camera tiles each retried `/api/preview` every three
+seconds and received 503, adding about two failing preview requests per second
+while no sampled image could exist. Camera health now exposes the processing
+switch; tiles poll only when an available source reports an active loading or
+processing state. When inference is disabled or a camera is in an error state,
+the tiles show a short status and stop preview requests. The focused recorded
+player remains usable when privacy mode is off.
+
+Verification used the same open local browser and API process with processing
+disabled: after the change, camera tiles displayed `Processing paused`, the
+focused recorded player played, and no `/api/preview` requests appeared in the
+next five seconds of server logs. This only measures the disabled-processor
+case; it is not a general Core Web Vitals or enabled-inference benchmark.
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded

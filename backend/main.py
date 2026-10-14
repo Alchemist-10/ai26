@@ -217,7 +217,8 @@ def interval(since,until):
 
 @app.get('/api/cameras')
 def list_cameras():
-    health={s['camera_id']:s for s in processor.health()}
+    processing_enabled=os.environ.get('AI26_PROCESSING_ENABLED','1')=='1'
+    health={s['camera_id']:{**s,'processing_enabled':processing_enabled} for s in processor.health()}
     return [{**c,'source_available':camera_source(c['id']).is_file(),
              'health':health[c['id']]} for c in store.camera_catalog()]
 

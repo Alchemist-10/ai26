@@ -75,6 +75,9 @@ class PrivacyMode(unittest.TestCase):
         client = TestClient(main.app)
         with client:
             self.assertTrue(client.get("/api/privacy/status").json()["enabled"])
+            cameras = client.get("/api/cameras").json()
+            self.assertTrue(cameras)
+            self.assertTrue(all(camera["health"]["processing_enabled"] is False for camera in cameras))
             response = client.get("/api/video/CAM-07")
             self.assertEqual(response.status_code, 403)
 
