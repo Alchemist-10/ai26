@@ -82,6 +82,16 @@ class AuthLoginRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     username: StrictStr = Field(min_length=3, max_length=32)
     password: StrictStr = Field(min_length=1, max_length=256)
+    mfa_code: StrictStr | None = Field(default=None, min_length=1, max_length=32)
+
+class AuthMfaCodeRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    code: StrictStr = Field(min_length=1, max_length=32)
+
+class AuthMfaDisableRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    password: StrictStr = Field(min_length=1, max_length=256)
+    code: StrictStr = Field(min_length=1, max_length=32)
 
 class AuthUserCreateRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')

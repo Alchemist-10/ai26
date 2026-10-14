@@ -1,6 +1,6 @@
 # Camera revisions and journey decision persistence
 
-Schema version 6 stores users, per-case grants, hashed authentication sessions, login-failure limits,
+Schema version 8 stores users, per-case grants, hashed authentication sessions, login-failure limits, encrypted TOTP enrollment and one-time recovery-code hashes,
 the nine-camera catalog, and immutable queried link decisions alongside existing
 sessions, immutable reads, camera-local passages, alerts, rules, reports and
 hash-chained audit records. Versions 1 through 4 migrate automatically; future schema

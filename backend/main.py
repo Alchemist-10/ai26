@@ -35,7 +35,7 @@ from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
-from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthMfaCodeRequest, AuthMfaDisableRequest
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 
 
@@ -66,6 +66,7 @@ def required_role(method, path):
     if path == '/api/health': return None
     if path in {'/api/auth/status','/api/auth/login'}: return None
     if path == '/api/auth/me' or path == '/api/auth/logout': return 'authenticated'
+    if path == '/api/auth/mfa' or path.startswith('/api/auth/mfa/'): return 'authenticated'
     if path.startswith('/api/auth/users'): return 'admin'
     if path == '/api/cameras' and method == 'GET': return 'viewer'
     if path.startswith('/api/cameras/'):
@@ -148,9 +149,11 @@ def auth_login(body:AuthLoginRequest,request:Request,response:Response):
     # The bundled reverse proxy overwrites X-Real-IP; when calling the API directly,
     # fall back to the ASGI peer address.
     address=request.headers.get('x-real-ip') or (request.client.host if request.client else 'unknown')
-    try: result,reason=AuthService(store).login(body.username,body.password,address)
+    try: result,reason=AuthService(store).login(body.username,body.password,address,mfa_code=body.mfa_code)
     except AuthenticationError: result,reason=None,'invalid'
     if reason=='limited': raise HTTPException(429,'Too many sign-in attempts; try again in 15 minutes')
+    if reason=='mfa_required': raise HTTPException(401,'MFA_CODE_REQUIRED')
+    if reason=='mfa_invalid': raise HTTPException(401,'Authenticator or recovery code is invalid')
     if not result: raise HTTPException(401,'Username or password is incorrect')
     response.set_cookie(SESSION_COOKIE,result['token'],max_age=int(result['expires_at']-time.time()),
                         httponly=True,secure=cookie_secure(),samesite='strict',path='/api')
@@ -199,6 +202,49 @@ def auth_reset_password(username:str,body:AuthPasswordResetRequest):
     except AuthenticationError as exc: raise HTTPException(422,str(exc)) from exc
     if not changed: raise HTTPException(404,'Unknown user')
     return {'password_reset':True,'sessions_revoked':True}
+
+
+@app.get('/api/auth/mfa')
+def auth_mfa_status(request:Request):
+    if not auth_enabled(): raise HTTPException(404,'Authentication is disabled')
+    service=AuthService(store)
+    return {**service.mfa_status(request.state.actor['username']),'supported':service.key_configured()}
+
+
+@app.post('/api/auth/mfa/setup')
+def auth_mfa_setup(request:Request):
+    if not auth_enabled(): raise HTTPException(404,'Authentication is disabled')
+    try: return AuthService(store).begin_mfa(request.state.actor['username'])
+    except AuthenticationError as exc: raise HTTPException(409,str(exc)) from exc
+    except RuntimeError as exc: raise HTTPException(503,str(exc)) from exc
+
+
+@app.post('/api/auth/mfa/enable')
+def auth_mfa_enable(request:Request,body:AuthMfaCodeRequest):
+    if not auth_enabled(): raise HTTPException(404,'Authentication is disabled')
+    try:
+        codes=AuthService(store).confirm_mfa(request.state.actor['username'],body.code,request.state.actor['token_hash'])
+    except AuthenticationError as exc: raise HTTPException(422,str(exc)) from exc
+    except RuntimeError as exc: raise HTTPException(503,str(exc)) from exc
+    return {'enabled':True,'recovery_codes':codes}
+
+
+@app.post('/api/auth/mfa/disable')
+def auth_mfa_disable(request:Request,body:AuthMfaDisableRequest):
+    if not auth_enabled(): raise HTTPException(404,'Authentication is disabled')
+    try:
+        AuthService(store).disable_mfa(request.state.actor['username'],body.password,body.code,request.state.actor['token_hash'])
+    except AuthenticationError as exc: raise HTTPException(422,str(exc)) from exc
+    except RuntimeError as exc: raise HTTPException(503,str(exc)) from exc
+    return {'enabled':False,'sessions_revoked':True}
+
+
+@app.delete('/api/auth/users/{username}/mfa')
+def auth_reset_mfa(username:str,request:Request):
+    if not auth_enabled(): raise HTTPException(404,'Authentication is disabled')
+    if request.state.actor['role'] != 'admin': raise HTTPException(403,'Administrator access is required')
+    if not AuthService(store).reset_mfa(username): raise HTTPException(404,'Unknown user')
+    return {'mfa_reset':True,'sessions_revoked':True}
 
 
 def check_camera(camera_id):

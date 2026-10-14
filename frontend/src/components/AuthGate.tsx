@@ -18,6 +18,8 @@ export function AuthGate({ children }: { children: (user: AuthUser | null, caseI
   const [purpose, setPurpose] = useState("investigation")
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [mfaCode, setMfaCode] = useState("")
+  const [mfaRequired, setMfaRequired] = useState(false)
   const [error, setError] = useState("")
   const [busy, setBusy] = useState(false)
 
@@ -42,14 +44,21 @@ export function AuthGate({ children }: { children: (user: AuthUser | null, caseI
     setBusy(true)
     setError("")
     try {
-      const state = await login(username, password)
+      const state = await login(username, password, mfaCode)
       setUser(state.user)
       setCaseIds(state.caseIds)
       setPassword("")
+      setMfaCode("")
+      setMfaRequired(false)
     } catch (cause) {
-      setError(cause instanceof ApiError && cause.status === 429
-        ? "Too many sign-in attempts. Wait 15 minutes before trying again."
-        : cause instanceof Error ? cause.message : "Sign-in failed")
+      if (cause instanceof ApiError && cause.status === 401 && cause.message === "MFA_CODE_REQUIRED") {
+        setMfaRequired(true)
+        setError("Enter the authenticator code or one unused recovery code.")
+      } else {
+        setError(cause instanceof ApiError && cause.status === 429
+          ? "Too many sign-in attempts. Wait 15 minutes before trying again."
+          : cause instanceof Error ? cause.message : "Sign-in failed")
+      }
     } finally { setBusy(false) }
   }
 
@@ -71,6 +80,7 @@ export function AuthGate({ children }: { children: (user: AuthUser | null, caseI
       <div className="mb-7 flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-black"><ShieldCheck size={21} /></span><div><h1 className="text-xl font-semibold text-white">Sign in to AI26</h1><p className="mt-1 text-sm text-zinc-400">Use your assigned account to access camera evidence.</p></div></div>
       <label className="mb-4 block text-sm text-zinc-300">Username<input autoComplete="username" required value={username} onChange={event => setUsername(event.target.value)} className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-white placeholder:text-zinc-500" /></label>
       <label className="mb-5 block text-sm text-zinc-300">Password<input type="password" autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-white placeholder:text-zinc-500" /></label>
+      {mfaRequired && <label className="mb-5 block text-sm text-zinc-300">Authenticator or recovery code<input autoComplete="one-time-code" inputMode="text" required value={mfaCode} onChange={event => setMfaCode(event.target.value)} className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 font-mono text-white" /></label>}
       {error && <p role="alert" className="mb-4 rounded-md border border-red-400/30 bg-red-950/40 px-3 py-2 text-sm text-red-200">{error}</p>}
       <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 font-semibold text-primary-foreground disabled:cursor-wait disabled:opacity-60"><KeyRound size={16} />{busy ? "Signing in…" : "Sign in"}</button>
     </form>

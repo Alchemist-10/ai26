@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 import main
 import events
 from auth import AuthService, AuthenticationError, CSRF_HEADER, MAX_LOGIN_FAILURES, SESSION_COOKIE
+import mfa as mfa_tools
 from repository import Repository
 
 
@@ -45,7 +46,7 @@ class Authentication(unittest.TestCase):
     def csrf_headers(self):
         return {CSRF_HEADER: self.csrf}
 
-    def test_schema_six_bootstrap_is_persistent_and_never_resets_password(self):
+    def test_current_schema_bootstrap_is_persistent_and_never_resets_password(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "bootstrap-password"
             path.write_text("Bootstrap-Correct-Horse-42\n")
@@ -58,8 +59,8 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(service.user_count(), 1)
                     self.assertIsNotNone(service.login("admin", "Bootstrap-Correct-Horse-42", "testhost")[0])
                     self.assertIsNone(service.login("admin", "Different-Correct-Horse-42", "otherhost")[0])
-                self.assertEqual(repository.schema_version, 6)
-                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 6)
+                self.assertEqual(repository.schema_version, 8)
+                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 8)
             finally:
                 repository.close()
 
@@ -164,6 +165,59 @@ class Authentication(unittest.TestCase):
         self.assertEqual(malformed.status_code, 422)
         invalid = self.client.post("/api/auth/login", json={"username": "admin", "password": "Wrong-Correct-Horse-2026"})
         self.assertEqual(invalid.status_code, 401)
+
+    def test_enrollment_login_recovery_use_and_disable(self):
+        key_file = Path(self.folder.name) / "mfa.key"
+        key_file.write_bytes(b"m" * 32); key_file.chmod(0o400)
+        with patch.dict(os.environ, {"AI26_AUTH_MFA_KEY_FILE": str(key_file)}):
+            self.create()
+            with TestClient(main.app, base_url="https://testserver") as owner:
+                signed = owner.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26"})
+                csrf = signed.json()["csrf_token"]
+                headers = {CSRF_HEADER: csrf}
+                self.assertFalse(owner.get("/api/auth/mfa").json()["enabled"])
+                setup = owner.post("/api/auth/mfa/setup", headers=headers)
+                self.assertEqual(setup.status_code, 200)
+                secret = setup.json()["secret"]
+                confirmation = owner.post("/api/auth/mfa/enable", json={"code": mfa_tools.code_at(secret)}, headers=headers)
+                self.assertEqual(confirmation.status_code, 200)
+                recovery = confirmation.json()["recovery_codes"][0]
+                self.assertEqual(len(confirmation.json()["recovery_codes"]), 10)
+                encrypted = self.repo.db.execute("SELECT secret_ciphertext,recovery_hashes,enabled FROM user_mfa WHERE username='admin'").fetchone()
+                self.assertTrue(encrypted["enabled"])
+                self.assertNotIn(secret.encode(), bytes(encrypted["secret_ciphertext"]))
+                self.assertNotIn(recovery, encrypted["recovery_hashes"])
+
+                no_factor = TestClient(main.app, base_url="https://testserver")
+                self.assertEqual(no_factor.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26"}).json()["error"]["message"], "MFA_CODE_REQUIRED")
+                totp_login = TestClient(main.app, base_url="https://testserver")
+                accepted = totp_login.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":mfa_tools.code_at(secret)})
+                self.assertEqual(accepted.status_code, 200)
+                first_recovery = TestClient(main.app, base_url="https://testserver")
+                self.assertEqual(first_recovery.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":recovery}).status_code, 200)
+                reuse = TestClient(main.app, base_url="https://testserver")
+                self.assertEqual(reuse.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":recovery}).status_code, 401)
+
+                disabled = owner.post("/api/auth/mfa/disable", json={"password":"Correct-Horse-Battery-Staple-26","code":mfa_tools.code_at(secret)}, headers=headers)
+                self.assertEqual(disabled.status_code, 200)
+                self.assertFalse(owner.get("/api/auth/mfa").json()["enabled"])
+                setup_again = owner.post("/api/auth/mfa/setup", headers=headers).json()
+                confirmed_again = owner.post("/api/auth/mfa/enable", json={"code":mfa_tools.code_at(setup_again["secret"])}, headers=headers)
+                self.assertEqual(confirmed_again.status_code, 200)
+                reset = owner.delete("/api/auth/users/admin/mfa", headers=headers)
+                self.assertEqual(reset.status_code, 200)
+                self.assertEqual(owner.get("/api/auth/me").status_code, 401)
+                self.assertIsNone(self.repo.db.execute("SELECT 1 FROM user_mfa WHERE username='admin'").fetchone())
+
+    def test_mfa_key_permissions_and_totp_rfc6238_vector(self):
+        key_file = Path(self.folder.name) / "mfa.key"
+        key_file.write_bytes(b"m" * 32); key_file.chmod(0o644)
+        with patch.dict(os.environ, {"AI26_AUTH_MFA_KEY_FILE": str(key_file)}):
+            with self.assertRaisesRegex(RuntimeError, "group or other"):
+                mfa_tools.encrypt_secret(mfa_tools.create_secret())
+        secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
+        self.assertEqual(mfa_tools.code_at(secret, 59), "287082")
+        self.assertTrue(mfa_tools.verify_totp(secret, "287082", 59))
 
 
 if __name__ == "__main__":

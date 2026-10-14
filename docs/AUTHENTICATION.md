@@ -67,10 +67,36 @@ those users can only select and access the cases assigned to them. Administrator
 retain oversight across all case IDs. Purpose is logged for accountability but is
 not a separate role permission. There is no shared case registry, transfer or
 delegation workflow, or built-in mechanism to establish that an entered case ID
-corresponds to an external case-management system. Account recovery, password
-self-service, external identity providers, and multi-factor authentication remain
-unimplemented.
+corresponds to an external case-management system. Password self-service and
+external identity providers are not implemented.
 
 The initial UI supports sign-in, session restoration, case/purpose selection,
 and sign-out. Administrators can manage users, case grants, roles, account status,
 and password resets through the protected account-management screen.
+
+## Authenticator MFA
+
+MFA is an optional extension to the auth overlay. Create a separate 32-byte key,
+keep it outside the repository, and make it readable only by the backend UID:
+
+```sh
+umask 077
+openssl rand -out /absolute/path/to/ai26-auth-mfa.key 32
+sudo chown 10001:10001 /absolute/path/to/ai26-auth-mfa.key
+chmod 0400 /absolute/path/to/ai26-auth-mfa.key
+```
+
+Start auth with MFA support by combining `compose.auth.yaml` and
+`compose.auth-mfa.yaml` and setting `AI26_AUTH_MFA_KEY_FILE`. MFA secrets are
+AES-GCM encrypted in schema 8; the key file must be protected and backed up
+securely. If the key is lost, stored TOTP secrets cannot be decrypted.
+
+Signed-in users can open Account security, enroll a standards-based six-digit
+TOTP authenticator, and confirm enrollment before MFA is enabled. Ten one-use
+recovery codes are shown once at enrollment and stored only as keyed hashes.
+Login requires a TOTP or unused recovery code for enrolled accounts. Users can
+disable MFA only after re-entering their password and a current TOTP code.
+Administrators can reset a user's MFA from User administration; this disables
+the factor and revokes that user's sessions. The reset is audited. There is no
+self-service email/phone recovery, and the administrator reset remains an
+operational recovery dependency.

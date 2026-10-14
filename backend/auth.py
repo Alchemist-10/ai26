@@ -6,6 +6,9 @@ import re
 import secrets
 import time
 from pathlib import Path
+import json
+
+import mfa as mfa_tools
 
 
 ROLES = {"admin", "operator", "analyst", "viewer"}
@@ -69,7 +72,8 @@ def _derive(password, salt, iterations=PASSWORD_ITERATIONS):
 
 def _user_summary(row):
     return {"username": row["username"], "role": row["role"], "disabled": bool(row["disabled"]),
-            "created_at": row["created_at"], "updated_at": row["updated_at"]}
+            "created_at": row["created_at"], "updated_at": row["updated_at"],
+            "mfa_enabled": bool(row["mfa_enabled"]) if "mfa_enabled" in row.keys() else False}
 
 
 class AuthService:
@@ -109,7 +113,8 @@ class AuthService:
     def users(self):
         with self.repository.lock:
             rows = self.repository.db.execute(
-                "SELECT username,role,disabled,created_at,updated_at FROM users ORDER BY username COLLATE NOCASE"
+                "SELECT u.username,u.role,u.disabled,u.created_at,u.updated_at,COALESCE(m.enabled,0) AS mfa_enabled "
+                "FROM users u LEFT JOIN user_mfa m ON m.username=u.username ORDER BY u.username COLLATE NOCASE"
             ).fetchall()
             cases = self.repository.db.execute("SELECT username,case_id FROM user_case_access ORDER BY case_id").fetchall()
         by_user = {}
@@ -146,7 +151,7 @@ class AuthService:
             self.repository.db.executemany("INSERT INTO user_case_access(username,case_id,created_at) VALUES(?,?,?)",
                                            [(username, case_id, now) for case_id in case_ids])
             self.repository._append_audit(now, "auth_user_created", username, {"role": role, "case_ids": case_ids})
-        return {"username": username, "role": role, "disabled": False, "case_ids": case_ids,
+        return {"username": username, "role": role, "disabled": False, "case_ids": case_ids, "mfa_enabled": False,
                 "created_at": now, "updated_at": now}
 
     def update_user(self, username, role=None, disabled=None, now=None, case_ids=None):
@@ -184,7 +189,8 @@ class AuthService:
             self.repository._append_audit(now, "auth_user_updated", username,
                                           {"role": next_role, "disabled": next_disabled, "case_ids": next_case_ids})
             updated = self.repository.db.execute(
-                "SELECT username,role,disabled,created_at,updated_at FROM users WHERE username=?", (username,)
+                "SELECT u.username,u.role,u.disabled,u.created_at,u.updated_at,COALESCE(m.enabled,0) AS mfa_enabled "
+                "FROM users u LEFT JOIN user_mfa m ON m.username=u.username WHERE u.username=?", (username,)
             ).fetchone()
         return {**_user_summary(updated), "case_ids": next_case_ids}
 
@@ -205,7 +211,7 @@ class AuthService:
             self.repository._append_audit(now, "auth_password_reset", username, {})
         return True
 
-    def login(self, username, password, client_address, now=None):
+    def login(self, username, password, client_address, now=None, mfa_code=None):
         now = time.time() if now is None else now
         normalized = _username(username)
         ip_hash = hashlib.sha256((client_address or "unknown").encode()).hexdigest()
@@ -227,10 +233,30 @@ class AuthService:
             _derive("invalid password placeholder", salt, iterations)
             password_valid = False
         if not row or not password_valid or row["disabled"]:
-            with self.repository.lock, self.repository.db:
-                self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
-                self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
+            self._failed_login(ip_hash, now)
             return None, "invalid"
+        consumed_recovery = False
+        with self.repository.lock:
+            mfa_row = self.repository.db.execute(
+                "SELECT secret_ciphertext,enabled,recovery_hashes FROM user_mfa WHERE username=?", (normalized,)
+            ).fetchone()
+        if mfa_row and mfa_row["enabled"]:
+            code = mfa_code
+            if not isinstance(code, str) or not code:
+                return self._failed_login(ip_hash, now), "mfa_required"
+            secret = mfa_tools.decrypt_secret(mfa_row["secret_ciphertext"])
+            valid = mfa_tools.verify_totp(secret, code, now)
+            if not valid:
+                recovery_digest = mfa_tools.recovery_hash(code)
+                try: recovery_hashes = json.loads(mfa_row["recovery_hashes"])
+                except (TypeError, ValueError): recovery_hashes = []
+                match = next((i for i, saved in enumerate(recovery_hashes)
+                              if isinstance(saved, str) and hmac.compare_digest(recovery_digest, saved)), None)
+                if match is not None:
+                    recovery_hashes.pop(match)
+                    consumed_recovery = True
+                else:
+                    return self._failed_login(ip_hash, now), "mfa_invalid"
         token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
         token_hash = hashlib.sha256(token.encode()).hexdigest()
         expires = now + SESSION_SECONDS
@@ -238,12 +264,103 @@ class AuthService:
             current = self.repository.db.execute("SELECT * FROM users WHERE username=?", (normalized,)).fetchone()
             if not current or current["disabled"]:
                 return None, "invalid"
+            if consumed_recovery:
+                latest = self.repository.db.execute("SELECT recovery_hashes FROM user_mfa WHERE username=?", (normalized,)).fetchone()
+                try: recovery_hashes = json.loads(latest["recovery_hashes"]) if latest else []
+                except (TypeError, ValueError): recovery_hashes = []
+                match = next((i for i, saved in enumerate(recovery_hashes)
+                              if isinstance(saved, str) and hmac.compare_digest(recovery_digest, saved)), None)
+                if match is None:
+                    self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
+                    return None, "invalid"
+                recovery_hashes.pop(match)
+                self.repository.db.execute("UPDATE user_mfa SET recovery_hashes=?,updated_at=? WHERE username=?",
+                                           (json.dumps(recovery_hashes, separators=(",", ":")), now, normalized))
             self.repository.db.execute("INSERT INTO auth_sessions VALUES(?,?,?,?,?)",
                                        (token_hash, normalized, csrf, now, expires))
             self.repository.db.execute("DELETE FROM auth_login_failures WHERE client_hash=?", (ip_hash,))
             self.repository._append_audit(now, "auth_login", normalized, {"role": current["role"]})
+            if consumed_recovery:
+                self.repository._append_audit(now, "auth_mfa_recovery_used", normalized, {})
         return {"token": token, "csrf_token": csrf, "expires_at": expires,
                 "user": {"username": current["username"], "role": current["role"]}}, None
+
+    def _failed_login(self, ip_hash, now):
+        with self.repository.lock, self.repository.db:
+            self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
+            self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
+
+    def mfa_status(self, username):
+        with self.repository.lock:
+            row = self.repository.db.execute("SELECT enabled,expires_at FROM user_mfa WHERE username=?", (username,)).fetchone()
+        return {"enabled": bool(row["enabled"]) if row else False,
+                "setup_pending": bool(row and not row["enabled"] and row["expires_at"] > time.time())}
+
+    def begin_mfa(self, username, now=None):
+        now = time.time() if now is None else now
+        secret = mfa_tools.create_secret()
+        ciphertext = mfa_tools.encrypt_secret(secret)
+        with self.repository.lock, self.repository.db:
+            row = self.repository.db.execute("SELECT enabled FROM user_mfa WHERE username=?", (username,)).fetchone()
+            if row and row["enabled"]:
+                raise AuthenticationError("MFA is already enabled")
+            self.repository.db.execute("INSERT OR REPLACE INTO user_mfa VALUES(?,?,0,'[]',?,?)",
+                                       (username, ciphertext, now, now + 600))
+            self.repository._append_audit(now, "auth_mfa_setup_started", username, {})
+        return {"secret": secret, "otpauth_uri": mfa_tools.provisioning_uri(secret, username), "expires_at": now + 600}
+
+    def confirm_mfa(self, username, code, current_token_hash, now=None):
+        now = time.time() if now is None else now
+        with self.repository.lock:
+            row = self.repository.db.execute("SELECT * FROM user_mfa WHERE username=?", (username,)).fetchone()
+        if not row or row["enabled"] or row["expires_at"] <= now:
+            raise AuthenticationError("MFA setup expired; start again")
+        secret = mfa_tools.decrypt_secret(row["secret_ciphertext"])
+        if not mfa_tools.verify_totp(secret, code, now):
+            raise AuthenticationError("Authenticator code is invalid")
+        codes = mfa_tools.new_recovery_codes()
+        hashes = json.dumps([mfa_tools.recovery_hash(value) for value in codes], separators=(",", ":"))
+        with self.repository.lock, self.repository.db:
+            self.repository.db.execute("UPDATE user_mfa SET enabled=1,recovery_hashes=?,updated_at=?,expires_at=0 WHERE username=?",
+                                       (hashes, now, username))
+            self.repository.db.execute("DELETE FROM auth_sessions WHERE username=? AND token_hash<>?", (username, current_token_hash))
+            self.repository._append_audit(now, "auth_mfa_enabled", username, {"recovery_codes_issued": len(codes)})
+        return codes
+
+    def key_configured(self):
+        try:
+            mfa_tools._key()
+            return True
+        except RuntimeError:
+            return False
+
+    def disable_mfa(self, username, password, code, current_token_hash, now=None):
+        now = time.time() if now is None else now
+        with self.repository.lock:
+            user = self.repository.db.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
+            row = self.repository.db.execute("SELECT secret_ciphertext,enabled FROM user_mfa WHERE username=?", (username,)).fetchone()
+        if not user or not row or not row["enabled"]:
+            raise AuthenticationError("MFA is not enabled")
+        try:
+            password_valid = hmac.compare_digest(_derive(password, user["password_salt"], user["iterations"]), user["password_hash"])
+        except AuthenticationError:
+            password_valid = False
+        if not password_valid or not mfa_tools.verify_totp(mfa_tools.decrypt_secret(row["secret_ciphertext"]), code, now):
+            raise AuthenticationError("Password or authenticator code is incorrect")
+        with self.repository.lock, self.repository.db:
+            self.repository.db.execute("DELETE FROM user_mfa WHERE username=?", (username,))
+            self.repository.db.execute("DELETE FROM auth_sessions WHERE username=? AND token_hash<>?", (username, current_token_hash))
+            self.repository._append_audit(now, "auth_mfa_disabled", username, {})
+
+    def reset_mfa(self, username, now=None):
+        now = time.time() if now is None else now
+        with self.repository.lock, self.repository.db:
+            if not self.repository.db.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone():
+                return False
+            self.repository.db.execute("DELETE FROM user_mfa WHERE username=?", (username,))
+            self.repository.db.execute("DELETE FROM auth_sessions WHERE username=?", (username,))
+            self.repository._append_audit(now, "auth_mfa_admin_reset", username, {})
+        return True
 
     def session(self, token, now=None):
         if not isinstance(token, str) or len(token) > 128:

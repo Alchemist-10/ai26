@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react"
-import { ApiError, createUser, getUsers, resetUserPassword, updateUser, type AuthRole, type ManagedUser } from "@/lib/api"
+import { ApiError, createUser, getUsers, resetUserMfa, resetUserPassword, updateUser, type AuthRole, type ManagedUser } from "@/lib/api"
 
 const roles: AuthRole[] = ["admin", "operator", "analyst", "viewer"]
 const control = "min-h-10 rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white"
@@ -68,6 +68,13 @@ export default function UserAdministration() {
     finally { setBusy(false) }
   }
 
+  async function resetMfa(username: string) {
+    setBusy(true); setError(""); setNotice("")
+    try { await resetUserMfa(username); setNotice(`Reset ${username}'s MFA; active sessions were revoked.`); await refresh() }
+    catch (cause) { setError(message(cause)) }
+    finally { setBusy(false) }
+  }
+
   return <section className="h-full overflow-y-auto bg-background px-4 py-6 text-foreground sm:px-6">
     <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-semibold text-white">User administration</h1>
@@ -89,7 +96,7 @@ export default function UserAdministration() {
 
       <div className="mt-6 flex items-center justify-between gap-3"><h2 className="text-base font-medium text-white">Accounts <span className="font-normal text-zinc-400">({users.length})</span></h2><button type="button" disabled={busy} onClick={() => { setError(""); void refresh().catch(cause => setError(message(cause))) }} className={button}>Refresh</button></div>
       {users.length === 0 ? <p className="mt-4 text-sm text-zinc-400">No accounts were returned.</p> : <ul className="mt-3 divide-y divide-zinc-800 border-y border-zinc-800">{users.map(user => <li key={user.username} className="grid gap-3 py-4 lg:grid-cols-[minmax(130px,1fr)_150px_1.2fr_140px_auto] lg:items-end">
-        <div><p className="font-medium text-white">{user.username}</p><p className="mt-1 text-xs text-zinc-400">Created {new Date(user.created_at * 1000).toLocaleDateString()} · {user.disabled ? "Disabled" : "Active"}</p></div>
+        <div><p className="font-medium text-white">{user.username}</p><p className="mt-1 text-xs text-zinc-400">Created {new Date(user.created_at * 1000).toLocaleDateString()} · {user.disabled ? "Disabled" : "Active"} · MFA {user.mfa_enabled ? "enabled" : "off"}</p>{user.mfa_enabled && <button type="button" disabled={busy} onClick={() => void resetMfa(user.username)} className="mt-2 text-xs text-amber-200 underline underline-offset-2">Reset MFA and revoke sessions</button>}</div>
         <label className="text-xs text-zinc-300">Role<select value={rolesDraft[user.username] ?? user.role} onChange={event => setRolesDraft(previous => ({ ...previous, [user.username]: event.target.value as AuthRole }))} className={`${control} mt-1 block w-full`}>{roles.map(role => <option key={role} value={role}>{role}</option>)}</select></label>
         <label className="text-xs text-zinc-300">Assigned case IDs<input value={casesDraft[user.username] ?? ""} onChange={event => setCasesDraft(previous => ({ ...previous, [user.username]: event.target.value }))} placeholder="No cases assigned" className={`${control} mt-1 block w-full`} /></label>
         <label className="flex min-h-10 items-center gap-2 text-sm text-zinc-300"><input type="checkbox" checked={disabledDraft[user.username] ?? user.disabled} onChange={event => setDisabledDraft(previous => ({ ...previous, [user.username]: event.target.checked }))} /> Disabled</label>

@@ -223,8 +223,9 @@ export class ApiError extends Error {
 
 export interface AuthUser { username: string; role: "admin" | "operator" | "analyst" | "viewer" }
 export type AuthRole = AuthUser["role"]
-export interface ManagedUser extends AuthUser { disabled: boolean; case_ids: string[]; created_at: number; updated_at: number }
+export interface ManagedUser extends AuthUser { disabled: boolean; case_ids: string[]; created_at: number; updated_at: number; mfa_enabled: boolean }
 export interface AuthState { enabled: boolean; user: AuthUser | null; caseIds: string[]; csrfToken: string }
+export interface MfaStatus { enabled: boolean; setup_pending: boolean; supported: boolean }
 let csrfToken = ""
 let securityContext = { caseId: "", purpose: "investigation" }
 
@@ -252,12 +253,28 @@ export async function getAuthState(): Promise<AuthState> {
   }
 }
 
-export async function login(username: string, password: string): Promise<AuthState> {
+export async function login(username: string, password: string, mfaCode?: string): Promise<AuthState> {
   const session = await requestJson<{ user: AuthUser; case_ids: string[]; csrf_token: string }>("/api/auth/login", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password }),
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, ...(mfaCode ? {mfa_code:mfaCode} : {}) }),
   })
   csrfToken = session.csrf_token
   return { enabled: true, user: session.user, caseIds: session.case_ids, csrfToken }
+}
+
+export function getMfaStatus(signal?: AbortSignal): Promise<MfaStatus> {
+  return requestJson<MfaStatus>("/api/auth/mfa", {signal})
+}
+export function setupMfa(): Promise<{secret:string;otpauth_uri:string;expires_at:number}> {
+  return requestJson("/api/auth/mfa/setup", {method:"POST"})
+}
+export function enableMfa(code:string): Promise<{enabled:boolean;recovery_codes:string[]}> {
+  return requestJson("/api/auth/mfa/enable", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code})})
+}
+export function disableMfa(password:string,code:string): Promise<{enabled:boolean;sessions_revoked:boolean}> {
+  return requestJson("/api/auth/mfa/disable", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password,code})})
+}
+export function resetUserMfa(username:string): Promise<{mfa_reset:boolean;sessions_revoked:boolean}> {
+  return requestJson(`/api/auth/users/${encodeURIComponent(username)}/mfa`, {method:"DELETE"})
 }
 
 export async function logout(): Promise<void> {
