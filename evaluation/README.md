@@ -89,6 +89,9 @@ labeled pairs.
 For optional detector export, INT8 calibration, CPU timing and output-agreement
 checks, see [Edge benchmark](EDGE_BENCHMARK.md). It does not make a deployment-
 target or detection-accuracy claim.
+For paired raw/classical/learned/fusion runs and a model-card starting point, see
+[Ablation evaluation](ABLATION.md). The runner requires the exact same labeled
+test samples and a ready, hashed dataset manifest for all four variants.
 For read-only condition hints and enhancement candidates, see
 [Heuristic quality routing](QUALITY_ROUTER.md); its weather-like flags are
 unverified and do not control the live pipeline.

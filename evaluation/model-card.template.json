@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "model_id": "replace-with-model-name",
+  "model_version": "replace-with-version-or-commit",
+  "intended_use": "",
+  "out_of_scope_uses": [],
+  "task": "",
+  "architecture": "",
+  "weights": {
+    "path_or_registry_id": "",
+    "sha256": "",
+    "format": "",
+    "license": ""
+  },
+  "pipeline": {
+    "preprocessing_id": "",
+    "preprocessing_sha256": "",
+    "configuration_sha256": "",
+    "postprocessing": "",
+    "confidence_thresholds": {}
+  },
+  "data": {
+    "dataset_id": "",
+    "manifest_path": "",
+    "manifest_sha256": "",
+    "train_split_summary": "",
+    "validation_split_summary": "",
+    "test_split_summary": "",
+    "vehicle_camera_location_session_separation": "",
+    "labeling_method": "",
+    "known_coverage_gaps": []
+  },
+  "evaluation": {
+    "report_path": "",
+    "report_sha256": "",
+    "sample_count": null,
+    "metrics": {},
+    "hardware": "",
+    "runtime_versions": {},
+    "conditions": [],
+    "failure_cases": [],
+    "confidence_calibration_method": "",
+    "limitations": []
+  },
+  "risk_controls": [],
+  "release_decision": {
+    "status": "unreviewed",
+    "reviewer": "",
+    "reviewed_at": null,
+    "reason": ""
+  }
+}

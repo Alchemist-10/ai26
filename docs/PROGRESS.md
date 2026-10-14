@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **44 done, 29 partial, 7 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **44 done, 30 partial, 6 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -358,7 +358,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | RS-07 | Partial | Add restoration safety checks and preserve raw versus enhanced/reconstructed artifact provenance. | Offline enhancement derivatives carry method/parameter metadata and hashes while source hashes/status remain explicit and outputs never overwrite files; live restoration/reconstruction integration, OCR safety tests on labeled footage and deployment provenance remain. |
 | RS-08 | Pending | Optional burst super-resolution with an explicit reconstructed status, not a raw-evidence claim. | Optional research work; no implementation or measured evaluation claimed. |
 | RS-09 | Pending | Learned camera topology and calibrated travel-time distributions. | Optional research work; no implementation or measured evaluation claimed. |
-| RS-10 | Pending | Complete raw/classical/learned/fusion ablations and model cards with data lineage. | Optional research work; no implementation or measured evaluation claimed. |
+| RS-10 | Partial | Complete raw/classical/learned/fusion ablations and model cards with data lineage. | Paired ablation runner enforces identical manifest-hashed test samples, exact labels, per-variant configuration/weight provenance and reports deltas against raw. A model-card template captures intended use, data, metrics, conditions and failure cases. No complete labeled dataset or real four-way ablation is available, so model cards remain unfilled and no best-variant claim is made. |
 
 ### Optional production and edge
 
