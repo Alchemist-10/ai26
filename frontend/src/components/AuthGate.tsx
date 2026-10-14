@@ -9,10 +9,11 @@ const PURPOSES = [
   ["system_test", "System test"],
 ] as const
 
-export function AuthGate({ children }: { children: (user: AuthUser | null, context: { caseId: string; purpose: string }, signOut: () => Promise<void>, changeContext: (caseId: string, purpose: string) => void) => ReactNode }) {
+export function AuthGate({ children }: { children: (user: AuthUser | null, caseIds: string[], context: { caseId: string; purpose: string }, signOut: () => Promise<void>, changeContext: (caseId: string, purpose: string) => void) => ReactNode }) {
   const [ready, setReady] = useState(false)
   const [enabled, setEnabled] = useState(false)
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [caseIds, setCaseIds] = useState<string[]>([])
   const [caseId, setCaseId] = useState("")
   const [purpose, setPurpose] = useState("investigation")
   const [username, setUsername] = useState("")
@@ -26,6 +27,7 @@ export function AuthGate({ children }: { children: (user: AuthUser | null, conte
       if (!active) return
       setEnabled(state.enabled)
       setUser(state.user)
+      setCaseIds(state.caseIds)
       setReady(true)
     }).catch(cause => {
       if (!active) return
@@ -42,6 +44,7 @@ export function AuthGate({ children }: { children: (user: AuthUser | null, conte
     try {
       const state = await login(username, password)
       setUser(state.user)
+      setCaseIds(state.caseIds)
       setPassword("")
     } catch (cause) {
       setError(cause instanceof ApiError && cause.status === 429
@@ -76,11 +79,28 @@ export function AuthGate({ children }: { children: (user: AuthUser | null, conte
   if (enabled && !/^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$/.test(caseId)) return <main className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground">
     <form onSubmit={event => { event.preventDefault(); changeContext(caseId, purpose) }} className="w-full max-w-lg rounded-lg border border-zinc-800 bg-black p-7 shadow-xl shadow-black/40">
       <h1 className="text-xl font-semibold text-white">Set an access purpose</h1><p className="mt-2 max-w-prose text-sm leading-6 text-zinc-300">Sensitive camera, event, and evidence requests are recorded with a case ID and purpose. Enter the authorized case before opening the dashboard.</p>
-      <label className="mt-6 block text-sm text-zinc-300">Case ID<input autoFocus required minLength={3} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,63}" value={caseId} onChange={event => setCaseId(event.target.value)} placeholder="For example, CASE-2026-001" className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-white placeholder:text-zinc-500" /></label>
+      {user?.role === "admin" ? (
+        <label className="mt-6 block text-sm text-zinc-300">
+          Case ID
+          <input autoFocus required minLength={3} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,63}" value={caseId} onChange={event => setCaseId(event.target.value)} placeholder="For example, CASE-2026-001" className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-white placeholder:text-zinc-500" />
+        </label>
+      ) : caseIds.length ? (
+        <label className="mt-6 block text-sm text-zinc-300">
+          Assigned case
+          <select required autoFocus value={caseId} onChange={event => setCaseId(event.target.value)} className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-white">
+            <option value="">Choose an assigned case</option>
+            {caseIds.map(id => <option key={id} value={id}>{id}</option>)}
+          </select>
+        </label>
+      ) : (
+        <p role="alert" className="mt-6 rounded border border-amber-400/30 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
+          This account has no assigned cases. Ask an administrator to grant case access.
+        </p>
+      )}
       <label className="mt-4 block text-sm text-zinc-300">Purpose<select value={purpose} onChange={event => setPurpose(event.target.value)} className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-white">{PURPOSES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-      <div className="mt-6 flex gap-3"><button type="submit" className="rounded-md bg-primary px-4 py-2.5 font-semibold text-primary-foreground">Open dashboard</button><button type="button" onClick={() => void signOut()} className="rounded-md border border-zinc-700 px-4 py-2.5 text-zinc-200">Sign out</button></div>
+      <div className="mt-6 flex gap-3"><button type="submit" disabled={user?.role !== "admin" && caseIds.length === 0} className="rounded-md bg-primary px-4 py-2.5 font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">Open dashboard</button><button type="button" onClick={() => void signOut()} className="rounded-md border border-zinc-700 px-4 py-2.5 text-zinc-200">Sign out</button></div>
     </form>
   </main>
 
-  return <>{children(user, { caseId, purpose }, signOut, changeContext)}</>
+  return <>{children(user, caseIds, { caseId, purpose }, signOut, changeContext)}</>
 }

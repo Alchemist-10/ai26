@@ -33,7 +33,8 @@ class Authentication(unittest.TestCase):
         self.client = TestClient(main.app, base_url="https://testserver")
 
     def create(self, username="admin", role="admin"):
-        return self.auth.create_user(username, "Correct-Horse-Battery-Staple-26", role)
+        case_ids = {"analyst": ["CASE-2026-01"], "viewer": ["CASE-55"]}.get(role, [])
+        return self.auth.create_user(username, "Correct-Horse-Battery-Staple-26", role, case_ids=case_ids)
 
     def login(self, username="admin"):
         response = self.client.post("/api/auth/login", json={"username": username, "password": "Correct-Horse-Battery-Staple-26"})
@@ -44,7 +45,7 @@ class Authentication(unittest.TestCase):
     def csrf_headers(self):
         return {CSRF_HEADER: self.csrf}
 
-    def test_schema_five_bootstrap_is_persistent_and_never_resets_password(self):
+    def test_schema_six_bootstrap_is_persistent_and_never_resets_password(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "bootstrap-password"
             path.write_text("Bootstrap-Correct-Horse-42\n")
@@ -57,8 +58,8 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(service.user_count(), 1)
                     self.assertIsNotNone(service.login("admin", "Bootstrap-Correct-Horse-42", "testhost")[0])
                     self.assertIsNone(service.login("admin", "Different-Correct-Horse-42", "otherhost")[0])
-                self.assertEqual(repository.schema_version, 5)
-                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 5)
+                self.assertEqual(repository.schema_version, 6)
+                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 6)
             finally:
                 repository.close()
 
@@ -87,6 +88,9 @@ class Authentication(unittest.TestCase):
         headers = {"X-AI26-Case-ID": "CASE-2026-01", "X-AI26-Purpose": "investigation"}
         scoped = self.client.get("/api/events", headers=headers)
         self.assertEqual(scoped.status_code, 200)
+        wrong_case = self.client.get("/api/events", headers={**headers, "X-AI26-Case-ID": "CASE-OTHER"})
+        self.assertEqual(wrong_case.status_code, 403)
+        self.assertIn("not assigned", wrong_case.json()["error"]["message"])
         self.assertEqual(self.repo.verify_audit_chain()["status"], "valid")
         row = self.repo.db.execute("SELECT action,subject,data FROM audit ORDER BY id DESC LIMIT 1").fetchone()
         self.assertEqual(row["action"], "sensitive_access")
@@ -117,11 +121,21 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.login().status_code, 200)
         created = self.client.post("/api/auth/users", json={
             "username": "operator_one", "password": "Operator-Correct-Horse-2026", "role": "operator",
+            "case_ids": ["CASE-2026-02"],
         }, headers=self.csrf_headers())
         self.assertEqual(created.status_code, 201)
         self.assertEqual(created.json()["role"], "operator")
+        self.assertEqual(created.json()["case_ids"], ["CASE-2026-02"])
+        operator_client = TestClient(main.app, base_url="https://testserver")
+        self.assertEqual(operator_client.post("/api/auth/login", json={
+            "username": "operator_one", "password": "Operator-Correct-Horse-2026",
+        }).status_code, 200)
         last_admin = self.client.patch("/api/auth/users/admin", json={"disabled": True}, headers=self.csrf_headers())
         self.assertEqual(last_admin.status_code, 409)
+        case_change = self.client.patch("/api/auth/users/operator_one", json={"case_ids": ["CASE-2026-03"]}, headers=self.csrf_headers())
+        self.assertEqual(case_change.status_code, 200)
+        self.assertEqual(self.auth.case_ids("operator_one"), ["CASE-2026-03"])
+        self.assertEqual(operator_client.get("/api/auth/me").status_code, 401)
         self.assertEqual(self.client.patch("/api/auth/users/operator_one", json={"disabled": True}, headers=self.csrf_headers()).status_code, 200)
         self.assertEqual(self.client.post("/api/auth/users/operator_one/password", json={"password":"New-Operator-Horse-2026"}, headers=self.csrf_headers()).status_code, 200)
 
@@ -144,6 +158,8 @@ class Authentication(unittest.TestCase):
     def test_invalid_username_password_and_user_role_are_rejected(self):
         with self.assertRaises(AuthenticationError):
             self.auth.create_user("x", "short", "superuser")
+        with self.assertRaises(AuthenticationError):
+            self.auth.create_user("user_one", "Correct-Horse-Battery-Staple-26", "analyst", case_ids=["*"])
         malformed = self.client.post("/api/auth/login", json={"username": "x", "password": "no"})
         self.assertEqual(malformed.status_code, 422)
         invalid = self.client.post("/api/auth/login", json={"username": "admin", "password": "Wrong-Correct-Horse-2026"})

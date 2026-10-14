@@ -33,8 +33,8 @@
 
 `schemas.py` validates finite timestamps/confidence, ordered boxes, query strings
 and rule configuration. Invalid requests return a consistent JSON error envelope.
-SQLite schema version 5 has users, hashed authentication sessions, login-failure
-limits, observations, passages, alerts, reports, settings, hash-chained audit,
+SQLite schema version 6 has users, per-case grants, hashed authentication sessions,
+login-failure limits, observations, passages, alerts, reports, settings, hash-chained audit,
 report artifact leases, camera revisions and immutable
 queried journey-link decisions. Versions 1–3 migrate automatically; unknown future
 versions fail. Audit consistency is locally verifiable but has no external checkpoint

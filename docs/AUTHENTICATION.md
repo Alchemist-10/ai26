@@ -37,7 +37,7 @@ On first startup, the backend creates the configured administrator account
 once. It never resets that account's password from the bootstrap file. Later
 starts do not need to read the file, but Compose keeps the bind mount configured;
 retain the file or remove the auth overlay only after planning a replacement
-bootstrap procedure. User records, hashed passwords, sessions, and login-failure
+bootstrap procedure. User records, per-case grants, hashed passwords, sessions, and login-failure
 limits are stored in SQLite. Passwords use PBKDF2-HMAC-SHA256 with 600,000
 iterations; session tokens are random, stored only as hashes, expire after eight
 hours, and are revoked on password, role, or disabled-state changes. Login
@@ -62,13 +62,15 @@ The backend validates it and appends a hash-chained `sensitive_access` audit
 entry before serving the request. Repeated GET polls for the same user, case,
 purpose and route are coalesced into one audit entry per minute to keep live
 previews from growing the audit chain on every poll; mutations are recorded each
-time. This is an access record, not an authorization system for specific cases:
-any role permitted to read the endpoint may choose a syntactically valid case ID.
-Case-level grants,
-account recovery, password self-service, external identity providers, and
-multi-factor authentication remain unimplemented.
+time. Administrators can assign one or more case IDs to each non-admin account;
+those users can only select and access the cases assigned to them. Administrators
+retain oversight across all case IDs. Purpose is logged for accountability but is
+not a separate role permission. There is no shared case registry, transfer or
+delegation workflow, or built-in mechanism to establish that an entered case ID
+corresponds to an external case-management system. Account recovery, password
+self-service, external identity providers, and multi-factor authentication remain
+unimplemented.
 
 The initial UI supports sign-in, session restoration, case/purpose selection,
-and sign-out. Administrators can manage users through the protected
-`/api/auth/users` endpoints; a dedicated account-management screen remains
-pending.
+and sign-out. Administrators can manage users, case grants, roles, account status,
+and password resets through the protected account-management screen.

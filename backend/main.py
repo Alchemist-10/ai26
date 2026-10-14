@@ -111,6 +111,8 @@ async def authentication_and_case_scope(request, call_next):
             return JSONResponse(status_code=422,content={'error':{'code':422,'message':'A valid case ID is required for sensitive access'}})
         if purpose not in PURPOSES:
             return JSONResponse(status_code=422,content={'error':{'code':422,'message':'Choose a recognized purpose for sensitive access'}})
+        if not service.can_access_case(session['username'], case_id, session['role']):
+            return JSONResponse(status_code=403,content={'error':{'code':403,'message':'Your account is not assigned to this case'}})
         request.state.case_id=case_id
         request.state.purpose=purpose
         service.audit_sensitive_access(session,case_id,purpose,request.method,path)
@@ -145,13 +147,15 @@ def auth_login(body:AuthLoginRequest,request:Request,response:Response):
     if not result: raise HTTPException(401,'Username or password is incorrect')
     response.set_cookie(SESSION_COOKIE,result['token'],max_age=int(result['expires_at']-time.time()),
                         httponly=True,secure=cookie_secure(),samesite='strict',path='/api')
-    return {'user':result['user'],'csrf_token':result['csrf_token'],'expires_at':result['expires_at']}
+    return {'user':result['user'],'case_ids':AuthService(store).case_ids(result['user']['username']),
+            'csrf_token':result['csrf_token'],'expires_at':result['expires_at']}
 
 
 @app.get('/api/auth/me')
 def auth_me(request:Request):
     actor=request.state.actor
     return {'user':{'username':actor['username'],'role':actor['role']},
+            'case_ids':AuthService(store).case_ids(actor['username']),
             'csrf_token':actor['csrf_token'],'expires_at':actor['expires_at']}
 
 
@@ -169,14 +173,14 @@ def auth_users():
 
 @app.post('/api/auth/users',status_code=201)
 def auth_create_user(body:AuthUserCreateRequest):
-    try: return AuthService(store).create_user(body.username,body.password,body.role)
+    try: return AuthService(store).create_user(body.username,body.password,body.role,case_ids=body.case_ids)
     except AuthenticationError as exc: raise HTTPException(422,str(exc)) from exc
     except sqlite3.IntegrityError as exc: raise HTTPException(409,'Username already exists') from exc
 
 
 @app.patch('/api/auth/users/{username}')
 def auth_update_user(username:str,body:AuthUserUpdateRequest):
-    try: result=AuthService(store).update_user(username,body.role,body.disabled)
+    try: result=AuthService(store).update_user(username,body.role,body.disabled,case_ids=body.case_ids)
     except AuthenticationError as exc: raise HTTPException(409,str(exc)) from exc
     if not result: raise HTTPException(404,'Unknown user')
     return result

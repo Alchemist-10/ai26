@@ -88,16 +88,18 @@ class AuthUserCreateRequest(BaseModel):
     username: StrictStr = Field(min_length=3, max_length=32)
     password: StrictStr = Field(min_length=14, max_length=256)
     role: Literal['admin', 'operator', 'analyst', 'viewer']
+    case_ids: list[StrictStr] = Field(default_factory=list, max_length=100)
 
 class AuthUserUpdateRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     role: Literal['admin', 'operator', 'analyst', 'viewer'] | None = None
     disabled: StrictBool | None = None
+    case_ids: list[StrictStr] | None = Field(default=None, max_length=100)
 
     @model_validator(mode='after')
     def at_least_one_change(self):
-        if self.role is None and self.disabled is None:
-            raise ValueError('Set role or disabled')
+        if self.role is None and self.disabled is None and self.case_ids is None:
+            raise ValueError('Set role, disabled, or case_ids')
         return self
 
 class AuthPasswordResetRequest(BaseModel):

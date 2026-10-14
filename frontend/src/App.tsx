@@ -32,11 +32,12 @@ const TITLES: Record<Page, string> = {
 }
 
 export default function App() {
-  return <AuthGate>{(user, context, signOut, changeContext) => <Dashboard user={user} context={context} signOut={signOut} changeContext={changeContext} />}</AuthGate>
+  return <AuthGate>{(user, caseIds, context, signOut, changeContext) => <Dashboard user={user} caseIds={caseIds} context={context} signOut={signOut} changeContext={changeContext} />}</AuthGate>
 }
 
-function Dashboard({ user, context, signOut, changeContext }: {
+function Dashboard({ user, caseIds, context, signOut, changeContext }: {
   user: AuthUser | null
+  caseIds: string[]
   context: { caseId: string; purpose: string }
   signOut: () => Promise<void>
   changeContext: (caseId: string, purpose: string) => void
@@ -105,7 +106,7 @@ function Dashboard({ user, context, signOut, changeContext }: {
 
       {user && <form onSubmit={event => { event.preventDefault(); changeContext(caseDraft, purposeDraft) }} className="flex flex-none flex-wrap items-center gap-2 border-b border-zinc-800 bg-zinc-950 px-4 py-2 text-xs sm:px-5">
         <span className="mr-1 text-zinc-400">Signed in as <strong className="text-zinc-200">{user.username}</strong> · {user.role}</span>
-        <label className="flex items-center gap-2 text-zinc-300">Case ID<input value={caseDraft} onChange={event => setCaseDraft(event.target.value)} required minLength={3} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,63}" className="w-40 rounded border border-zinc-700 bg-black px-2 py-1.5 text-white" /></label>
+        <label className="flex items-center gap-2 text-zinc-300">Case ID{user.role === "admin" ? <input value={caseDraft} onChange={event => setCaseDraft(event.target.value)} required minLength={3} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,63}" className="w-40 rounded border border-zinc-700 bg-black px-2 py-1.5 text-white" /> : <select value={caseDraft} onChange={event => setCaseDraft(event.target.value)} className="max-w-48 rounded border border-zinc-700 bg-black px-2 py-1.5 text-white">{caseIds.map(id => <option key={id} value={id}>{id}</option>)}</select>}</label>
         <label className="flex items-center gap-2 text-zinc-300">Purpose<select value={purposeDraft} onChange={event => setPurposeDraft(event.target.value)} className="rounded border border-zinc-700 bg-black px-2 py-1.5 text-white"><option value="investigation">Investigation</option><option value="traffic_analysis">Traffic analysis</option><option value="incident_response">Incident response</option><option value="system_test">System test</option></select></label>
         <button type="submit" className="rounded border border-zinc-600 px-2.5 py-1.5 text-zinc-100 hover:bg-zinc-800">Apply context</button>
         <button type="button" onClick={() => void signOut()} className="ml-auto rounded border border-zinc-700 px-2.5 py-1.5 text-zinc-300 hover:bg-zinc-800">Sign out</button>

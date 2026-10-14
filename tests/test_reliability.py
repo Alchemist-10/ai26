@@ -230,9 +230,9 @@ class Reliability(unittest.TestCase):
         db.execute('PRAGMA user_version=1');db.commit();db.close()
         migrated=Repository(path)
         try:
-            self.assertEqual(migrated.schema_version,5)
+            self.assertEqual(migrated.schema_version,6)
             self.assertEqual(migrated.protected_artifacts(self.now),{'a'*64})
-            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],5)
+            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],6)
         finally: migrated.close()
 
     def test_retention_lifespan_runs_without_inference(self):

@@ -216,8 +216,8 @@ export class ApiError extends Error {
 
 export interface AuthUser { username: string; role: "admin" | "operator" | "analyst" | "viewer" }
 export type AuthRole = AuthUser["role"]
-export interface ManagedUser extends AuthUser { disabled: boolean; created_at: number; updated_at: number }
-export interface AuthState { enabled: boolean; user: AuthUser | null; csrfToken: string }
+export interface ManagedUser extends AuthUser { disabled: boolean; case_ids: string[]; created_at: number; updated_at: number }
+export interface AuthState { enabled: boolean; user: AuthUser | null; caseIds: string[]; csrfToken: string }
 let csrfToken = ""
 let securityContext = { caseId: "", purpose: "investigation" }
 
@@ -234,23 +234,23 @@ export function scopedResourceUrl(url: string): string {
 
 export async function getAuthState(): Promise<AuthState> {
   const status = await requestJson<{ enabled: boolean }>("/api/auth/status")
-  if (!status.enabled) return { enabled: false, user: null, csrfToken: "" }
+  if (!status.enabled) return { enabled: false, user: null, caseIds: [], csrfToken: "" }
   try {
-    const session = await requestJson<{ user: AuthUser; csrf_token: string }>("/api/auth/me")
+    const session = await requestJson<{ user: AuthUser; case_ids: string[]; csrf_token: string }>("/api/auth/me")
     csrfToken = session.csrf_token
-    return { enabled: true, user: session.user, csrfToken }
+    return { enabled: true, user: session.user, caseIds: session.case_ids, csrfToken }
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) return { enabled: true, user: null, csrfToken: "" }
+    if (error instanceof ApiError && error.status === 401) return { enabled: true, user: null, caseIds: [], csrfToken: "" }
     throw error
   }
 }
 
 export async function login(username: string, password: string): Promise<AuthState> {
-  const session = await requestJson<{ user: AuthUser; csrf_token: string }>("/api/auth/login", {
+  const session = await requestJson<{ user: AuthUser; case_ids: string[]; csrf_token: string }>("/api/auth/login", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password }),
   })
   csrfToken = session.csrf_token
-  return { enabled: true, user: session.user, csrfToken }
+  return { enabled: true, user: session.user, caseIds: session.case_ids, csrfToken }
 }
 
 export async function logout(): Promise<void> {
@@ -261,10 +261,10 @@ export async function logout(): Promise<void> {
 export function getUsers(signal?: AbortSignal): Promise<ManagedUser[]> {
   return requestJson("/api/auth/users", { signal })
 }
-export function createUser(username: string, password: string, role: AuthRole): Promise<ManagedUser> {
-  return requestJson("/api/auth/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role }) })
+export function createUser(username: string, password: string, role: AuthRole, caseIds: string[]): Promise<ManagedUser> {
+  return requestJson("/api/auth/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role, case_ids: caseIds }) })
 }
-export function updateUser(username: string, changes: { role?: AuthRole; disabled?: boolean }): Promise<ManagedUser> {
+export function updateUser(username: string, changes: { role?: AuthRole; disabled?: boolean; case_ids?: string[] }): Promise<ManagedUser> {
   return requestJson(`/api/auth/users/${encodeURIComponent(username)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) })
 }
 export function resetUserPassword(username: string, password: string): Promise<{ password_reset: boolean; sessions_revoked: boolean }> {

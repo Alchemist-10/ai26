@@ -47,6 +47,22 @@ def _username(value):
     return normalized
 
 
+def _case_ids(values):
+    if values is None:
+        return None
+    if not isinstance(values, (list, tuple, set)) or len(values) > 100:
+        raise AuthenticationError("Case access must contain at most 100 case IDs")
+    normalized = set()
+    for value in values:
+        if not isinstance(value, str):
+            raise AuthenticationError("Every case ID must be text")
+        case_id = value.strip()
+        if not CASE_PATTERN.fullmatch(case_id):
+            raise AuthenticationError("Case IDs must use 3–64 letters, digits, dots, underscores, or hyphens")
+        normalized.add(case_id)
+    return sorted(normalized)
+
+
 def _derive(password, salt, iterations=PASSWORD_ITERATIONS):
     return hashlib.pbkdf2_hmac("sha256", _password(password), salt, iterations, dklen=32)
 
@@ -95,12 +111,30 @@ class AuthService:
             rows = self.repository.db.execute(
                 "SELECT username,role,disabled,created_at,updated_at FROM users ORDER BY username COLLATE NOCASE"
             ).fetchall()
-        return [_user_summary(row) for row in rows]
+            cases = self.repository.db.execute("SELECT username,case_id FROM user_case_access ORDER BY case_id").fetchall()
+        by_user = {}
+        for row in cases:
+            by_user.setdefault(row["username"], []).append(row["case_id"])
+        return [{**_user_summary(row), "case_ids": by_user.get(row["username"], [])} for row in rows]
 
-    def create_user(self, username, password, role, now=None):
+    def case_ids(self, username):
+        with self.repository.lock:
+            rows = self.repository.db.execute("SELECT case_id FROM user_case_access WHERE username=? ORDER BY case_id", (username,)).fetchall()
+        return [row[0] for row in rows]
+
+    def can_access_case(self, username, case_id, role=None):
+        if role == "admin":
+            return True
+        with self.repository.lock:
+            return self.repository.db.execute(
+                "SELECT 1 FROM user_case_access WHERE username=? AND case_id=?", (username, case_id)
+            ).fetchone() is not None
+
+    def create_user(self, username, password, role, now=None, case_ids=None):
         username, password = _username(username), _password(password)
         if role not in ROLES:
             raise AuthenticationError("Role must be admin, operator, analyst, or viewer")
+        case_ids = _case_ids(case_ids) or []
         salt = secrets.token_bytes(16)
         digest = _derive(password.decode("utf-8"), salt)
         now = time.time() if now is None else now
@@ -109,11 +143,15 @@ class AuthService:
                 "INSERT INTO users(username,password_salt,password_hash,iterations,role,created_at,updated_at) VALUES(?,?,?,?,?,?,?)",
                 (username, salt, digest, PASSWORD_ITERATIONS, role, now, now),
             )
-            self.repository._append_audit(now, "auth_user_created", username, {"role": role})
-        return {"username": username, "role": role, "disabled": False, "created_at": now, "updated_at": now}
+            self.repository.db.executemany("INSERT INTO user_case_access(username,case_id,created_at) VALUES(?,?,?)",
+                                           [(username, case_id, now) for case_id in case_ids])
+            self.repository._append_audit(now, "auth_user_created", username, {"role": role, "case_ids": case_ids})
+        return {"username": username, "role": role, "disabled": False, "case_ids": case_ids,
+                "created_at": now, "updated_at": now}
 
-    def update_user(self, username, role=None, disabled=None, now=None):
+    def update_user(self, username, role=None, disabled=None, now=None, case_ids=None):
         username = _username(username)
+        case_ids = _case_ids(case_ids)
         now = time.time() if now is None else now
         if role is not None and role not in ROLES:
             raise AuthenticationError("Role must be admin, operator, analyst, or viewer")
@@ -125,6 +163,10 @@ class AuthService:
                 return None
             next_role = current["role"] if role is None else role
             next_disabled = bool(current["disabled"]) if disabled is None else disabled
+            current_case_ids = [row[0] for row in self.repository.db.execute(
+                "SELECT case_id FROM user_case_access WHERE username=? ORDER BY case_id", (username,)
+            ).fetchall()]
+            next_case_ids = current_case_ids if case_ids is None else case_ids
             if current["role"] == "admin" and not current["disabled"] and (next_role != "admin" or next_disabled):
                 remaining = self.repository.db.execute(
                     "SELECT count(*) FROM users WHERE role='admin' AND disabled=0 AND username<>?", (username,)
@@ -133,14 +175,18 @@ class AuthService:
                     raise AuthenticationError("The last active administrator cannot be disabled or demoted")
             self.repository.db.execute("UPDATE users SET role=?,disabled=?,updated_at=? WHERE username=?",
                                        (next_role, int(next_disabled), now, username))
-            if next_disabled or next_role != current["role"]:
+            if case_ids is not None and next_case_ids != current_case_ids:
+                self.repository.db.execute("DELETE FROM user_case_access WHERE username=?", (username,))
+                self.repository.db.executemany("INSERT INTO user_case_access(username,case_id,created_at) VALUES(?,?,?)",
+                                               [(username, case_id, now) for case_id in next_case_ids])
+            if next_disabled or next_role != current["role"] or next_case_ids != current_case_ids:
                 self.repository.db.execute("DELETE FROM auth_sessions WHERE username=?", (username,))
             self.repository._append_audit(now, "auth_user_updated", username,
-                                          {"role": next_role, "disabled": next_disabled})
+                                          {"role": next_role, "disabled": next_disabled, "case_ids": next_case_ids})
             updated = self.repository.db.execute(
                 "SELECT username,role,disabled,created_at,updated_at FROM users WHERE username=?", (username,)
             ).fetchone()
-        return _user_summary(updated)
+        return {**_user_summary(updated), "case_ids": next_case_ids}
 
     def reset_password(self, username, password, now=None):
         username, password = _username(username), _password(password)
