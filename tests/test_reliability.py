@@ -225,6 +225,10 @@ class Reliability(unittest.TestCase):
                 self.assertEqual(json.loads(package.read('manifest.json'))['signature'],report['signature'])
             printed=self.client.get('/api/reports/'+report['report_id']+'/print').text
             self.assertIn(report['signature']['key_fingerprint_sha256'],printed)
+            reads=self.repo.db.execute("SELECT action,subject FROM audit WHERE action='report_read'").fetchall()
+            self.assertEqual(len(reads),3)
+            self.assertEqual({row['subject'] for row in reads},{report['report_id']})
+            self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
 
     def test_configured_but_invalid_signing_key_fails_report_creation(self):
         events.add_events([self.plate()])

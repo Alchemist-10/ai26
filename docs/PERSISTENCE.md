@@ -99,7 +99,10 @@ checks links and row hashes and returns the record count and current head hash; 
 broken row returns its ID and expected versus recorded previous hash. This is an
 internal consistency check, not a digital signature or independent proof: someone
 able to rewrite the database can rebuild the chain or truncate its tail. There is
-no external checkpoint, authenticated reviewer identity or signed audit export.
+no external checkpoint or signed audit export. With optional authentication,
+sensitive-access audit entries carry the session actor, case and purpose, and
+alert-review history uses the signed-in account. Local no-auth reviewer names are
+still operator claims.
 
 Evidence report version 5 has an optional Ed25519 signature over the canonical
 report payload, separate from its unkeyed `package_hash`. A configured private key
