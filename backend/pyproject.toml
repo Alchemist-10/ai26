@@ -25,6 +25,9 @@ package = false
 
 [dependency-groups]
 dev = ["httpx2", "httpx"]
+edge = [
+    "onnx>=1.17,<2",
+]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
