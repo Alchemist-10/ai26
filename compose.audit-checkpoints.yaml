@@ -1,0 +1,13 @@
+services:
+  audit-checkpoint:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    profiles: ["audit-checkpoint"]
+    user: "${AI26_AUDIT_CHECKPOINT_UID:-10001}:${AI26_AUDIT_CHECKPOINT_GID:-10001}"
+    entrypoint: ["python", "audit_checkpoint.py"]
+    command: ["--help"]
+    volumes:
+      - ai26-data:/app/data
+      - ${AI26_AUDIT_CHECKPOINT_PRIVATE_KEY_FILE:?Set AI26_AUDIT_CHECKPOINT_PRIVATE_KEY_FILE}:/run/secrets/audit-checkpoint-private.pem:ro
+      - ${AI26_AUDIT_CHECKPOINT_DIR:?Set AI26_AUDIT_CHECKPOINT_DIR}:/checkpoints

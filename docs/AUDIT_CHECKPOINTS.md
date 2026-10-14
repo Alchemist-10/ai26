@@ -43,5 +43,48 @@ database chain through the signed record. It reports records appended after the
 checkpoint. A valid result does not detect deletion or rollback of records that
 occurred after the most recent checkpoint, and it does not prove that the source
 events were truthful. Checkpoint frequency, off-host retention, key rotation,
-revocation, and incident response remain operator responsibilities; this
-prototype does not upload checkpoints or manage keys automatically.
+revocation, and incident response remain operator responsibilities; the wrapper
+does not configure the remote filesystem or manage keys automatically.
+
+## Optional daily Compose/systemd schedule
+
+The repository includes a host wrapper, optional Compose service, and systemd
+timer for daily checkpoints. This avoids writing to a local fallback when the
+configured checkpoint mount is absent. Choose an independent mounted filesystem
+and create an environment file readable by the host service:
+
+```sh
+AI26_AUDIT_CHECKPOINT_PRIVATE_KEY_FILE=/srv/ai26-keys/audit-checkpoint-private.pem
+AI26_AUDIT_CHECKPOINT_DIR=/mnt/independent-checkpoints/ai26
+AI26_AUDIT_CHECKPOINT_MOUNT=/mnt/independent-checkpoints
+AI26_AUDIT_CHECKPOINT_UID=10001
+AI26_AUDIT_CHECKPOINT_GID=10001
+```
+
+The service UID must be able to read the private key and write the mounted
+checkpoint directory. Checkpoint files are created without overwriting, with
+mode `0600`. The wrapper checks that the mount is active and the destination
+resolves beneath its mount root before invoking Compose. This confirms a mounted
+destination; it cannot prove the mount is physically off-host or controlled by
+a separate administrator. Use storage with the required independence and
+retention policy.
+
+Install the sample units after adapting `/opt/ai26` to the checkout path:
+
+```sh
+sudo install -d -m 0750 /etc/ai26
+sudo install -m 0640 deploy/systemd/audit-checkpoint.env.example /etc/ai26/audit-checkpoint.env
+sudoedit /etc/ai26/audit-checkpoint.env
+sudo install -m 0644 deploy/systemd/ai26-audit-checkpoint.service /etc/systemd/system/
+sudo install -m 0644 deploy/systemd/ai26-audit-checkpoint.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now ai26-audit-checkpoint.timer
+sudo systemctl start ai26-audit-checkpoint.service
+sudo systemctl status ai26-audit-checkpoint.timer
+sudo journalctl -u ai26-audit-checkpoint.service --since today
+```
+
+Inspect at least one generated checkpoint and verify it against a database copy
+using the earlier `verify` command. Timer activation alone does not prove a
+checkpoint succeeded. The timer leaves checkpoints in place; configure retention
+on the destination so it preserves the period required by policy.
