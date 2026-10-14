@@ -16,15 +16,44 @@ from artifacts import capture_read_images, storage_usage
 
 log = logging.getLogger(__name__)
 
+def _branch_switch(name):
+    value=os.environ.get(name,'1')
+    if value not in ('0','1'):
+        raise RuntimeError(f'{name} must be 0 or 1')
+    return value=='1'
+
+VEHICLE_DETECTION_ENABLED=_branch_switch('AI26_VEHICLE_DETECTION_ENABLED')
+PLATE_RECOGNITION_ENABLED=_branch_switch('AI26_PLATE_RECOGNITION_ENABLED')
+
+def inference_branches():
+    return {'vehicle_detection_enabled':VEHICLE_DETECTION_ENABLED,
+            'plate_recognition_enabled':PLATE_RECOGNITION_ENABLED}
+
+def validate_branch_configuration():
+    from privacy import enabled as privacy_enabled
+    if privacy_enabled() and not VEHICLE_DETECTION_ENABLED:
+        raise RuntimeError('Privacy mode requires the vehicle/person detection branch for sampled person pixelation')
+
 
 def annotate(frame, kind, camera_id):
-    from inference import annotate_plate_frame, annotate_vehicle_frame, take_person_boxes
-    if kind == 'vehicle': return annotate_vehicle_frame(frame, camera_id)
+    if kind == 'vehicle':
+        if not VEHICLE_DETECTION_ENABLED: return frame, []
+        from inference import annotate_vehicle_frame
+        return annotate_vehicle_frame(frame, camera_id)
+    if not VEHICLE_DETECTION_ENABLED and not PLATE_RECOGNITION_ENABLED: return frame, []
     raw = frame.copy()
-    frame, vehicles = annotate_vehicle_frame(frame, camera_id)
-    people = take_person_boxes(camera_id)
+    if VEHICLE_DETECTION_ENABLED:
+        from inference import annotate_vehicle_frame, take_person_boxes
+        frame, vehicles = annotate_vehicle_frame(frame, camera_id)
+        people = take_person_boxes(camera_id)
+    else:
+        vehicles, people = [], []
     # OCR sees the raw frame, not vehicle annotation strokes.
-    plate_frame, plates = annotate_plate_frame(raw, camera_id)
+    if PLATE_RECOGNITION_ENABLED:
+        from inference import annotate_plate_frame
+        plate_frame, plates = annotate_plate_frame(raw, camera_id)
+    else:
+        plate_frame, plates = frame, []
     if people:
         from privacy import enabled, pixelate_person_boxes
         if enabled(): pixelate_person_boxes(plate_frame, people)

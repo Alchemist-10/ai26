@@ -20,7 +20,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Streamin
 from cameras import CAMERAS_BY_ID, camera_playback_source, camera_source
 from events import derive_alerts, evidence_report, flows, get_events, get_trajectory, stats, store
 from nlquery import answer as nl_answer
-from processing import processor
+from processing import processor, inference_branches, validate_branch_configuration
 from schemas import QueryRequest, ReviewRequest, RuleConfig, CameraConfigurationUpdate, SourceSelectionRequest
 from stream import mjpeg_generator, snapshot_frame
 from plate_format import normalize_plate
@@ -42,6 +42,7 @@ from privacy import enabled as privacy_enabled, redact_analytics_payload, status
 @asynccontextmanager
 async def lifespan(app):
     validate_configuration()
+    validate_branch_configuration()
     janitor = Maintenance(store)
     AuthService(store).ensure_bootstrap_admin()
     janitor.start()
@@ -266,7 +267,8 @@ def interval(since,until):
 @app.get('/api/cameras')
 def list_cameras():
     processing_enabled=os.environ.get('AI26_PROCESSING_ENABLED','1')=='1'
-    health={s['camera_id']:{**s,'processing_enabled':processing_enabled} for s in processor.health()}
+    health={s['camera_id']:{**s,'processing_enabled':processing_enabled,
+                            'inference_branches':inference_branches()} for s in processor.health()}
     return [{**c,'source_available':camera_source(c['id']).is_file(),
              'health':health[c['id']]} for c in store.camera_catalog()]
 
@@ -345,6 +347,7 @@ def audit_integrity():
 @app.get('/api/health')
 def health():
     return {'processing_enabled':os.environ.get('AI26_PROCESSING_ENABLED','1')=='1','cameras':processor.health(),
+            'inference_branches':inference_branches(),
             'database_schema':store.schema_version,'scope':'single API process; run uvicorn with one worker'}
 
 @app.get('/api/stream/{camera_id}')

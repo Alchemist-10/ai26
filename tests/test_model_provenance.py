@@ -124,6 +124,19 @@ class InferenceProvenance(unittest.TestCase):
         with patch.dict(sys.modules,modules): spec.loader.exec_module(module)
         return module
 
+    def test_vehicle_model_is_created_lazily_and_hashed_on_first_use(self):
+        module=self.module()
+        with tempfile.TemporaryDirectory() as folder:
+            checkpoint=Path(folder)/'fixture.pt';checkpoint.write_bytes(b'pinned vehicle checkpoint')
+            model=SimpleNamespace()
+            loader=Mock(return_value=model)
+            with patch.object(module,'_checkpoint',checkpoint),patch.object(module,'YOLO',loader):
+                self.assertIsNone(module._yolo)
+                self.assertIs(module._vehicle_model(),model)
+                self.assertIs(module._vehicle_model(),model)
+            self.assertEqual(loader.call_count,1)
+            self.assertEqual(module._model_metadata['checkpoint_sha256'],hashlib.sha256(checkpoint.read_bytes()).hexdigest())
+
     def test_lazy_failure_retries_and_success_initializes_once(self):
         module=self.module();model=SimpleNamespace(predict=lambda _:[])
         metadata={'weight_provenance_status':'hashed_loaded_files'}

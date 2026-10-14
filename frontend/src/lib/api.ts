@@ -123,6 +123,7 @@ export interface CameraHealth {
   camera_id: string
   status: string
   processing_enabled: boolean
+  inference_branches: { vehicle_detection_enabled: boolean; plate_recognition_enabled: boolean }
   last_frame_at: number | null
   frame_age_seconds: number | null
   processed_fps: number

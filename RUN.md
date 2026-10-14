@@ -48,6 +48,8 @@ uv run run.py
 | `AI26_DATA_ROOT` | `backend/data` | SQLite, JPEG storage and default managed source root |
 | `AI26_SOURCE_ROOT` | `<AI26_DATA_ROOT>/sources` | Optional managed recorded imports; same value for CLI/API |
 | `AI26_PROCESSING_ENABLED` | `1` | Set `0` for API/fixture tests without models |
+| `AI26_VEHICLE_DETECTION_ENABLED` | `1` | Set `0` to skip the YOLO vehicle/person branch; restart the API to apply. Privacy mode requires this branch for sampled person pixelation. |
+| `AI26_PLATE_RECOGNITION_ENABLED` | `1` | Set `0` to skip plate detection/OCR while leaving vehicle detection available; restart the API to apply. |
 | `AI26_TOTAL_INFERENCE_FPS` | `2` | Total scheduled sampling budget, clamped 0.1–10 |
 | `AI26_FORWARD_DECODE_MAX_FRAMES` | `128` | Maximum explicit forward grab calls per sample, clamped 0–128; 0 uses seeking |
 | `AI26_TIMEZONE` | `Asia/Kolkata` | Calendar/time interpretation for query intents |

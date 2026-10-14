@@ -6,7 +6,11 @@
 2. FastAPI lifespan starts one `processing.Processor`. A Linux advisory lock
    prevents a second owner of the same data directory. Sequential bounded sampling
    covers every available source without a browser request or growing queue.
-3. `inference.py` runs YOLO and, for plate inputs, lazy Fast-ALPR. Camera-local motion/box
+3. `inference.py` lazily initializes YOLO only when the vehicle/person branch runs and,
+   for plate inputs, lazy Fast-ALPR. `AI26_VEHICLE_DETECTION_ENABLED` and
+   `AI26_PLATE_RECOGNITION_ENABLED` independently disable those branches at API startup;
+   health reports the active settings. Privacy mode refuses to start without the
+   person-detection branch used for sampled pixelation. Camera-local motion/box
    assignment IDs and OCR consensus are scoped to camera/session/track and reset on replay
    loops. Three consistent normalized reads support an identity; conflicting
    reads abstain. Ambiguous association retires implicated old IDs and retains raw

@@ -29,17 +29,26 @@ _plate_trackers: dict[str, CentroidTracker] = defaultdict(lambda: CentroidTracke
 _person_boxes: dict[str, list[list[int]]] = {}
 
 _checkpoint = Path(__file__).parent / "yolov8n.pt"
-_yolo = YOLO(str(_checkpoint))
-with _checkpoint.open('rb') as _model_file:
-    _checkpoint_hash = hashlib.file_digest(_model_file, 'sha256').hexdigest()
+_yolo = None
+_model_metadata = None
 _pipeline_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 _pipeline_components = pipeline_components(Path(__file__).parent)
-_model_metadata = {"checkpoint_sha256": _checkpoint_hash, "torch_version": str(torch.__version__), "cpu_threads": CPU_THREADS, "tracker_version": TRACKER_VERSION,
-                   "ultralytics_version": version("ultralytics"), "pipeline_sha256": _pipeline_hash,
-                   "pipeline_components_sha256":_pipeline_components}
 _alpr = None
 _alpr_metadata = None
 _fast_alpr_version = version('fast-alpr')
+
+def _vehicle_model():
+    global _yolo, _model_metadata
+    if _yolo is None:
+        model = YOLO(str(_checkpoint))
+        with _checkpoint.open('rb') as model_file:
+            checkpoint_hash = hashlib.file_digest(model_file, 'sha256').hexdigest()
+        _yolo = model
+        _model_metadata = {"checkpoint_sha256": checkpoint_hash, "torch_version": str(torch.__version__),
+                           "cpu_threads": CPU_THREADS, "tracker_version": TRACKER_VERSION,
+                           "ultralytics_version": version("ultralytics"), "pipeline_sha256": _pipeline_hash,
+                           "pipeline_components_sha256":_pipeline_components}
+    return _yolo
 
 def _plate_model():
     global _alpr, _alpr_metadata
@@ -69,8 +78,9 @@ CRIT = (114, 92, 255)
 
 def annotate_vehicle_frame(frame, camera_id: str):
     """Runs real YOLO vehicle detection, draws boxes, returns (frame, detections)."""
+    yolo = _vehicle_model()
     classes = list(VEHICLE_CLASS_IDS | ({0} if privacy_enabled() else set()))
-    results = _yolo.predict(frame, device=DEVICE, verbose=False, classes=classes, conf=0.4)
+    results = yolo.predict(frame, device=DEVICE, verbose=False, classes=classes, conf=0.4)
     # Ultralytics resets the thread count during its first predictor setup. Restore
     # the desktop budget for subsequent inference; no global library patch needed.
     if DEVICE == 'cpu' and torch.get_num_threads()!=CPU_THREADS: torch.set_num_threads(CPU_THREADS)
@@ -82,7 +92,7 @@ def annotate_vehicle_frame(frame, camera_id: str):
         cls_id = int(box.cls[0])
         conf = float(box.conf[0])
         x1, y1, x2, y2 = [int(v) for v in box.xyxy[0]]
-        label = _yolo.names[cls_id]
+        label = yolo.names[cls_id]
         if cls_id == 0:
             people.append([x1, y1, x2, y2])
             continue
