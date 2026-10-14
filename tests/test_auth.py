@@ -4,6 +4,7 @@ import os
 import sqlite3
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor
@@ -336,6 +337,39 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.repo.db.execute(
             "SELECT count(*) FROM auth_login_failures WHERE client_hash=?", (address_hash,)
         ).fetchone()[0], MAX_AUTH_ATTEMPTS)
+
+    def test_concurrent_totp_replay_creates_at_most_one_session(self):
+        key_path = Path(self.folder.name) / "mfa.key"
+        key_path.write_bytes(b"t" * 32)
+        key_path.chmod(0o600)
+        secret = mfa_tools.create_secret()
+        self.create()
+        with patch.dict(os.environ, {"AI26_AUTH_MFA_KEY_FILE": str(key_path)}):
+            self._enroll_test_mfa("admin", secret, [])
+            now = float((int(time.time()) // 30) * 30 + 10)
+            code = mfa_tools.code_at(secret, now)
+            both_verified = threading.Barrier(2)
+            thread_state = threading.local()
+            match_counter = mfa_tools.matched_totp_counter
+
+            def synchronize_first_match(value, submitted, timestamp):
+                counter = match_counter(value, submitted, timestamp)
+                if not getattr(thread_state, "matched", False):
+                    thread_state.matched = True
+                    both_verified.wait(timeout=5)
+                return counter
+
+            with patch.object(mfa_tools, "matched_totp_counter", side_effect=synchronize_first_match):
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    results = list(pool.map(
+                        lambda _: self.auth.login("admin", "Correct-Horse-Battery-Staple-26",
+                                                  "shared-mfa-client", now, code), range(2)
+                    ))
+
+        self.assertEqual(sum(result is not None for result, _ in results), 1)
+        self.assertEqual([reason for result, reason in results if result is None], ["mfa_invalid"])
+        self.assertEqual(self.repo.db.execute("SELECT count(*) FROM auth_sessions").fetchone()[0], 1)
+        self.assertEqual(self.repo.db.execute("SELECT count(*) FROM audit WHERE action='auth_login'").fetchone()[0], 1)
 
     def test_invalid_username_password_and_user_role_are_rejected(self):
         with self.assertRaises(AuthenticationError):
