@@ -105,8 +105,9 @@ road density, traffic speed or historical weekday/hour baselines.
 ## Reports and retention
 
 Reports since version 2 store a deduplicated model-provenance summary with
-missing/exact-file coverage. New version-3 reports also store current sampled-read
-frame/crop coverage and explicit legacy/failure counts. Version-1/2 reports retain
+missing/exact-file coverage. Version-4 reports also store heuristic top-three
+image review candidates; version-3 reports store current sampled-read
+frame/crop coverage and explicit legacy/failure counts. Version-1/2/3 reports retain
 their original snapshots.
 Each report stores its exact interval, deduplicated supporting observations, all
 raw reads from those passages, raw/canonical OCR, link decisions, artifact references,

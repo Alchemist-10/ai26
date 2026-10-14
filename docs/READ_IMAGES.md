@@ -42,16 +42,17 @@ fail; use these capture fields and report coverage to assess image availability.
 
 ## Reports and compatibility
 
-New version-3 manifests add immutable `artifact_coverage` counts for matching
-current frames/crops, complete/incomplete reads, capture failures and legacy/manual
-reads. Coverage checks the exact camera/session/frame/source context, dimensions,
-digest/size descriptors and expected clipped crop bounds. Older best-shot references
-are never upgraded to complete current-read coverage.
+Version-3 manifests add immutable `artifact_coverage` counts for matching current
+frames/crops, complete/incomplete reads, capture failures and legacy/manual reads.
+Version-4 manifests also include immutable top-three image review candidates per
+plate passage. Coverage checks the exact camera/session/frame/source context,
+dimensions, digest/size descriptors and expected clipped crop bounds. Older
+best-shot references are never upgraded to complete current-read coverage.
 
 JSON and ZIP contain the same stored summary and all raw per-read references.
 Image files are deduplicated by digest; multiple matching read contexts remain in
 the raw-read entries. Print displays the stored coverage and missing-read counts.
-Version-1/2 snapshots remain immutable and print an unavailable-coverage notice.
+Version-1/2/3 snapshots remain immutable and print an unavailable-coverage notice.
 Missing/corrupt referenced files still fail report creation/download explicitly.
 Reports with recorded capture failures may exist with incomplete coverage; their
 raw history and missing-image counts remain visible. Existing 5,000-raw-read and

@@ -139,7 +139,7 @@ def _evidence_report(plate, since=None, until=None):
     for artifact in artifacts.values():
         if artifact_bytes(artifact['sha256'], now + REPORT_RETENTION_SECONDS) is None:
             raise ValueError('A source artifact is missing; choose an available evidence interval')
-    report = {'report_id': f'EVD-{uuid.uuid4().hex[:12].upper()}', 'version': 3,
+    report = {'report_id': f'EVD-{uuid.uuid4().hex[:12].upper()}', 'version': 4,
               'generated_at': now, 'expires_at': now + REPORT_RETENTION_SECONDS,
               'retention': 'Report expires after 24 hours; referenced artifacts protected until report expiry; other source artifacts retained for 7 days',
               'trajectory': trajectory, 'raw_reads': raw_reads, 'raw_read_count':raw_total, 'artifacts': list(artifacts.values()),

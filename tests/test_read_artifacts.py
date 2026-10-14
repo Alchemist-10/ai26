@@ -206,7 +206,7 @@ class ReadArtifacts(unittest.TestCase):
         for read,value in zip(reads,(30,120)):self.capture([read],self.image(value))
         events.add_events(reads)
         report=events.evidence_report('KL07AB1234',self.now-1,self.now+1)
-        self.assertEqual(report['version'],3)
+        self.assertEqual(report['version'],4)
         self.assertEqual(report['artifact_coverage']['reads_with_complete_current_images'],2)
         self.assertTrue(report['image_review_candidates']['raw_reads_retained'])
         self.assertEqual(report['image_review_candidates']['groups'][0]['candidate_count'],2)
@@ -227,14 +227,17 @@ class ReadArtifacts(unittest.TestCase):
 
     def test_old_report_snapshot_prints_explicit_missing_summary_and_stays_immutable(self):
         events.add_events([self.read()]);report=events.evidence_report('KL07AB1234',self.now-1,self.now+1)
-        for version in (1,2):
-            legacy={k:v for k,v in report.items() if k not in ('artifact_coverage','package_hash')}
+        for version in (1,2,3):
+            legacy={k:v for k,v in report.items() if k not in ('artifact_coverage','image_review_candidates','package_hash')}
+            legacy['limitations']=[item for item in report['limitations'] if not item.startswith('Top image candidates')]
             legacy.update(version=version,report_id=f'EVD-OLD-{version}')
             legacy['package_hash']=hashlib.sha256(canonical_json(legacy).encode()).hexdigest()
             self.repository.put_report(legacy)
             route='/api/reports/'+legacy['report_id']
             self.assertEqual(self.client.get(route).json(),legacy)
             self.assertIn('Image coverage is unavailable in this older report snapshot',self.client.get(route+'/print').text)
+            if version==3:
+                self.assertNotIn('Top image review candidates',self.client.get(route+'/print').text)
 
     def test_processor_later_frame_uses_current_images_and_exposes_storage_failure(self):
         path=self.root/'source.mp4';path.write_bytes(b'synthetic source identity')

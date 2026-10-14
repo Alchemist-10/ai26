@@ -1,7 +1,7 @@
 # Exact model provenance — 11 October 2026
 
 This records the provenance milestone (96 tests) before the per-read image update.
-Current reports are version 3 and reads hash seven components, including
+Current reports are version 4 and reads hash seven components, including
 `processing.py` and `artifacts.py`; see [per-read images](READ_IMAGES.md) for the
 113-test current validation, capture coverage and storage limits.
 
