@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **44 done, 30 partial, 6 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **44 done, 31 partial, 5 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -39,7 +39,7 @@ cannot attach custom headers. Auth is disabled in the default local stack. Case
 grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. Self-service account recovery
 and external identity remain pending.
-The isolated full backend suite passes 242 tests; frontend TypeScript build and lint
+The isolated full backend suite passes 266 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 
@@ -364,7 +364,7 @@ local results. Short runtime samples do not establish sustained throughput.
 
 | ID | Status | Task | Evidence / remaining work |
 | --- | --- | --- | --- |
-| OP-01 | Pending | RTSP/ONVIF camera integration and resilient capture queues. | Optional production/edge work; not implemented for this local course prototype. |
+| OP-01 | Partial | RTSP/ONVIF camera integration and resilient capture queues. | Optional protected JSON mapping configures RTSP/RTSPS for existing cameras. Dedicated readers use bounded open/read timeouts, one-frame buffers, freshness checks and reconnect backoff; live frames use the normal inference/event/preview pipeline and capture-arrival timestamps. Fake-capture tests cover private config and reader behavior. ONVIF discovery, actual camera/NVR interoperability and clock synchronization are not implemented or verified. |
 | OP-02 | Partial | Authentication, role-based access and purpose/case-scoped sensitive operations. | Optional auth includes sessions, roles, CSRF, case/purpose audit, per-account grants, MFA with encrypted TOTP secrets and one-use recovery codes, administrator MFA/password reset, and current-password-confirmed self-service password change that revokes all sessions. It remains opt-in; self-service account recovery, help-desk recovery and external identity remain pending. |
 | OP-03 | Partial | Occupant face blurring and keyed plate pseudonyms in analytics views if those privacy features remain in scope. | Opt-in installation-keyed plate pseudonyms, detected-person/plate pixelation in sampled views, and API-blocked raw playback are implemented. Evidence remains raw; model misses and unsampled frames are possible, and no labeled field validation has measured coverage. This is not complete face blurring or guaranteed anonymization. |
 | OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Schema-10 local SQLite audit chain detects row/link edits; optional TLS 1.2/1.3, authentication/MFA and Ed25519 report-signing overlays use host-managed secrets/keys. External audit anchoring, secret rotation, and key lifecycle controls remain pending. |

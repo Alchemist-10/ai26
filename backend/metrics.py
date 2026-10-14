@@ -44,7 +44,7 @@ def render_metrics(cameras, processing_enabled, branches):
                [({'camera_id':camera.get('camera_id','unknown')},camera.get(key)) for camera in cameras])
 
     for name,help_text,key in (
-        ('ai26_camera_source_available','Whether the configured source file exists.','source_available'),
+        ('ai26_camera_source_available','Whether the configured recorded file exists or a live source has a fresh frame.','source_available'),
         ('ai26_camera_processed_fps','Recent successful camera frame processing rate.','processed_fps'),
         ('ai26_camera_frame_age_seconds','Age of the latest processed frame; absent until a frame has been processed.','frame_age_seconds'),
         ('ai26_camera_queue_depth','Current processor queue depth. The single-owner processor has no growing queue.','queue_depth'),

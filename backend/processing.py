@@ -13,6 +13,7 @@ import cv2
 from cameras import CAMERAS, camera_source
 from events import add_events, derive_alerts, store
 from artifacts import capture_read_images, storage_usage
+from live_capture import LiveCapture, load_live_sources
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +66,8 @@ class Processor:
     def __init__(self, cameras=None, source=None, annotator=None, rate=None):
         self.cameras = cameras if cameras is not None else CAMERAS
         self.source = source or camera_source
+        self.live_sources = load_live_sources(camera_ids=[c['id'] for c in self.cameras])
+        self.live_captures = {}
         self.annotator = annotator or annotate
         self.rate = max(.1, min(10, rate or float(os.environ.get('AI26_TOTAL_INFERENCE_FPS', '2'))))
         self.lock = threading.RLock()
@@ -76,7 +79,8 @@ class Processor:
         self.captures = {}
         self.state = {c['id']: {'camera_id':c['id'], 'status':'idle', 'frames':0, 'last_frame_at':None,
                       'last_event_at':None, 'error':None, 'source_available':False, 'queue_depth':0,
-                      'source_mode':'recorded', 'time_basis':'replay_clock',
+                      'source_mode':'live' if c['id'] in self.live_sources else 'recorded',
+                      'time_basis':'capture_arrival_clock' if c['id'] in self.live_sources else 'replay_clock',
                       'attempts':0,'failed_attempts':0,'budget_overruns':0,
                       'missing_source_checks':0,'retry_backoff_checks':0} for c in self.cameras}
         self.timing_windows = {c['id']:deque(maxlen=64) for c in self.cameras}
@@ -87,6 +91,7 @@ class Processor:
         self.retry_at = {}
         self.source_hashes = {}
         self.capture_generation = {}
+        self.live_reader_generation = {}
         self.decode_next = {}
         self.forward_decode_limit = max(0,min(128,int(os.environ.get('AI26_FORWARD_DECODE_MAX_FRAMES','128'))))
         self.owner_file = None
@@ -104,6 +109,9 @@ class Processor:
             owner.close()
             raise RuntimeError('Another processor owns this AI26 data directory; use one API worker')
         self.owner_file = owner
+        self.live_captures = {camera_id:LiveCapture(camera_id,url)
+                              for camera_id,url in self.live_sources.items()}
+        for live_capture in self.live_captures.values(): live_capture.start()
         self.stop_event.clear()
         self.thread = threading.Thread(target=self.run, name='ai26-inference-owner', daemon=True)
         self.thread.start()
@@ -111,6 +119,7 @@ class Processor:
     def stop(self):
         self.stop_event.set()
         if self.thread: self.thread.join(timeout=30)
+        for live_capture in self.live_captures.values(): live_capture.stop()
         if self.thread and self.thread.is_alive():
             log.error('Inference has not exited; do not start another owner in this process')
         else:
@@ -129,6 +138,14 @@ class Processor:
                      'timing':self.timing_summary(s['camera_id']),
                      'artifact_storage':storage_usage()}
                     for s in self.state.values()]
+
+    def source_is_live(self, camera_id):
+        return camera_id in self.live_sources
+
+    def source_available(self, camera_id):
+        if camera_id in self.live_captures:
+            return self.live_captures[camera_id].latest()[0] is not None
+        return Path(self.source(camera_id)).is_file()
 
     def timing_summary(self, camera):
         # At most 64 successful samples per camera; health never accumulates data.
@@ -199,6 +216,8 @@ class Processor:
     def step(self, camera):
         camera_id=camera['id']; now=time.time()
         began_attempt=time.monotonic()
+        if camera_id in self.live_captures:
+            return self._step_live(camera, began_attempt)
         path=Path(self.source(camera_id))
         if not path.is_file():
             with self.lock:
@@ -291,6 +310,83 @@ class Processor:
             cap=self.captures.pop(camera_id,None)
             self.decode_next.pop(camera_id,None)
             if cap: cap.release()
+        finally:
+            phases[phase]=(time.monotonic()-phase_began)*1000
+            self.record_attempt(camera_id,began_attempt,phases,success)
+        return True
+
+    def _step_live(self, camera, began_attempt):
+        """Process a fresh frame from the bounded RTSP reader using arrival time."""
+        camera_id = camera['id']; reader = self.live_captures[camera_id]
+        now = time.time(); sample, capture_status = reader.latest()
+        if sample is None:
+            self._set(camera_id, status='unavailable' if capture_status != 'connected' else 'stale',
+                      source_available=False, source_mode='live', time_basis='capture_arrival_clock',
+                      error='Live stream is connecting, unavailable, or stale')
+            self.latest.pop(camera_id, None); self.thumbnails.pop(camera_id, None)
+            return False
+        captured_at, sequence, reader_generation, raw = sample
+        self._set(camera_id, source_available=True, source_mode='live',
+                  time_basis='capture_arrival_clock', status='loading', error=None,
+                  capture_sequence=sequence, last_capture_at=captured_at)
+        phases={}; phase='source'; phase_began=began_attempt; success=False
+        def mark(next_phase):
+            nonlocal phase,phase_began
+            ended=time.monotonic(); phases[phase]=(ended-phase_began)*1000
+            phase=next_phase; phase_began=ended
+        try:
+            frame_id = sequence
+            session_generation=self.capture_generation.get(camera_id,0)
+            new_connection=self.live_reader_generation.get(camera_id)!=reader_generation
+            if new_connection:
+                if camera_id in self.epochs:
+                    from inference import reset_camera
+                    reset_camera(camera_id)
+                self.epochs[camera_id] = 'live'
+                session_generation += 1
+                self.capture_generation[camera_id] = session_generation
+                self.live_reader_generation[camera_id]=reader_generation
+                self.decode_next.pop(camera_id,None)
+                session=f'{self.run_id}:{camera_id}:live:{session_generation}'
+                store.start_session({'id':session,'camera_id':camera_id,'started_at':captured_at,
+                                     'source_sha256':None,'source_mode':'live',
+                                     'time_basis':'capture_arrival_clock','run_id':self.run_id})
+            else:
+                session=f'{self.run_id}:{camera_id}:live:{session_generation}'
+            mark('inference')
+            frame,detections=self.annotator(raw.copy(),camera['kind'],camera_id)
+            mark('artifacts')
+            processing_time=time.time(); height,width=raw.shape[:2]
+            for detection in detections:
+                detection.update(session_id=session,frame_id=frame_id,ts=captured_at,
+                                 source_time_seconds=None,processed_at=processing_time,
+                                 source_mode='live',time_basis='capture_arrival_clock',
+                                 source_sha256=None,frame_size=[width,height],
+                                 model_version='yolov8n.pt' if detection['kind']=='vehicle' else 'fast-alpr:global-plates-mobile-vit-v2')
+            capture_began=time.monotonic(); artifact_metrics=capture_read_images(raw,detections)
+            artifact_ms=round((time.monotonic()-capture_began)*1000,1)
+            mark('persistence'); inserted=add_events(detections)
+            if inserted: derive_alerts()
+            mark('jpeg')
+            ok,buf=cv2.imencode('.jpg',frame,[cv2.IMWRITE_JPEG_QUALITY,80])
+            if not ok: raise RuntimeError('Annotated image could not be encoded')
+            preview=cv2.resize(frame,(320,max(1,round(height*320/width))),interpolation=cv2.INTER_AREA)
+            preview_ok,preview_buf=cv2.imencode('.jpg',preview,[cv2.IMWRITE_JPEG_QUALITY,65])
+            if not preview_ok: raise RuntimeError('Preview could not be encoded')
+            with self.lock:
+                self.latest[camera_id]=(processing_time,buf.tobytes())
+                self.thumbnails[camera_id]=(processing_time,preview_buf.tobytes())
+                state=self.state[camera_id]
+                state.update(status='processing',error=None,last_frame_at=processing_time,
+                             last_event_at=processing_time if detections else state['last_event_at'],
+                             frames=state['frames']+1,latency_ms=round((time.monotonic()-began_attempt)*1000,1),
+                             artifact_capture_ms=artifact_ms,artifact_capture=artifact_metrics,
+                             session_id=session,frame_id=frame_id,source_time_seconds=None,
+                             capture_sequence=sequence)
+            success=True
+        except Exception as exc:
+            log.exception('Live camera %s processing failed',camera_id)
+            self._set(camera_id,status='error',error=str(exc)[:200])
         finally:
             phases[phase]=(time.monotonic()-phase_began)*1000
             self.record_attempt(camera_id,began_attempt,phases,success)

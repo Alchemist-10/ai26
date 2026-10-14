@@ -71,6 +71,29 @@ private Compose network or through a trusted proxy. The optional monitoring
 overlay below supplies a local Prometheus service and starter alert rules;
 external notification delivery still requires Alertmanager configuration.
 
+An optional RTSP path accepts a private JSON map from existing camera IDs to
+`rtsp://` or `rtsps://` URLs. Create a host-side file such as
+`{"CAM-01":"rtsp://user:password@camera.local:554/stream"}`, restrict it with
+`chmod 600` and make it owned by container UID 10001 (for example,
+`sudo chown 10001:10001 /path/to/ai26-live-sources.json`), set
+`AI26_LIVE_SOURCES_FILE` in `.env`, and start Compose with the overlay:
+
+```sh
+docker compose -f compose.yaml -f compose.rtsp.yaml up --build
+```
+
+The API validates the file permissions and camera IDs at startup. One reader
+thread per configured camera has five-second open and three-second read
+timeouts, a latest-frame-only buffer, five-second freshness limit, reconnect
+backoff and no URL exposure in health/API responses or capture logs. Inference,
+event storage and browser previews use the same pipeline as recorded input;
+`/api/video/{camera_id}` remains unavailable for live cameras. Live timestamps
+are host arrival times and are labeled `capture_arrival_clock`; no camera/NVR
+clock synchronization is claimed. Use RTSP over a trusted camera network (or
+RTSPS where supported) and rotate credentials at the camera. ONVIF discovery,
+camera clock synchronization, live failover testing on actual hardware and
+credential lifecycle management remain open work.
+
 For a local Prometheus instance and starter alert rules, create a token file and
 grant the backend and Prometheus containers read access through a shared host
 group. For example:

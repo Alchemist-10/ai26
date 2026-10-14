@@ -11,6 +11,7 @@ services:
       AI26_VEHICLE_DETECTION_ENABLED: ${AI26_VEHICLE_DETECTION_ENABLED:-1}
       AI26_PLATE_RECOGNITION_ENABLED: ${AI26_PLATE_RECOGNITION_ENABLED:-1}
       AI26_FRONTEND_PORT: "5174"
+      AI26_LIVE_SOURCES_FILE: ${AI26_LIVE_SOURCES_FILE:-}
     volumes:
       - ai26-data:/app/data
       - ${AI26_FOOTAGE_DIR:-./backend/data/footage}:/mnt/footage:ro

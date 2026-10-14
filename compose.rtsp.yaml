@@ -1,0 +1,6 @@
+services:
+  backend:
+    environment:
+      AI26_LIVE_SOURCES_FILE: /run/secrets/ai26-live-sources.json
+    volumes:
+      - ${AI26_LIVE_SOURCES_FILE:?Set AI26_LIVE_SOURCES_FILE to a protected camera map}:/run/secrets/ai26-live-sources.json:ro

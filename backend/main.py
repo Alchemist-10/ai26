@@ -302,7 +302,8 @@ def list_cameras():
     processing_enabled=os.environ.get('AI26_PROCESSING_ENABLED','1')=='1'
     health={s['camera_id']:{**s,'processing_enabled':processing_enabled,
                             'inference_branches':inference_branches()} for s in processor.health()}
-    return [{**c,'source_available':camera_source(c['id']).is_file(),
+    return [{**c,'source_mode':'live' if processor.source_is_live(c['id']) else 'recorded',
+             'source_available':processor.source_available(c['id']),
              'health':health[c['id']]} for c in store.camera_catalog()]
 
 @app.get('/api/cameras/{camera_id}/configuration')
@@ -315,7 +316,9 @@ def camera_configuration(camera_id:str, revision:Annotated[int|None,Query(ge=1)]
 @app.get('/api/cameras/{camera_id}/source')
 def camera_source_status(camera_id:str):
     check_camera(camera_id)
-    return source_status(camera_id)
+    return {**source_status(camera_id),
+            'configured_source_mode':'live' if processor.source_is_live(camera_id) else 'recorded',
+            'source_available':processor.source_available(camera_id)}
 
 @app.post('/api/cameras/{camera_id}/source/prepare',status_code=202)
 async def prepare_camera_source(camera_id:str,request:Request):
@@ -387,27 +390,29 @@ def health():
 def prometheus_metrics():
     cameras=processor.health()
     for camera in cameras:
-        camera['source_available']=camera_source(camera['camera_id']).is_file()
+        camera['source_available']=processor.source_available(camera['camera_id'])
     body=render_metrics(cameras,os.environ.get('AI26_PROCESSING_ENABLED','1')=='1',inference_branches())
     return Response(body,media_type='text/plain; version=0.0.4; charset=utf-8')
 
 @app.get('/api/stream/{camera_id}')
 def stream(camera_id:str,start:float|None=None,anchor:float|None=None):
     check_camera(camera_id)
-    if not camera_source(camera_id).is_file(): raise HTTPException(404,'Camera source is unavailable')
+    if not processor.source_is_live(camera_id) and not camera_source(camera_id).is_file(): raise HTTPException(404,'Camera source is unavailable')
     return StreamingResponse(mjpeg_generator(camera_id),media_type='multipart/x-mixed-replace; boundary=frame')
 
 @app.get('/api/video/{camera_id}')
 def video(camera_id:str):
     if privacy_enabled(): raise HTTPException(403,'Raw recorded playback is disabled while privacy mode is enabled')
-    check_camera(camera_id); path=camera_playback_source(camera_id)
+    check_camera(camera_id)
+    if processor.source_is_live(camera_id): raise HTTPException(404,'Recorded playback is unavailable for a live source')
+    path=camera_playback_source(camera_id)
     if not path.is_file(): raise HTTPException(404,'Camera source is unavailable')
     return FileResponse(path,media_type='video/mp4')
 
 @app.get('/api/snapshot/{camera_id}')
 def snapshot(camera_id:str):
     check_camera(camera_id)
-    if not camera_source(camera_id).is_file(): raise HTTPException(404,'Camera source is unavailable')
+    if not processor.source_available(camera_id): raise HTTPException(404,'Camera source is unavailable')
     jpeg=snapshot_frame(camera_id)
     if not jpeg: raise HTTPException(503,'No current processed frame; check camera health')
     return Response(content=jpeg,media_type='image/jpeg')
@@ -415,7 +420,7 @@ def snapshot(camera_id:str):
 @app.get('/api/preview/{camera_id}')
 def preview(camera_id:str,request:Request):
     check_camera(camera_id)
-    if not camera_source(camera_id).is_file(): raise HTTPException(404,'Camera source is unavailable')
+    if not processor.source_available(camera_id): raise HTTPException(404,'Camera source is unavailable')
     latest=processor.preview(camera_id)
     if not latest: raise HTTPException(503,'Preview is not ready; check camera health')
     etag='"'+hashlib.sha256(latest[1]).hexdigest()+'"'
