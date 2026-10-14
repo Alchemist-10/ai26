@@ -62,10 +62,19 @@ def code_at(secret, timestamp=None):
 
 
 def verify_totp(secret, code, timestamp=None):
+    return matched_totp_counter(secret, code, timestamp) is not None
+
+
+def matched_totp_counter(secret, code, timestamp=None):
+    """Return the matching RFC 6238 time-step counter, or None for an invalid code."""
     if not isinstance(code, str) or len(code) != 6 or not code.isdigit():
-        return False
+        return None
     timestamp = time.time() if timestamp is None else timestamp
-    return any(hmac.compare_digest(code, code_at(secret, timestamp + offset * 30)) for offset in (-1, 0, 1))
+    current = int(timestamp // 30)
+    for counter in (current, current - 1, current + 1):
+        if hmac.compare_digest(code, code_at(secret, counter * 30)):
+            return counter
+    return None
 
 
 def provisioning_uri(secret, username):

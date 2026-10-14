@@ -288,14 +288,16 @@ class AuthService:
         with self.repository.lock:
             user = self.repository.db.execute("SELECT disabled FROM users WHERE username=?", (normalized,)).fetchone()
             factor = self.repository.db.execute(
-                "SELECT secret_ciphertext,enabled,recovery_hashes FROM user_mfa WHERE username=?", (normalized,)
+                "SELECT secret_ciphertext,enabled,recovery_hashes,last_used_counter FROM user_mfa WHERE username=?", (normalized,)
             ).fetchone()
         valid_totp = False
+        totp_counter = None
         recovery_index = None
         if user and not user["disabled"] and factor and factor["enabled"]:
             try:
                 secret = mfa_tools.decrypt_secret(factor["secret_ciphertext"])
-                valid_totp = mfa_tools.verify_totp(secret, code, now)
+                totp_counter = mfa_tools.matched_totp_counter(secret, code, now)
+                valid_totp = totp_counter is not None and totp_counter > factor["last_used_counter"]
             except RuntimeError:
                 valid_totp = False
             if not valid_totp:
@@ -311,17 +313,20 @@ class AuthService:
         with self.repository.lock, self.repository.db:
             current = self.repository.db.execute("SELECT disabled FROM users WHERE username=?", (normalized,)).fetchone()
             current_factor = self.repository.db.execute(
-                "SELECT secret_ciphertext,enabled,recovery_hashes FROM user_mfa WHERE username=?", (normalized,)
+                "SELECT secret_ciphertext,enabled,recovery_hashes,last_used_counter FROM user_mfa WHERE username=?", (normalized,)
             ).fetchone()
             if not current or current["disabled"] or not current_factor or not current_factor["enabled"]:
                 return "invalid"
             if valid_totp:
                 try:
-                    still_valid = mfa_tools.verify_totp(mfa_tools.decrypt_secret(current_factor["secret_ciphertext"]), code, now)
+                    current_counter = mfa_tools.matched_totp_counter(
+                        mfa_tools.decrypt_secret(current_factor["secret_ciphertext"]), code, now)
                 except RuntimeError:
-                    still_valid = False
-                if not still_valid:
+                    current_counter = None
+                if current_counter != totp_counter or current_counter <= current_factor["last_used_counter"]:
                     return "invalid"
+                self.repository.db.execute("UPDATE user_mfa SET last_used_counter=?,updated_at=? WHERE username=?",
+                                           (current_counter, now, normalized))
                 recovery_method = "totp"
             else:
                 try:
@@ -369,14 +374,17 @@ class AuthService:
         consumed_recovery = False
         with self.repository.lock:
             mfa_row = self.repository.db.execute(
-                "SELECT secret_ciphertext,enabled,recovery_hashes FROM user_mfa WHERE username=?", (normalized,)
+                "SELECT secret_ciphertext,enabled,recovery_hashes,last_used_counter FROM user_mfa WHERE username=?", (normalized,)
             ).fetchone()
+        mfa_required = bool(mfa_row and mfa_row["enabled"])
+        totp_counter = None
         if mfa_row and mfa_row["enabled"]:
             code = mfa_code
             if not isinstance(code, str) or not code:
                 return None, "mfa_required"
             secret = mfa_tools.decrypt_secret(mfa_row["secret_ciphertext"])
-            valid = mfa_tools.verify_totp(secret, code, now)
+            totp_counter = mfa_tools.matched_totp_counter(secret, code, now)
+            valid = totp_counter is not None and totp_counter > mfa_row["last_used_counter"]
             if not valid:
                 recovery_digest = mfa_tools.recovery_hash(code)
                 try: recovery_hashes = json.loads(mfa_row["recovery_hashes"])
@@ -395,9 +403,16 @@ class AuthService:
             current = self.repository.db.execute("SELECT * FROM users WHERE username=?", (normalized,)).fetchone()
             if not current or current["disabled"]:
                 return None, "invalid"
+            latest_mfa = self.repository.db.execute(
+                "SELECT secret_ciphertext,enabled,recovery_hashes,last_used_counter FROM user_mfa WHERE username=?",
+                (normalized,),
+            ).fetchone()
+            if mfa_required and (not latest_mfa or not latest_mfa["enabled"]):
+                return None, "invalid"
+            if not mfa_required and latest_mfa and latest_mfa["enabled"]:
+                return None, "mfa_required"
             if consumed_recovery:
-                latest = self.repository.db.execute("SELECT recovery_hashes FROM user_mfa WHERE username=?", (normalized,)).fetchone()
-                try: recovery_hashes = json.loads(latest["recovery_hashes"]) if latest else []
+                try: recovery_hashes = json.loads(latest_mfa["recovery_hashes"]) if latest_mfa else []
                 except (TypeError, ValueError): recovery_hashes = []
                 match = next((i for i, saved in enumerate(recovery_hashes)
                               if isinstance(saved, str) and hmac.compare_digest(recovery_digest, saved)), None)
@@ -406,6 +421,16 @@ class AuthService:
                 recovery_hashes.pop(match)
                 self.repository.db.execute("UPDATE user_mfa SET recovery_hashes=?,updated_at=? WHERE username=?",
                                            (json.dumps(recovery_hashes, separators=(",", ":")), now, normalized))
+            elif mfa_required:
+                try:
+                    current_counter = mfa_tools.matched_totp_counter(
+                        mfa_tools.decrypt_secret(latest_mfa["secret_ciphertext"]), mfa_code, now)
+                except RuntimeError:
+                    current_counter = None
+                if current_counter != totp_counter or current_counter <= latest_mfa["last_used_counter"]:
+                    return None, "mfa_invalid"
+                self.repository.db.execute("UPDATE user_mfa SET last_used_counter=?,updated_at=? WHERE username=?",
+                                           (current_counter, now, normalized))
             self.repository.db.execute("INSERT INTO auth_sessions VALUES(?,?,?,?,?)",
                                        (token_hash, normalized, csrf, now, expires))
             self.repository.db.execute("DELETE FROM auth_login_failures WHERE client_hash=?", (ip_hash,))
@@ -429,7 +454,7 @@ class AuthService:
             row = self.repository.db.execute("SELECT enabled FROM user_mfa WHERE username=?", (username,)).fetchone()
             if row and row["enabled"]:
                 raise AuthenticationError("MFA is already enabled")
-            self.repository.db.execute("INSERT OR REPLACE INTO user_mfa VALUES(?,?,0,'[]',?,?)",
+            self.repository.db.execute("INSERT OR REPLACE INTO user_mfa(username,secret_ciphertext,enabled,recovery_hashes,updated_at,expires_at) VALUES(?,?,0,'[]',?,?)",
                                        (username, ciphertext, now, now + 600))
             self.repository._append_audit(now, "auth_mfa_setup_started", username, {})
         return {"secret": secret, "otpauth_uri": mfa_tools.provisioning_uri(secret, username), "expires_at": now + 600}
@@ -441,13 +466,19 @@ class AuthService:
         if not row or row["enabled"] or row["expires_at"] <= now:
             raise AuthenticationError("MFA setup expired; start again")
         secret = mfa_tools.decrypt_secret(row["secret_ciphertext"])
-        if not mfa_tools.verify_totp(secret, code, now):
+        counter = mfa_tools.matched_totp_counter(secret, code, now)
+        if counter is None or counter <= row["last_used_counter"]:
             raise AuthenticationError("Authenticator code is invalid")
         codes = mfa_tools.new_recovery_codes()
         hashes = json.dumps([mfa_tools.recovery_hash(value) for value in codes], separators=(",", ":"))
         with self.repository.lock, self.repository.db:
-            self.repository.db.execute("UPDATE user_mfa SET enabled=1,recovery_hashes=?,updated_at=?,expires_at=0 WHERE username=?",
-                                       (hashes, now, username))
+            current = self.repository.db.execute("SELECT * FROM user_mfa WHERE username=?", (username,)).fetchone()
+            if (not current or current["enabled"] or current["expires_at"] <= now
+                    or current["last_used_counter"] >= counter
+                    or current["secret_ciphertext"] != row["secret_ciphertext"]):
+                raise AuthenticationError("MFA setup changed; start again")
+            self.repository.db.execute("UPDATE user_mfa SET enabled=1,recovery_hashes=?,updated_at=?,expires_at=0,last_used_counter=? WHERE username=?",
+                                       (hashes, now, counter, username))
             self.repository.db.execute("DELETE FROM auth_sessions WHERE username=? AND token_hash<>?", (username, current_token_hash))
             self.repository._append_audit(now, "auth_mfa_enabled", username, {"recovery_codes_issued": len(codes)})
         return codes
@@ -463,16 +494,23 @@ class AuthService:
         now = time.time() if now is None else now
         with self.repository.lock:
             user = self.repository.db.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
-            row = self.repository.db.execute("SELECT secret_ciphertext,enabled FROM user_mfa WHERE username=?", (username,)).fetchone()
+            row = self.repository.db.execute("SELECT secret_ciphertext,enabled,last_used_counter FROM user_mfa WHERE username=?", (username,)).fetchone()
         if not user or not row or not row["enabled"]:
             raise AuthenticationError("MFA is not enabled")
         try:
             password_valid = hmac.compare_digest(_derive(password, user["password_salt"], user["iterations"]), user["password_hash"])
         except AuthenticationError:
             password_valid = False
-        if not password_valid or not mfa_tools.verify_totp(mfa_tools.decrypt_secret(row["secret_ciphertext"]), code, now):
+        try:
+            counter = mfa_tools.matched_totp_counter(mfa_tools.decrypt_secret(row["secret_ciphertext"]), code, now)
+        except RuntimeError:
+            counter = None
+        if not password_valid or counter is None or counter <= row["last_used_counter"]:
             raise AuthenticationError("Password or authenticator code is incorrect")
         with self.repository.lock, self.repository.db:
+            current = self.repository.db.execute("SELECT enabled,last_used_counter FROM user_mfa WHERE username=?", (username,)).fetchone()
+            if not current or not current["enabled"] or current["last_used_counter"] >= counter:
+                raise AuthenticationError("Password or authenticator code is incorrect")
             self.repository.db.execute("DELETE FROM user_mfa WHERE username=?", (username,))
             self.repository.db.execute("DELETE FROM auth_sessions WHERE username=? AND token_hash<>?", (username, current_token_hash))
             self.repository._append_audit(now, "auth_mfa_disabled", username, {})

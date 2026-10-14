@@ -62,8 +62,8 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(service.user_count(), 1)
                     self.assertIsNotNone(service.login("admin", "Bootstrap-Correct-Horse-42", "testhost")[0])
                     self.assertIsNone(service.login("admin", "Different-Correct-Horse-42", "otherhost")[0])
-                self.assertEqual(repository.schema_version, 11)
-                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 11)
+                self.assertEqual(repository.schema_version, 12)
+                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 12)
             finally:
                 repository.close()
 
@@ -174,7 +174,7 @@ class Authentication(unittest.TestCase):
         key_path = Path(self.folder.name) / "mfa.key"
         key_path.write_bytes(b"m" * 32)
         key_path.chmod(0o600)
-        codes = ["ABCDEF0123456789", "1234567890ABCDEF"]
+        codes = ["ABCDEF0123456789", "1234567890ABCDEF", "FEDCBA9876543210", "0123456789ABCDEF", "89ABCDEF01234567", "76543210FEDCBA98"]
         secret = mfa_tools.create_secret()
         self.create()
         with patch.dict(os.environ, {"AI26_AUTH_MFA_KEY_FILE": str(key_path)}):
@@ -185,27 +185,35 @@ class Authentication(unittest.TestCase):
             self.addCleanup(second.close)
             self.assertEqual(first.post("/api/auth/login", json={
                 "username":"admin", "password":"Correct-Horse-Battery-Staple-26",
-                "mfa_code":mfa_tools.code_at(secret),
+                "mfa_code":codes[0],
             }).status_code, 200)
             self.assertEqual(second.post("/api/auth/login", json={
                 "username":"admin", "password":"Correct-Horse-Battery-Staple-26",
-                "mfa_code":mfa_tools.code_at(secret),
+                "mfa_code":codes[1],
             }).status_code, 200)
 
-            payload={"username":"admin", "new_password":"Recovered-Correct-Horse-2026", "code":codes[0]}
+            payload={"username":"admin", "new_password":"Recovered-Correct-Horse-2026", "code":codes[2]}
             response=first.post("/api/auth/password-recovery", json=payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {"recovery_requested":True})
             self.assertEqual(first.get("/api/auth/me").status_code, 401)
             self.assertEqual(second.get("/api/auth/me").status_code, 401)
+            # The authenticator counter remains available after recovery-code use,
+            # then cannot be replayed for another login in the same time step.
             self.assertEqual(self.client.post("/api/auth/login", json={
                 "username":"admin", "password":payload["new_password"], "mfa_code":mfa_tools.code_at(secret),
+            }).status_code, 200)
+            self.assertEqual(self.client.post("/api/auth/login", json={
+                "username":"admin", "password":payload["new_password"], "mfa_code":mfa_tools.code_at(secret),
+            }).status_code, 401)
+            self.assertEqual(self.client.post("/api/auth/login", json={
+                "username":"admin", "password":payload["new_password"], "mfa_code":codes[3],
             }).status_code, 200)
             # The same recovery code cannot authorize another password change.
             again={**payload, "new_password":"Another-Recovered-Horse-2026"}
             self.assertEqual(first.post("/api/auth/password-recovery", json=again).json(), {"recovery_requested":True})
             self.assertEqual(self.client.post("/api/auth/login", json={
-                "username":"admin", "password":payload["new_password"], "mfa_code":mfa_tools.code_at(secret),
+                "username":"admin", "password":payload["new_password"], "mfa_code":codes[4],
             }).status_code, 200)
             self.assertEqual(self.repo.verify_audit_chain()["status"], "valid")
             self.assertEqual(self.repo.db.execute("SELECT count(*) FROM audit WHERE action='auth_password_recovered'").fetchone()[0], 1)
@@ -215,7 +223,7 @@ class Authentication(unittest.TestCase):
             self.assertEqual(self.client.post("/api/auth/password-recovery", json=totp_recovery).json(), {"recovery_requested":True})
             self.assertEqual(self.client.get("/api/auth/me").status_code, 401)
             self.assertEqual(self.client.post("/api/auth/login", json={
-                "username":"admin", "password":totp_recovery["new_password"], "mfa_code":mfa_tools.code_at(secret),
+                "username":"admin", "password":totp_recovery["new_password"], "mfa_code":codes[5],
             }).status_code, 200)
             self.assertEqual(self.repo.db.execute("SELECT count(*) FROM audit WHERE action='auth_password_recovered'").fetchone()[0], 2)
 
@@ -364,7 +372,9 @@ class Authentication(unittest.TestCase):
                 no_factor = TestClient(main.app, base_url="https://testserver")
                 self.assertEqual(no_factor.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26"}).json()["error"]["message"], "MFA_CODE_REQUIRED")
                 totp_login = TestClient(main.app, base_url="https://testserver")
-                accepted = totp_login.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":mfa_tools.code_at(secret)})
+                replayed = totp_login.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":mfa_tools.code_at(secret)})
+                self.assertEqual(replayed.status_code, 401)
+                accepted = totp_login.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":confirmation.json()["recovery_codes"][0]})
                 self.assertEqual(accepted.status_code, 200)
                 with patch.dict(os.environ, {"AI26_AUTH_ENABLED":"1"}, clear=True):
                     unavailable = TestClient(main.app, base_url="https://testserver")
@@ -372,12 +382,13 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(response.status_code, 503)
                     self.assertIn("MFA cannot be verified", response.json()["error"]["message"])
                 first_recovery = TestClient(main.app, base_url="https://testserver")
-                self.assertEqual(first_recovery.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":recovery}).status_code, 200)
+                recovery_code = confirmation.json()["recovery_codes"][1]
+                self.assertEqual(first_recovery.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":recovery_code}).status_code, 200)
                 reuse = TestClient(main.app, base_url="https://testserver")
-                self.assertEqual(reuse.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":recovery}).status_code, 401)
+                self.assertEqual(reuse.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":recovery_code}).status_code, 401)
 
-                disabled = owner.post("/api/auth/mfa/disable", json={"password":"Correct-Horse-Battery-Staple-26","code":mfa_tools.code_at(secret)}, headers=headers)
-                self.assertEqual(disabled.status_code, 200)
+                disabled = owner.post("/api/auth/mfa/disable", json={"password":"Correct-Horse-Battery-Staple-26","code":mfa_tools.code_at(secret,time.time()+30)}, headers=headers)
+                self.assertEqual(disabled.status_code, 200, disabled.text)
                 self.assertFalse(owner.get("/api/auth/mfa").json()["enabled"])
                 setup_again = owner.post("/api/auth/mfa/setup", headers=headers).json()
                 confirmed_again = owner.post("/api/auth/mfa/enable", json={"code":mfa_tools.code_at(setup_again["secret"])}, headers=headers)
@@ -396,6 +407,7 @@ class Authentication(unittest.TestCase):
         secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
         self.assertEqual(mfa_tools.code_at(secret, 59), "287082")
         self.assertTrue(mfa_tools.verify_totp(secret, "287082", 59))
+        self.assertEqual(mfa_tools.matched_totp_counter(secret, "287082", 59), 1)
 
 
 if __name__ == "__main__":

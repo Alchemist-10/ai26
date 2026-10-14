@@ -37,8 +37,8 @@
 
 `schemas.py` validates finite timestamps/confidence, ordered boxes, query strings
 and rule configuration. Invalid requests return a consistent JSON error envelope.
-SQLite schema version 11 has users, per-case grants, hashed authentication sessions, encrypted TOTP enrollment and one-time recovery-code hashes,
-login-failure limits, observations, passages, alerts, reports, settings, hash-chained audit,
+SQLite schema version 12 has users, per-case grants, hashed authentication sessions, encrypted TOTP enrollment, one-use recovery-code hashes and TOTP replay counters,
+atomic authentication-attempt limits, observations, passages, alerts, reports, settings, hash-chained audit,
 report artifact leases, camera revisions, directed camera-pair travel constraints and immutable
 queried journey-link decisions, plus 90-day live-source traffic buckets. Existing
 versions migrate automatically; unknown future versions fail. Audit consistency

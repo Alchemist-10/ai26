@@ -1,9 +1,9 @@
 # Camera revisions and journey decision persistence
 
-Schema version 11 stores users, per-case grants, hashed authentication sessions, login-failure limits, encrypted TOTP enrollment and one-time recovery-code hashes,
+Schema version 12 stores users, per-case grants, hashed authentication sessions, atomic authentication-attempt windows, encrypted TOTP enrollment, one-use recovery-code hashes and the last accepted TOTP counter,
 the nine-camera catalog, and immutable queried link decisions alongside existing
 directed camera-pair travel constraints, sessions, immutable reads, camera-local passages, alerts, rules, reports and
-hash-chained audit records, and 90-day camera/quarter-hour aggregate buckets for live-source processed samples and unique vehicle passages. Versions 1 through 4 migrate automatically; future schema
+hash-chained audit records, and 90-day camera/quarter-hour aggregate buckets for live-source processed samples and unique vehicle passages. Supported legacy versions migrate automatically; future schema
 versions fail explicitly. Startup seeds missing catalog IDs without replacing
 operator edits. Recording paths and detector kinds remain deployment configuration.
 

@@ -22,7 +22,7 @@ class Repository:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version > 11:
+        if version > 12:
             self.db.close()
             raise RuntimeError('Database version is newer than this application')
         with self.db:
@@ -163,9 +163,16 @@ class Repository:
                     PRAGMA user_version=11;
                     COMMIT;
                 ''')
+            if version < 12:
+                self.db.executescript('''
+                    BEGIN IMMEDIATE;
+                    ALTER TABLE user_mfa ADD COLUMN last_used_counter INTEGER NOT NULL DEFAULT -1;
+                    PRAGMA user_version=12;
+                    COMMIT;
+                ''')
         with self.db:
             self.db.execute('CREATE INDEX IF NOT EXISTS audit_subject_action_time ON audit(subject,action,ts)')
-        self.schema_version = 11
+        self.schema_version = 12
         # Seed only missing IDs. Restart never overwrites operator metadata or its history.
         from cameras import CAMERAS
         with self.lock, self.db:
