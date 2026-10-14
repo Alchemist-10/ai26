@@ -16,6 +16,15 @@ disconnected pairs are rejected, and travel outside a configured window is
 rejected. Existing immutable decisions retain their original constraint snapshot.
 Godseye's SIH checkout is unchanged.
 
+## Signed audit checkpoints
+
+The audit chain can be signed at a verified head and checked later against the
+database with `backend/audit_checkpoint.py`. The checkpoint file and trusted
+public key must be retained outside the application host to provide rollback
+evidence. This is an operator-run procedure; automated off-host delivery,
+checkpoint scheduling and signing-key rotation/revocation are not implemented.
+See [AUDIT_CHECKPOINTS.md](AUDIT_CHECKPOINTS.md) for key generation and use.
+
 ## Live traffic history
 
 `GET /api/traffic/baselines?days=28` compares each camera's latest completed
