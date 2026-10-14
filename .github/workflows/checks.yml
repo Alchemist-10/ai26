@@ -25,6 +25,8 @@ jobs:
           docker compose -f compose.yaml config -q
           AI26_TLS_CERT_FILE=/tmp/ai26-test-fullchain.pem AI26_TLS_KEY_FILE=/tmp/ai26-test-key.pem \
             docker compose -f compose.yaml -f compose.tls.yaml config -q
+          AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE=/tmp/ai26-signing-private.pem \
+            docker compose -f compose.yaml -f compose.evidence-signing.yaml config -q
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"

@@ -42,6 +42,12 @@ explicitly use current-catalog fallback. See [persistence contracts](PERSISTENCE
 for API edits, version history and limits. The repository is intended for a
 single local API process, not a distributed ingestion deployment.
 
+Evidence report version 5 can optionally include an Ed25519 signature. Signing
+uses a protected host-mounted private key; an offline verifier checks the report
+digest and signature against a separately trusted public key. Unsigned reports
+remain available when no key is configured, and signatures establish neither
+camera truth nor OCR/identity accuracy. See [report signing](REPORT_SIGNING.md).
+
 A read ID identifies an immutable model observation. A passage ID combines camera,
 replay session, model kind and local track. Plate and vehicle tracks remain
 separate; their association has not been validated. A vehicle passage is counted

@@ -205,7 +205,7 @@ class ReportProvenance(unittest.TestCase):
                                    'bbox':[0,0,20,20],'ts':now-2+index,'session_id':'fixture','track_id':1,
                                    'frame_id':index,'model_metadata':metadata,'source_mode':'synthetic fixture'}])
             report=events.evidence_report('KL07AB1234',now-10,now+1)
-            self.assertEqual(report['version'],4)
+            self.assertEqual(report['version'],5)
             self.assertEqual(report['model_provenance']['reads_with_exact_alpr_files'],2)
             client=TestClient(main.app);route='/api/reports/'+report['report_id']
             before=client.get(route).content

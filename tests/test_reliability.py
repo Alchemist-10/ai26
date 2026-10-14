@@ -27,6 +27,7 @@ import nlquery
 from repository import Repository, canonical_json
 from fusion import PlateConsensus
 from maintenance import Maintenance
+from report_signing import generate_key_pair, verify_report
 
 class Reliability(unittest.TestCase):
     def setUp(self):
@@ -174,6 +175,31 @@ class Reliability(unittest.TestCase):
         self.assertIn(digest,printed);self.assertNotIn('Blue city bus',printed)
         package=self.client.get('/api/reports/'+report['report_id']+'/package')
         with zipfile.ZipFile(io.BytesIO(package.content)) as z:self.assertEqual(json.loads(z.read('manifest.json')),report)
+
+    def test_signed_evidence_report_survives_exports_and_verifies_offline(self):
+        events.add_events([self.plate()])
+        private=Path(self.folder.name)/'report-signing-private.pem'
+        public=Path(self.folder.name)/'report-signing-public.pem'
+        generate_key_pair(private,public)
+        with patch.dict(os.environ,{'AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE':str(private)}):
+            response=self.client.post('/api/evidence/KL07AB1234')
+            self.assertEqual(response.status_code,200)
+            report=response.json()
+            self.assertEqual(report['version'],5)
+            self.assertEqual(verify_report(report,public)['status'],'valid')
+            downloaded=self.client.get('/api/reports/'+report['report_id']).json()
+            self.assertEqual(downloaded['signature'],report['signature'])
+            with zipfile.ZipFile(io.BytesIO(self.client.get('/api/reports/'+report['report_id']+'/package').content)) as package:
+                self.assertEqual(json.loads(package.read('manifest.json'))['signature'],report['signature'])
+            printed=self.client.get('/api/reports/'+report['report_id']+'/print').text
+            self.assertIn(report['signature']['key_fingerprint_sha256'],printed)
+
+    def test_configured_but_invalid_signing_key_fails_report_creation(self):
+        events.add_events([self.plate()])
+        with patch.dict(os.environ,{'AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE':str(Path(self.folder.name)/'missing.pem')}):
+            response=self.client.post('/api/evidence/KL07AB1234')
+        self.assertEqual(response.status_code,503)
+        self.assertEqual(response.json()['error']['message'],'Evidence signing is configured but the signing key is unavailable or invalid')
 
     def test_expired_report_inaccessible(self):
         events.add_events([self.plate()]);report=events.evidence_report('KL07AB1234')

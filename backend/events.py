@@ -11,6 +11,7 @@ import re
 from cameras import CAMERAS_BY_ID
 from plate_format import normalize_plate
 from repository import Repository, canonical_json
+from report_signing import sign_report
 from schemas import Observation
 
 MAX_EVENTS = 5000
@@ -139,17 +140,19 @@ def _evidence_report(plate, since=None, until=None):
     for artifact in artifacts.values():
         if artifact_bytes(artifact['sha256'], now + REPORT_RETENTION_SECONDS) is None:
             raise ValueError('A source artifact is missing; choose an available evidence interval')
-    report = {'report_id': f'EVD-{uuid.uuid4().hex[:12].upper()}', 'version': 4,
+    report = {'report_id': f'EVD-{uuid.uuid4().hex[:12].upper()}', 'version': 5,
               'generated_at': now, 'expires_at': now + REPORT_RETENTION_SECONDS,
               'retention': 'Report expires after 24 hours; referenced artifacts protected until report expiry; other source artifacts retained for 7 days',
               'trajectory': trajectory, 'raw_reads': raw_reads, 'raw_read_count':raw_total, 'artifacts': list(artifacts.values()),
               'model_provenance': summarize_read_models(raw_reads),
               'artifact_coverage': summarize_read_images(raw_reads),
               'image_review_candidates':rank_read_image_candidates(raw_reads,top_k=3),
-              'limitations': ['Candidate links do not verify vehicle identity.', 'Frame/crop JPEGs are decoded image derivatives; source clip digests identify their recording.', 'SHA-256 covers this JSON manifest and referenced artifact digests; it is not a digital signature.',
+              'signature': None,
+              'limitations': ['Candidate links do not verify vehicle identity.', 'Frame/crop JPEGs are decoded image derivatives; source clip digests identify their recording.', 'package_hash is an unkeyed integrity digest. When signature is present, Ed25519 authenticates the canonical JSON payload; trust the public-key fingerprint through an independent channel.',
                               'Model-file digests identify loaded bytes, not accuracy or authenticity. Older/manual reads can lack exact model provenance; weights are not included in the evidence ZIP.',
                               'Top image candidates use a fixed unvalidated heuristic; they are review suggestions, not measured best shots or OCR accuracy.',
                               'Image coverage counts current sampled-read JPEG derivatives only. Older/manual reads, failed writes or empty/outside boxes can lack matching images; this is not a full video-frame archive.']}
+    report['signature'] = sign_report(report)
     report['package_hash'] = hashlib.sha256(canonical_json(report).encode()).hexdigest()
     store.put_report(report)
     return report

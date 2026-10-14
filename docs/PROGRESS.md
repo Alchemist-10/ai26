@@ -178,7 +178,7 @@ claim OCR accuracy. See `evaluation/README.md`.
 
 ## Validation
 
-- 195 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 213 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -227,8 +227,8 @@ local results. Short runtime samples do not establish sustained throughput.
    activation continues to require a host restart.
    Metadata settings UI, metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
-   pixels, registry verification, signed evidence, RTSP capture or production auth
-   is represented as implemented.
+   pixels, registry verification, authenticated investigator identity, anchored
+   audit history, RTSP capture or production access control is represented as done.
 
 ## Full checklist
 
@@ -292,7 +292,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P2-08 | Done | Package evidence observations, raw/canonical OCR, frames/crops, accepted/rejected paths and metadata consistently. | Manifest/raw reads/canonical strings/artifacts/link decisions/provenance packaged consistently with verified digests; derivative and coverage limits stated. |
 | P2-09 | Done | Provide direct JSON/package download and a dedicated PDF/print layout with matching report data. | Browser JSON/ZIP downloads verified; dedicated print contains the same stored snapshot and raw reads. PDF uses the browser print dialog. |
 | P2-10 | Done | Enforce defined retention/expiry rather than displaying a retention string. | 24-hour report expiry, seven-day source cleanup, schema-2 artifact leases, and independent maintenance; boundary and processing-disabled tests pass. |
-| P2-11 | Partial | Add report access/audit records and signing if independently verifiable evidence is required. | Camera edits, alert reviews and report reads use a schema-4 SHA-256 hash chain with a read-only verifier; signatures, external checkpoints and authenticated reviewer identity remain absent. |
+| P2-11 | Partial | Add report access/audit records and signing if independently verifiable evidence is required. | Report reads and review/config edits are audited; schema-5 evidence reports can be Ed25519-signed and independently verified against a separately trusted public key. Unsigned mode remains explicit; audit-chain external anchoring and authenticated reviewer identity remain absent. |
 | P2-12 | Done | Keep demonstrations separate from live queries, including colors, confidence values and statuses. | Synthetic walkthrough/alerts are explicit selection; real queries never substitute them or export them as observed evidence. |
 | P2-13 | Done | Test query, camera recovery, empty investigation and evidence export flows end to end. | Browser empty investigation, focused missing-to-working camera recovery, keyboard/mobile and isolated synthetic report downloads/print verified; API query regressions pass. |
 | P2-14 | Done | Address fixed-width mobile layouts and keyboard/focus behavior in navigation and forms. | 390×844 camera wall, investigation and alerts have no root horizontal overflow; navigation focus trap/Escape restoration verified; focus/reduced-motion styles. |
@@ -336,7 +336,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | OP-01 | Pending | RTSP/ONVIF camera integration and resilient capture queues. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-02 | Pending | Authentication, role-based access and purpose/case-scoped sensitive operations. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-03 | Pending | Occupant face blurring and keyed plate pseudonyms in analytics views if those privacy features remain in scope. | Optional production/edge work; not implemented for this local course prototype. |
-| OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Schema-4 local SQLite audit chain detects row/link edits; optional TLS 1.2/1.3 Compose proxy mounts host-managed cert/key read-only and redirects HTTP. External audit anchoring/signatures, authenticated identity, and managed secret rotation remain pending. |
+| OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Schema-4 local SQLite audit chain detects row/link edits; optional TLS 1.2/1.3 proxy and Ed25519 report-signing overlays mount host-managed keys read-only. External audit anchoring, authenticated identity, managed secret rotation and key lifecycle controls remain pending. |
 | OP-05 | Done | Container/Compose setup, database backups and production frontend-to-API routing. | Compose packages a non-root single-worker API and production-built Nginx same-origin frontend behind loopback by default; persistent app data, online integrity-checked SQLite backups with rotation, and explicit stopped-service restore are implemented. Backup snapshots cover SQLite only; media/artifact/model backup and public-network hardening remain. |
 | OP-06 | Pending | Edge model export/quantization and benchmark on actual target hardware. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-07 | Partial | Canary/model-version pinning, rollback and branch-level disablement. | Frozen dependencies, exact loaded model/config identifiers and processing-disable switch exist; canary rollout/model rollback are absent. |

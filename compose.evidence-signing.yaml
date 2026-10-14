@@ -1,0 +1,6 @@
+services:
+  backend:
+    environment:
+      AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE: /run/secrets/ai26-evidence-signing-private.pem
+    volumes:
+      - ${AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE:?Set AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE to the protected private-key path}:/run/secrets/ai26-evidence-signing-private.pem:ro

@@ -206,7 +206,7 @@ class ReadArtifacts(unittest.TestCase):
         for read,value in zip(reads,(30,120)):self.capture([read],self.image(value))
         events.add_events(reads)
         report=events.evidence_report('KL07AB1234',self.now-1,self.now+1)
-        self.assertEqual(report['version'],4)
+        self.assertEqual(report['version'],5)
         self.assertEqual(report['artifact_coverage']['reads_with_complete_current_images'],2)
         self.assertTrue(report['image_review_candidates']['raw_reads_retained'])
         self.assertEqual(report['image_review_candidates']['groups'][0]['candidate_count'],2)

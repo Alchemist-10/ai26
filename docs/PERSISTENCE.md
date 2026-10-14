@@ -92,7 +92,16 @@ internal consistency check, not a digital signature or independent proof: someon
 able to rewrite the database can rebuild the chain or truncate its tail. There is
 no external checkpoint, authenticated reviewer identity or signed audit export.
 
-206 isolated backend tests pass, including 14 persistence tests for migrations,
+Evidence report version 5 has an optional Ed25519 signature over the canonical
+report payload, separate from its unkeyed `package_hash`. A configured private key
+signs new reports; the offline verifier requires a public key supplied independently
+and checks its SHA-256 fingerprint before accepting the signature. Without a
+configured key, new reports explicitly contain `signature: null`. Signatures bind
+bytes to a key, not to correct footage, a real camera, a true plate identity or a
+trusted operator. Key custody, distribution, rotation and external audit anchoring
+remain operator responsibilities. See [report signing](REPORT_SIGNING.md).
+
+213 isolated backend tests pass, including 14 persistence tests for migrations,
 restarts, stale edits, validation, snapshot/report immutability, all decision
 categories, deterministic IDs, version history, legacy fallback and cleanup.
 The app restart retained all ten sampled historical observation IDs and decoded
