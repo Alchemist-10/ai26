@@ -90,6 +90,13 @@ trusted machine without adding access control and TLS. The included rules surfac
 API scrape failure, total source loss, stale processed frames and repeated camera
 processing failures. They do not send notifications; configure Alertmanager if
 delivery is required. The monitoring overlay retains seven days of local samples.
+Run the deterministic alert firing/recovery checks with the same pinned image:
+
+```sh
+docker run --rm --entrypoint=/bin/promtool \
+  --mount "type=bind,src=$PWD/ops,dst=/ops,readonly" \
+  prom/prometheus:v3.15.0 test rules /ops/ai26-alert-tests.yml
+```
 
 ## Optional TLS reverse proxy
 
