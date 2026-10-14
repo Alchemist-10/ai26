@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **40 done, 23 partial, 17 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **41 done, 23 partial, 16 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -108,6 +108,18 @@ The API rejects escalation without a recipient. Isolated contracts verify target
 validation, stale-window queue visibility, persistence across repository reopen,
 reassignment and resolution. See `docs/ALERT_REVIEW.md`.
 
+## Compose deployment update
+
+Compose runs the single-worker API on a private network and serves the production
+frontend through Nginx with same-origin API proxying, streaming upload limits,
+gzip, immutable caching for hashed assets, health checks and persistent app data.
+The published port binds to loopback by default. Online SQLite snapshots validate
+integrity, rotate retained backups and support an explicitly confirmed restore
+while the backend is stopped. The backup covers the database only; source videos,
+models and evidence artifacts need separate backup. Both images, the Nginx-to-API
+route, six bundled sources, compression/cache headers, backup and restore were
+exercised in an isolated processing-disabled Compose stack. See `docs/DEPLOYMENT.md`.
+
 ## Model provenance update
 
 ALPR loads hashed detector/OCR/config snapshots once, records package/provider
@@ -165,7 +177,7 @@ claim OCR accuracy. See `evaluation/README.md`.
 
 ## Validation
 
-- 190 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- 195 isolated backend tests pass with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -324,7 +336,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | OP-02 | Pending | Authentication, role-based access and purpose/case-scoped sensitive operations. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-03 | Pending | Occupant face blurring and keyed plate pseudonyms in analytics views if those privacy features remain in scope. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Local SQLite audit and independent minute retention jobs exist; tamper-resistant audit and secrets/TLS remain pending. |
-| OP-05 | Pending | Container/Compose setup, database backups and production frontend-to-API routing. | Optional production/edge work; not implemented for this local course prototype. |
+| OP-05 | Done | Container/Compose setup, database backups and production frontend-to-API routing. | Compose packages a non-root single-worker API and production-built Nginx same-origin frontend behind loopback by default; persistent app data, online integrity-checked SQLite backups with rotation, and explicit stopped-service restore are implemented. Backup snapshots cover SQLite only; media/artifact/model backup and public-network hardening remain. |
 | OP-06 | Pending | Edge model export/quantization and benchmark on actual target hardware. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-07 | Partial | Canary/model-version pinning, rollback and branch-level disablement. | Frozen dependencies, exact loaded model/config identifiers and processing-disable switch exist; canary rollout/model rollback are absent. |
 | OP-08 | Partial | Operational monitoring and sustained reliability/recovery tests. | Basic health, retry and restart smoke exist; operational monitoring and sustained recovery runs remain. |

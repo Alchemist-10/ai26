@@ -53,6 +53,8 @@ CPU PyTorch on Linux. After the first installation, restart with
 - Immutable JSON reports, verified frame/crop ZIP packages, dedicated print/PDF
   views, expiry enforcement, and empty-report rejection.
 - Isolated regression tests, a reproducible evaluation CLI, and CI configuration.
+- Optional Docker Compose packaging with same-origin Nginx API routing and
+  verified SQLite snapshot/restore scripts.
 
 ## Limits and remaining work
 
@@ -78,6 +80,7 @@ investigations never receive its observations automatically.
 | `docs/PERSISTENCE.md` | Camera revision and stored journey decision API |
 | `docs/SETTINGS.md` | Metadata editor, draft/conflict recovery and browser validation |
 | `docs/ALERT_REVIEW.md` | Alert decisions, durable escalations and workflow limits |
+| `docs/DEPLOYMENT.md` | Local Compose deployment, database backup and restore |
 | `docs/SOURCE_IMPORT.md` | Validated recorded footage import, activation and recovery |
 | `docs/SOURCE_STATUS.md` | Read-only source inspection, pending imports and history |
 | `docs/SOURCE_UPLOADS.md` | Streamed browser preparation, cancellation and retained receipts |

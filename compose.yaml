@@ -1,0 +1,59 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      AI26_DATA_ROOT: /app/data
+      AI26_SOURCE_ROOT: /app/data/sources
+      AI26_FOOTAGE_ROOT: /mnt/footage
+      AI26_PROCESSING_ENABLED: ${AI26_PROCESSING_ENABLED:-1}
+      AI26_FRONTEND_PORT: "5174"
+    volumes:
+      - ai26-data:/app/data
+      - ${AI26_FOOTAGE_DIR:-./backend/data/footage}:/mnt/footage:ro
+    expose:
+      - "8001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/api/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "${AI26_HOST:-127.0.0.1}:${AI26_FRONTEND_PORT:-5174}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backup:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    profiles: ["backup"]
+    user: "0:0"
+    command: ["python", "backup.py", "--source", "/app/data/ai26.sqlite3", "--directory", "/backups", "--keep", "${AI26_BACKUP_KEEP:-30}", "--owner-uid", "${AI26_HOST_UID:-1000}", "--owner-gid", "${AI26_HOST_GID:-1000}"]
+    volumes:
+      - ai26-data:/app/data
+      - ./backups:/backups
+
+  restore:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    profiles: ["restore"]
+    user: "0:0"
+    entrypoint: ["python", "restore.py"]
+    volumes:
+      - ai26-data:/app/data
+      - ./backups:/backups:ro
+
+volumes:
+  ai26-data:
