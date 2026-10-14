@@ -3,10 +3,12 @@
 AI26 stores rule-alert decisions in SQLite. Review actions include acknowledge,
 mark reviewed, dismiss and escalate. An escalation requires a recipient and can
 be reassigned by recording another escalation decision. Each decision appends a
-reviewer-name claim, optional note, recipient when relevant, timestamp and audit
-record. Authentication and role checks are available in the optional auth
-overlay, but the freeform reviewer name is not bound to the signed-in identity.
-The prototype has no external notification delivery.
+reviewer, optional note, recipient when relevant, timestamp and audit record.
+When the optional authentication overlay is enabled, the backend takes the
+reviewer name from the signed-in session and labels that provenance in history;
+the submitted freeform name is ignored. Without authentication, the local
+reviewer name remains an operator claim and is labeled as such. The prototype
+has no external notification delivery.
 
 The alert panel loads recent rule alerts and active escalations. Active escalations
 remain in the queue after they age out of the default recent-alert window. A later

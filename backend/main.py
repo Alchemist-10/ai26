@@ -403,9 +403,15 @@ def alerts(since:TimeFilter=None,until:TimeFilter=None,include_escalated:bool=Fa
     return redact_analytics_payload(recent+[a for a in store.escalated_alerts() if a['alert_id'] not in known])
 
 @app.post('/api/alerts/{alert_id}/review')
-def review(alert_id:str,body:ReviewRequest):
-    if not body.reviewer.strip(): raise HTTPException(422,'Reviewer name is required')
-    data={**body.model_dump(),'reviewer':body.reviewer.strip(),'ts':time.time()}
+def review(alert_id:str,body:ReviewRequest,request:Request):
+    actor=getattr(request.state,'actor',None)
+    if actor:
+        reviewer=actor['username']
+    elif body.reviewer and body.reviewer.strip():
+        reviewer=body.reviewer.strip()
+    else:
+        raise HTTPException(422,'Reviewer name is required in local mode')
+    data={**body.model_dump(),'reviewer':reviewer,'reviewer_authenticated':bool(actor),'ts':time.time()}
     if not store.review_alert(alert_id,data): raise HTTPException(404,'Unknown alert')
     return {'alert_id':alert_id,**data}
 

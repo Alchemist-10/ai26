@@ -39,7 +39,7 @@ cannot attach custom headers. Auth is disabled in the default local stack. Case
 grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. Self-service account recovery
 and external identity remain pending.
-The isolated full backend suite passes 231 tests; frontend TypeScript build and lint
+The isolated full backend suite passes 232 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 
@@ -131,7 +131,9 @@ See `docs/READ_IMAGES.md` and `AI26_READ_ARTIFACT_VALIDATION.json` in the delive
 ## Alert escalation update
 
 The alert panel now supports a durable local escalation queue with recipient,
-reviewer-name claim, handoff note, reassignment, resolution and audit history.
+reviewer, handoff note, reassignment, resolution and audit history. With auth
+enabled, the reviewer is taken from the signed-in account; local mode labels
+freeform reviewer names as claims.
 Active escalations remain visible outside the recent-alert window. This is an
 unauthenticated local workflow; it does not send email, SMS or push notifications.
 The API rejects escalation without a recipient. Isolated contracts verify target
@@ -317,7 +319,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P2-04 | Partial | Implement a measured spatial/road-segment heatmap with honest unobserved/unknown states. | Observed camera activity and unknown/missing states are honest; no calibrated spatial/road-segment heatmap. |
 | P2-05 | Done | Keep detector confidence separate from measured accuracy and human verification status. | Model confidence is explicitly separate from measured accuracy and human verification. |
 | P2-06 | Done | Persist alert IDs, trigger observations, acknowledgement/review/disposition and reviewer timestamps. | Stable alert IDs, supporting read IDs, review state/history, named reviewer and timestamps persisted across reopen. |
-| P2-07 | Partial | Connect a real human-review/escalation workflow; add notifications only if required by the project. | Durable local escalation/reassignment queue now records recipient, reviewer claim, note, timestamp and audit history; active handoffs remain visible beyond the recent-alert window and resolve on a new decision. Authenticated reviewer identity and external notifications remain pending. |
+| P2-07 | Partial | Connect a real human-review/escalation workflow; add notifications only if required by the project. | Durable local escalation/reassignment queue records recipient, reviewer, note, timestamp and audit history; authenticated mode binds reviewer to the session account while local mode labels freeform names as claims. Active handoffs remain visible beyond the recent-alert window and resolve on a new decision. External notifications remain pending. |
 | P2-08 | Done | Package evidence observations, raw/canonical OCR, frames/crops, accepted/rejected paths and metadata consistently. | Manifest/raw reads/canonical strings/artifacts/link decisions/provenance packaged consistently with verified digests; derivative and coverage limits stated. |
 | P2-09 | Done | Provide direct JSON/package download and a dedicated PDF/print layout with matching report data. | Browser JSON/ZIP downloads verified; dedicated print contains the same stored snapshot and raw reads. PDF uses the browser print dialog. |
 | P2-10 | Done | Enforce defined retention/expiry rather than displaying a retention string. | 24-hour report expiry, seven-day source cleanup, schema-2 artifact leases, and independent maintenance; boundary and processing-disabled tests pass. |

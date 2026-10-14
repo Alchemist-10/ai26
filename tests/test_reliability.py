@@ -368,6 +368,7 @@ class Reliability(unittest.TestCase):
         events.add_events([self.plate()]);alert=events.derive_alerts()[0]
         response=self.client.post(f'/api/alerts/{alert["alert_id"]}/review',json={'state':'acknowledged','reviewer':'Course reviewer','note':'Inspect crop'})
         self.assertEqual(response.status_code,200)
+        self.assertFalse(response.json()['reviewer_authenticated'])
         self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         same=next(a for a in events.derive_alerts() if a['alert_id']==alert['alert_id'])
         self.assertEqual(same['state'],'acknowledged')

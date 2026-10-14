@@ -110,6 +110,22 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.client.post("/api/auth/logout", headers={CSRF_HEADER: csrf}).status_code, 200)
         self.assertEqual(self.client.get("/api/auth/me").status_code, 401)
 
+    def test_authenticated_alert_review_uses_session_identity(self):
+        self.create()
+        self.login()
+        alert_id = "auth-review-alert"
+        self.repo.put_alert({"alert_id": alert_id, "ts": time.time(), "type": "watchlist match", "state": "open"})
+        response = self.client.post(f"/api/alerts/{alert_id}/review", json={
+            "state": "reviewed", "reviewer": "Impersonated Name", "note": "Checked evidence"
+        }, headers={**self.csrf_headers(), "X-AI26-Case-ID": "CASE-2026-01", "X-AI26-Purpose": "investigation"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["reviewer"], "admin")
+        self.assertTrue(response.json()["reviewer_authenticated"])
+        stored = self.repo.alerts()[0]["review"][0]
+        self.assertEqual(stored["reviewer"], "admin")
+        self.assertTrue(stored["reviewer_authenticated"])
+        self.assertEqual(self.repo.verify_audit_chain()["status"], "valid")
+
     def test_viewer_cannot_query_or_mutate_but_health_stays_public(self):
         self.create("viewer_one", "viewer")
         self.assertEqual(self.login("viewer_one").status_code, 200)

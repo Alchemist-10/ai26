@@ -151,7 +151,7 @@ export interface DetectionEvent {
 export interface Alert {
   alert_id?: string
   state?: string
-  review?: { reviewer: string; state: string; note: string; escalation_target?: string | null; ts: number }[]
+  review?: { reviewer: string; reviewer_authenticated?: boolean; state: string; note: string; escalation_target?: string | null; ts: number }[]
   escalation_target?: string | null
   severity: "info" | "warning" | "critical"
   type: string

@@ -30,7 +30,7 @@ class QueryRequest(BaseModel):
 class ReviewRequest(BaseModel):
     model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
     state: Literal['acknowledged', 'dismissed', 'reviewed', 'open', 'escalated']
-    reviewer: StrictStr = Field(min_length=1, max_length=100)
+    reviewer: StrictStr | None = Field(default=None, max_length=100)
     note: StrictStr = Field(default='', max_length=1000)
     escalation_target: StrictStr | None = Field(default=None, min_length=1, max_length=100)
 
