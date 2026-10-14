@@ -3,10 +3,13 @@ import hashlib
 import os
 import time
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from bisect import bisect_left, bisect_right
 from math import asin, cos, radians, sin, sqrt
 from collections import Counter
+from statistics import mean, median
+from zoneinfo import ZoneInfo
 import re
 
 from cameras import CAMERAS_BY_ID
@@ -288,3 +291,78 @@ def flows(since=None, until=None):
         for link in get_trajectory(plate,start,until)['accepted_links']:
             counts[(link['from_camera_id'],link['to_camera_id'])]+=1
     return [{'from':a,'to':b,'count':n} for (a,b),n in counts.items()]
+
+
+def traffic_baselines(days=28, now=None, timezone_name=None):
+    """Compare the latest completed live source-hour with covered weekday/hour history."""
+    if type(days) is not int or not 7 <= days <= 90:
+        raise ValueError('days must be an integer from 7 to 90')
+    now=time.time() if now is None else now
+    timezone_name=timezone_name or os.environ.get('AI26_TIMEZONE','Asia/Kolkata')
+    zone=ZoneInfo(timezone_name)
+    start=int((now-days*86400)//900)*900
+    end=int(now)+1
+    rows=store.camera_hourly_traffic(start,end)
+    # Aggregate repeated local hours (for example a DST fall-back) per local day.
+    per_camera={camera['id']:{} for camera in store.camera_catalog()}
+    for row in rows:
+        hour_start=datetime.fromtimestamp(row['bucket_start_utc'],timezone.utc).astimezone(zone)
+        key=(hour_start.date(),hour_start.weekday(),hour_start.hour)
+        bucket=per_camera.setdefault(row['camera'],{}).setdefault(key,{
+            'date':key[0], 'weekday':key[1], 'hour':key[2], 'processed_samples':0,
+            'processed_quarter_hours':0,
+            'vehicle_passages':0, 'latest_bucket_start_utc':row['bucket_start_utc'],
+            'local_hour_start':hour_start.replace(minute=0,second=0,microsecond=0)})
+        bucket['processed_samples']+=row['processed_samples']
+        bucket['processed_quarter_hours']+=row['processed_samples']>0
+        bucket['vehicle_passages']+=row['vehicle_passages']
+        if row['bucket_start_utc']>bucket['latest_bucket_start_utc']:
+            bucket['latest_bucket_start_utc']=row['bucket_start_utc']
+            bucket['local_hour_start']=hour_start.replace(minute=0,second=0,microsecond=0)
+    current_local_hour=datetime.fromtimestamp(now,timezone.utc).astimezone(zone).replace(minute=0,second=0,microsecond=0)
+    start_date=datetime.fromtimestamp(start,timezone.utc).astimezone(zone).date()
+    result=[]
+    for camera_id in sorted(per_camera):
+        camera_entries=list(per_camera[camera_id].values())
+        completed=[entry for entry in camera_entries if
+                 (entry['date']<current_local_hour.date() or
+                  (entry['date']==current_local_hour.date() and entry['hour']<current_local_hour.hour))]
+        covered=[entry for entry in completed if entry['processed_samples']>=4
+                 and entry['processed_quarter_hours']>=2]
+        if not covered:
+            result.append({'camera_id':camera_id,
+                           'status':'insufficient_coverage' if completed else 'no_live_history',
+                           'latest_complete_hour_local':None,
+                           'latest_passages':None,'latest_processed_samples':None,'baseline_median':None,
+                           'latest_covered_quarter_hours':None,'baseline_mean':None,
+                           'baseline_comparable_hours':0,'change_vs_median_percent':None,
+                           'age_seconds':None})
+            continue
+        latest=max(covered,key=lambda row:row['latest_bucket_start_utc'])
+        history=[entry for entry in covered if entry['date']<latest['date']
+                 and entry['weekday']==latest['weekday'] and entry['hour']==latest['hour']
+                 and entry['date']>=start_date]
+        # Keep the requested rolling interval by timestamp as well as local date.
+        history=[entry for entry in history if entry['latest_bucket_start_utc']>=start]
+        baseline_values=[entry['vehicle_passages'] for entry in history]
+        baseline_median=float(median(baseline_values)) if len(baseline_values)>=2 else None
+        baseline_mean=float(mean(baseline_values)) if len(baseline_values)>=2 else None
+        delta=(100*(latest['vehicle_passages']-baseline_median)/baseline_median
+               if baseline_median not in (None,0) else None)
+        age=max(0,now-(latest['local_hour_start'].timestamp()+3600))
+        status='stale' if age>36*3600 else 'baseline_ready' if len(baseline_values)>=2 else 'insufficient_history'
+        local_stamp=latest['local_hour_start']
+        result.append({'camera_id':camera_id,'status':status,
+                       'latest_complete_hour_local':local_stamp.isoformat(),
+                       'latest_passages':latest['vehicle_passages'],
+                       'latest_processed_samples':latest['processed_samples'],
+                       'latest_covered_quarter_hours':latest['processed_quarter_hours'],
+                       'baseline_median':baseline_median,'baseline_mean':baseline_mean,
+                       'baseline_comparable_hours':len(baseline_values),
+                       'change_vs_median_percent':round(delta,2) if delta is not None else None,
+                       'age_seconds':round(age,1)})
+    return {'window_days':days,'timezone':timezone_name,
+            'scope':'Live-source camera-local tracked vehicle passages; one sample per local passage',
+            'time_basis':'capture_arrival_clock','retention_days':90,
+            'speed_kmh':None,'speed_status':'Unavailable until route distance and capture clocks are independently calibrated',
+            'cameras':result}

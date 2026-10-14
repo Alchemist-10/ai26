@@ -1,9 +1,9 @@
 # Camera revisions and journey decision persistence
 
-Schema version 10 stores users, per-case grants, hashed authentication sessions, login-failure limits, encrypted TOTP enrollment and one-time recovery-code hashes,
+Schema version 11 stores users, per-case grants, hashed authentication sessions, login-failure limits, encrypted TOTP enrollment and one-time recovery-code hashes,
 the nine-camera catalog, and immutable queried link decisions alongside existing
 directed camera-pair travel constraints, sessions, immutable reads, camera-local passages, alerts, rules, reports and
-hash-chained audit records. Versions 1 through 4 migrate automatically; future schema
+hash-chained audit records, and 90-day camera/quarter-hour aggregate buckets for live-source processed samples and unique vehicle passages. Versions 1 through 4 migrate automatically; future schema
 versions fail explicitly. Startup seeds missing catalog IDs without replacing
 operator edits. Recording paths and detector kinds remain deployment configuration.
 
@@ -15,6 +15,25 @@ captures the active pair constraint. Missing constraints leave links unresolved,
 disconnected pairs are rejected, and travel outside a configured window is
 rejected. Existing immutable decisions retain their original constraint snapshot.
 Godseye's SIH checkout is unchanged.
+
+## Live traffic history
+
+`GET /api/traffic/baselines?days=28` compares each camera's latest completed
+local hour with covered prior hours at the same weekday/hour. Only successfully
+processed `source_mode=live`, `time_basis=capture_arrival_clock` frames and
+camera-local vehicle passage starts contribute. The aggregates contain camera,
+UTC quarter-hour, processed-sample count and passage count; they do not retain
+plate IDs or raw observations. They are retained for 90 days, independently of
+the seven-day raw-observation cleanup. A zero count is meaningful only when the
+hour has at least four processed frames across two UTC quarter-hour buckets.
+Missing or partial coverage is left unknown. Replay
+time is excluded so looping demo media cannot create a false historical pattern.
+
+These are camera-local sampled passage histories, not road-segment volumes.
+Passage counts inherit local tracking errors. Speeds remain unavailable until
+route distance and source clocks are independently calibrated. The baseline
+endpoint reports no-history, insufficient-history and stale states rather than
+filling missing hours with zero.
 
 ## Metadata editing API
 

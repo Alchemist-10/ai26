@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 
 from cameras import CAMERAS_BY_ID, camera_playback_source, camera_source
-from events import derive_alerts, evidence_report, flows, get_events, get_trajectory, stats, store
+from events import derive_alerts, evidence_report, flows, get_events, get_trajectory, stats, store, traffic_baselines
 from nlquery import answer as nl_answer
 from processing import processor, inference_branches, validate_branch_configuration
 from metrics import render_metrics
@@ -60,7 +60,7 @@ frontend_port=os.environ.get('AI26_FRONTEND_PORT','5174')
 app=FastAPI(title='AI26 observation API',lifespan=lifespan)
 app.add_middleware(CORSMiddleware,allow_origins=[f'http://localhost:{frontend_port}',f'http://127.0.0.1:{frontend_port}'],allow_methods=['*'],allow_headers=['*'])
 
-SENSITIVE_PREFIXES=('/api/cameras/','/api/source-preparations/','/api/journey-links','/api/stream/','/api/video/',
+SENSITIVE_PREFIXES=('/api/cameras/','/api/source-preparations/','/api/journey-links','/api/traffic/','/api/stream/','/api/video/',
                     '/api/snapshot/','/api/preview/','/api/events','/api/stats','/api/flows','/api/alerts',
                     '/api/rules','/api/nlquery','/api/trajectory/','/api/evidence/','/api/reports/','/api/artifacts/')
 
@@ -81,6 +81,7 @@ def required_role(method, path):
     if path == '/api/camera-pair-constraints': return 'operator'
     if path.startswith('/api/source-preparations/'): return 'operator'
     if path == '/api/audit/integrity': return 'admin'
+    if path.startswith('/api/traffic/') and method == 'GET': return 'analyst'
     if path.startswith('/api/alerts/') and path.endswith('/review'): return 'operator'
     if path == '/api/rules' and method == 'PUT': return 'operator'
     if path.startswith('/api/evidence/') and method == 'POST': return 'analyst'
@@ -442,6 +443,11 @@ def get_stats(since:TimeFilter=None,until:TimeFilter=None):
 @app.get('/api/flows')
 def get_flows(since:TimeFilter=None,until:TimeFilter=None):
     interval(since,until); return flows(since,until)
+
+@app.get('/api/traffic/baselines')
+def get_traffic_baselines(days:Annotated[int,Query(ge=7,le=90)]=28):
+    try: return traffic_baselines(days)
+    except (ValueError,KeyError) as exc: raise HTTPException(422,'Traffic baseline configuration or timezone is invalid') from exc
 
 @app.get('/api/alerts')
 def alerts(since:TimeFilter=None,until:TimeFilter=None,include_escalated:bool=False):

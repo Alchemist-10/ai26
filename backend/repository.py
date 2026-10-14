@@ -1,6 +1,7 @@
 """Single-host durable storage. SQL schema is versioned with PRAGMA user_version."""
 import hashlib
 import json
+import math
 import sqlite3
 import threading
 import time
@@ -21,7 +22,7 @@ class Repository:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version > 10:
+        if version > 11:
             self.db.close()
             raise RuntimeError('Database version is newer than this application')
         with self.db:
@@ -148,9 +149,23 @@ class Repository:
                     PRAGMA user_version=10;
                     COMMIT;
                 ''')
+            if version < 11:
+                self.db.executescript('''
+                    BEGIN IMMEDIATE;
+                    CREATE TABLE IF NOT EXISTS camera_traffic_buckets(
+                        camera TEXT NOT NULL,
+                        bucket_start_utc INTEGER NOT NULL,
+                        processed_samples INTEGER NOT NULL DEFAULT 0,
+                        vehicle_passages INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY(camera,bucket_start_utc)
+                    );
+                    CREATE INDEX IF NOT EXISTS camera_traffic_buckets_time ON camera_traffic_buckets(bucket_start_utc);
+                    PRAGMA user_version=11;
+                    COMMIT;
+                ''')
         with self.db:
             self.db.execute('CREATE INDEX IF NOT EXISTS audit_subject_action_time ON audit(subject,action,ts)')
-        self.schema_version = 10
+        self.schema_version = 11
         # Seed only missing IDs. Restart never overwrites operator metadata or its history.
         from cameras import CAMERAS
         with self.lock, self.db:
@@ -327,7 +342,30 @@ class Repository:
                 self.db.execute('INSERT OR REPLACE INTO passages VALUES(?,?,?,?,?,?,?,?)',
                                 (event['passage_id'], event['camera_id'], first, last, event['kind'], plate,
                                  summary['read_count'], canonical_json(summary)))
+                if (previous is None and event['kind'] == 'vehicle' and event.get('source_mode') == 'live'
+                        and event.get('time_basis') == 'capture_arrival_clock'):
+                    bucket = int(event['ts'] // 900) * 900
+                    self.db.execute('''INSERT INTO camera_traffic_buckets(camera,bucket_start_utc,vehicle_passages)
+                        VALUES(?,?,1) ON CONFLICT(camera,bucket_start_utc) DO UPDATE
+                        SET vehicle_passages=vehicle_passages+1''', (event['camera_id'],bucket))
         return inserted
+
+    def record_traffic_sample(self, camera, ts):
+        """Count one processed live sample in a UTC quarter-hour bucket."""
+        if not isinstance(camera,str) or type(ts) not in (int,float) or not math.isfinite(ts):
+            raise ValueError('camera and finite timestamp are required')
+        bucket = int(ts // 900) * 900
+        with self.lock, self.db:
+            self.db.execute('''INSERT INTO camera_traffic_buckets(camera,bucket_start_utc,processed_samples)
+                VALUES(?,?,1) ON CONFLICT(camera,bucket_start_utc) DO UPDATE
+                SET processed_samples=processed_samples+1''',(camera,bucket))
+
+    def camera_hourly_traffic(self, since, until):
+        with self.lock:
+            rows=self.db.execute('''SELECT camera,bucket_start_utc,processed_samples,vehicle_passages
+                FROM camera_traffic_buckets WHERE bucket_start_utc>=? AND bucket_start_utc<?
+                ORDER BY camera,bucket_start_utc''',(since,until)).fetchall()
+        return [dict(row) for row in rows]
 
     def observations(self, camera=None, plate=None, since=None, until=None, kind=None, limit=5000):
         clauses, args = [], []
@@ -510,6 +548,7 @@ class Repository:
             self.db.execute('DELETE FROM observations WHERE ts<?', (cutoff,))
             self.db.execute('DELETE FROM passages WHERE last<?', (cutoff,))
             self.db.execute('DELETE FROM journey_links WHERE to_ts<?', (cutoff,))
+            self.db.execute('DELETE FROM camera_traffic_buckets WHERE bucket_start_utc<?', (now-90*86400,))
             self.db.execute('DELETE FROM artifact_leases WHERE expires<=?', (now,))
             self.db.execute('DELETE FROM reports WHERE expires<=?', (now,))
             self.db.execute('DELETE FROM alerts WHERE ts<?', (cutoff,))

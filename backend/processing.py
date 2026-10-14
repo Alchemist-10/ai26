@@ -92,6 +92,7 @@ class Processor:
         self.source_hashes = {}
         self.capture_generation = {}
         self.live_reader_generation = {}
+        self.last_traffic_sample_identity = {}
         self.decode_next = {}
         self.forward_decode_limit = max(0,min(128,int(os.environ.get('AI26_FORWARD_DECODE_MAX_FRAMES','128'))))
         self.owner_file = None
@@ -318,7 +319,7 @@ class Processor:
     def _step_live(self, camera, began_attempt):
         """Process a fresh frame from the bounded RTSP reader using arrival time."""
         camera_id = camera['id']; reader = self.live_captures[camera_id]
-        now = time.time(); sample, capture_status = reader.latest()
+        sample, capture_status = reader.latest()
         if sample is None:
             self._set(camera_id, status='unavailable' if capture_status != 'connected' else 'stale',
                       source_available=False, source_mode='live', time_basis='capture_arrival_clock',
@@ -373,6 +374,10 @@ class Processor:
             preview=cv2.resize(frame,(320,max(1,round(height*320/width))),interpolation=cv2.INTER_AREA)
             preview_ok,preview_buf=cv2.imencode('.jpg',preview,[cv2.IMWRITE_JPEG_QUALITY,65])
             if not preview_ok: raise RuntimeError('Preview could not be encoded')
+            sample_identity=(reader_generation,sequence)
+            if self.last_traffic_sample_identity.get(camera_id)!=sample_identity:
+                store.record_traffic_sample(camera_id,captured_at)
+                self.last_traffic_sample_identity[camera_id]=sample_identity
             with self.lock:
                 self.latest[camera_id]=(processing_time,buf.tobytes())
                 self.thumbnails[camera_id]=(processing_time,preview_buf.tobytes())

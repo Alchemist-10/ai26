@@ -171,6 +171,29 @@ export interface Stats {
   avg_confidence: number
 }
 
+export interface TrafficBaseline {
+  window_days: number
+  timezone: string
+  scope: string
+  time_basis: "capture_arrival_clock"
+  retention_days: number
+  speed_kmh: null
+  speed_status: string
+  cameras: {
+    camera_id: string
+    status: "no_live_history" | "insufficient_coverage" | "insufficient_history" | "baseline_ready" | "stale"
+    latest_complete_hour_local: string | null
+    latest_passages: number | null
+    latest_processed_samples: number | null
+    latest_covered_quarter_hours: number | null
+    baseline_median: number | null
+    baseline_mean: number | null
+    baseline_comparable_hours: number
+    change_vs_median_percent: number | null
+    age_seconds: number | null
+  }[]
+}
+
 export interface TrajectoryHop {
   time_basis?: string
   source_mode?: string
@@ -324,7 +347,7 @@ export function changeOwnPassword(currentPassword: string, newPassword: string):
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const requestUrl = input instanceof Request ? input.url : String(input)
   const path = new URL(requestUrl, window.location.href)
-  const scoped = path.pathname.startsWith("/api/") && ["/api/cameras/", "/api/source-preparations/", "/api/journey-links", "/api/stream/", "/api/video/", "/api/snapshot/", "/api/preview/", "/api/events", "/api/stats", "/api/flows", "/api/alerts", "/api/rules", "/api/nlquery", "/api/trajectory/", "/api/evidence/", "/api/reports/", "/api/artifacts/"].some(prefix => path.pathname.startsWith(prefix))
+  const scoped = path.pathname.startsWith("/api/") && ["/api/cameras/", "/api/source-preparations/", "/api/journey-links", "/api/traffic/", "/api/stream/", "/api/video/", "/api/snapshot/", "/api/preview/", "/api/events", "/api/stats", "/api/flows", "/api/alerts", "/api/rules", "/api/nlquery", "/api/trajectory/", "/api/evidence/", "/api/reports/", "/api/artifacts/"].some(prefix => path.pathname.startsWith(prefix))
   const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined))
   if (scoped) {
     headers.set("X-AI26-Case-ID", securityContext.caseId)
@@ -383,6 +406,10 @@ export async function getAlerts(signal?: AbortSignal, includeEscalated = false):
 
 export async function getStats(signal?: AbortSignal): Promise<Stats> {
   return requestJson<Stats>("/api/stats", { signal })
+}
+
+export async function getTrafficBaselines(signal?: AbortSignal, days = 28): Promise<TrafficBaseline> {
+  return requestJson<TrafficBaseline>(`/api/traffic/baselines?days=${days}`, { signal })
 }
 
 export async function askNL(question: string): Promise<{ text: string; sql?: string }> {

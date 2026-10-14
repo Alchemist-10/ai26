@@ -76,6 +76,7 @@ class LiveCaptureTests(unittest.TestCase):
         processor.live_sources={'CAM-01':'configured'}
         processor.live_captures={'CAM-01':Reader()}
         with patch.object(processing.store,'start_session') as start_session, \
+             patch.object(processing.store,'record_traffic_sample') as record_sample, \
              patch.object(processing,'capture_read_images',return_value={}), \
              patch.object(processing,'add_events',return_value=0):
             self.assertTrue(processor.step(processor.cameras[0]))
@@ -85,6 +86,7 @@ class LiveCaptureTests(unittest.TestCase):
         self.assertIsNone(session['source_sha256'])
         self.assertEqual(processor.state['CAM-01']['source_mode'],'live')
         self.assertEqual(processor.state['CAM-01']['capture_sequence'],7)
+        record_sample.assert_called_once_with('CAM-01',1234.5)
         self.assertIsNone(processor.state['CAM-01']['source_time_seconds'])
         self.assertIsNotNone(processor.preview('CAM-01'))
 

@@ -91,7 +91,7 @@ chmod 0400 /absolute/path/to/ai26-auth-mfa.key
 
 Start auth with MFA support by combining `compose.auth.yaml` and
 `compose.auth-mfa.yaml` and setting `AI26_AUTH_MFA_KEY_FILE`. MFA secrets are
-AES-GCM encrypted in schema 10; the key file must be protected and backed up
+AES-GCM encrypted in schema 11; the key file must be protected and backed up
 securely. If the key is lost, stored TOTP secrets cannot be decrypted.
 
 Signed-in users can open Account security, enroll a standards-based six-digit

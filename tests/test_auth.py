@@ -60,8 +60,8 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(service.user_count(), 1)
                     self.assertIsNotNone(service.login("admin", "Bootstrap-Correct-Horse-42", "testhost")[0])
                     self.assertIsNone(service.login("admin", "Different-Correct-Horse-42", "otherhost")[0])
-                self.assertEqual(repository.schema_version, 10)
-                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 10)
+                self.assertEqual(repository.schema_version, 11)
+                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 11)
             finally:
                 repository.close()
 
@@ -105,6 +105,10 @@ class Authentication(unittest.TestCase):
         alternate = {**headers, "X-AI26-Purpose": "traffic_analysis"}
         self.client.get("/api/events", headers=alternate)
         self.assertEqual(self.repo.db.execute("SELECT count(*) FROM audit WHERE action='sensitive_access'").fetchone()[0], 2)
+        self.assertEqual(self.client.get("/api/traffic/baselines?days=28").status_code, 422)
+        baselines=self.client.get("/api/traffic/baselines?days=28",headers=headers)
+        self.assertEqual(baselines.status_code,200)
+        self.assertEqual(baselines.json()['time_basis'],'capture_arrival_clock')
 
         self.assertEqual(self.client.put("/api/rules", json={}).status_code, 403)
         self.assertEqual(self.client.post("/api/auth/logout").status_code, 403)
@@ -189,6 +193,8 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.client.get("/api/cameras").status_code, 200)
         self.assertEqual(self.client.get("/api/events", headers={"X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"system_test"}).status_code, 403)
         self.assertEqual(self.client.get("/api/camera-pair-constraints").status_code, 403)
+        self.assertEqual(self.client.get("/api/traffic/baselines",headers={
+            "X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"system_test"}).status_code,403)
 
     def test_user_management_and_last_admin_protection(self):
         self.create()

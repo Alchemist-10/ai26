@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **44 done, 33 partial, 3 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **44 done, 34 partial, 2 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -39,7 +39,7 @@ cannot attach custom headers. Auth is disabled in the default local stack. Case
 grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. Self-service account recovery
 and external identity remain pending.
-The isolated full backend suite passes 274 tests; frontend TypeScript build and lint
+The isolated full backend suite passes 279 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 
@@ -290,7 +290,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-02 | Done | Define inference ownership so multiple viewers do not create duplicate processing/event streams. | Streams/snapshots only consume cache; two-consumer regression and exclusive Linux data-directory ownership lock. |
 | P1-03 | Done | Add a typed observation schema with stable event IDs and per-track passage IDs. | Typed finite observations, deterministic idempotent read IDs, per-session local passage IDs. |
 | P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay source position and processing time are separate; original capture times and synchronized clocks are missing. |
-| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-10 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist directed pair constraints plus immutable queried link decisions with support and algorithm/config snapshots; audit records are locally hash chained and verifiable; offline source onboarding and metadata editing work; browser source preparation, selection and retained-parent rollback work; activation requires host restart, and authenticated calibration remains separate work. |
+| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-11 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist directed pair constraints plus immutable queried link decisions with support and algorithm/config snapshots; 90-day camera traffic buckets store live-source samples/passages; audit records are locally hash chained and verifiable; offline source onboarding and metadata editing work; browser source preparation, selection and retained-parent rollback work; activation requires host restart, and authenticated calibration remains separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
 | P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and nine component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |
@@ -314,7 +314,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | ID | Status | Task | Evidence / remaining work |
 | --- | --- | --- | --- |
 | P2-01 | Partial | Define and compute unique vehicle counts, occupancy/density and any speed metric using suitable calibration. | Deduplicated sampled camera-local passages work; globally unique counts, calibrated occupancy/density/speed do not. |
-| P2-02 | Pending | Store historical segment counts/speeds and compare weekday/hour baselines rather than relative detection share. | Historical segment counts/speeds and weekday/hour congestion baselines need independent calibration/data. |
+| P2-02 | Partial | Store historical segment counts/speeds and compare weekday/hour baselines rather than relative detection share. | Schema-11 retains 90-day 15-minute buckets of successfully processed live-source samples and unique camera-local vehicle passages; `/api/traffic/baselines` compares the latest completed local hour with covered prior matching weekday/hour counts, excludes replay clocks and requires at least four processed frames across two quarter-hours. Synthetic tests cover local-time alignment, replay exclusion, coverage, deduplication, expiry and baseline math. Physical segment counts/speeds, independently calibrated zero-traffic interpretation, live deployment history and independent route/capture-clock validation remain absent. |
 | P2-03 | Done | Implement computed OD aggregation from accepted, deduplicated trajectories and remove fixed live flow rows. | OD counts derive from accepted deduplicated links; fixed sample rows removed. Unsynchronized footage yields no accepted flow. |
 | P2-04 | Partial | Implement a measured spatial/road-segment heatmap with honest unobserved/unknown states. | Camera map, analytics and congestion views now omit unconfirmed coordinates; missing sources show unknown passage counts, and investigation maps plot only confirmed locations/transitions. Camera-local activity is shown honestly; a measured road-segment heatmap still needs calibrated locations and road data. |
 | P2-05 | Done | Keep detector confidence separate from measured accuracy and human verification status. | Model confidence is explicitly separate from measured accuracy and human verification. |
