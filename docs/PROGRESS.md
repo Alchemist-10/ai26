@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **44 done, 25 partial, 11 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **44 done, 26 partial, 10 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -353,7 +353,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | RS-02 | Done | Classical CLAHE/gamma/white-balance/Retinex/dark-channel enhancement and restrained sharpening. | Offline CLAHE, gamma, gray-world, single-scale Retinex, dark-channel dehazing and unsharp tools write hashed research derivatives without replacing source images. Synthetic correctness tests pass; OCR improvement is unmeasured and requires held-out labeled footage. |
 | RS-03 | Partial | Per-track best-shot/top-k frame selection and OCR character-level consensus. | Per-read crop statistics now produce top-three review candidates per local passage in version-4 reports and a capped Timeline preview; confidence-weighted character votes remain review-only. All raw reads/images remain. Ranking and OCR fusion need calibration and labeled validation. |
 | RS-04 | Pending | Frame alignment/optical flow, probabilistic fusion and calibrated plate confidence. | Optional research work; no implementation or measured evaluation claimed. |
-| RS-05 | Pending | Collect adverse-weather data and build a controlled degradation generator. | Optional research work; no implementation or measured evaluation claimed. |
+| RS-05 | Partial | Collect adverse-weather data and build a controlled degradation generator. | Offline deterministic rain, fog, low-light, motion-blur and sensor-noise derivatives write no-clobber PNGs with source/output hashes, seed and explicit synthetic-only labels. Real adverse-weather clips, temporal consistency, held-out labels and OCR robustness measurements remain pending. |
 | RS-06 | Pending | Train/evaluate a quality classifier, dehazing and deblurring models, and Indian-plate OCR adaptation. | Optional research work; no implementation or measured evaluation claimed. |
 | RS-07 | Partial | Add restoration safety checks and preserve raw versus enhanced/reconstructed artifact provenance. | Offline enhancement derivatives carry method/parameter metadata and hashes while source hashes/status remain explicit and outputs never overwrite files; live restoration/reconstruction integration, OCR safety tests on labeled footage and deployment provenance remain. |
 | RS-08 | Pending | Optional burst super-resolution with an explicit reconstructed status, not a raw-evidence claim. | Optional research work; no implementation or measured evaluation claimed. |

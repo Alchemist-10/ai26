@@ -76,6 +76,9 @@ no model/processor and writes only the requested output. See
 For isolated classical image experiments, see
 [Classical enhancement](CLASSICAL_ENHANCEMENT.md). Those derivatives are not
 used in live processing and do not imply an OCR accuracy gain.
+For seeded rain, fog, low-light, motion-blur and sensor-noise derivatives, see
+[Synthetic degradation](DEGRADATION_GENERATOR.md). These are controlled image
+corruptions, not collected adverse-weather footage or OCR robustness evidence.
 For read-only condition hints and enhancement candidates, see
 [Heuristic quality routing](QUALITY_ROUTER.md); its weather-like flags are
 unverified and do not control the live pipeline.
