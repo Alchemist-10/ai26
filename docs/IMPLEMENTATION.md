@@ -40,9 +40,10 @@ and rule configuration. Invalid requests return a consistent JSON error envelope
 SQLite schema version 11 has users, per-case grants, hashed authentication sessions, encrypted TOTP enrollment and one-time recovery-code hashes,
 login-failure limits, observations, passages, alerts, reports, settings, hash-chained audit,
 report artifact leases, camera revisions, directed camera-pair travel constraints and immutable
-queried journey-link decisions, plus 90-day live-source traffic buckets. Versions 1–3 migrate automatically; unknown future
-versions fail. Audit consistency is locally verifiable but has no external checkpoint
-or signature. Sensitive-access entries include the user, case ID, purpose, route,
+queried journey-link decisions, plus 90-day live-source traffic buckets. Existing
+versions migrate automatically; unknown future versions fail. Audit consistency
+is locally verifiable, and an operator can sign a verified chain-head checkpoint
+for off-host retention. Sensitive-access entries include the user, case ID, purpose, route,
 and method. New observations retain camera metadata snapshots. Legacy reads
 explicitly use current-catalog fallback. See [persistence contracts](PERSISTENCE.md)
 for API edits, version history and limits. The repository is intended for a
@@ -147,8 +148,10 @@ cleanup. Missing or corrupt images reject creation; later manual file removal or
 corruption still fails download explicitly. A model input frame is a decoded JPEG
 **derivative**, not the original recording. The source clip digest identifies that
 recording. Hashes are not signatures, authenticated chain of custody, or proof of
-correct OCR. Report accesses and review changes receive local audit records;
-access controls, tamper-resistant audit storage and signing remain pending.
+correct OCR. Report accesses and review changes receive local audit records.
+Optional report signing and operator-run signed audit checkpoints are available;
+automatic off-host anchoring, key lifecycle controls and independently protected
+audit storage remain operational work.
 
 ## Validation and remaining gates
 
