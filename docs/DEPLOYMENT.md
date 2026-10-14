@@ -67,8 +67,29 @@ rotated without restarting the API. Keep the token out of environment values,
 source control and request logs, and mount it read-only into the API and scraper.
 With authentication disabled, the route follows the local stack's
 unauthenticated API policy. Configure the scraper to reach the backend on the
-private Compose network or through a trusted proxy. Scraper installation and
-alert rules are deployment-specific and are not included in this stack.
+private Compose network or through a trusted proxy. The optional monitoring
+overlay below supplies a local Prometheus service and starter alert rules;
+external notification delivery still requires Alertmanager configuration.
+
+For a local Prometheus instance and starter alert rules, create a token file and
+grant the backend and Prometheus containers read access through a shared host
+group. For example:
+
+```sh
+mkdir -p secrets
+openssl rand -hex 32 > secrets/ai26-metrics-token
+chmod 0440 secrets/ai26-metrics-token
+export AI26_METRICS_TOKEN_FILE="$PWD/secrets/ai26-metrics-token"
+export AI26_METRICS_FILE_GID="$(stat -c '%g' "$AI26_METRICS_TOKEN_FILE")"
+docker compose -f compose.yaml -f compose.monitoring.yaml --profile monitoring up --build
+```
+
+The Prometheus UI binds to `127.0.0.1:9090` by default. Restrict the token file's
+group to the AI26 host operator, and do not expose the Prometheus UI outside a
+trusted machine without adding access control and TLS. The included rules surface
+API scrape failure, total source loss, stale processed frames and repeated camera
+processing failures. They do not send notifications; configure Alertmanager if
+delivery is required. The monitoring overlay retains seven days of local samples.
 
 ## Optional TLS reverse proxy
 
@@ -99,5 +120,7 @@ deployment review.
 
 References: Docker [Compose startup order and health checks](https://docs.docker.com/compose/how-tos/startup-order/),
 [Compose production configuration](https://docs.docker.com/compose/how-tos/production/),
+[Compose profiles](https://docs.docker.com/compose/how-tos/profiles/), Prometheus
+[scrape and authorization configuration](https://prometheus.io/docs/prometheus/latest/configuration/configuration/),
 and SQLite's [online backup API](https://www.sqlite.org/backup.html) and
 [read-only immutable URI mode](https://www.sqlite.org/uri.html).
