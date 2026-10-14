@@ -53,6 +53,7 @@ class ReadArtifacts(unittest.TestCase):
         self.assertEqual(save.call_count,2)
         self.assertEqual(metrics,{'image_attempts':2,'image_failures':0,'incomplete_reads':0,'storage_budget_failures':0})
         self.assertEqual(len({r['artifacts'][0]['sha256'] for r in reads}),1)
+        self.assertTrue(all(r['image_quality']['version']=='sampled-crop-statistics-v1' for r in reads))
         for read in reads:
             self.assertEqual(read['artifact_capture']['status'],'complete')
             self.assertEqual(read['artifacts'][1]['crop_bbox'],read['bbox'])
@@ -61,6 +62,26 @@ class ReadArtifacts(unittest.TestCase):
                 self.assertEqual(ref['source_sha256'],read['source_sha256'])
                 data=artifacts.artifact_bytes(ref['sha256'])
                 self.assertEqual(hashlib.sha256(data).hexdigest(),ref['sha256'])
+
+    def test_top_k_quality_candidates_rank_sharp_crop_without_dropping_reads(self):
+        dull=self.image(127)
+        sharp=self.image(127)
+        for y in range(3,15):
+            for x in range(2,20):
+                sharp[y,x]=255 if (x+y)%2 else 0
+        reads=[self.read(1,confidence=.95),self.read(2,confidence=.45)]
+        for read,frame in zip(reads,(dull,sharp)):
+            self.capture([read],frame)
+        events.add_events(reads)
+        stored=self.repository.observations(kind='plate',limit=10)
+        report=artifacts.rank_read_image_candidates(stored,top_k=2)
+        group=report['groups'][0]
+        self.assertEqual(group['candidate_count'],2)
+        sharp_digest=reads[1]['image_quality']['crop_sha256']
+        self.assertEqual(group['top_k'][0]['crop_sha256'],sharp_digest)
+        self.assertTrue(report['raw_reads_retained'])
+        self.assertFalse(report['accuracy_claim'])
+        with self.assertRaises(ValueError):artifacts.rank_read_image_candidates(stored,top_k=0)
 
     def test_lower_confidence_next_read_gets_its_own_frame_and_crop(self):
         first=self.read();second=self.read(2,confidence=.5,bbox=[5,6,25,20])
@@ -187,6 +208,8 @@ class ReadArtifacts(unittest.TestCase):
         report=events.evidence_report('KL07AB1234',self.now-1,self.now+1)
         self.assertEqual(report['version'],3)
         self.assertEqual(report['artifact_coverage']['reads_with_complete_current_images'],2)
+        self.assertTrue(report['image_review_candidates']['raw_reads_retained'])
+        self.assertEqual(report['image_review_candidates']['groups'][0]['candidate_count'],2)
         route='/api/reports/'+report['report_id'];before=self.client.get(route).content
         with zipfile.ZipFile(io.BytesIO(self.client.get(route+'/package').content)) as package:
             self.assertEqual(json.loads(package.read('manifest.json')),report)
@@ -194,6 +217,7 @@ class ReadArtifacts(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(package.read('artifacts/'+ref['sha256']+'.jpg')).hexdigest(),ref['sha256'])
                 path=artifacts.ROOT/(ref['sha256']+'.jpg');os.utime(path,(self.now-8*86400,)*2)
         self.assertIn('2 of 2 reads have a matching sampled frame and crop',self.client.get(route+'/print').text)
+        self.assertIn('Top image review candidates',self.client.get(route+'/print').text)
         artifacts.cleanup_artifacts(self.now-7*86400,self.repository.protected_artifacts(self.now))
         self.assertEqual(self.client.get(route+'/package').status_code,200)
         third=self.read(3);self.capture([third],self.image(200));events.add_events([third])

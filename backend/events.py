@@ -135,7 +135,7 @@ def _evidence_report(plate, since=None, until=None):
     artifacts = {}
     for hop in raw_reads:
         for artifact in hop.get('artifacts', []): artifacts[artifact['sha256']] = artifact
-    from artifacts import artifact_bytes, summarize_read_images
+    from artifacts import artifact_bytes, summarize_read_images, rank_read_image_candidates
     for artifact in artifacts.values():
         if artifact_bytes(artifact['sha256'], now + REPORT_RETENTION_SECONDS) is None:
             raise ValueError('A source artifact is missing; choose an available evidence interval')
@@ -145,8 +145,10 @@ def _evidence_report(plate, since=None, until=None):
               'trajectory': trajectory, 'raw_reads': raw_reads, 'raw_read_count':raw_total, 'artifacts': list(artifacts.values()),
               'model_provenance': summarize_read_models(raw_reads),
               'artifact_coverage': summarize_read_images(raw_reads),
+              'image_review_candidates':rank_read_image_candidates(raw_reads,top_k=3),
               'limitations': ['Candidate links do not verify vehicle identity.', 'Frame/crop JPEGs are decoded image derivatives; source clip digests identify their recording.', 'SHA-256 covers this JSON manifest and referenced artifact digests; it is not a digital signature.',
                               'Model-file digests identify loaded bytes, not accuracy or authenticity. Older/manual reads can lack exact model provenance; weights are not included in the evidence ZIP.',
+                              'Top image candidates use a fixed unvalidated heuristic; they are review suggestions, not measured best shots or OCR accuracy.',
                               'Image coverage counts current sampled-read JPEG derivatives only. Older/manual reads, failed writes or empty/outside boxes can lack matching images; this is not a full video-frame archive.']}
     report['package_hash'] = hashlib.sha256(canonical_json(report).encode()).hexdigest()
     store.put_report(report)

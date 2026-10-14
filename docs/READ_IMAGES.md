@@ -57,6 +57,15 @@ Reports with recorded capture failures may exist with incomplete coverage; their
 raw history and missing-image counts remain visible. Existing 5,000-raw-read and
 64 MiB image-package limits apply, so longer intervals can require a shorter export.
 
+New captures also record downsampled luminance, contrast and Laplacian-variance
+statistics for stored plate crops. The evidence report uses those statistics with
+OCR confidence to expose at most three distinct crop candidates per local passage.
+Its fixed score is `0.45*OCR confidence + 0.30*sharpness + 0.15*contrast +
+0.10*exposure`; each image component is normalized as recorded in the report.
+This is an unvalidated reviewer aid, not a measured “best shot” or accuracy score.
+Every raw read and image remains in the JSON/ZIP evidence package. Duplicate crop
+hashes consume one candidate slot, and old reads without these metrics are skipped.
+
 Pipeline metadata now identifies seven source files: the prior inference/loader/
 tracking/fusion/format components plus `processing.py` and `artifacts.py`. This
 does not identify every application module or establish authenticity/accuracy.

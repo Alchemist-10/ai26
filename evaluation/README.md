@@ -83,3 +83,5 @@ unverified and do not control the live pipeline.
 Per-track character voting can expose a review-only candidate when OCR strings
 conflict. See [tracking limits](../docs/TRACKING.md): the identity remains
 conflicting and the candidate is never used as a supported plate.
+Evidence reports also contain a heuristic top-three crop shortlist per passage;
+see [per-read image evidence](../docs/READ_IMAGES.md). All source reads/crops remain.
