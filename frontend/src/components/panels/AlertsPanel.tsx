@@ -114,7 +114,7 @@ export function AlertsPanel() {
       const result = await getAlerts(signal,true)
       if (!signal.aborted) { setAlerts(result); setError(null) }
     } catch (e) { if (!signal.aborted) setError(e instanceof Error ? e.message : "Alerts failed") }
-  }, 3000, !demo)
+  }, 5000, !demo)
   async function review(alert:Alert,state:ReviewState){
     if(!alert.alert_id||busy)return
     if(!reviewer.trim()){setError("Enter your reviewer name before recording a decision");return}

@@ -11,7 +11,7 @@ export function CongestionPage({ cameras }: { cameras: Camera[] }) {
       const s = await getStats(signal)
       if (!signal.aborted) { setStats(s); setError(null) }
     } catch (e) { if (!signal.aborted) setError(e instanceof Error ? e.message : "Activity unavailable") }
-  }, 3000)
+  }, 10000)
   const total=stats?.vehicle_passages || 1
   const ranked=cameras.map(c=>({camera:c,count:stats?.per_camera_passages[c.id] ?? 0})).sort((a,b)=>b.count-a.count)
   const located=ranked.filter(({camera:c})=>c.location_confirmed&&Number.isFinite(c.lat)&&Number.isFinite(c.lon))

@@ -11,7 +11,7 @@ export function EvidenceTimeline({ cameras, focused }: { cameras: Camera[]; focu
       const result = await getEvents({ camera: focused, limit: 40 }, signal)
       if (!signal.aborted) { setEvents(result.reverse()); setError(null) }
     } catch (reason) { if (!signal.aborted) setError(reason instanceof Error ? reason.message : "Evidence unavailable") }
-  }, 2000)
+  }, 5000)
 
   const cam = cameras.find((c) => c.id === focused)
 

@@ -63,7 +63,7 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
       const result = await getCameras(signal)
       if (!signal.aborted) { setCameras(result); setCameraError(null) }
     } catch (error) { if (!signal.aborted) setCameraError(error instanceof Error ? error.message : "Camera API unavailable") }
-  }, 3000)
+  }, 5000)
 
   const closeNavigation = useCallback(() => setDrawerOpen(false), [])
   const focusedCam = cameras.find((c) => c.id === focused)

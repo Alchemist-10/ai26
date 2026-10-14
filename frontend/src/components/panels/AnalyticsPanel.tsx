@@ -12,7 +12,7 @@ export function AnalyticsPanel({ cameras }: { cameras: Camera[] }) {
       const [s, f] = await Promise.all([getStats(signal), getFlows(signal)])
       if (!signal.aborted) { setStats(s); setFlows(f); setError(null) }
     } catch (e) { if (!signal.aborted) setError(e instanceof Error ? e.message : "Activity unavailable") }
-  }, 3000)
+  }, 10000)
   const counts=Object.entries(stats?.per_camera_passages ?? {}).sort((a,b)=>b[1]-a[1])
   const processing=cameras.filter((c)=>c.health.last_frame_at && (c.health.frame_age_seconds ?? Infinity)<15 && ["processing","loading"].includes(c.health.status)).length
   const located=cameras.filter(c=>c.location_confirmed&&Number.isFinite(c.lat)&&Number.isFinite(c.lon))

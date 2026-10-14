@@ -106,6 +106,20 @@ focused recorded player played, and no `/api/preview` requests appeared in the
 next five seconds of server logs. This only measures the disabled-processor
 case; it is not a general Core Web Vitals or enabled-inference benchmark.
 
+## Dashboard polling cadence — 14 October 2026
+
+The live browser/API log showed the root camera catalog and visible summary panels
+refreshing every two to three seconds while inference was disabled. The catalog
+now refreshes every five seconds; alerts and the visible evidence log every five
+seconds; analytics and congestion summaries every ten seconds. Submitted plate
+investigations and active camera previews keep their three-second refresh cadence.
+The serial, visibility-aware polling hook still aborts on navigation or a hidden
+tab and refreshes immediately when visible again. In a ten-second server-log
+sample with Analytics open after the change, the page issued one stats request and
+one flows request; camera-catalog polls continued separately. This verifies the
+new cadence, not a measured reduction in CPU, end-to-end latency or Core Web
+Vitals.
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded
