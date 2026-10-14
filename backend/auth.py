@@ -211,6 +211,40 @@ class AuthService:
             self.repository._append_audit(now, "auth_password_reset", username, {})
         return True
 
+    def change_password(self, username, current_password, new_password, now=None):
+        username = _username(username)
+        current_password = _password(current_password)
+        new_password = _password(new_password)
+        now = time.time() if now is None else now
+        with self.repository.lock:
+            row = self.repository.db.execute("SELECT password_salt,password_hash,iterations FROM users WHERE username=?",
+                                             (username,)).fetchone()
+        if not row:
+            raise AuthenticationError("Current password is incorrect")
+        try:
+            actual = _derive(current_password.decode("utf-8"), row["password_salt"], row["iterations"])
+        except AuthenticationError:
+            raise AuthenticationError("Current password is incorrect") from None
+        if not hmac.compare_digest(actual, row["password_hash"]):
+            raise AuthenticationError("Current password is incorrect")
+        if hmac.compare_digest(current_password, new_password):
+            raise AuthenticationError("Choose a new password different from the current password")
+        salt = secrets.token_bytes(16)
+        digest = _derive(new_password.decode("utf-8"), salt)
+        with self.repository.lock, self.repository.db:
+            current = self.repository.db.execute("SELECT password_salt,password_hash FROM users WHERE username=?",
+                                                 (username,)).fetchone()
+            if (not current or not hmac.compare_digest(current["password_salt"], row["password_salt"])
+                    or not hmac.compare_digest(current["password_hash"], row["password_hash"])):
+                raise AuthenticationError("Password changed during this request; sign in again")
+            self.repository.db.execute(
+                "UPDATE users SET password_salt=?,password_hash=?,iterations=?,updated_at=? WHERE username=?",
+                (salt, digest, PASSWORD_ITERATIONS, now, username),
+            )
+            self.repository.db.execute("DELETE FROM auth_sessions WHERE username=?", (username,))
+            self.repository._append_audit(now, "auth_password_changed", username, {"sessions_revoked": True})
+        return True
+
     def login(self, username, password, client_address, now=None, mfa_code=None):
         now = time.time() if now is None else now
         normalized = _username(username)

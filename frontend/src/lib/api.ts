@@ -317,6 +317,9 @@ export function updateUser(username: string, changes: { role?: AuthRole; disable
 export function resetUserPassword(username: string, password: string): Promise<{ password_reset: boolean; sessions_revoked: boolean }> {
   return requestJson(`/api/auth/users/${encodeURIComponent(username)}/password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) })
 }
+export function changeOwnPassword(currentPassword: string, newPassword: string): Promise<{ password_changed: boolean; sessions_revoked: boolean }> {
+  return requestJson("/api/auth/me/password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }) })
+}
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const requestUrl = input instanceof Request ? input.url : String(input)

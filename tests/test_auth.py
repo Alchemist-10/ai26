@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 import sqlite3
 import sys
@@ -125,6 +126,37 @@ class Authentication(unittest.TestCase):
         self.assertEqual(stored["reviewer"], "admin")
         self.assertTrue(stored["reviewer_authenticated"])
         self.assertEqual(self.repo.verify_audit_chain()["status"], "valid")
+
+    def test_self_service_password_change_checks_current_password_and_revokes_sessions(self):
+        self.create()
+        self.assertEqual(self.login().status_code, 200)
+        other=TestClient(main.app,base_url="https://testserver")
+        self.addCleanup(other.close)
+        self.assertEqual(other.post("/api/auth/login",json={
+            "username":"admin","password":"Correct-Horse-Battery-Staple-26"}).status_code,200)
+
+        payload={"current_password":"Correct-Horse-Battery-Staple-26",
+                 "new_password":"New-Correct-Horse-Battery-2026"}
+        self.assertEqual(self.client.post("/api/auth/me/password",json=payload).status_code,403)
+        wrong={**payload,"current_password":"Wrong-Correct-Horse-Battery-26"}
+        self.assertEqual(self.client.post("/api/auth/me/password",json=wrong,headers=self.csrf_headers()).status_code,422)
+        same={**payload,"new_password":payload["current_password"]}
+        self.assertEqual(self.client.post("/api/auth/me/password",json=same,headers=self.csrf_headers()).status_code,422)
+
+        changed=self.client.post("/api/auth/me/password",json=payload,headers=self.csrf_headers())
+        self.assertEqual(changed.status_code,200)
+        self.assertEqual(changed.json(),{"password_changed":True,"sessions_revoked":True})
+        self.assertEqual(self.client.get("/api/auth/me").status_code,401)
+        self.assertEqual(other.get("/api/auth/me").status_code,401)
+        self.assertEqual(other.post("/api/auth/login",json={
+            "username":"admin","password":"Correct-Horse-Battery-Staple-26"}).status_code,401)
+        self.assertEqual(self.login().status_code,401)
+        self.assertEqual(self.client.post("/api/auth/login",json={
+            "username":"admin","password":payload["new_password"]}).status_code,200)
+        self.assertEqual(self.repo.verify_audit_chain()["status"],"valid")
+        audit=self.repo.db.execute("SELECT action,data FROM audit WHERE action='auth_password_changed'").fetchone()
+        self.assertEqual(audit["action"],"auth_password_changed")
+        self.assertEqual(json.loads(audit["data"]),{"sessions_revoked":True})
 
     def test_prometheus_metrics_requires_admin_when_auth_is_enabled(self):
         self.create("analyst_one", "analyst")

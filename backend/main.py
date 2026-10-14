@@ -37,7 +37,7 @@ from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
-from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 
 
@@ -69,6 +69,7 @@ def required_role(method, path):
     if path == '/api/health': return None
     if path == '/api/metrics': return 'admin'
     if path in {'/api/auth/status','/api/auth/login'}: return None
+    if path == '/api/auth/me/password': return 'authenticated'
     if path == '/api/auth/me' or path == '/api/auth/logout': return 'authenticated'
     if path == '/api/auth/mfa' or path.startswith('/api/auth/mfa/'): return 'authenticated'
     if path.startswith('/api/auth/users'): return 'admin'
@@ -193,6 +194,15 @@ def auth_me(request:Request):
     return {'user':{'username':actor['username'],'role':actor['role']},
             'case_ids':AuthService(store).case_ids(actor['username']),
             'csrf_token':actor['csrf_token'],'expires_at':actor['expires_at']}
+
+
+@app.post('/api/auth/me/password')
+def auth_change_password(body:AuthPasswordChangeRequest,request:Request):
+    try:
+        AuthService(store).change_password(request.state.actor['username'],body.current_password,body.new_password)
+    except AuthenticationError as exc:
+        raise HTTPException(422,str(exc)) from exc
+    return {'password_changed':True,'sessions_revoked':True}
 
 
 @app.post('/api/auth/logout')

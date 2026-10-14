@@ -14,7 +14,7 @@ const NAV: { id: Page; label: string; icon: typeof MapIcon; blurb: string }[] = 
   { id: "settings", label: "Camera settings", icon: Settings, blurb: "Footage, metadata and history" },
   { id: "routes", label: "Travel constraints", icon: Route, blurb: "Directed camera-pair windows" },
   { id: "accounts", label: "User administration", icon: Users, blurb: "Accounts, roles and passwords" },
-  { id: "security", label: "Account security", icon: KeyRound, blurb: "Authenticator and recovery codes" },
+  { id: "security", label: "Account security", icon: KeyRound, blurb: "Password, authenticator and recovery codes" },
 ]
 
 export function NavDrawer({

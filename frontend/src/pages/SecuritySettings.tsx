@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react"
-import { ApiError, disableMfa, enableMfa, getMfaStatus, setupMfa, type MfaStatus } from "@/lib/api"
+import { ApiError, changeOwnPassword, disableMfa, enableMfa, getMfaStatus, setupMfa, type MfaStatus } from "@/lib/api"
 
 const input = "mt-1 block min-h-11 w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-base text-white"
 const button = "min-h-11 rounded border border-zinc-600 px-4 py-2 text-sm text-white hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-50"
@@ -9,8 +9,12 @@ export default function SecuritySettings() {
   const [secret, setSecret] = useState("")
   const [code, setCode] = useState("")
   const [password, setPassword] = useState("")
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
+  const [passwordChanged, setPasswordChanged] = useState(false)
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
 
@@ -52,12 +56,33 @@ export default function SecuritySettings() {
     finally { setBusy(false) }
   }
 
+  async function changePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setError(""); setNotice("")
+    if (newPassword !== confirmPassword) { setBusy(false); setError("New passwords do not match."); return }
+    try {
+      await changeOwnPassword(currentPassword, newPassword)
+      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("")
+      setPasswordChanged(true)
+      setNotice("Password changed. All sessions were revoked; returning to sign in…")
+      window.setTimeout(() => window.location.reload(), 900)
+    } catch (cause) { setError(message(cause)) }
+    finally { setBusy(false) }
+  }
+
   return <section className="h-full overflow-y-auto bg-background px-4 py-6 text-foreground sm:px-6">
     <div className="mx-auto max-w-3xl">
       <h1 className="text-2xl font-semibold text-white">Account security</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">Add an authenticator app as a second sign-in factor. MFA secrets are encrypted in the local database. Administrator recovery resets MFA and revokes the account’s sessions.</p>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">Change your password or add an authenticator app as a second sign-in factor. MFA secrets are encrypted in the local database. Administrator recovery resets MFA and revokes the account’s sessions.</p>
       {error && <p role="alert" className="mt-4 rounded border border-red-400/30 bg-red-950/40 px-3 py-2 text-sm text-red-100">{error}</p>}
       {notice && <p role="status" className="mt-4 rounded border border-teal-400/30 bg-teal-950/30 px-3 py-2 text-sm text-teal-100">{notice}</p>}
+      <form onSubmit={changePassword} className="mt-6 grid gap-3 border-y border-zinc-800 py-5 sm:grid-cols-2">
+        <div className="sm:col-span-2"><h2 className="font-medium text-white">Change password</h2><p className="mt-1 text-sm text-zinc-400">Use at least 14 characters. Changing it signs out every active session.</p></div>
+        <label className="text-sm text-zinc-300">Current password<input required type="password" autoComplete="current-password" maxLength={256} value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} className={input} /></label>
+        <span aria-hidden="true" className="hidden sm:block" />
+        <label className="text-sm text-zinc-300">New password<input required minLength={14} maxLength={256} type="password" autoComplete="new-password" value={newPassword} onChange={event => setNewPassword(event.target.value)} className={input} /></label>
+        <label className="text-sm text-zinc-300">Confirm new password<input required minLength={14} maxLength={256} type="password" autoComplete="new-password" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} className={input} /></label>
+        <button disabled={busy || passwordChanged} className={`${button} sm:col-span-2 sm:justify-self-start`}>Change password</button>
+      </form>
       {!status ? <p role="status" className="mt-6 text-sm text-zinc-400">Loading security status…</p> : <div className="mt-6 border-y border-zinc-800 py-5">
         <p className="font-medium text-white">Authenticator MFA · {status.enabled ? "Enabled" : "Disabled"}</p>
         {status.enabled ? <form onSubmit={disable} className="mt-4 grid gap-3 sm:grid-cols-2">

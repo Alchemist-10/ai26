@@ -67,12 +67,15 @@ those users can only select and access the cases assigned to them. Administrator
 retain oversight across all case IDs. Purpose is logged for accountability but is
 not a separate role permission. There is no shared case registry, transfer or
 delegation workflow, or built-in mechanism to establish that an entered case ID
-corresponds to an external case-management system. Password self-service and
-external identity providers are not implemented.
+corresponds to an external case-management system. Signed-in users can change
+their password after confirming the current one; the change revokes all sessions
+and requires a fresh sign-in. Self-service account recovery, help-desk recovery
+and external identity providers are not implemented.
 
 The initial UI supports sign-in, session restoration, case/purpose selection,
-and sign-out. Administrators can manage users, case grants, roles, account status,
-and password resets through the protected account-management screen.
+and sign-out. Signed-in users can change their password in Account security.
+Administrators can manage users, case grants, roles, account status, and password
+resets through the protected account-management screen.
 
 ## Authenticator MFA
 
