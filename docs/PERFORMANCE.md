@@ -120,6 +120,24 @@ one flows request; camera-catalog polls continued separately. This verifies the
 new cadence, not a measured reduction in CPU, end-to-end latency or Core Web
 Vitals.
 
+## Six-camera replay soak — 14 October 2026
+
+An isolated API process replayed the six bundled camera clips for 120 seconds
+with the vehicle branch enabled, plate recognition disabled, and the configured
+2 FPS total sampling budget. Its database and artifacts were kept in a temporary
+directory. Across 13 health/metrics samples, the processor advanced 239 frames
+with zero failed attempts and one budget overrun; final per-camera rates were
+0.318–0.324 FPS. Median phase totals were 209–233 ms and p95 totals 320–454 ms.
+The API process averaged 76.16% CPU and peaked at 541,188 KiB RSS. Health and
+metrics returned no failures, with median response times of 8.7 ms and 6.5 ms.
+The report records clip hashes, per-interval counters, per-camera timing data,
+and host/commit metadata in
+[`validation/ev09-six-camera-soak-2026-10-14.json`](validation/ev09-six-camera-soak-2026-10-14.json).
+
+This is a bounded local replay, not a sustained deployment soak. It does not
+measure browser dropped frames, cold-start OCR, plate recognition, real camera
+capture, or detector accuracy; CAM-07–09 had no source files.
+
 ## Dashboard route chunks — 14 October 2026
 
 The camera wall is the initial view, but map, congestion, timeline, alerts,
