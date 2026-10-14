@@ -1,6 +1,6 @@
 """Validation shared by HTTP and ingestion; no model loading required."""
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictStr, field_validator, model_validator
 import math
 
 class Observation(BaseModel):
@@ -69,6 +69,22 @@ class CameraConfigurationUpdate(BaseModel):
     lon: float = Field(ge=-180, le=180)
     reviewer: StrictStr = Field(min_length=1, max_length=100)
     reason: StrictStr = Field(min_length=1, max_length=1000)
+
+class CameraPairConstraintUpdate(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False, str_strip_whitespace=True)
+    from_camera_id: StrictStr = Field(pattern=r'^CAM-[0-9]{2}$')
+    to_camera_id: StrictStr = Field(pattern=r'^CAM-[0-9]{2}$')
+    min_travel_seconds: StrictFloat = Field(ge=0, le=86400)
+    max_travel_seconds: StrictFloat = Field(gt=0, le=86400)
+    enabled: StrictBool
+    reviewer: StrictStr = Field(min_length=1, max_length=100)
+    reason: StrictStr = Field(min_length=1, max_length=1000)
+
+    @model_validator(mode='after')
+    def ordered_window(self):
+        if self.min_travel_seconds >= self.max_travel_seconds:
+            raise ValueError('Minimum travel time must be less than maximum travel time')
+        return self
 
 class SourceSelectionRequest(BaseModel):
     model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)

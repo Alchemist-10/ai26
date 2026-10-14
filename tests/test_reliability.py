@@ -98,6 +98,14 @@ class Reliability(unittest.TestCase):
         self.assertEqual(report.status_code,200)
 
     def test_mixed_route_requires_review(self):
+        for camera in ('CAM-07','CAM-08','CAM-09'):
+            config=self.repo.camera_configuration(camera)
+            self.repo.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
+                'reviewer':'fixture','reason':'configure deterministic route fixture'},self.now)
+        self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+            'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'reachable'},self.now)
+        self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-08','to_camera_id':'CAM-09',
+            'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':False,'reviewer':'fixture','reason':'disconnected'},self.now)
         result=events.build_trajectory([self.plate(ts=self.now-121),self.plate('CAM-08',self.now-1),self.plate('CAM-09')])
         self.assertEqual(len(result['accepted_links']),1)
         self.assertEqual(len(result['rejected_links']),1)
@@ -108,6 +116,30 @@ class Reliability(unittest.TestCase):
         self.assertEqual(result['accepted_links'],[])
         self.assertEqual(len(result['candidate_links']),1)
         self.assertIsNone(result['candidate_links'][0]['implied_speed_kmh'])
+
+    def test_unconfigured_pair_stays_candidate_and_constraint_window_is_enforced(self):
+        first=self.plate(ts=self.now-120)
+        second=self.plate('CAM-08',self.now)
+        missing=events.build_trajectory([first,second])
+        self.assertEqual(missing['accepted_links'],[])
+        self.assertIn('window is missing',missing['candidate_links'][0]['reason'])
+        for camera in ('CAM-07','CAM-08'):
+            config=self.repo.camera_configuration(camera)
+            self.repo.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
+                'reviewer':'fixture','reason':'configure deterministic route fixture'},self.now)
+        self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+            'min_travel_seconds':180,'max_travel_seconds':300,'enabled':True,'reviewer':'fixture','reason':'bounded test window'},self.now)
+        outside=events.build_trajectory([first,second])
+        self.assertEqual(outside['accepted_links'],[])
+        self.assertIn('outside the configured',outside['rejected_links'][0]['reason'])
+        self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+            'min_travel_seconds':0,'max_travel_seconds':300,'enabled':True,'reviewer':'fixture','reason':'revision check'},self.now)
+        config=self.repo.camera_configuration('CAM-07')
+        self.repo.update_camera('CAM-07',{**config,'expected_revision':config['revision'],'location':'Updated test location',
+            'reviewer':'fixture','reason':'ensure old route windows go stale'},self.now)
+        stale=events.build_trajectory([first,second])
+        self.assertEqual(stale['accepted_links'],[])
+        self.assertIn('different location revisions',stale['candidate_links'][0]['reason'])
 
     def test_unknown_camera_and_missing_source(self):
         for route in ['video','stream','snapshot']:
@@ -230,9 +262,9 @@ class Reliability(unittest.TestCase):
         db.execute('PRAGMA user_version=1');db.commit();db.close()
         migrated=Repository(path)
         try:
-            self.assertEqual(migrated.schema_version,8)
+            self.assertEqual(migrated.schema_version,10)
             self.assertEqual(migrated.protected_artifacts(self.now),{'a'*64})
-            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],8)
+            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],10)
         finally: migrated.close()
 
     def test_retention_lifespan_runs_without_inference(self):

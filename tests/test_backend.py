@@ -82,6 +82,12 @@ class ImportChecks(unittest.TestCase):
 
     def test_trajectory_rejects_impossible_travel(self):
         now = time.time()
+        for camera in ('CAM-07','CAM-08'):
+            config=self.repository.camera_configuration(camera)
+            self.repository.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
+                'reviewer':'fixture','reason':'configure accepted-link test'},now)
+        self.repository.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+            'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'reachable test pair'},now)
         good = events.build_trajectory([self.observation("CAM-07", now - 120), self.observation("CAM-08", now)])
         self.assertEqual(good["status"], "candidate")
         self.assertEqual(len(good["accepted_links"]), 1)

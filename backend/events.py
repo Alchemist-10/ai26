@@ -19,7 +19,7 @@ WINDOW_SECONDS = 300
 MAX_TRAVEL_SPEED_KMH = 160
 RETENTION_SECONDS = 7 * 86400
 REPORT_RETENTION_SECONDS = 86400
-LINK_ALGORITHM_VERSION = 'exact-plate-baseline-v2'
+LINK_ALGORITHM_VERSION = 'exact-plate-pair-constraints-v3'
 store = Repository(Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data')) / 'ai26.sqlite3')
 DEFAULT_RULES = {'watchlist': {'KL07AB1234': 'Local example watchlist entry; human review required'},
                  'restricted_cameras': ['CAM-09'], 'dwell_zones': []}
@@ -79,6 +79,11 @@ def build_trajectory(observations):
         elapsed = second['ts'] - first['ts']
         distance = _distance_km(first, second)
         speed = distance * 3600 / elapsed if elapsed > 0 else None
+        pair_constraint=store.camera_pair_constraint(first['camera_id'],second['camera_id'])
+        constraint_matches=bool(pair_constraint and
+            pair_constraint['from_revision']==first['camera_configuration']['revision'] and
+            pair_constraint['to_revision']==second['camera_configuration']['revision'])
+        pair_snapshot={**pair_constraint,'matches_observation_revisions':constraint_matches} if pair_constraint else None
         link = {'from_camera_id': first['camera_id'], 'to_camera_id': second['camera_id'],
                 'from_ts': first['ts'], 'to_ts': second['ts'], 'distance_km': round(distance, 3),
                 'elapsed_seconds': round(elapsed, 3), 'implied_speed_kmh': round(speed, 1) if speed is not None else None,
@@ -86,6 +91,7 @@ def build_trajectory(observations):
                 'supporting_event_ids':[first.get('event_id'),second.get('event_id')],
                 'algorithm_version':LINK_ALGORITHM_VERSION,
                 'camera_configurations':[first['camera_configuration'],second['camera_configuration']],
+                'camera_pair_constraint':pair_snapshot,
                 'metadata_basis':[first['metadata_basis'],second['metadata_basis']],
                 'time_bases':[first.get('time_basis','unspecified'),second.get('time_basis','unspecified')],
                 'identity_verified':False}
@@ -98,6 +104,13 @@ def build_trajectory(observations):
             candidates.append({**link, 'implied_speed_kmh': None, 'reason': 'Location or original capture-time calibration unavailable'})
         elif speed > MAX_TRAVEL_SPEED_KMH:
             rejected.append({**link, 'reason': f'impossible travel: {speed:.1f} km/h implied; limit {MAX_TRAVEL_SPEED_KMH} km/h'})
+        elif not constraint_matches:
+            candidates.append({**link,'implied_speed_kmh':None,
+                               'reason':'Camera-pair travel window is missing or belongs to different location revisions'})
+        elif not pair_constraint['enabled']:
+            rejected.append({**link,'reason':'Camera pair is marked as a disconnected route'})
+        elif not pair_constraint['min_travel_seconds'] <= elapsed <= pair_constraint['max_travel_seconds']:
+            rejected.append({**link,'reason':'Observed travel time falls outside the configured camera-pair window'})
         else:
             accepted.append({**link, 'reason': 'Exact plate and baseline travel gate; identity remains unverified'})
     status = 'not_found' if not hops else 'observed'

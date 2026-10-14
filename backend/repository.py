@@ -21,7 +21,7 @@ class Repository:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version > 8:
+        if version > 10:
             self.db.close()
             raise RuntimeError('Database version is newer than this application')
         with self.db:
@@ -129,9 +129,28 @@ class Repository:
                     PRAGMA user_version=8;
                     COMMIT;
                 ''')
+            if version < 10:
+                self.db.executescript('''
+                    BEGIN IMMEDIATE;
+                    CREATE TABLE IF NOT EXISTS camera_pair_constraints(
+                        from_camera TEXT NOT NULL,
+                        to_camera TEXT NOT NULL,
+                        from_revision INTEGER NOT NULL,
+                        to_revision INTEGER NOT NULL,
+                        min_travel_seconds REAL NOT NULL,
+                        max_travel_seconds REAL NOT NULL,
+                        enabled INTEGER NOT NULL,
+                        reviewer TEXT NOT NULL,
+                        reason TEXT NOT NULL,
+                        updated_at REAL NOT NULL,
+                        PRIMARY KEY(from_camera,to_camera)
+                    );
+                    PRAGMA user_version=10;
+                    COMMIT;
+                ''')
         with self.db:
             self.db.execute('CREATE INDEX IF NOT EXISTS audit_subject_action_time ON audit(subject,action,ts)')
-        self.schema_version = 8
+        self.schema_version = 10
         # Seed only missing IDs. Restart never overwrites operator metadata or its history.
         from cameras import CAMERAS
         with self.lock, self.db:
@@ -169,6 +188,66 @@ class Repository:
             self._append_audit(now,'camera_configuration',camera,{'revision':config['revision'],
                                'reviewer':change['reviewer'],'reason':change['reason']})
         return config
+
+    def camera_pair_constraints(self):
+        with self.lock:
+            rows=self.db.execute('SELECT * FROM camera_pair_constraints ORDER BY from_camera,to_camera').fetchall()
+            catalog_rows=self.db.execute('''SELECT data FROM camera_catalog c WHERE revision=(
+                SELECT max(revision) FROM camera_catalog WHERE camera=c.camera)''').fetchall()
+        catalog={item['id']:item for item in (json.loads(row['data']) for row in catalog_rows)}
+        result=[]
+        for row in rows:
+            item={**dict(row),'enabled':bool(row['enabled'])}
+            item['current_locations_valid']=all(
+                item[f'{direction}_camera'] in catalog and
+                catalog[item[f'{direction}_camera']]['location_confirmed'] and
+                catalog[item[f'{direction}_camera']]['revision']==item[f'{direction}_revision']
+                for direction in ('from','to'))
+            result.append(item)
+        return result
+
+    def camera_pair_constraint(self, from_camera, to_camera):
+        with self.lock:
+            row=self.db.execute('SELECT * FROM camera_pair_constraints WHERE from_camera=? AND to_camera=?',
+                                (from_camera,to_camera)).fetchone()
+        return {**dict(row),'enabled':bool(row['enabled'])} if row else None
+
+    def put_camera_pair_constraint(self, change, now):
+        from_camera,to_camera=change['from_camera_id'],change['to_camera_id']
+        with self.lock, self.db:
+            self.db.execute('BEGIN IMMEDIATE')
+            catalog_rows=self.db.execute('''SELECT data FROM camera_catalog c WHERE revision=(
+                SELECT max(revision) FROM camera_catalog WHERE camera=c.camera)''').fetchall()
+            locations={item['id']:item for item in (json.loads(row['data']) for row in catalog_rows)}
+            if from_camera not in locations or to_camera not in locations:
+                raise ValueError('Unknown camera in pair constraint')
+            if from_camera==to_camera:
+                raise ValueError('A camera pair must connect two different cameras')
+            if not locations[from_camera]['location_confirmed'] or not locations[to_camera]['location_confirmed']:
+                raise ValueError('Mark both camera locations as confirmed before setting pair constraints')
+            previous_row=self.db.execute('SELECT * FROM camera_pair_constraints WHERE from_camera=? AND to_camera=?',
+                                         (from_camera,to_camera)).fetchone()
+            previous={**dict(previous_row),'enabled':bool(previous_row['enabled'])} if previous_row else None
+            constraint={
+                'from_camera':from_camera,'to_camera':to_camera,
+                'from_revision':locations[from_camera]['revision'],'to_revision':locations[to_camera]['revision'],
+                'min_travel_seconds':change['min_travel_seconds'],
+                'max_travel_seconds':change['max_travel_seconds'],
+                'enabled':change['enabled'],'reviewer':change['reviewer'],
+                'reason':change['reason'],'updated_at':now,
+            }
+            self.db.execute('''INSERT INTO camera_pair_constraints VALUES(?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT(from_camera,to_camera) DO UPDATE SET
+                from_revision=excluded.from_revision,to_revision=excluded.to_revision,
+                min_travel_seconds=excluded.min_travel_seconds,
+                max_travel_seconds=excluded.max_travel_seconds,enabled=excluded.enabled,
+                reviewer=excluded.reviewer,reason=excluded.reason,updated_at=excluded.updated_at''',
+                (from_camera,to_camera,locations[from_camera]['revision'],locations[to_camera]['revision'],
+                 change['min_travel_seconds'],change['max_travel_seconds'],
+                 int(change['enabled']),change['reviewer'],change['reason'],now))
+            self._append_audit(now,'camera_pair_constraint',f'{from_camera}>{to_camera}',
+                               {'previous':previous,'current':constraint})
+        return {**constraint,'enabled':bool(constraint['enabled']),'current_locations_valid':True}
 
     def put_journey_links(self, plate, trajectory):
         """Materialize immutable decisions idempotently; polling the same route adds no rows."""

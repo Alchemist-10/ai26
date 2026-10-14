@@ -35,6 +35,28 @@ export interface CameraConfigurationUpdate {
   reviewer: string
   reason: string
 }
+export interface CameraPairConstraint {
+  from_camera: string
+  to_camera: string
+  from_revision: number
+  to_revision: number
+  min_travel_seconds: number
+  max_travel_seconds: number
+  enabled: boolean
+  reviewer: string
+  reason: string
+  updated_at: number
+  current_locations_valid: boolean
+}
+export interface CameraPairConstraintUpdate {
+  from_camera_id: string
+  to_camera_id: string
+  min_travel_seconds: number
+  max_travel_seconds: number
+  enabled: boolean
+  reviewer: string
+  reason: string
+}
 export interface SourceRelease {
   release: string
   reviewer: string | null
@@ -332,6 +354,16 @@ export function getCameraSourceStatus(cameraId: string, signal?: AbortSignal): P
 
 export function saveCameraConfiguration(cameraId: string, change: CameraConfigurationUpdate): Promise<CameraConfiguration> {
   return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/configuration`, {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(change),
+  })
+}
+
+export function getCameraPairConstraints(signal?: AbortSignal): Promise<CameraPairConstraint[]> {
+  return requestJson("/api/camera-pair-constraints", { signal })
+}
+
+export function saveCameraPairConstraint(change: CameraPairConstraintUpdate): Promise<CameraPairConstraint> {
+  return requestJson("/api/camera-pair-constraints", {
     method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(change),
   })
 }

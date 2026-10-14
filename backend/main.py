@@ -35,7 +35,7 @@ from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
-from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthMfaCodeRequest, AuthMfaDisableRequest
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 
 
@@ -73,6 +73,7 @@ def required_role(method, path):
         if '/source' in path: return 'operator'
         if path.endswith('/configuration'):
             return 'analyst' if method == 'GET' else 'operator'
+    if path == '/api/camera-pair-constraints': return 'operator'
     if path.startswith('/api/source-preparations/'): return 'operator'
     if path == '/api/audit/integrity': return 'admin'
     if path.startswith('/api/alerts/') and path.endswith('/review'): return 'operator'
@@ -319,6 +320,15 @@ def cancel_source_preparation(job_id:str):
 def update_camera_configuration(camera_id:str, body:CameraConfigurationUpdate):
     check_camera(camera_id)
     try: return store.update_camera(camera_id,body.model_dump(),time.time())
+    except ValueError as exc: raise HTTPException(409,str(exc)) from exc
+
+@app.get('/api/camera-pair-constraints')
+def list_camera_pair_constraints():
+    return store.camera_pair_constraints()
+
+@app.put('/api/camera-pair-constraints')
+def update_camera_pair_constraint(body:CameraPairConstraintUpdate):
+    try: return store.put_camera_pair_constraint(body.model_dump(),time.time())
     except ValueError as exc: raise HTTPException(409,str(exc)) from exc
 
 @app.get('/api/journey-links')

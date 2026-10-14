@@ -59,8 +59,8 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(service.user_count(), 1)
                     self.assertIsNotNone(service.login("admin", "Bootstrap-Correct-Horse-42", "testhost")[0])
                     self.assertIsNone(service.login("admin", "Different-Correct-Horse-42", "otherhost")[0])
-                self.assertEqual(repository.schema_version, 8)
-                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 8)
+                self.assertEqual(repository.schema_version, 10)
+                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 10)
             finally:
                 repository.close()
 
@@ -116,6 +116,7 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.client.get("/api/health").status_code, 200)
         self.assertEqual(self.client.get("/api/cameras").status_code, 200)
         self.assertEqual(self.client.get("/api/events", headers={"X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"system_test"}).status_code, 403)
+        self.assertEqual(self.client.get("/api/camera-pair-constraints").status_code, 403)
 
     def test_user_management_and_last_admin_protection(self):
         self.create()

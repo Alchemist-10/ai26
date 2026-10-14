@@ -78,6 +78,25 @@ class Persistence(unittest.TestCase):
         self.assertEqual(self.client.get('/api/cameras/CAM-07/configuration?revision=999').status_code,404)
         self.assertEqual(self.repo.camera_configuration('CAM-07')['revision'],1)
 
+    def test_camera_pair_constraint_requires_confirmed_locations_and_is_audited(self):
+        body={'from_camera_id':'CAM-07','to_camera_id':'CAM-08','min_travel_seconds':20,
+              'max_travel_seconds':900,'enabled':True,'reviewer':'Local tester','reason':'Validated test corridor'}
+        self.edit('CAM-07',location_confirmed=False)
+        self.assertEqual(self.client.put('/api/camera-pair-constraints',json=body).status_code,409)
+        self.edit('CAM-07',location_confirmed=True)
+        self.edit('CAM-08',location_confirmed=True)
+        saved=self.client.put('/api/camera-pair-constraints',json=body)
+        self.assertEqual(saved.status_code,200)
+        self.assertEqual(saved.json()['max_travel_seconds'],900)
+        self.assertEqual(self.client.get('/api/camera-pair-constraints').json(),[saved.json()])
+        audit=self.repo.db.execute("SELECT action,subject FROM audit ORDER BY id DESC LIMIT 1").fetchone()
+        self.assertEqual(tuple(audit),('camera_pair_constraint','CAM-07>CAM-08'))
+        invalid=self.client.put('/api/camera-pair-constraints',json={**body,'min_travel_seconds':900})
+        self.assertEqual(invalid.status_code,422)
+        self.assertEqual(self.client.put('/api/camera-pair-constraints',json={**body,'min_travel_seconds':True}).status_code,422)
+        self.edit('CAM-07',location='New coordinates revision')
+        self.assertFalse(self.client.get('/api/camera-pair-constraints').json()[0]['current_locations_valid'])
+
     def test_catalog_and_named_queries_use_persisted_metadata(self):
         self.edit(location='Fixture East')
         catalog=self.client.get('/api/cameras').json()
@@ -90,8 +109,11 @@ class Persistence(unittest.TestCase):
 
     def test_observation_snapshot_and_link_do_not_change_on_edit_or_retry(self):
         self.ingest_pair(time_basis='replay_clock')
+        self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+            'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'snapshot test'},self.now)
         original=self.route()
         link=original['candidate_links'][0]
+        self.assertEqual(link['camera_pair_constraint']['max_travel_seconds'],3600)
         self.assertIsNone(link['implied_speed_kmh'])
         self.assertFalse(link['identity_verified'])
         self.assertEqual(link['metadata_basis'],['observation_snapshot']*2)
@@ -158,8 +180,8 @@ class Persistence(unittest.TestCase):
         db=sqlite3.connect(self.path)
         db.executescript('DROP TABLE camera_catalog; DROP TABLE journey_links; ALTER TABLE audit DROP COLUMN record_hash; ALTER TABLE audit DROP COLUMN previous_hash; PRAGMA user_version=2;');db.close()
         self.repo=Repository(self.path)
-        self.assertEqual(self.repo.schema_version,8)
-        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],8)
+        self.assertEqual(self.repo.schema_version,10)
+        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],10)
         self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         self.assertEqual(len(self.repo.observations()),2)
         self.assertEqual(self.repo.report(report['report_id'],self.now+1),report)
@@ -170,7 +192,7 @@ class Persistence(unittest.TestCase):
 
     def test_future_schema_refused(self):
         path=Path(self.folder.name)/'future.sqlite3';db=sqlite3.connect(path)
-        db.execute('PRAGMA user_version=9');db.close()
+        db.execute('PRAGMA user_version=11');db.close()
         with self.assertRaisesRegex(RuntimeError,'newer'):
             Repository(path)
 
@@ -187,6 +209,12 @@ class Persistence(unittest.TestCase):
         self.assertEqual(invalid['first_invalid_id'],1)
 
     def test_each_decision_category_is_saved_with_its_support(self):
+        for camera in ('CAM-07','CAM-08'):
+            config=self.repo.camera_configuration(camera)
+            self.repo.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
+                'reviewer':'fixture','reason':'configure deterministic pair fixture'},self.now)
+        self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+            'min_travel_seconds':120,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'bounded fixture window'},self.now)
         for name,gap,time_basis,key,status in [('baseline',120,'manual','accepted_links','accepted'),
                     ('impossible',1,'manual','rejected_links','rejected'),
                     ('replay',120,'replay_clock','candidate_links','candidate')]:

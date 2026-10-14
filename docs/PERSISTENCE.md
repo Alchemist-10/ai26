@@ -1,11 +1,19 @@
 # Camera revisions and journey decision persistence
 
-Schema version 8 stores users, per-case grants, hashed authentication sessions, login-failure limits, encrypted TOTP enrollment and one-time recovery-code hashes,
+Schema version 10 stores users, per-case grants, hashed authentication sessions, login-failure limits, encrypted TOTP enrollment and one-time recovery-code hashes,
 the nine-camera catalog, and immutable queried link decisions alongside existing
-sessions, immutable reads, camera-local passages, alerts, rules, reports and
+directed camera-pair travel constraints, sessions, immutable reads, camera-local passages, alerts, rules, reports and
 hash-chained audit records. Versions 1 through 4 migrate automatically; future schema
 versions fail explicitly. Startup seeds missing catalog IDs without replacing
 operator edits. Recording paths and detector kinds remain deployment configuration.
+
+Directed camera-pair constraints store inclusive minimum/maximum travel windows,
+connected/disconnected state, reviewer, reason and update time. Saving requires
+both camera locations to be marked confirmed; this is an operator assertion, not
+independent geospatial validation. Each newly materialized journey-link decision
+captures the active pair constraint. Missing constraints leave links unresolved,
+disconnected pairs are rejected, and travel outside a configured window is
+rejected. Existing immutable decisions retain their original constraint snapshot.
 Godseye's SIH checkout is unchanged.
 
 ## Metadata editing API

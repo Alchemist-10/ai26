@@ -17,8 +17,9 @@ import { IntroSplash } from "@/components/IntroSplash"
 const CameraSettings = lazy(() => import("@/pages/CameraSettings"))
 const UserAdministration = lazy(() => import("@/pages/UserAdministration"))
 const SecuritySettings = lazy(() => import("@/pages/SecuritySettings"))
+const RouteConstraintsPage = lazy(() => import("@/pages/RouteConstraintsPage"))
 
-export type Page = "cameras" | "map" | "congestion" | "timeline" | "alerts" | "analytics" | "query" | "settings" | "accounts" | "security"
+export type Page = "cameras" | "map" | "congestion" | "timeline" | "alerts" | "analytics" | "query" | "settings" | "accounts" | "security" | "routes"
 
 const TITLES: Record<Page, string> = {
   cameras: "Camera Wall",
@@ -31,6 +32,7 @@ const TITLES: Record<Page, string> = {
   settings: "Camera settings",
   accounts: "User administration",
   security: "Account security",
+  routes: "Travel constraints",
 }
 
 export default function App() {
@@ -114,7 +116,7 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
         <button type="button" onClick={() => void signOut()} className="ml-auto rounded border border-zinc-700 px-2.5 py-1.5 text-zinc-300 hover:bg-zinc-800">Sign out</button>
       </form>}
 
-      <NavDrawer open={drawerOpen} page={page} onNavigate={navigate} onClose={closeNavigation} isAdmin={user?.role === "admin"} isAuthenticated={!!user} />
+      <NavDrawer open={drawerOpen} page={page} onNavigate={navigate} onClose={closeNavigation} isAdmin={user?.role === "admin"} isAuthenticated={!!user} canManageRoutes={!user || user.role === "admin" || user.role === "operator"} />
 
       <main className="min-h-0 flex-1">
         {cameraError && <div className="absolute left-1/2 top-16 z-30 -translate-x-1/2 rounded-md border border-red-400/30 bg-red-950/90 px-3 py-2 text-xs text-red-100">Camera API unavailable: {cameraError}</div>}
@@ -136,6 +138,7 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
         {page === "query" && <QueryPage />}
         {page === "accounts" && user?.role === "admin" && <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading user administration…</p>}><UserAdministration /></Suspense>}
         {page === "security" && user && <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading account security…</p>}><SecuritySettings /></Suspense>}
+        {page === "routes" && (!user || user.role === "admin" || user.role === "operator") && <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading camera-pair constraints…</p>}><RouteConstraintsPage cameras={cameras} /></Suspense>}
         {settingsVisited && (
           <div hidden={page !== "settings"} className="h-full">
             <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading camera settings…</p>}>

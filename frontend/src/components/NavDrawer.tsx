@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { MapIcon, History, TriangleAlert, ChartColumn, Gauge, MessageSquare, LayoutGrid, Settings, X, ShieldCheck, Users, KeyRound } from "lucide-react"
+import { MapIcon, History, TriangleAlert, ChartColumn, Gauge, MessageSquare, LayoutGrid, Settings, X, ShieldCheck, Users, KeyRound, Route } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
 
@@ -12,6 +12,7 @@ const NAV: { id: Page; label: string; icon: typeof MapIcon; blurb: string }[] = 
   { id: "analytics", label: "Analytics", icon: ChartColumn, blurb: "Stats + congestion map" },
   { id: "query", label: "Ask the Grid", icon: MessageSquare, blurb: "Natural-language query" },
   { id: "settings", label: "Camera settings", icon: Settings, blurb: "Footage, metadata and history" },
+  { id: "routes", label: "Travel constraints", icon: Route, blurb: "Directed camera-pair windows" },
   { id: "accounts", label: "User administration", icon: Users, blurb: "Accounts, roles and passwords" },
   { id: "security", label: "Account security", icon: KeyRound, blurb: "Authenticator and recovery codes" },
 ]
@@ -23,6 +24,7 @@ export function NavDrawer({
   onClose,
   isAdmin = false,
   isAuthenticated = false,
+  canManageRoutes = false,
 }: {
   open: boolean
   page: Page
@@ -30,6 +32,7 @@ export function NavDrawer({
   onClose: () => void
   isAdmin?: boolean
   isAuthenticated?: boolean
+  canManageRoutes?: boolean
 }) {
   const root = useRef<HTMLElement>(null)
   useEffect(() => {
@@ -93,7 +96,7 @@ export function NavDrawer({
 
         {/* Navigation items */}
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
-          {NAV.filter(item => (item.id !== "accounts" || isAdmin) && (item.id !== "security" || isAuthenticated)).map((item) => {
+          {NAV.filter(item => (item.id !== "accounts" || isAdmin) && (item.id !== "security" || isAuthenticated) && (item.id !== "routes" || canManageRoutes)).map((item) => {
             const Icon = item.icon
             const active = page === item.id
             return (
