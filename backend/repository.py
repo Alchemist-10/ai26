@@ -21,7 +21,7 @@ class Repository:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version > 3:
+        if version > 4:
             self.db.close()
             raise RuntimeError('Database version is newer than this application')
         with self.db:
@@ -35,7 +35,8 @@ class Repository:
                 CREATE TABLE IF NOT EXISTS alerts(id TEXT PRIMARY KEY, ts REAL, data TEXT, state TEXT DEFAULT 'open', review TEXT);
                 CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY, expires REAL, data TEXT);
                 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, data TEXT);
-                CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, ts REAL, action TEXT, subject TEXT, data TEXT);
+                CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, ts REAL, action TEXT, subject TEXT, data TEXT,
+                                                 previous_hash TEXT, record_hash TEXT);
             ''')
             if version < 2:
                 self.db.executescript('''
@@ -57,7 +58,21 @@ class Repository:
                     PRAGMA user_version=3;
                     COMMIT;
                 ''')
-        self.schema_version = 3
+            if version < 4:
+                columns={row['name'] for row in self.db.execute('PRAGMA table_info(audit)').fetchall()}
+                if 'previous_hash' not in columns: self.db.execute('ALTER TABLE audit ADD COLUMN previous_hash TEXT')
+                if 'record_hash' not in columns: self.db.execute('ALTER TABLE audit ADD COLUMN record_hash TEXT')
+                previous=None
+                rows=self.db.execute('SELECT id,ts,action,subject,data FROM audit ORDER BY id').fetchall()
+                for row in rows:
+                    record={'id':row['id'],'ts':row['ts'],'action':row['action'],'subject':row['subject'],
+                            'data':row['data'],'previous_hash':previous}
+                    digest=hashlib.sha256(canonical_json(record).encode()).hexdigest()
+                    self.db.execute('UPDATE audit SET previous_hash=?,record_hash=? WHERE id=?',
+                                    (previous,digest,row['id']))
+                    previous=digest
+                self.db.execute('PRAGMA user_version=4')
+        self.schema_version = 4
         # Seed only missing IDs. Restart never overwrites operator metadata or its history.
         from cameras import CAMERAS
         with self.lock, self.db:
@@ -92,9 +107,8 @@ class Repository:
                       'revision':previous['revision']+1, 'updated_at':now,
                       'metadata_source':'local operator entry; calibration unverified'}
             self.db.execute('INSERT INTO camera_catalog VALUES(?,?,?)', (camera,config['revision'],canonical_json(config)))
-            self.db.execute('INSERT INTO audit(ts,action,subject,data) VALUES(?,?,?,?)',
-                            (now,'camera_configuration',camera,canonical_json({'revision':config['revision'],
-                              'reviewer':change['reviewer'],'reason':change['reason']})))
+            self._append_audit(now,'camera_configuration',camera,{'revision':config['revision'],
+                               'reviewer':change['reviewer'],'reason':change['reason']})
         return config
 
     def put_journey_links(self, plate, trajectory):
@@ -279,7 +293,7 @@ class Repository:
             history = json.loads(old[0]) if old[0] else []
             history.append(review)
             self.db.execute('UPDATE alerts SET state=?,review=? WHERE id=?', (review['state'], canonical_json(history), alert_id))
-            self.db.execute('INSERT INTO audit(ts,action,subject,data) VALUES(?,?,?,?)', (review['ts'], 'alert_review', alert_id, canonical_json(review)))
+            self._append_audit(review['ts'],'alert_review',alert_id,review)
         return True
 
     def put_report(self, report):
@@ -298,12 +312,37 @@ class Repository:
 
 
     def report(self, report_id, now):
-        with self.lock:
+        with self.lock, self.db:
             row = self.db.execute('SELECT data,expires FROM reports WHERE id=?', (report_id,)).fetchone()
             if not row or row['expires'] <= now: return None
-            self.db.execute('INSERT INTO audit(ts,action,subject,data) VALUES(?,?,?,?)', (now, 'report_read', report_id, '{}'))
-            self.db.commit()
-        return json.loads(row['data'])
+            self._append_audit(now,'report_read',report_id,{})
+            return json.loads(row['data'])
+
+    def _append_audit(self, ts, action, subject, data):
+        """Append a record linked to the current tail; callers hold the SQL transaction."""
+        previous_row=self.db.execute('SELECT record_hash FROM audit ORDER BY id DESC LIMIT 1').fetchone()
+        previous=previous_row['record_hash'] if previous_row else None
+        payload=canonical_json(data)
+        cursor=self.db.execute('INSERT INTO audit(ts,action,subject,data,previous_hash,record_hash) VALUES(?,?,?,?,?,NULL)',
+                               (ts,action,subject,payload,previous))
+        record={'id':cursor.lastrowid,'ts':ts,'action':action,'subject':subject,'data':payload,'previous_hash':previous}
+        digest=hashlib.sha256(canonical_json(record).encode()).hexdigest()
+        self.db.execute('UPDATE audit SET record_hash=? WHERE id=?',(digest,cursor.lastrowid))
+
+    def verify_audit_chain(self):
+        """Verify internal record links; this is not a signature or external checkpoint."""
+        with self.lock:
+            rows=self.db.execute('SELECT id,ts,action,subject,data,previous_hash,record_hash FROM audit ORDER BY id').fetchall()
+        previous=None
+        for row in rows:
+            record={'id':row['id'],'ts':row['ts'],'action':row['action'],'subject':row['subject'],
+                    'data':row['data'],'previous_hash':previous}
+            expected=hashlib.sha256(canonical_json(record).encode()).hexdigest()
+            if row['previous_hash']!=previous or row['record_hash']!=expected:
+                return {'status':'invalid','records':len(rows),'first_invalid_id':row['id'],
+                        'expected_previous_hash':previous,'reported_previous_hash':row['previous_hash']}
+            previous=expected
+        return {'status':'valid','records':len(rows),'head_hash':previous}
 
     def cleanup(self, cutoff, now):
         with self.lock, self.db:

@@ -33,13 +33,13 @@
 
 `schemas.py` validates finite timestamps/confidence, ordered boxes, query strings
 and rule configuration. Invalid requests return a consistent JSON error envelope.
-SQLite schema version 3 has sessions, observations, passages, alerts, reports,
-settings, audit, report artifact leases, camera revisions and immutable queried
-journey-link decisions. Version-1 reports migrate with their leases; version-2
-data migrates with a seeded catalog and link storage. Unknown future versions fail.
-New observations retain camera metadata snapshots. Legacy reads explicitly use
-current-catalog fallback. See [persistence contracts](PERSISTENCE.md) for API edits,
-version history and limits. The repository is intended for a
+SQLite schema version 4 has sessions, observations, passages, alerts, reports,
+settings, hash-chained audit, report artifact leases, camera revisions and immutable
+queried journey-link decisions. Versions 1–3 migrate automatically; unknown future
+versions fail. Audit consistency is locally verifiable but has no external checkpoint
+or signature. New observations retain camera metadata snapshots. Legacy reads
+explicitly use current-catalog fallback. See [persistence contracts](PERSISTENCE.md)
+for API edits, version history and limits. The repository is intended for a
 single local API process, not a distributed ingestion deployment.
 
 A read ID identifies an immutable model observation. A passage ID combines camera,

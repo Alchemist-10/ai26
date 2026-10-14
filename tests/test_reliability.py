@@ -204,9 +204,9 @@ class Reliability(unittest.TestCase):
         db.execute('PRAGMA user_version=1');db.commit();db.close()
         migrated=Repository(path)
         try:
-            self.assertEqual(migrated.schema_version,3)
+            self.assertEqual(migrated.schema_version,4)
             self.assertEqual(migrated.protected_artifacts(self.now),{'a'*64})
-            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],3)
+            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],4)
         finally: migrated.close()
 
     def test_retention_lifespan_runs_without_inference(self):
@@ -276,6 +276,7 @@ class Reliability(unittest.TestCase):
         events.add_events([self.plate()]);alert=events.derive_alerts()[0]
         response=self.client.post(f'/api/alerts/{alert["alert_id"]}/review',json={'state':'acknowledged','reviewer':'Course reviewer','note':'Inspect crop'})
         self.assertEqual(response.status_code,200)
+        self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         same=next(a for a in events.derive_alerts() if a['alert_id']==alert['alert_id'])
         self.assertEqual(same['state'],'acknowledged')
         reopened=Repository(self.path)

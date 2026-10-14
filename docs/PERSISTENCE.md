@@ -1,8 +1,8 @@
 # Camera revisions and journey decision persistence
 
-Schema version 3 stores the nine-camera catalog and immutable queried link decisions
+Schema version 4 stores the nine-camera catalog and immutable queried link decisions
 alongside existing sessions, immutable reads, camera-local passages, alerts, rules,
-reports and audit records. Versions 1 and 2 migrate automatically; future schema
+reports and hash-chained audit records. Versions 1 through 3 migrate automatically; future schema
 versions fail explicitly. Startup seeds missing catalog IDs without replacing
 operator edits. Recording paths and detector kinds remain deployment configuration.
 Godseye's SIH checkout is unchanged.
@@ -83,7 +83,16 @@ hash unchanged. Maintenance removes decision rows with arrival times older than
 seven days; reports retain their copied decision snapshot until their separate
 24-hour expiry. Camera revision/audit history currently has no automatic expiry.
 
-82 isolated backend tests pass, including 13 persistence tests for migrations,
+Audit rows for camera configuration edits, alert reviews and report reads include
+the previous record hash and a SHA-256 hash over the canonical row fields. Existing
+audit rows receive a local baseline chain during migration. `GET /api/audit/integrity`
+checks links and row hashes and returns the record count and current head hash; a
+broken row returns its ID and expected versus recorded previous hash. This is an
+internal consistency check, not a digital signature or independent proof: someone
+able to rewrite the database can rebuild the chain or truncate its tail. There is
+no external checkpoint, authenticated reviewer identity or signed audit export.
+
+206 isolated backend tests pass, including 14 persistence tests for migrations,
 restarts, stale edits, validation, snapshot/report immutability, all decision
 categories, deterministic IDs, version history, legacy fallback and cleanup.
 The app restart retained all ten sampled historical observation IDs and decoded

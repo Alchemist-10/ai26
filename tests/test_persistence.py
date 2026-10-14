@@ -152,24 +152,39 @@ class Persistence(unittest.TestCase):
         self.assertEqual(self.repo.report(report['report_id'],self.now+3),report)
 
     def test_schema_two_migration_preserves_data_and_is_idempotent(self):
+        self.edit(location='Hashed legacy audit entry')
         self.ingest_pair(); report=events.evidence_report('KL07AB1234',self.now-200,self.now+1)
         self.repo.close()
         db=sqlite3.connect(self.path)
-        db.executescript('DROP TABLE camera_catalog; DROP TABLE journey_links; PRAGMA user_version=2;');db.close()
+        db.executescript('DROP TABLE camera_catalog; DROP TABLE journey_links; ALTER TABLE audit DROP COLUMN record_hash; ALTER TABLE audit DROP COLUMN previous_hash; PRAGMA user_version=2;');db.close()
         self.repo=Repository(self.path)
-        self.assertEqual(self.repo.schema_version,3)
-        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],3)
+        self.assertEqual(self.repo.schema_version,4)
+        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],4)
+        self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         self.assertEqual(len(self.repo.observations()),2)
         self.assertEqual(self.repo.report(report['report_id'],self.now+1),report)
+        self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         self.repo.close();self.repo=Repository(self.path)
         self.assertEqual(len(self.repo.camera_catalog()),9)
         self.assertEqual(len(self.repo.observations()),2)
 
     def test_future_schema_refused(self):
         path=Path(self.folder.name)/'future.sqlite3';db=sqlite3.connect(path)
-        db.execute('PRAGMA user_version=4');db.close()
+        db.execute('PRAGMA user_version=5');db.close()
         with self.assertRaisesRegex(RuntimeError,'newer'):
             Repository(path)
+
+    def test_audit_hash_chain_detects_changed_records_and_api_exposes_head(self):
+        self.edit(location='Initial audit entry')
+        self.edit(location='Second audit entry')
+        valid=self.client.get('/api/audit/integrity').json()
+        self.assertEqual(valid['status'],'valid')
+        self.assertEqual(valid['records'],2)
+        self.assertRegex(valid['head_hash'],r'^[a-f0-9]{64}$')
+        self.repo.db.execute("UPDATE audit SET data='{}' WHERE id=1")
+        invalid=self.repo.verify_audit_chain()
+        self.assertEqual(invalid['status'],'invalid')
+        self.assertEqual(invalid['first_invalid_id'],1)
 
     def test_each_decision_category_is_saved_with_its_support(self):
         for name,gap,time_basis,key,status in [('baseline',120,'manual','accepted_links','accepted'),

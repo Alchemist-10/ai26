@@ -138,6 +138,10 @@ def journey_links(plate:str|None=None,since:TimeFilter=None,until:TimeFilter=Non
     if plate: plate=check_plate(plate)
     return store.journey_links(plate,0 if since is None else since,until,limit)
 
+@app.get('/api/audit/integrity')
+def audit_integrity():
+    return store.verify_audit_chain()
+
 @app.get('/api/health')
 def health():
     return {'processing_enabled':os.environ.get('AI26_PROCESSING_ENABLED','1')=='1','cameras':processor.health(),
