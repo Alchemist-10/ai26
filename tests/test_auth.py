@@ -134,6 +134,19 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.login().status_code, 200)
         self.assertEqual(self.client.get("/api/metrics").status_code, 200)
 
+    def test_metrics_scraper_token_is_read_only_and_limited_to_metrics_route(self):
+        token="a"*64
+        token_file=Path(self.folder.name)/"metrics-token"
+        token_file.write_text(token)
+        with patch.dict(os.environ,{"AI26_METRICS_TOKEN_FILE":str(token_file)}):
+            headers={"Authorization":f"Bearer {token}"}
+            self.assertEqual(self.client.get("/api/metrics",headers=headers).status_code,200)
+            self.assertEqual(self.client.get("/api/metrics",headers={"Authorization":"Bearer wrong"}).status_code,401)
+            self.assertEqual(self.client.get("/api/events",headers=headers).status_code,401)
+        token_file.write_text("too-short")
+        with patch.dict(os.environ,{"AI26_METRICS_TOKEN_FILE":str(token_file)}):
+            self.assertEqual(self.client.get("/api/metrics",headers={"Authorization":"Bearer too-short"}).status_code,401)
+
     def test_viewer_cannot_query_or_mutate_but_health_stays_public(self):
         self.create("viewer_one", "viewer")
         self.assertEqual(self.login("viewer_one").status_code, 200)

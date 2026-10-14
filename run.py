@@ -15,6 +15,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PROCS: list[subprocess.Popen] = []
+SHUTDOWN_REQUESTED = False
+
+
+def request_shutdown(*_):
+    global SHUTDOWN_REQUESTED
+    SHUTDOWN_REQUESTED = True
 
 
 def cleanup():
@@ -44,8 +50,8 @@ def main():
     if sys.platform != 'linux':
         parser.error('The current shared-processor launcher requires Linux')
     atexit.register(cleanup)
-    signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
-    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+    signal.signal(signal.SIGINT, request_shutdown)
+    signal.signal(signal.SIGTERM, request_shutdown)
     backend_port = os.environ.get("AI26_BACKEND_PORT", "8001")
     frontend_port = os.environ.get("AI26_FRONTEND_PORT", "5174")
 
@@ -58,7 +64,7 @@ def main():
     ))
     PROCS.append(subprocess.Popen(["npm", "run", "dev"], cwd=ROOT / "frontend", start_new_session=True))
     print(f"AI26: http://localhost:{frontend_port} (API :{backend_port}). Ctrl+C to stop.", flush=True)
-    while all(process.poll() is None for process in PROCS):
+    while not SHUTDOWN_REQUESTED and all(process.poll() is None for process in PROCS):
         time.sleep(0.2)
     return next((process.returncode for process in PROCS if process.returncode is not None), 0)
 

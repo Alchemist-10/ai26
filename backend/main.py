@@ -11,6 +11,7 @@ from typing import Annotated
 import hmac
 import re
 import sqlite3
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -89,12 +90,32 @@ def required_role(method, path):
     return 'admin'
 
 
+def valid_metrics_bearer(request):
+    """Allow a dedicated, read-only scraper secret only on the metrics route."""
+    if request.url.path != '/api/metrics':
+        return False
+    secret_file=os.environ.get('AI26_METRICS_TOKEN_FILE','').strip()
+    authorization=request.headers.get('authorization','')
+    scheme,separator,token=authorization.partition(' ')
+    if not secret_file or not separator or scheme.lower()!='bearer':
+        return False
+    try:
+        expected=Path(secret_file).read_text(encoding='utf-8').strip()
+    except OSError:
+        return False
+    if len(expected)<32 or not token:
+        return False
+    return hmac.compare_digest(token,expected)
+
+
 @app.middleware('http')
 async def authentication_and_case_scope(request, call_next):
     if not request.url.path.startswith('/api/') or request.method == 'OPTIONS' or not auth_enabled():
         return await call_next(request)
     path=request.url.path
     if path in {'/api/health','/api/auth/status','/api/auth/login','/api/privacy/status'}:
+        return await call_next(request)
+    if valid_metrics_bearer(request):
         return await call_next(request)
     service=AuthService(store)
     session=service.session(request.cookies.get(SESSION_COOKIE))

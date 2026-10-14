@@ -58,8 +58,15 @@ transport encryption only.
 The backend exposes Prometheus text metrics at `/api/metrics`. It reports bounded
 per-camera health and recent processor timing summaries without event, plate, or
 person data. When the authentication overlay is enabled, only administrator
-sessions can scrape this endpoint; otherwise it follows the local stack's
-unauthenticated API policy. Configure your scraper to reach the backend on the
+sessions can scrape this endpoint. For unattended scraping, set
+`AI26_METRICS_TOKEN_FILE` to a protected file containing at least 32 random
+ASCII characters; a matching bearer token then grants access to this route only.
+For example, generate a 64-character hexadecimal secret with
+`openssl rand -hex 32`. The token file is read on each scrape so it can be
+rotated without restarting the API. Keep the token out of environment values,
+source control and request logs, and mount it read-only into the API and scraper.
+With authentication disabled, the route follows the local stack's
+unauthenticated API policy. Configure the scraper to reach the backend on the
 private Compose network or through a trusted proxy. Scraper installation and
 alert rules are deployment-specific and are not included in this stack.
 

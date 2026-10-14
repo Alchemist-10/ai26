@@ -39,7 +39,7 @@ cannot attach custom headers. Auth is disabled in the default local stack. Case
 grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. Self-service account recovery
 and external identity remain pending.
-The isolated full backend suite passes 240 tests; frontend TypeScript build and lint
+The isolated full backend suite passes 241 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 
@@ -371,7 +371,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | OP-05 | Done | Container/Compose setup, database backups and production frontend-to-API routing. | Compose packages a non-root single-worker API and production-built Nginx same-origin frontend behind loopback by default; persistent app data, online integrity-checked SQLite backups with rotation, and explicit stopped-service restore are implemented. Backup snapshots cover SQLite only; media/artifact/model backup and public-network hardening remain. |
 | OP-06 | Pending | Edge model export/quantization and benchmark on actual target hardware. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-07 | Partial | Canary/model-version pinning, rollback and branch-level disablement. | Frozen dependencies, exact loaded model/config identifiers and processing-disable switch exist; vehicle/person and plate-recognition branches can now be independently disabled at startup and are exposed in health. Disabled YOLO is lazily not instantiated. Canary rollout/model rollback are absent. |
-| OP-08 | Partial | Operational monitoring and sustained reliability/recovery tests. | Admin-gated Prometheus `/api/metrics` exports bounded per-camera availability, FPS, frame age, queue, retry/failure/overrun counters and recent inference timings without event or identity data; basic health/retry/restart smoke exists. External scraper/alert integration and sustained recovery runs remain. |
+| OP-08 | Partial | Operational monitoring and sustained reliability/recovery tests. | Prometheus `/api/metrics` exports bounded per-camera availability, FPS, frame age, queue, retry/failure/overrun counters and recent inference timings without event or identity data; authenticated mode supports administrator sessions or a read-only, route-limited scraper bearer token. Basic health/retry/restart smoke exists. External scraper/alert integration and sustained recovery runs remain. |
 
 ## Practical limitations
 
