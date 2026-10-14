@@ -21,6 +21,7 @@ from cameras import CAMERAS_BY_ID, camera_playback_source, camera_source
 from events import derive_alerts, evidence_report, flows, get_events, get_trajectory, stats, store
 from nlquery import answer as nl_answer
 from processing import processor, inference_branches, validate_branch_configuration
+from metrics import render_metrics
 from schemas import QueryRequest, ReviewRequest, RuleConfig, CameraConfigurationUpdate, SourceSelectionRequest
 from stream import mjpeg_generator, snapshot_frame
 from plate_format import normalize_plate
@@ -65,6 +66,7 @@ SENSITIVE_PREFIXES=('/api/cameras/','/api/source-preparations/','/api/journey-li
 
 def required_role(method, path):
     if path == '/api/health': return None
+    if path == '/api/metrics': return 'admin'
     if path in {'/api/auth/status','/api/auth/login'}: return None
     if path == '/api/auth/me' or path == '/api/auth/logout': return 'authenticated'
     if path == '/api/auth/mfa' or path.startswith('/api/auth/mfa/'): return 'authenticated'
@@ -349,6 +351,14 @@ def health():
     return {'processing_enabled':os.environ.get('AI26_PROCESSING_ENABLED','1')=='1','cameras':processor.health(),
             'inference_branches':inference_branches(),
             'database_schema':store.schema_version,'scope':'single API process; run uvicorn with one worker'}
+
+@app.get('/api/metrics')
+def prometheus_metrics():
+    cameras=processor.health()
+    for camera in cameras:
+        camera['source_available']=camera_source(camera['camera_id']).is_file()
+    body=render_metrics(cameras,os.environ.get('AI26_PROCESSING_ENABLED','1')=='1',inference_branches())
+    return Response(body,media_type='text/plain; version=0.0.4; charset=utf-8')
 
 @app.get('/api/stream/{camera_id}')
 def stream(camera_id:str,start:float|None=None,anchor:float|None=None):

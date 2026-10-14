@@ -230,6 +230,26 @@ class Reliability(unittest.TestCase):
             self.assertEqual({row['subject'] for row in reads},{report['report_id']})
             self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
 
+    def test_prometheus_metrics_export_bounded_processor_health_without_event_data(self):
+        camera={'camera_id':'CAM-01','status':'error"\ncheck','frames':7,'attempts':4,'failed_attempts':2,
+                'budget_overruns':1,'missing_source_checks':3,'retry_backoff_checks':4,'source_available':False,
+                'processed_fps':.5,'frame_age_seconds':None,'queue_depth':0,'sampling_budget_fps':2,
+                'timing':{'total':{'p50_ms':10,'p95_ms':30,'max_ms':40},
+                          'phases':{'decode':{'p50_ms':2,'p95_ms':5,'max_ms':7}}}}
+        with patch.object(main.processor,'health',return_value=[camera]), \
+             patch.object(main,'camera_source',return_value=Path('/missing/CAM-01.mp4')):
+            response=self.client.get('/api/metrics')
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(response.headers['content-type'].startswith('text/plain; version=0.0.4'))
+        body=response.text
+        self.assertIn('ai26_camera_frames_total{camera_id="CAM-01"} 7',body)
+        self.assertIn('ai26_camera_failed_attempts_total{camera_id="CAM-01"} 2',body)
+        self.assertIn('ai26_camera_status{camera_id="CAM-01",status="error\\\"\\ncheck"} 1',body)
+        self.assertIn('ai26_camera_sample_duration_ms{camera_id="CAM-01",quantile="0.95"} 30',body)
+        self.assertIn('ai26_camera_phase_duration_ms{camera_id="CAM-01",phase="decode",quantile="0.5"} 2',body)
+        self.assertNotIn('frame_age_seconds{camera_id="CAM-01"}',body)
+        self.assertNotIn('ABC1234',body)
+
     def test_configured_but_invalid_signing_key_fails_report_creation(self):
         events.add_events([self.plate()])
         with patch.dict(os.environ,{'AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE':str(Path(self.folder.name)/'missing.pem')}):

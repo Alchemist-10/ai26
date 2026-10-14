@@ -55,6 +55,14 @@ backups, tested full-data restoration, external audit checkpoints and case-level
 authorization remain deployment work. The optional TLS overlay below provides
 transport encryption only.
 
+The backend exposes Prometheus text metrics at `/api/metrics`. It reports bounded
+per-camera health and recent processor timing summaries without event, plate, or
+person data. When the authentication overlay is enabled, only administrator
+sessions can scrape this endpoint; otherwise it follows the local stack's
+unauthenticated API policy. Configure your scraper to reach the backend on the
+private Compose network or through a trusted proxy. Scraper installation and
+alert rules are deployment-specific and are not included in this stack.
+
 ## Optional TLS reverse proxy
 
 For an HTTPS endpoint with an existing certificate, set `AI26_TLS_CERT_FILE` and

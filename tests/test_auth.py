@@ -126,6 +126,14 @@ class Authentication(unittest.TestCase):
         self.assertTrue(stored["reviewer_authenticated"])
         self.assertEqual(self.repo.verify_audit_chain()["status"], "valid")
 
+    def test_prometheus_metrics_requires_admin_when_auth_is_enabled(self):
+        self.create("analyst_one", "analyst")
+        self.assertEqual(self.login("analyst_one").status_code, 200)
+        self.assertEqual(self.client.get("/api/metrics").status_code, 403)
+        self.create()
+        self.assertEqual(self.login().status_code, 200)
+        self.assertEqual(self.client.get("/api/metrics").status_code, 200)
+
     def test_viewer_cannot_query_or_mutate_but_health_stays_public(self):
         self.create("viewer_one", "viewer")
         self.assertEqual(self.login("viewer_one").status_code, 200)
