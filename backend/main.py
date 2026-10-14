@@ -38,7 +38,7 @@ from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
-from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 
 
@@ -69,7 +69,7 @@ SENSITIVE_PREFIXES=('/api/cameras/','/api/source-preparations/','/api/journey-li
 def required_role(method, path):
     if path == '/api/health': return None
     if path == '/api/metrics': return 'admin'
-    if path in {'/api/auth/status','/api/auth/login'}: return None
+    if path in {'/api/auth/status','/api/auth/login','/api/auth/password-recovery'}: return None
     if path == '/api/auth/me/password': return 'authenticated'
     if path == '/api/auth/me' or path == '/api/auth/logout': return 'authenticated'
     if path == '/api/auth/mfa' or path.startswith('/api/auth/mfa/'): return 'authenticated'
@@ -116,7 +116,7 @@ async def authentication_and_case_scope(request, call_next):
     if not request.url.path.startswith('/api/') or request.method == 'OPTIONS' or not auth_enabled():
         return await call_next(request)
     path=request.url.path
-    if path in {'/api/health','/api/auth/status','/api/auth/login','/api/privacy/status'}:
+    if path in {'/api/health','/api/auth/status','/api/auth/login','/api/auth/password-recovery','/api/privacy/status'}:
         return await call_next(request)
     if valid_metrics_bearer(request):
         return await call_next(request)
@@ -188,6 +188,19 @@ def auth_login(body:AuthLoginRequest,request:Request,response:Response):
                         httponly=True,secure=cookie_secure(),samesite='strict',path='/api')
     return {'user':result['user'],'case_ids':AuthService(store).case_ids(result['user']['username']),
             'csrf_token':result['csrf_token'],'expires_at':result['expires_at']}
+
+
+@app.post('/api/auth/password-recovery')
+def auth_password_recovery(body:AuthPasswordRecoveryRequest, request:Request):
+    if not auth_enabled(): raise HTTPException(404,'Authentication is disabled')
+    address=request.headers.get('x-real-ip') or (request.client.host if request.client else 'unknown')
+    try:
+        result=AuthService(store).recover_password(body.username,body.new_password,body.code,address)
+    except RuntimeError as exc:
+        raise HTTPException(503,'Password recovery is unavailable; contact an administrator') from exc
+    if result=='limited': raise HTTPException(429,'Too many recovery attempts; try again in 15 minutes')
+    # Identical response for unknown, disabled, non-MFA and successful accounts.
+    return {'recovery_requested':True}
 
 
 @app.get('/api/auth/me')

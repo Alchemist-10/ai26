@@ -125,9 +125,10 @@ the previous record hash and a SHA-256 hash over the canonical row fields. Exist
 audit rows receive a local baseline chain during migration. `GET /api/audit/integrity`
 checks links and row hashes and returns the record count and current head hash; a
 broken row returns its ID and expected versus recorded previous hash. This is an
-internal consistency check, not a digital signature or independent proof: someone
-able to rewrite the database can rebuild the chain or truncate its tail. There is
-no external checkpoint or signed audit export. With optional authentication,
+internal consistency check: someone able to rewrite the database can rebuild the
+chain or truncate its tail. The operator-run `audit_checkpoint.py` tool can sign a
+verified chain head; the checkpoint must be retained off-host to detect rollback
+past that point. With optional authentication,
 sensitive-access audit entries carry the session actor, case and purpose, and
 alert-review history uses the signed-in account. Local no-auth reviewer names are
 still operator claims.

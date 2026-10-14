@@ -178,3 +178,9 @@ class AuthPasswordChangeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     current_password: StrictStr = Field(min_length=1, max_length=256)
     new_password: StrictStr = Field(min_length=14, max_length=256)
+
+class AuthPasswordRecoveryRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    username: StrictStr = Field(min_length=3, max_length=32)
+    new_password: StrictStr = Field(min_length=14, max_length=256)
+    code: StrictStr = Field(min_length=1, max_length=32)

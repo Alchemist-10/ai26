@@ -245,6 +245,102 @@ class AuthService:
             self.repository._append_audit(now, "auth_password_changed", username, {"sessions_revoked": True})
         return True
 
+    def recover_password(self, username, new_password, code, client_address, now=None):
+        """Reset a password only after an enrolled MFA factor proves account control.
+
+        The public result intentionally does not reveal whether the account exists,
+        is disabled, or has MFA. Recovery codes are consumed transactionally.
+        """
+        now = time.time() if now is None else now
+        ip_hash = hashlib.sha256((client_address or "unknown").encode()).hexdigest()
+        try:
+            normalized = _username(username)
+            new_password = _password(new_password)
+        except AuthenticationError:
+            # Keep malformed identities on the same throttled, non-enumerating path.
+            normalized = ""
+            new_password = b"invalid recovery password"
+        with self.repository.lock:
+            recent = self.repository.db.execute(
+                "SELECT count(*) FROM auth_login_failures WHERE client_hash=? AND failed_at>?",
+                (ip_hash, now - FAILURE_WINDOW_SECONDS),
+            ).fetchone()[0]
+        if recent >= MAX_LOGIN_FAILURES:
+            return "limited"
+
+        # Do comparable password-hash work before checking whether the account exists.
+        salt = secrets.token_bytes(16)
+        password_hash = hashlib.pbkdf2_hmac("sha256", new_password, salt, PASSWORD_ITERATIONS, dklen=32)
+        recovery_digest = mfa_tools.recovery_hash(code)
+        with self.repository.lock:
+            user = self.repository.db.execute("SELECT disabled FROM users WHERE username=?", (normalized,)).fetchone()
+            factor = self.repository.db.execute(
+                "SELECT secret_ciphertext,enabled,recovery_hashes FROM user_mfa WHERE username=?", (normalized,)
+            ).fetchone()
+        valid_totp = False
+        recovery_index = None
+        if user and not user["disabled"] and factor and factor["enabled"]:
+            try:
+                secret = mfa_tools.decrypt_secret(factor["secret_ciphertext"])
+                valid_totp = mfa_tools.verify_totp(secret, code, now)
+            except RuntimeError:
+                valid_totp = False
+            if not valid_totp:
+                try:
+                    hashes = json.loads(factor["recovery_hashes"])
+                except (TypeError, ValueError):
+                    hashes = []
+                recovery_index = next((index for index, saved in enumerate(hashes)
+                                       if isinstance(saved, str) and hmac.compare_digest(recovery_digest, saved)), None)
+        if not (valid_totp or recovery_index is not None):
+            self._failed_login(ip_hash, now)
+            return "invalid"
+
+        with self.repository.lock, self.repository.db:
+            current = self.repository.db.execute("SELECT disabled FROM users WHERE username=?", (normalized,)).fetchone()
+            current_factor = self.repository.db.execute(
+                "SELECT secret_ciphertext,enabled,recovery_hashes FROM user_mfa WHERE username=?", (normalized,)
+            ).fetchone()
+            if not current or current["disabled"] or not current_factor or not current_factor["enabled"]:
+                self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
+                self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
+                return "invalid"
+            if valid_totp:
+                try:
+                    still_valid = mfa_tools.verify_totp(mfa_tools.decrypt_secret(current_factor["secret_ciphertext"]), code, now)
+                except RuntimeError:
+                    still_valid = False
+                if not still_valid:
+                    self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
+                    self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
+                    return "invalid"
+                recovery_method = "totp"
+            else:
+                try:
+                    hashes = json.loads(current_factor["recovery_hashes"])
+                except (TypeError, ValueError):
+                    hashes = []
+                match = next((index for index, saved in enumerate(hashes)
+                              if isinstance(saved, str) and hmac.compare_digest(recovery_digest, saved)), None)
+                if match is None:
+                    self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
+                    self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
+                    return "invalid"
+                hashes.pop(match)
+                self.repository.db.execute("UPDATE user_mfa SET recovery_hashes=?,updated_at=? WHERE username=?",
+                                           (json.dumps(hashes, separators=(",", ":")), now, normalized))
+                recovery_method = "recovery_code"
+                self.repository._append_audit(now, "auth_mfa_recovery_used", normalized, {"purpose": "password_recovery"})
+            self.repository.db.execute(
+                "UPDATE users SET password_salt=?,password_hash=?,iterations=?,updated_at=? WHERE username=?",
+                (salt, password_hash, PASSWORD_ITERATIONS, now, normalized),
+            )
+            self.repository.db.execute("DELETE FROM auth_sessions WHERE username=?", (normalized,))
+            self.repository.db.execute("DELETE FROM auth_login_failures WHERE client_hash=?", (ip_hash,))
+            self.repository._append_audit(now, "auth_password_recovered", normalized,
+                                          {"factor": recovery_method, "sessions_revoked": True})
+        return "recovered"
+
     def login(self, username, password, client_address, now=None, mfa_code=None):
         now = time.time() if now is None else now
         normalized = _username(username)

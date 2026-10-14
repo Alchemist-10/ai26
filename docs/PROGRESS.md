@@ -18,11 +18,8 @@ revisioned camera metadata, settings editor with draft/conflict recovery and que
 
 ## Persistence update
 
-Schema 10 stores user/session records, per-case grants, encrypted TOTP enrollment/recovery hashes, audit context, camera metadata revisions, directed camera-pair travel constraints, immutable queried journey
-link decisions, and locally hash-chained audit records. The read-only verifier can
-detect changed rows but has no external checkpoint or signature. New observations preserve configuration snapshots; legacy metadata
-fallback is explicit. Source routes remain fixed, calibration remains unverified,
-and stored decisions are historical conclusions rather than verified identity.
+Schema 11 stores user/session records, per-case grants, encrypted TOTP enrollment/recovery hashes, audit context, camera metadata revisions, directed camera-pair travel constraints, immutable queried journey
+link decisions, locally hash-chained audit records, and 90-day camera traffic buckets. The read-only verifier detects changed rows; an operator-run Ed25519 tool signs and checks audit-head checkpoints that must be retained off-host. New observations preserve configuration snapshots; legacy metadata fallback is explicit. Source routes remain fixed, calibration remains unverified, and stored decisions are historical conclusions rather than verified identity.
 See `docs/PERSISTENCE.md` and `AI26_PERSISTENCE_VALIDATION.json` in the delivery.
 
 ## Authentication and access-scope update
@@ -37,9 +34,10 @@ GET polls for the same route are coalesced once per minute to keep previews ligh
 Media URLs carry that context as query parameters because native browser media requests
 cannot attach custom headers. Auth is disabled in the default local stack. Case
 grants gate non-admin access; the service has no shared case registry. MFA is
-available through a separate protected-key overlay. Self-service account recovery
-and external identity remain pending.
-The isolated full backend suite passes 292 tests; frontend TypeScript build and lint
+available through a separate protected-key overlay. MFA-enrolled users can recover
+passwords using their authenticator or an unused recovery code; no-MFA accounts still
+depend on an administrator, and external identity remains pending.
+The isolated full backend suite passes 294 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 
@@ -365,7 +363,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | ID | Status | Task | Evidence / remaining work |
 | --- | --- | --- | --- |
 | OP-01 | Partial | RTSP/ONVIF camera integration and resilient capture queues. | Optional protected JSON mapping configures RTSP/RTSPS for existing cameras. Dedicated readers use bounded open/read timeouts, one-frame buffers, freshness checks and reconnect backoff; live frames use the normal inference/event/preview pipeline and capture-arrival timestamps. Fake-capture tests cover private config and reader behavior. ONVIF discovery, actual camera/NVR interoperability and clock synchronization are not implemented or verified. |
-| OP-02 | Partial | Authentication, role-based access and purpose/case-scoped sensitive operations. | Optional auth includes sessions, roles, CSRF, case/purpose audit, per-account grants, MFA with encrypted TOTP secrets and one-use recovery codes, administrator MFA/password reset, and current-password-confirmed self-service password change that revokes all sessions. It remains opt-in; self-service account recovery, help-desk recovery and external identity remain pending. |
+| OP-02 | Partial | Authentication, role-based access and purpose/case-scoped sensitive operations. | Optional auth includes sessions, roles, CSRF, case/purpose audit, per-account grants, MFA with encrypted TOTP secrets and one-use recovery codes, administrator MFA/password reset, MFA-backed self-service password recovery, and current-password-confirmed password change that revokes sessions. It remains opt-in; recovery for accounts without MFA, help-desk recovery and external identity remain pending. |
 | OP-03 | Partial | Occupant face blurring and keyed plate pseudonyms in analytics views if those privacy features remain in scope. | Opt-in installation-keyed plate pseudonyms, detected-person/plate pixelation in sampled views, and API-blocked raw playback are implemented. Evidence remains raw; model misses and unsampled frames are possible, and no labeled field validation has measured coverage. This is not complete face blurring or guaranteed anonymization. |
 | OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Local SQLite audit chain detects row/link edits; optional TLS 1.2/1.3, authentication/MFA and Ed25519 report-signing overlays use host-managed secrets/keys. `backend/audit_checkpoint.py` can sign a verified chain head and verify it later against the database; operators must retain checkpoints and trusted keys off-host. Automated external anchoring, rotation/revocation workflows, retention operations and incident response remain pending. |
 | OP-05 | Done | Container/Compose setup, database backups and production frontend-to-API routing. | Compose packages a non-root single-worker API and production-built Nginx same-origin frontend behind loopback by default; persistent app data, online integrity-checked SQLite backups with rotation, and explicit stopped-service restore are implemented. Backup snapshots cover SQLite only; media/artifact/model backup and public-network hardening remain. |

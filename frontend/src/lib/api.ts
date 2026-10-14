@@ -307,6 +307,13 @@ export async function login(username: string, password: string, mfaCode?: string
   return { enabled: true, user: session.user, caseIds: session.case_ids, csrfToken }
 }
 
+export async function recoverPassword(username: string, newPassword: string, code: string): Promise<void> {
+  await requestJson<{ recovery_requested: boolean }>("/api/auth/password-recovery", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, new_password: newPassword, code }),
+  })
+}
+
 export function getMfaStatus(signal?: AbortSignal): Promise<MfaStatus> {
   return requestJson<MfaStatus>("/api/auth/mfa", {signal})
 }

@@ -162,6 +162,82 @@ class Authentication(unittest.TestCase):
         self.assertEqual(audit["action"],"auth_password_changed")
         self.assertEqual(json.loads(audit["data"]),{"sessions_revoked":True})
 
+    def _enroll_test_mfa(self, username, secret, recovery_codes):
+        hashes = json.dumps([mfa_tools.recovery_hash(code) for code in recovery_codes], separators=(",", ":"))
+        with self.repo.lock, self.repo.db:
+            self.repo.db.execute("INSERT INTO user_mfa(username,secret_ciphertext,enabled,recovery_hashes,updated_at,expires_at) VALUES(?,?,?,?,?,?)",
+                                 (username,mfa_tools.encrypt_secret(secret),1,hashes,time.time(),0))
+
+    def test_mfa_recovery_resets_password_consumes_code_and_revokes_sessions(self):
+        key_path = Path(self.folder.name) / "mfa.key"
+        key_path.write_bytes(b"m" * 32)
+        key_path.chmod(0o600)
+        codes = ["ABCDEF0123456789", "1234567890ABCDEF"]
+        secret = mfa_tools.create_secret()
+        self.create()
+        with patch.dict(os.environ, {"AI26_AUTH_MFA_KEY_FILE": str(key_path)}):
+            self._enroll_test_mfa("admin", secret, codes)
+            first = TestClient(main.app, base_url="https://testserver")
+            second = TestClient(main.app, base_url="https://testserver")
+            self.addCleanup(first.close)
+            self.addCleanup(second.close)
+            self.assertEqual(first.post("/api/auth/login", json={
+                "username":"admin", "password":"Correct-Horse-Battery-Staple-26",
+                "mfa_code":mfa_tools.code_at(secret),
+            }).status_code, 200)
+            self.assertEqual(second.post("/api/auth/login", json={
+                "username":"admin", "password":"Correct-Horse-Battery-Staple-26",
+                "mfa_code":mfa_tools.code_at(secret),
+            }).status_code, 200)
+
+            payload={"username":"admin", "new_password":"Recovered-Correct-Horse-2026", "code":codes[0]}
+            response=first.post("/api/auth/password-recovery", json=payload)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"recovery_requested":True})
+            self.assertEqual(first.get("/api/auth/me").status_code, 401)
+            self.assertEqual(second.get("/api/auth/me").status_code, 401)
+            self.assertEqual(self.client.post("/api/auth/login", json={
+                "username":"admin", "password":payload["new_password"], "mfa_code":mfa_tools.code_at(secret),
+            }).status_code, 200)
+            # The same recovery code cannot authorize another password change.
+            again={**payload, "new_password":"Another-Recovered-Horse-2026"}
+            self.assertEqual(first.post("/api/auth/password-recovery", json=again).json(), {"recovery_requested":True})
+            self.assertEqual(self.client.post("/api/auth/login", json={
+                "username":"admin", "password":payload["new_password"], "mfa_code":mfa_tools.code_at(secret),
+            }).status_code, 200)
+            self.assertEqual(self.repo.verify_audit_chain()["status"], "valid")
+            self.assertEqual(self.repo.db.execute("SELECT count(*) FROM audit WHERE action='auth_password_recovered'").fetchone()[0], 1)
+            # An authenticator TOTP can also reset the password and revokes the new session.
+            totp_recovery={"username":"admin", "new_password":"TOTP-Recovered-Horse-2026",
+                           "code":mfa_tools.code_at(secret, time.time()+30)}
+            self.assertEqual(self.client.post("/api/auth/password-recovery", json=totp_recovery).json(), {"recovery_requested":True})
+            self.assertEqual(self.client.get("/api/auth/me").status_code, 401)
+            self.assertEqual(self.client.post("/api/auth/login", json={
+                "username":"admin", "password":totp_recovery["new_password"], "mfa_code":mfa_tools.code_at(secret),
+            }).status_code, 200)
+            self.assertEqual(self.repo.db.execute("SELECT count(*) FROM audit WHERE action='auth_password_recovered'").fetchone()[0], 2)
+
+    def test_password_recovery_does_not_disclose_account_or_mfa_state(self):
+        key_path = Path(self.folder.name) / "mfa.key"
+        key_path.write_bytes(b"r" * 32)
+        key_path.chmod(0o600)
+        self.create()
+        self.auth.create_user("plain_user", "Plain-Correct-Horse-2026", "viewer")
+        with patch.dict(os.environ, {"AI26_AUTH_MFA_KEY_FILE": str(key_path)}):
+            payload={"new_password":"Another-Recovered-Horse-2026", "code":"not-a-code"}
+            missing=self.client.post("/api/auth/password-recovery", json={**payload,"username":"missing_user"})
+            no_mfa=self.client.post("/api/auth/password-recovery", json={**payload,"username":"plain_user"})
+            self.assertEqual(missing.status_code, 200)
+            self.assertEqual(no_mfa.status_code, 200)
+            self.assertEqual(missing.json(), no_mfa.json())
+            self.assertEqual(self.client.post("/api/auth/login", json={
+                "username":"plain_user","password":"Plain-Correct-Horse-2026"}).status_code, 200)
+            for _ in range(MAX_LOGIN_FAILURES):
+                self.assertEqual(self.client.post("/api/auth/password-recovery", json={
+                    **payload,"username":"missing_user"}).status_code, 200)
+            limited=self.client.post("/api/auth/password-recovery", json={**payload,"username":"another_missing"})
+            self.assertEqual(limited.status_code, 429)
+
     def test_prometheus_metrics_requires_admin_when_auth_is_enabled(self):
         self.create("analyst_one", "analyst")
         self.assertEqual(self.login("analyst_one").status_code, 200)

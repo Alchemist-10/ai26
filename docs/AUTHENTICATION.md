@@ -69,11 +69,19 @@ not a separate role permission. There is no shared case registry, transfer or
 delegation workflow, or built-in mechanism to establish that an entered case ID
 corresponds to an external case-management system. Signed-in users can change
 their password after confirming the current one; the change revokes all sessions
-and requires a fresh sign-in. Self-service account recovery, help-desk recovery
-and external identity providers are not implemented.
+and requires a fresh sign-in. MFA-enrolled users can recover a forgotten password
+from the sign-in screen using a current authenticator code or an unused MFA
+recovery code. Recovery revokes all existing sessions, consumes recovery codes
+once, and is throttled by the same per-address failure window as sign-in. The
+public endpoint returns the same response for unknown, disabled, non-MFA and
+success cases to avoid disclosing account state. Accounts without MFA still need
+an administrator to reset their password; help-desk recovery and external
+identity providers are not implemented.
 
 The initial UI supports sign-in, session restoration, case/purpose selection,
 and sign-out. Signed-in users can change their password in Account security.
+The sign-in screen also offers MFA-backed password recovery when the protected
+MFA key is configured.
 Administrators can manage users, case grants, roles, account status, and password
 resets through the protected account-management screen.
 
@@ -101,5 +109,7 @@ Login requires a TOTP or unused recovery code for enrolled accounts. Users can
 disable MFA only after re-entering their password and a current TOTP code.
 Administrators can reset a user's MFA from User administration; this disables
 the factor and revokes that user's sessions. The reset is audited. There is no
-self-service email/phone recovery, and the administrator reset remains an
-operational recovery dependency.
+self-service email/phone recovery. Keep the MFA key available and protected:
+without it, TOTP cannot be checked and recovery-code hashes cannot be verified.
+Users who lose both their authenticator and every recovery code need an
+administrator to reset MFA and their password.
