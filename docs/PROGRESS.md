@@ -25,7 +25,7 @@ See `docs/PERSISTENCE.md` and `AI26_PERSISTENCE_VALIDATION.json` in the delivery
 ## Authentication and access-scope update
 
 The optional auth overlay now bootstraps one administrator, hashes passwords and
-session tokens, rate-limits failed login, supports session/CSRF protection, and
+session tokens, atomically rate-limits authentication attempts, supports session/CSRF protection, and
 enforces administrator/operator/analyst/viewer API roles and per-account case grants.
 The UI provides sign-in, case/purpose selection, sign-out, and administrator account
 management with case assignment. Sensitive
@@ -37,7 +37,7 @@ grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. MFA-enrolled users can recover
 passwords using their authenticator or an unused recovery code; no-MFA accounts still
 depend on an administrator, and external identity remains pending.
-The isolated full backend suite passes 296 tests; frontend TypeScript build and lint
+The isolated full backend suite passes 297 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 

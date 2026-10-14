@@ -6,6 +6,7 @@ import sys
 import tempfile
 import time
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import patch
 
@@ -13,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from fastapi.testclient import TestClient
 import main
 import events
-from auth import AuthService, AuthenticationError, CSRF_HEADER, MAX_LOGIN_FAILURES, SESSION_COOKIE
+from auth import AuthService, AuthenticationError, CSRF_HEADER, MAX_AUTH_ATTEMPTS, SESSION_COOKIE
+import auth as auth_module
 import mfa as mfa_tools
 from repository import Repository
 
@@ -232,7 +234,7 @@ class Authentication(unittest.TestCase):
             self.assertEqual(missing.json(), no_mfa.json())
             self.assertEqual(self.client.post("/api/auth/login", json={
                 "username":"plain_user","password":"Plain-Correct-Horse-2026"}).status_code, 200)
-            for _ in range(MAX_LOGIN_FAILURES):
+            for _ in range(MAX_AUTH_ATTEMPTS):
                 self.assertEqual(self.client.post("/api/auth/password-recovery", json={
                     **payload,"username":"missing_user"}).status_code, 200)
             limited=self.client.post("/api/auth/password-recovery", json={**payload,"username":"another_missing"})
@@ -301,7 +303,7 @@ class Authentication(unittest.TestCase):
         client_hash = hashlib.sha256(b"testclient").hexdigest()
         now = time.time()
         self.repo.db.executemany("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)",
-                                 [(client_hash, now)] * MAX_LOGIN_FAILURES)
+                                 [(client_hash, now)] * MAX_AUTH_ATTEMPTS)
         limited = self.login()
         self.assertEqual(limited.status_code, 429)
         self.repo.db.execute("DELETE FROM auth_login_failures")
@@ -311,6 +313,21 @@ class Authentication(unittest.TestCase):
         token = self.client.cookies.get(SESSION_COOKIE)
         self.assertIsNotNone(self.auth.session(token))
         self.assertIsNone(self.auth.session(token, now + 9 * 60 * 60))
+
+    def test_concurrent_login_attempts_reserve_the_ip_limit_atomically(self):
+        address = "parallel-client"
+        with patch.object(auth_module, "_derive", return_value=b"wrong-password-hash"):
+            with ThreadPoolExecutor(max_workers=12) as pool:
+                results = list(pool.map(
+                    lambda _: self.auth.login("unknown_user", "not-the-password", address), range(12)
+                ))
+        reasons = [reason for _, reason in results]
+        self.assertEqual(reasons.count("invalid"), MAX_AUTH_ATTEMPTS)
+        self.assertEqual(reasons.count("limited"), 12 - MAX_AUTH_ATTEMPTS)
+        address_hash=hashlib.sha256(address.encode()).hexdigest()
+        self.assertEqual(self.repo.db.execute(
+            "SELECT count(*) FROM auth_login_failures WHERE client_hash=?", (address_hash,)
+        ).fetchone()[0], MAX_AUTH_ATTEMPTS)
 
     def test_invalid_username_password_and_user_role_are_rejected(self):
         with self.assertRaises(AuthenticationError):

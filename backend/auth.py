@@ -15,7 +15,7 @@ ROLES = {"admin", "operator", "analyst", "viewer"}
 PASSWORD_ITERATIONS = 600_000
 SESSION_SECONDS = 8 * 60 * 60
 FAILURE_WINDOW_SECONDS = 15 * 60
-MAX_LOGIN_FAILURES = 10
+MAX_AUTH_ATTEMPTS = 10
 SESSION_COOKIE = "ai26_session"
 CSRF_HEADER = "x-ai26-csrf-token"
 CASE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{2,63}\Z")
@@ -245,6 +245,25 @@ class AuthService:
             self.repository._append_audit(now, "auth_password_changed", username, {"sessions_revoked": True})
         return True
 
+    def _reserve_attempt(self, ip_hash, now):
+        """Atomically reserve one address-scoped authentication attempt.
+
+        Reserving before password/MFA work prevents concurrent requests from all
+        observing the same below-limit count and bypassing the throttle.
+        """
+        with self.repository.lock, self.repository.db:
+            self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?",
+                                       (now - FAILURE_WINDOW_SECONDS,))
+            count = self.repository.db.execute(
+                "SELECT count(*) FROM auth_login_failures WHERE client_hash=? AND failed_at>?",
+                (ip_hash, now - FAILURE_WINDOW_SECONDS),
+            ).fetchone()[0]
+            if count >= MAX_AUTH_ATTEMPTS:
+                return False
+            self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)",
+                                       (ip_hash, now))
+        return True
+
     def recover_password(self, username, new_password, code, client_address, now=None):
         """Reset a password only after an enrolled MFA factor proves account control.
 
@@ -253,6 +272,8 @@ class AuthService:
         """
         now = time.time() if now is None else now
         ip_hash = hashlib.sha256((client_address or "unknown").encode()).hexdigest()
+        if not self._reserve_attempt(ip_hash, now):
+            return "limited"
         try:
             normalized = _username(username)
             new_password = _password(new_password)
@@ -260,14 +281,6 @@ class AuthService:
             # Keep malformed identities on the same throttled, non-enumerating path.
             normalized = ""
             new_password = b"invalid recovery password"
-        with self.repository.lock:
-            recent = self.repository.db.execute(
-                "SELECT count(*) FROM auth_login_failures WHERE client_hash=? AND failed_at>?",
-                (ip_hash, now - FAILURE_WINDOW_SECONDS),
-            ).fetchone()[0]
-        if recent >= MAX_LOGIN_FAILURES:
-            return "limited"
-
         # Do comparable password-hash work before checking whether the account exists.
         salt = secrets.token_bytes(16)
         password_hash = hashlib.pbkdf2_hmac("sha256", new_password, salt, PASSWORD_ITERATIONS, dklen=32)
@@ -293,7 +306,6 @@ class AuthService:
                 recovery_index = next((index for index, saved in enumerate(hashes)
                                        if isinstance(saved, str) and hmac.compare_digest(recovery_digest, saved)), None)
         if not (valid_totp or recovery_index is not None):
-            self._failed_login(ip_hash, now)
             return "invalid"
 
         with self.repository.lock, self.repository.db:
@@ -302,8 +314,6 @@ class AuthService:
                 "SELECT secret_ciphertext,enabled,recovery_hashes FROM user_mfa WHERE username=?", (normalized,)
             ).fetchone()
             if not current or current["disabled"] or not current_factor or not current_factor["enabled"]:
-                self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
-                self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
                 return "invalid"
             if valid_totp:
                 try:
@@ -311,8 +321,6 @@ class AuthService:
                 except RuntimeError:
                     still_valid = False
                 if not still_valid:
-                    self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
-                    self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
                     return "invalid"
                 recovery_method = "totp"
             else:
@@ -323,8 +331,6 @@ class AuthService:
                 match = next((index for index, saved in enumerate(hashes)
                               if isinstance(saved, str) and hmac.compare_digest(recovery_digest, saved)), None)
                 if match is None:
-                    self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
-                    self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
                     return "invalid"
                 hashes.pop(match)
                 self.repository.db.execute("UPDATE user_mfa SET recovery_hashes=?,updated_at=? WHERE username=?",
@@ -343,16 +349,12 @@ class AuthService:
 
     def login(self, username, password, client_address, now=None, mfa_code=None):
         now = time.time() if now is None else now
-        normalized = _username(username)
         ip_hash = hashlib.sha256((client_address or "unknown").encode()).hexdigest()
-        with self.repository.lock:
-            recent = self.repository.db.execute(
-                "SELECT count(*) FROM auth_login_failures WHERE client_hash=? AND failed_at>?",
-                (ip_hash, now - FAILURE_WINDOW_SECONDS),
-            ).fetchone()[0]
-            row = self.repository.db.execute("SELECT * FROM users WHERE username=?", (normalized,)).fetchone()
-        if recent >= MAX_LOGIN_FAILURES:
+        if not self._reserve_attempt(ip_hash, now):
             return None, "limited"
+        normalized = _username(username)
+        with self.repository.lock:
+            row = self.repository.db.execute("SELECT * FROM users WHERE username=?", (normalized,)).fetchone()
         salt = row["password_salt"] if row else b"AI26 dummy salt!!"
         iterations = row["iterations"] if row else PASSWORD_ITERATIONS
         expected = row["password_hash"] if row else b"\0" * 32
@@ -363,7 +365,6 @@ class AuthService:
             _derive("invalid password placeholder", salt, iterations)
             password_valid = False
         if not row or not password_valid or row["disabled"]:
-            self._failed_login(ip_hash, now)
             return None, "invalid"
         consumed_recovery = False
         with self.repository.lock:
@@ -373,7 +374,7 @@ class AuthService:
         if mfa_row and mfa_row["enabled"]:
             code = mfa_code
             if not isinstance(code, str) or not code:
-                return self._failed_login(ip_hash, now), "mfa_required"
+                return None, "mfa_required"
             secret = mfa_tools.decrypt_secret(mfa_row["secret_ciphertext"])
             valid = mfa_tools.verify_totp(secret, code, now)
             if not valid:
@@ -386,7 +387,7 @@ class AuthService:
                     recovery_hashes.pop(match)
                     consumed_recovery = True
                 else:
-                    return self._failed_login(ip_hash, now), "mfa_invalid"
+                    return None, "mfa_invalid"
         token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
         token_hash = hashlib.sha256(token.encode()).hexdigest()
         expires = now + SESSION_SECONDS
@@ -401,7 +402,6 @@ class AuthService:
                 match = next((i for i, saved in enumerate(recovery_hashes)
                               if isinstance(saved, str) and hmac.compare_digest(recovery_digest, saved)), None)
                 if match is None:
-                    self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
                     return None, "invalid"
                 recovery_hashes.pop(match)
                 self.repository.db.execute("UPDATE user_mfa SET recovery_hashes=?,updated_at=? WHERE username=?",
@@ -414,11 +414,6 @@ class AuthService:
                 self.repository._append_audit(now, "auth_mfa_recovery_used", normalized, {})
         return {"token": token, "csrf_token": csrf, "expires_at": expires,
                 "user": {"username": current["username"], "role": current["role"]}}, None
-
-    def _failed_login(self, ip_hash, now):
-        with self.repository.lock, self.repository.db:
-            self.repository.db.execute("INSERT INTO auth_login_failures(client_hash,failed_at) VALUES(?,?)", (ip_hash, now))
-            self.repository.db.execute("DELETE FROM auth_login_failures WHERE failed_at<=?", (now - FAILURE_WINDOW_SECONDS,))
 
     def mfa_status(self, username):
         with self.repository.lock:

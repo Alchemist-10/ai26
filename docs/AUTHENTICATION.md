@@ -72,7 +72,7 @@ their password after confirming the current one; the change revokes all sessions
 and requires a fresh sign-in. MFA-enrolled users can recover a forgotten password
 from the sign-in screen using a current authenticator code or an unused MFA
 recovery code. Recovery revokes all existing sessions, consumes recovery codes
-once, and is throttled by the same per-address failure window as sign-in. The
+once, and shares an atomic per-address attempt limit with sign-in. The
 public endpoint returns the same response for unknown, disabled, non-MFA and
 success cases to avoid disclosing account state. Accounts without MFA still need
 an administrator to reset their password; help-desk recovery and external
