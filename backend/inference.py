@@ -152,7 +152,8 @@ def annotate_plate_frame(frame, camera_id: str):
             continue
 
         plate_norm = str(normalized["plate_norm"])
-        consensus = _consensus.read(camera_id, detection["track_id"], plate_norm, detection["association_status"])
+        consensus = _consensus.read(camera_id, detection["track_id"], plate_norm,
+                                    detection["association_status"], confidence=ocr_conf)
         fused_text = plate_norm
 
         tag = f"PLATE #{detection['track_id']} {fused_text} {ocr_conf * 100:.0f}%"

@@ -79,3 +79,7 @@ used in live processing and do not imply an OCR accuracy gain.
 For read-only condition hints and enhancement candidates, see
 [Heuristic quality routing](QUALITY_ROUTER.md); its weather-like flags are
 unverified and do not control the live pipeline.
+
+Per-track character voting can expose a review-only candidate when OCR strings
+conflict. See [tracking limits](../docs/TRACKING.md): the identity remains
+conflicting and the candidate is never used as a supported plate.

@@ -51,6 +51,10 @@ not an unbiased held-out benchmark.
 
 ## Remaining work
 
+Conflicting valid OCR strings can now expose a confidence-weighted character vote
+for reviewer context. It never changes the conflicting status or the null fused
+identity. This suggestion remains unvalidated and is not used by plate queries.
+
 Tracking still uses heuristic motion/boxes and has no learned appearance. Sparse
 sampling, nonlinear motion, similar subjects and longer occlusion can break identity.
 Ambiguity abstention can fragment tracks and inflate camera-local passage counts;

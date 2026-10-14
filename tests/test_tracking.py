@@ -72,6 +72,24 @@ class Association(unittest.TestCase):
         self.assertEqual(result['identity_status'],'tracking_ambiguous')
         self.assertIsNone(result['fused_plate']);self.assertNotIn(('CAM-07',ambiguous['track_id']),fusion.history)
 
+    def test_character_vote_is_review_only_and_does_not_resolve_conflict(self):
+        fusion=PlateConsensus()
+        for plate in ('TN22ZZ0007','TN22ZZ0007','TN22ZZ0001','TN22ZZ0007'):
+            result=fusion.read('CAM-07',9,plate,confidence=.8)
+        self.assertEqual(result['identity_status'],'conflicting')
+        self.assertIsNone(result['fused_plate'])
+        self.assertEqual(result['character_consensus_candidate'],'TN22ZZ0007')
+
+    def test_character_vote_abstains_on_tie_and_length_mismatch(self):
+        tied=PlateConsensus()
+        for plate in ('TN22ZZ0007','TN22ZZ0001','TN22ZZ0002'):
+            result=tied.read('CAM-07',1,plate)
+        self.assertIsNone(result['character_consensus_candidate'])
+        lengths=PlateConsensus()
+        for plate in ('TN22ZZ0007','TN22ZZ0007','TN22ZZ000'):
+            result=lengths.read('CAM-07',1,plate)
+        self.assertIsNone(result['character_consensus_candidate'])
+
     def test_shape_change_and_class_change_do_not_reuse_track(self):
         t=CentroidTracker()
         old=t.update([detection(0,width=10,height=10)],timestamp=0)[0]
