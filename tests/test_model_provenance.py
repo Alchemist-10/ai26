@@ -60,7 +60,7 @@ class ModelFiles(unittest.TestCase):
             provenance.verify_model_files([(path,record)])
 
     def test_pipeline_components_are_exact_and_change_with_source(self):
-        names=('inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py','cameras.py','source_catalog.py')
+        names=('inference.py','model_provenance.py','model_rollout.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py','cameras.py','source_catalog.py')
         for name in names: (self.root/name).write_text(name)
         first=provenance.pipeline_components(self.root)
         self.assertEqual(set(first),set(names))
@@ -128,14 +128,21 @@ class InferenceProvenance(unittest.TestCase):
         module=self.module()
         with tempfile.TemporaryDirectory() as folder:
             checkpoint=Path(folder)/'fixture.pt';checkpoint.write_bytes(b'pinned vehicle checkpoint')
+            digest=hashlib.sha256(checkpoint.read_bytes()).hexdigest()
             model=SimpleNamespace()
             loader=Mock(return_value=model)
-            with patch.object(module,'_checkpoint',checkpoint),patch.object(module,'YOLO',loader):
-                self.assertIsNone(module._yolo)
+            configuration={'stable':{'path':checkpoint,'expected_sha256':digest},'canary':None}
+            record={'sha256':digest,'size':checkpoint.stat().st_size,'filename':checkpoint.name}
+            with patch.object(module,'_vehicle_rollout',configuration), \
+                 patch.object(module,'snapshot_model_file',return_value=(checkpoint,record)), \
+                 patch.object(module,'verify_model_files'),patch.object(module,'YOLO',loader):
+                self.assertEqual(module._vehicle_models,{})
                 self.assertIs(module._vehicle_model(),model)
                 self.assertIs(module._vehicle_model(),model)
             self.assertEqual(loader.call_count,1)
-            self.assertEqual(module._model_metadata['checkpoint_sha256'],hashlib.sha256(checkpoint.read_bytes()).hexdigest())
+            self.assertEqual(module._model_metadata['checkpoint_sha256'],digest)
+            self.assertEqual(module._model_metadata['model_profile'],'stable')
+            self.assertEqual(module._model_metadata['model_id'],f'ultralytics-yolo:stable:{digest}')
 
     def test_lazy_failure_retries_and_success_initializes_once(self):
         module=self.module();model=SimpleNamespace(predict=lambda _:[])
@@ -166,7 +173,22 @@ class InferenceProvenance(unittest.TestCase):
         for read in reads:
             self.assertEqual(read['model_metadata']['model_files'],metadata['model_files'])
             self.assertEqual(set(read['model_metadata']['pipeline_components_sha256']),
-                             {'inference.py','model_provenance.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py','cameras.py','source_catalog.py'})
+                             {'inference.py','model_provenance.py','model_rollout.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py','cameras.py','source_catalog.py'})
+
+    def test_vehicle_digest_mismatch_fails_before_model_load(self):
+        module=self.module()
+        with tempfile.TemporaryDirectory() as folder:
+            checkpoint=Path(folder)/'candidate.pt';checkpoint.write_bytes(b'candidate bytes')
+            digest=hashlib.sha256(checkpoint.read_bytes()).hexdigest()
+            config={'stable':{'path':checkpoint,'expected_sha256':'0'*64},'canary':None}
+            record={'sha256':digest,'size':checkpoint.stat().st_size,'filename':checkpoint.name}
+            loader=Mock()
+            with patch.object(module,'_vehicle_rollout',config), \
+                 patch.object(module,'snapshot_model_file',return_value=(checkpoint,record)), \
+                 patch.object(module,'YOLO',loader), self.assertRaisesRegex(RuntimeError,'does not match'):
+                module._vehicle_model()
+            loader.assert_not_called()
+            self.assertEqual(module._vehicle_models,{})
 
     def test_initialized_frames_do_not_repeat_hash_or_package_metadata_io(self):
         import numpy as np

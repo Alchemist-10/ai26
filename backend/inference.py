@@ -12,6 +12,9 @@ from ultralytics import YOLO
 from plate_format import normalize_plate
 from tracking import CentroidTracker, TRACKER_VERSION
 from model_provenance import load_plate_model, pipeline_components
+from model_provenance import snapshot_model_file, verify_model_files
+from model_rollout import CONFIGURATION as _vehicle_rollout
+from model_rollout import profile_for_camera
 from privacy import enabled as privacy_enabled, pixelate_person_boxes, plate_alias
 
 VEHICLE_CLASS_IDS = {2, 3, 5, 7}  # car, motorcycle, bus, truck (COCO)
@@ -28,8 +31,7 @@ _vehicle_trackers: dict[str, CentroidTracker] = defaultdict(CentroidTracker)
 _plate_trackers: dict[str, CentroidTracker] = defaultdict(lambda: CentroidTracker(max_distance=90))
 _person_boxes: dict[str, list[list[int]]] = {}
 
-_checkpoint = Path(__file__).parent / "yolov8n.pt"
-_yolo = None
+_vehicle_models = {}
 _model_metadata = None
 _pipeline_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 _pipeline_components = pipeline_components(Path(__file__).parent)
@@ -37,18 +39,35 @@ _alpr = None
 _alpr_metadata = None
 _fast_alpr_version = version('fast-alpr')
 
-def _vehicle_model():
-    global _yolo, _model_metadata
-    if _yolo is None:
-        model = YOLO(str(_checkpoint))
-        with _checkpoint.open('rb') as model_file:
-            checkpoint_hash = hashlib.file_digest(model_file, 'sha256').hexdigest()
-        _yolo = model
-        _model_metadata = {"checkpoint_sha256": checkpoint_hash, "torch_version": str(torch.__version__),
-                           "cpu_threads": CPU_THREADS, "tracker_version": TRACKER_VERSION,
-                           "ultralytics_version": version("ultralytics"), "pipeline_sha256": _pipeline_hash,
-                           "pipeline_components_sha256":_pipeline_components}
-    return _yolo
+def _vehicle_model(camera_id="CAM-01"):
+    global _model_metadata
+    profile = profile_for_camera(_vehicle_rollout, camera_id)
+    loaded = _vehicle_models.get(profile)
+    if loaded is None:
+        configured = _vehicle_rollout[profile]
+        data_root = Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data'))
+        snapshot, record = snapshot_model_file(configured['path'], data_root / 'models' / 'vehicle',
+                                               f'vehicle_{profile}_weights')
+        expected = configured['expected_sha256']
+        if expected and record['sha256'] != expected:
+            raise RuntimeError(f"The pinned {profile} vehicle model SHA-256 does not match the configured digest")
+        model = YOLO(str(snapshot))
+        verify_model_files([(snapshot, record)])
+        model_id = f"ultralytics-yolo:{profile}:{record['sha256']}"
+        metadata = {"checkpoint_sha256": record['sha256'], "checkpoint_name": configured['path'].name,
+                    "model_profile": profile, "model_id": model_id,
+                    "weight_provenance_status": "hashed_loaded_file",
+                    "torch_version": str(torch.__version__), "cpu_threads": CPU_THREADS,
+                    "tracker_version": TRACKER_VERSION, "ultralytics_version": version("ultralytics"),
+                    "pipeline_sha256": _pipeline_hash,
+                    "pipeline_components_sha256": _pipeline_components}
+        loaded = {"model": model, "metadata": metadata}
+        _vehicle_models[profile] = loaded
+        configured.update(loaded_sha256=record['sha256'], loaded=True)
+        _model_metadata = metadata
+    else:
+        _model_metadata = loaded['metadata']
+    return loaded['model']
 
 def _plate_model():
     global _alpr, _alpr_metadata
@@ -78,7 +97,7 @@ CRIT = (114, 92, 255)
 
 def annotate_vehicle_frame(frame, camera_id: str):
     """Runs real YOLO vehicle detection, draws boxes, returns (frame, detections)."""
-    yolo = _vehicle_model()
+    yolo = _vehicle_model(camera_id)
     classes = list(VEHICLE_CLASS_IDS | ({0} if privacy_enabled() else set()))
     results = yolo.predict(frame, device=DEVICE, verbose=False, classes=classes, conf=0.4)
     # Ultralytics resets the thread count during its first predictor setup. Restore

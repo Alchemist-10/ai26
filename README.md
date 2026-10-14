@@ -81,6 +81,7 @@ investigations never receive its observations automatically.
 | `docs/SETTINGS.md` | Metadata editor, draft/conflict recovery and browser validation |
 | `docs/ALERT_REVIEW.md` | Alert decisions, durable escalations and workflow limits |
 | `docs/DEPLOYMENT.md` | Local Compose deployment, database backup and restore |
+| `docs/MODEL_ROLLOUT.md` | Pinned detector weights, camera-scoped canary assignment and rollback |
 | `docs/SOURCE_IMPORT.md` | Validated recorded footage import, activation and recovery |
 | `docs/SOURCE_STATUS.md` | Read-only source inspection, pending imports and history |
 | `docs/SOURCE_UPLOADS.md` | Streamed browser preparation, cancellation and retained receipts |

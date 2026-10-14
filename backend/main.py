@@ -22,6 +22,7 @@ from cameras import CAMERAS_BY_ID, camera_playback_source, camera_source
 from events import derive_alerts, evidence_report, flows, get_events, get_trajectory, stats, store, traffic_baselines
 from nlquery import answer as nl_answer
 from processing import processor, inference_branches, validate_branch_configuration
+from model_rollout import CONFIGURATION as vehicle_model_rollout, status as vehicle_model_rollout_status
 from metrics import render_metrics
 from schemas import QueryRequest, ReviewRequest, RuleConfig, CameraConfigurationUpdate, SourceSelectionRequest
 from stream import mjpeg_generator, snapshot_frame
@@ -385,6 +386,7 @@ def audit_integrity():
 def health():
     return {'processing_enabled':os.environ.get('AI26_PROCESSING_ENABLED','1')=='1','cameras':processor.health(),
             'inference_branches':inference_branches(),
+            'vehicle_model_rollout':vehicle_model_rollout_status(vehicle_model_rollout),
             'database_schema':store.schema_version,'scope':'single API process; run uvicorn with one worker'}
 
 @app.get('/api/metrics')

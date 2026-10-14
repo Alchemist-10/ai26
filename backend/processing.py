@@ -30,6 +30,13 @@ def inference_branches():
     return {'vehicle_detection_enabled':VEHICLE_DETECTION_ENABLED,
             'plate_recognition_enabled':PLATE_RECOGNITION_ENABLED}
 
+def model_version_for_detection(detection):
+    metadata=detection.get('model_metadata')
+    model_id=metadata.get('model_id') if isinstance(metadata,dict) else None
+    if isinstance(model_id,str) and model_id:
+        return model_id
+    return 'yolov8n.pt' if detection.get('kind')=='vehicle' else 'fast-alpr:global-plates-mobile-vit-v2'
+
 def validate_branch_configuration():
     from privacy import enabled as privacy_enabled
     if privacy_enabled() and not VEHICLE_DETECTION_ENABLED:
@@ -281,7 +288,7 @@ class Processor:
                 detection.update(session_id=session,frame_id=frame_id,ts=now,source_time_seconds=frame_id/fps,
                                  processed_at=processing_time,source_mode='recorded',time_basis='replay_clock',
                                  source_sha256=self.source_hashes[camera_id],frame_size=[width,height],
-                                 model_version='yolov8n.pt' if detection['kind']=='vehicle' else 'fast-alpr:global-plates-mobile-vit-v2')
+                                 model_version=model_version_for_detection(detection))
             capture_began=time.monotonic()
             artifact_metrics=capture_read_images(raw,detections)
             artifact_ms=round((time.monotonic()-capture_began)*1000,1)
@@ -363,7 +370,7 @@ class Processor:
                                  source_time_seconds=None,processed_at=processing_time,
                                  source_mode='live',time_basis='capture_arrival_clock',
                                  source_sha256=None,frame_size=[width,height],
-                                 model_version='yolov8n.pt' if detection['kind']=='vehicle' else 'fast-alpr:global-plates-mobile-vit-v2')
+                                 model_version=model_version_for_detection(detection))
             capture_began=time.monotonic(); artifact_metrics=capture_read_images(raw,detections)
             artifact_ms=round((time.monotonic()-capture_began)*1000,1)
             mark('persistence'); inserted=add_events(detections)

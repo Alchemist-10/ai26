@@ -190,6 +190,7 @@ class Authentication(unittest.TestCase):
         self.assertEqual(health.status_code, 200)
         self.assertEqual(health.json()["inference_branches"],
                          {"vehicle_detection_enabled": True, "plate_recognition_enabled": True})
+        self.assertEqual(health.json()["vehicle_model_rollout"]["mode"], "stable_only")
         self.assertEqual(self.client.get("/api/cameras").status_code, 200)
         self.assertEqual(self.client.get("/api/events", headers={"X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"system_test"}).status_code, 403)
         self.assertEqual(self.client.get("/api/camera-pair-constraints").status_code, 403)

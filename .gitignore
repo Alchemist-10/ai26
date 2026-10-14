@@ -14,6 +14,7 @@ backend/static/playback/CAM-0[789].mp4
 evaluation/results/
 backups/
 secrets/
+models/
 *.key
 *.pem
 
