@@ -409,6 +409,13 @@ class Repository:
         with self.lock, self.db:
             self.db.execute('INSERT OR REPLACE INTO settings VALUES(?,?)', (key, canonical_json(value)))
 
+    def update_rules(self, value, now):
+        with self.lock, self.db:
+            previous_row=self.db.execute('SELECT data FROM settings WHERE key=?',('rules',)).fetchone()
+            previous=json.loads(previous_row['data']) if previous_row else None
+            self.db.execute('INSERT OR REPLACE INTO settings VALUES(?,?)',('rules',canonical_json(value)))
+            self._append_audit(now,'rules_updated','rules',{'previous':previous,'current':value})
+
     def put_alert(self, alert):
         with self.lock, self.db:
             self.db.execute('INSERT OR IGNORE INTO alerts(id,ts,data) VALUES(?,?,?)',

@@ -11,17 +11,59 @@ function Rules() {
   const [rules,setRules]=useState<RuleConfig|null>(null)
   const [cameras,setCameras]=useState<Camera[]>([])
   const [watch,setWatch]=useState("")
-  const [restricted,setRestricted]=useState<string[]>([])
   const [message,setMessage]=useState("")
   const [busy,setBusy]=useState(false)
   const [camera,setCamera]=useState("CAM-01")
   const [zone,setZone]=useState<[number,number,number,number]>([0,0,1,1])
   const [seconds,setSeconds]=useState(30)
+  const [conditionPlate,setConditionPlate]=useState("")
+  const [minimumSightings,setMinimumSightings]=useState(1)
+  const [historyWindow,setHistoryWindow]=useState(0)
+  const [activeFrom,setActiveFrom]=useState("")
+  const [activeUntil,setActiveUntil]=useState("")
+  const [permitId,setPermitId]=useState("")
+  const [permitPlate,setPermitPlate]=useState("")
+  const [permitCamera,setPermitCamera]=useState("CAM-01")
+  const [permitFrom,setPermitFrom]=useState("")
+  const [permitUntil,setPermitUntil]=useState("")
+  const [permitReason,setPermitReason]=useState("")
   useEffect(()=>{
     let alive=true
-    Promise.all([getRules(),getCameras()]).then(([r,c])=>{if(alive){setRules(r);setCameras(c);setWatch(Object.entries(r.watchlist).map(([plate,reason])=>`${plate} | ${reason}`).join("\n"));setRestricted(r.restricted_cameras)}}).catch(e=>alive&&setMessage(e.message))
+    Promise.all([getRules(),getCameras()]).then(([r,c])=>{
+      if(alive){
+        const complete={...r,watchlist_conditions:r.watchlist_conditions??{},zone_permits:r.zone_permits??[]}
+        setRules(complete);setCameras(c)
+        setWatch(Object.entries(complete.watchlist).map(([plate,reason])=>`${plate} | ${reason}`).join("\n"))
+        if(c.length){setCamera(c[0].id);setPermitCamera(c[0].id)}
+      }
+    }).catch(e=>alive&&setMessage(e.message))
     return()=>{alive=false}
   },[])
+  function chooseConditionPlate(plate:string){
+    setConditionPlate(plate)
+    const condition=rules?.watchlist_conditions[plate]
+    setMinimumSightings(condition?.minimum_sightings??1)
+    setHistoryWindow(condition?.history_window_seconds??0)
+    setActiveFrom(condition?.active_from!=null?toLocalDateTime(condition.active_from):"")
+    setActiveUntil(condition?.active_until!=null?toLocalDateTime(condition.active_until):"")
+  }
+  function addCondition(){
+    if(!rules||!conditionPlate)return
+    const from=activeFrom?localDateTimeToEpoch(activeFrom):undefined
+    const until=activeUntil?localDateTimeToEpoch(activeUntil):undefined
+    setRules({...rules,watchlist_conditions:{...rules.watchlist_conditions,[conditionPlate]:{
+      minimum_sightings:minimumSightings,history_window_seconds:historyWindow,active_from:from,active_until:until,
+    }}})
+    setMessage("Condition staged. Save local rules to apply it.")
+  }
+  function addPermit(){
+    if(!rules||!permitId.trim()||!permitPlate.trim()||!permitFrom||!permitUntil||!permitReason.trim())return
+    const validFrom=localDateTimeToEpoch(permitFrom),validUntil=localDateTimeToEpoch(permitUntil)
+    if(validFrom>=validUntil){setMessage("Permit end time must be after its start time.");return}
+    setRules({...rules,zone_permits:[...rules.zone_permits,{permit_id:permitId.trim(),plate:permitPlate.trim().toUpperCase(),camera_ids:[permitCamera],valid_from:validFrom,valid_until:validUntil,reason:permitReason.trim()}]})
+    setPermitId("");setPermitPlate("");setPermitFrom("");setPermitUntil("");setPermitReason("")
+    setMessage("Permit staged. Save local rules to apply it.")
+  }
   async function save() {
     if(!rules||busy)return
     setBusy(true)
@@ -32,18 +74,32 @@ function Rules() {
         if(!reason.join("|").trim())throw new Error("Each watchlist entry needs a plate and reason, separated by |")
         watchlist[plate.trim().toUpperCase()]=reason.join("|").trim()
       }
-      const result=await saveRules({...rules,watchlist,restricted_cameras:restricted})
-      setRules(result);setMessage("Rules saved. They apply to subsequent evaluations.")
+      const conditions=Object.fromEntries(Object.entries(rules.watchlist_conditions).filter(([plate])=>plate in watchlist))
+      const result=await saveRules({...rules,watchlist,watchlist_conditions:conditions})
+      setRules(result);setMessage("Rules saved and audited. They apply to subsequent evaluations.")
     }catch(e){setMessage(e instanceof Error?e.message:"Rules could not be saved")}
     finally{setBusy(false)}
   }
-  return <details className="rounded border border-zinc-800 p-4"><summary className="cursor-pointer font-semibold">Configure local rules</summary><p className="my-3 text-sm text-zinc-400">Local course configuration. A zone sighting is a review prompt; permit verification and external registry checks are not connected.</p>
+  return <details className="rounded border border-zinc-800 p-4"><summary className="cursor-pointer font-semibold">Configure local rules</summary><p className="my-3 text-sm text-zinc-400">Local course configuration. Permit records are operator-entered hints only; they are not checked against an external authority and do not establish compliance or a violation.</p>
     {message && <p className="my-3 text-sm" role="status">{message}</p>}
-    {rules && <div className="flex flex-col gap-4"><label className="flex flex-col gap-2 text-sm">Watchlist — one plate | reason per line<textarea className={field} rows={3} value={watch} onChange={e=>setWatch(e.target.value)} /></label><fieldset><legend className="mb-2 text-sm">Zone-sighting cameras</legend><div className="flex flex-wrap gap-4">{cameras.map(c=><label key={c.id} className="flex gap-2 text-sm"><input type="checkbox" checked={restricted.includes(c.id)} onChange={e=>setRestricted(e.target.checked?[...restricted,c.id]:restricted.filter(id=>id!==c.id))} />{c.id}</label>)}</div></fieldset>
-    <div><h3 className="font-semibold">Dwell zones</h3><p className="my-2 text-sm text-zinc-400">Configure an image region before enabling dwell rules. Coordinates are fractions of frame width/height from 0 to 1. This detects time inside a zone, not malicious intent.</p>{rules.dwell_zones.map((z,i)=><div className="my-2 flex flex-wrap items-center gap-3 text-sm" key={i}><span>{z.camera_id} · [{z.zone.join(", ")}] · {z.dwell_seconds}s</span><button className={button} onClick={()=>setRules({...rules,dwell_zones:rules.dwell_zones.filter((_,j)=>i!==j)})}>Remove zone</button></div>)}<div className="flex flex-wrap items-end gap-3"><label className="flex flex-col text-sm">Camera<select className={field} value={camera} onChange={e=>setCamera(e.target.value)}>{cameras.map(c=><option key={c.id}>{c.id}</option>)}</select></label>{["Left","Top","Right","Bottom"].map((name,i)=><label className="flex w-24 flex-col text-sm" key={name}>{name}<input className={field} type="number" min="0" max="1" step=".05" value={zone[i]} onChange={e=>setZone(zone.map((v,j)=>i===j?Number(e.target.value):v) as typeof zone)} /></label>)}<label className="flex w-28 flex-col text-sm">Dwell seconds<input className={field} type="number" min="10" max="3600" value={seconds} onChange={e=>setSeconds(Number(e.target.value))} /></label><button className={button} onClick={()=>setRules({...rules,dwell_zones:[...rules.dwell_zones,{camera_id:camera,zone:[...zone],dwell_seconds:seconds,max_gap_seconds:5}]})}>Add zone</button></div></div>
-    <button className={`${button} self-start`} disabled={busy} onClick={save}>{busy?"Saving…":"Save local rules"}</button></div>}
+    {rules && <div className="flex flex-col gap-5">
+      <label className="flex flex-col gap-2 text-sm">Watchlist — one plate | reason per line<textarea className={field} rows={3} value={watch} onChange={e=>setWatch(e.target.value)} /></label>
+      <fieldset className="space-y-3"><legend className="font-medium">Watchlist history and effective dates</legend><p className="text-sm text-zinc-400">A match can require a minimum number of supported sightings (including the current one) inside a lookback window and can be active only during a time range. With no condition, one current sighting is enough.</p>
+        {Object.entries(rules.watchlist_conditions).map(([plate,condition])=><div key={plate} className="flex flex-wrap items-center gap-3 rounded border border-zinc-800 p-3 text-sm"><span className="font-mono">{plate}</span><span>{condition.minimum_sightings} sightings / {condition.history_window_seconds}s</span><span>{condition.active_from!=null?new Date(condition.active_from*1000).toLocaleString():"no start"} → {condition.active_until!=null?new Date(condition.active_until*1000).toLocaleString():"no expiry"}</span><button type="button" className={button} onClick={()=>{const next={...rules.watchlist_conditions};delete next[plate];setRules({...rules,watchlist_conditions:next})}}>Remove condition</button></div>)}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><label className="text-sm">Watchlist plate<select className={`${field} mt-1 w-full`} value={conditionPlate} onChange={e=>chooseConditionPlate(e.target.value)}><option value="">Select a saved plate</option>{Object.keys(rules.watchlist).map(plate=><option key={plate}>{plate}</option>)}</select></label><label className="text-sm">Minimum sightings<input className={`${field} mt-1 w-full`} type="number" min="1" max="1000" value={minimumSightings} onChange={e=>setMinimumSightings(Number(e.target.value))} /></label><label className="text-sm">Lookback seconds<input className={`${field} mt-1 w-full`} type="number" min="0" max={7*86400} value={historyWindow} onChange={e=>setHistoryWindow(Number(e.target.value))} /></label><label className="text-sm">Active from (local time)<input className={`${field} mt-1 w-full`} type="datetime-local" value={activeFrom} onChange={e=>setActiveFrom(e.target.value)} /></label><label className="text-sm">Active until (local time)<input className={`${field} mt-1 w-full`} type="datetime-local" value={activeUntil} onChange={e=>setActiveUntil(e.target.value)} /></label><button type="button" className={`${button} self-end`} disabled={!conditionPlate} onClick={addCondition}>Add / update condition</button></div>
+      </fieldset>
+      <fieldset><legend className="mb-2 font-medium">Zone-sighting cameras</legend><div className="flex flex-wrap gap-4">{cameras.map(c=><label key={c.id} className="flex gap-2 text-sm"><input type="checkbox" checked={rules.restricted_cameras.includes(c.id)} onChange={e=>setRules({...rules,restricted_cameras:e.target.checked?[...rules.restricted_cameras,c.id]:rules.restricted_cameras.filter(id=>id!==c.id)})} />{c.id}</label>)}</div></fieldset>
+      <fieldset className="space-y-3"><legend className="font-medium">Local zone permits</legend><p className="text-sm text-zinc-400">A matching record changes a restricted-camera warning into an informational permitted-visit record. AI26 does not verify the permit or issuer.</p>
+        {rules.zone_permits.map(permit=><div key={permit.permit_id} className="flex flex-wrap items-center gap-3 rounded border border-zinc-800 p-3 text-sm"><span>{permit.plate} · {permit.camera_ids.join(", ")} · {permit.permit_id}</span><span>{new Date(permit.valid_from*1000).toLocaleString()} → {new Date(permit.valid_until*1000).toLocaleString()}</span><button type="button" className={button} onClick={()=>setRules({...rules,zone_permits:rules.zone_permits.filter(item=>item.permit_id!==permit.permit_id)})}>Remove permit</button></div>)}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><label className="text-sm">Permit ID<input className={`${field} mt-1 w-full`} maxLength={64} value={permitId} onChange={e=>setPermitId(e.target.value)} /></label><label className="text-sm">Plate<input className={`${field} mt-1 w-full font-mono`} value={permitPlate} onChange={e=>setPermitPlate(e.target.value)} /></label><label className="text-sm">Camera<select className={`${field} mt-1 w-full`} value={permitCamera} onChange={e=>setPermitCamera(e.target.value)}>{cameras.map(c=><option key={c.id}>{c.id}</option>)}</select></label><label className="text-sm">Valid from (local time)<input className={`${field} mt-1 w-full`} type="datetime-local" value={permitFrom} onChange={e=>setPermitFrom(e.target.value)} /></label><label className="text-sm">Valid until (local time)<input className={`${field} mt-1 w-full`} type="datetime-local" value={permitUntil} onChange={e=>setPermitUntil(e.target.value)} /></label><label className="text-sm">Reason<input className={`${field} mt-1 w-full`} maxLength={500} value={permitReason} onChange={e=>setPermitReason(e.target.value)} /></label><button type="button" className={`${button} justify-self-start`} onClick={addPermit}>Add permit</button></div>
+      </fieldset>
+      <div><h3 className="font-semibold">Dwell zones</h3><p className="my-2 text-sm text-zinc-400">Configure an image region before enabling dwell rules. Coordinates are fractions of frame width/height from 0 to 1. This detects time inside a zone, not malicious intent.</p>{rules.dwell_zones.map((z,i)=><div className="my-2 flex flex-wrap items-center gap-3 text-sm" key={i}><span>{z.camera_id} · [{z.zone.join(", ")}] · {z.dwell_seconds}s</span><button className={button} onClick={()=>setRules({...rules,dwell_zones:rules.dwell_zones.filter((_,j)=>i!==j)})}>Remove zone</button></div>)}<div className="flex flex-wrap items-end gap-3"><label className="flex flex-col text-sm">Camera<select className={field} value={camera} onChange={e=>setCamera(e.target.value)}>{cameras.map(c=><option key={c.id}>{c.id}</option>)}</select></label>{["Left","Top","Right","Bottom"].map((name,i)=><label className="flex w-24 flex-col text-sm" key={name}>{name}<input className={field} type="number" min="0" max="1" step=".05" value={zone[i]} onChange={e=>setZone(zone.map((v,j)=>i===j?Number(e.target.value):v) as typeof zone)} /></label>)}<label className="flex w-28 flex-col text-sm">Dwell seconds<input className={field} type="number" min="10" max="3600" value={seconds} onChange={e=>setSeconds(Number(e.target.value))} /></label><button className={button} onClick={()=>setRules({...rules,dwell_zones:[...rules.dwell_zones,{camera_id:camera,zone:[...zone],dwell_seconds:seconds,max_gap_seconds:5}]})}>Add zone</button></div></div>
+      <button className={`${button} self-start`} disabled={busy} onClick={save}>{busy?"Saving…":"Save local rules"}</button></div>}
   </details>
 }
+
+function localDateTimeToEpoch(value:string){return new Date(value).getTime()/1000}
+function toLocalDateTime(epoch:number){const d=new Date(epoch*1000);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}T${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`}
 
 export function AlertsPanel() {
   const [alerts,setAlerts]=useState<Alert[]>([])

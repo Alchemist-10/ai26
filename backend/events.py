@@ -4,6 +4,7 @@ import os
 import time
 import uuid
 from pathlib import Path
+from bisect import bisect_left, bisect_right
 from math import asin, cos, radians, sin, sqrt
 from collections import Counter
 import re
@@ -22,7 +23,8 @@ REPORT_RETENTION_SECONDS = 86400
 LINK_ALGORITHM_VERSION = 'exact-plate-pair-constraints-v3'
 store = Repository(Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data')) / 'ai26.sqlite3')
 DEFAULT_RULES = {'watchlist': {'KL07AB1234': 'Local example watchlist entry; human review required'},
-                 'restricted_cameras': ['CAM-09'], 'dwell_zones': []}
+                 'watchlist_conditions': {}, 'restricted_cameras': ['CAM-09'],
+                 'zone_permits': [], 'dwell_zones': []}
 
 
 def add_events(detections):
@@ -204,14 +206,42 @@ def derive_alerts(since=None, until=None):
     snapshot = get_events(since=start, until=until)
     rules = store.setting('rules', DEFAULT_RULES)
     supported = {p['passage_id'] for p in store.passages(start,until) if p['kind']=='plate' and not p.get('identity_conflict')}
+    conditions=rules.get('watchlist_conditions',{})
+    max_history=max((float(condition.get('history_window_seconds',0)) for condition in conditions.values()),default=0)
+    history_snapshot=get_events(since=start-max_history,until=until) if max_history else snapshot
+    history_supported={p['passage_id'] for p in store.passages(start-max_history,until)
+                       if p['kind']=='plate' and not p.get('identity_conflict')} if max_history else supported
+    plate_history={}
+    for event in history_snapshot:
+        if event['kind']=='plate' and event.get('identity_status','supported')=='supported' and event.get('passage_id') in history_supported:
+            plate_history.setdefault(event.get('plate_norm'),[]).append(event['ts'])
+    for timestamps in plate_history.values(): timestamps.sort()
+    permits=rules.get('zone_permits',[])
     for event in snapshot:
         if event.get('passage_id') not in supported: continue
         if event['kind'] != 'plate' or event.get('identity_status', 'supported') != 'supported': continue
         plate = event.get('plate_norm')
         if plate in rules['watchlist']:
-            _alert('watchlist match', plate, event, 'critical', f'{plate} matched a local watchlist entry', rules['watchlist'][plate])
+            condition=conditions.get(plate,{})
+            active_from=condition.get('active_from')
+            active_until=condition.get('active_until')
+            is_active=(active_from is None or event['ts']>=active_from) and (active_until is None or event['ts']<active_until)
+            minimum=max(1,int(condition.get('minimum_sightings',1)))
+            lookback=max(0,float(condition.get('history_window_seconds',0)))
+            sightings=plate_history.get(plate,[])
+            history_count=bisect_right(sightings,event['ts'])-bisect_left(sightings,event['ts']-lookback)
+            if is_active and history_count>=minimum:
+                detail=f"{rules['watchlist'][plate]} · {history_count} supported sighting(s) in the prior {lookback:g}s; local review only"
+                _alert('watchlist match', plate, event, 'critical', f'{plate} matched a local watchlist entry', detail)
         if event['camera_id'] in rules['restricted_cameras']:
-            _alert('zone sighting', plate, event, 'warning', f'{plate} observed at {event["camera_id"]}', 'Configured zone sighting; no permit determination or violation claim')
+            active_permit=next((permit for permit in permits if permit['plate']==plate and
+                event['camera_id'] in permit['camera_ids'] and permit['valid_from']<=event['ts']<permit['valid_until']),None)
+            if active_permit:
+                detail=f"Local permit {active_permit['permit_id']} applies: {active_permit['reason']}. No external permit verification was performed."
+                _alert('permitted zone visit', [plate,active_permit['permit_id']], event, 'info',
+                       f'{plate} observed at {event["camera_id"]} with a local permit on file', detail)
+            else:
+                _alert('zone sighting', plate, event, 'warning', f'{plate} observed at {event["camera_id"]}', 'No matching local permit record; this is not a legal violation determination')
     for plate in {e.get('plate_norm') for e in snapshot if e['kind']=='plate' and e.get('plate_norm')}:
         route = get_trajectory(plate, start, until)
         for link in route['rejected_links']:

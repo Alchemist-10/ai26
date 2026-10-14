@@ -426,7 +426,9 @@ export async function reviewAlert(id: string, state: string, reviewer: string, n
 }
 export interface RuleConfig {
   watchlist: Record<string, string>
+  watchlist_conditions: Record<string, { active_from?: number | null; active_until?: number | null; minimum_sightings: number; history_window_seconds: number }>
   restricted_cameras: string[]
+  zone_permits: { permit_id: string; plate: string; camera_ids: string[]; valid_from: number; valid_until: number; reason: string }[]
   dwell_zones: { camera_id: string; zone: [number,number,number,number]; dwell_seconds: number; max_gap_seconds: number }[]
 }
 export async function getRules(): Promise<RuleConfig> { return requestJson("/api/rules") }

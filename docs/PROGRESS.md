@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **42 done, 27 partial, 11 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **43 done, 26 partial, 11 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -39,7 +39,7 @@ cannot attach custom headers. Auth is disabled in the default local stack. Case
 grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. Self-service account recovery
 and external identity remain pending.
-The isolated full backend suite passes 229 tests; frontend TypeScript build and lint
+The isolated full backend suite passes 231 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 
@@ -301,7 +301,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-15 | Partial | Use validated camera locations and camera-pair travel constraints for cross-camera links. | Directed, audited min/max travel windows gate new cross-camera links; missing pair data stays unresolved and disabled pairs are rejected. Configuration requires both camera locations marked confirmed and is snapshotted with each link. Independent coordinate validation, road topology and measured travel windows remain absent. |
 | P1-16 | Partial | Handle missing cameras, clock skew, conflicting identities and disconnected routes explicitly. | Missing sources, unsynchronized replay, conflicting tracks and operator-marked disconnected camera pairs are explicit; calibrated skew and independently verified road connectivity remain pending. |
 | P1-17 | Done | Add an explicit mock known-plates registry if that is part of course scope, or remove registry-verification wording. | Removed registry-verification wording; no government registry or mock registry is presented as real verification. |
-| P1-18 | Partial | Make watchlist and restricted-zone data editable and persistent; add permit/history conditions where required. | Editable persisted watchlist, camera zones and dwell zones; permits and history conditions are absent, zone alerts only mean sightings. |
+| P1-18 | Done | Make watchlist and restricted-zone data editable and persistent; add permit/history conditions where required. | Operator UI and validated persistent API manage watchlists, active windows, minimum supported sighting counts/lookback, restricted cameras, local permit periods and dwell zones. Rule changes are audited. Matching local permits yield informational visits; missing permits remain review prompts. Permits are not externally verified and the alerts make no legal determination. |
 | P1-19 | Done | Add supported plate/camera/type/time intents and clear unsupported-query responses. | Bounded plate/camera/class/time/busiest/alert intents; unknown cameras and unsupported/multiple identities rejected; no fake SQL. |
 | P1-20 | Done | Fix timezone/date filters; a today query must not silently mean only the last five minutes. | Timezone-aware today/yesterday/date/time bounds query retained SQL history, not just the default five-minute view. |
 | P1-21 | Done | Refresh trajectory results as new observations arrive; debounce typing and clear stale export state. | Submitted searches refresh every three seconds without overlapping requests; typing does not query; changing filters replaces export state. |

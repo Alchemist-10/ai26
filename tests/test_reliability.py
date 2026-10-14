@@ -330,6 +330,40 @@ class Reliability(unittest.TestCase):
         events.add_events([self.vehicle(self.now-15,frame_id=1),self.vehicle(self.now-10,frame_id=2,bbox=[70,70,90,90]),self.vehicle(self.now,frame_id=3)])
         self.assertEqual(events.derive_alerts(),[])
 
+    def test_watchlist_history_and_effective_window_conditions(self):
+        plate='KL07AB1234'
+        self.repo.set_setting('rules',{'watchlist':{plate:'Repeat sighting review'},
+            'watchlist_conditions':{plate:{'active_from':self.now-5,'active_until':self.now+10,
+                'minimum_sightings':2,'history_window_seconds':30}},
+            'restricted_cameras':[],'zone_permits':[],'dwell_zones':[]})
+        events.add_events([self.plate(ts=self.now-10,session_id='history',frame_id=1)])
+        self.assertFalse(any(a['type']=='watchlist match' for a in events.derive_alerts()))
+        events.add_events([self.plate(ts=self.now,session_id='history',frame_id=2)])
+        match=next(a for a in events.derive_alerts() if a['type']=='watchlist match')
+        self.assertIn('2 supported sighting(s)',match['detail'])
+        expired_plate='TN22ZZ0007'
+        self.repo.set_setting('rules',{'watchlist':{expired_plate:'Expired entry'},
+            'watchlist_conditions':{expired_plate:{'active_from':self.now-20,'active_until':self.now-1,
+                'minimum_sightings':1,'history_window_seconds':30}},
+            'restricted_cameras':[],'zone_permits':[],'dwell_zones':[]})
+        events.add_events([self.plate(ts=self.now,plate=expired_plate,session_id='expired',frame_id=1)])
+        self.assertFalse(any(a['type']=='watchlist match' and expired_plate in a['summary'] for a in events.derive_alerts()))
+
+    def test_local_zone_permit_records_suppress_warning_without_claiming_verification(self):
+        plate='KL07AB1234'
+        event=self.plate('CAM-07',self.now,session_id='permit',frame_id=1)
+        base={'watchlist':{},'watchlist_conditions':{},'restricted_cameras':['CAM-07'],'dwell_zones':[]}
+        self.repo.set_setting('rules',{**base,'zone_permits':[{'permit_id':'LOCAL-1','plate':plate,
+            'camera_ids':['CAM-07'],'valid_from':self.now-1,'valid_until':self.now+1,'reason':'scheduled service'}]})
+        events.add_events([event])
+        permitted=events.derive_alerts()
+        self.assertIn('permitted zone visit',[alert['type'] for alert in permitted])
+        permit_alert=next(alert for alert in permitted if alert['type']=='permitted zone visit')
+        self.assertIn('No external permit verification',permit_alert['detail'])
+        self.repo.set_setting('rules',{**base,'zone_permits':[]})
+        warnings=events.derive_alerts()
+        self.assertIn('zone sighting',[alert['type'] for alert in warnings])
+
     def test_review_state_survives_rule_recalculation_and_reopen(self):
         events.add_events([self.plate()]);alert=events.derive_alerts()[0]
         response=self.client.post(f'/api/alerts/{alert["alert_id"]}/review',json={'state':'acknowledged','reviewer':'Course reviewer','note':'Inspect crop'})
@@ -367,11 +401,26 @@ class Reliability(unittest.TestCase):
         self.assertEqual(self.repo.escalated_alerts(),[])
 
     def test_rule_configuration_validated_and_persisted(self):
-        valid={'watchlist':{'kl 07 ab 1234':'Review this local plate'},'restricted_cameras':['CAM-07'],'dwell_zones':[]}
-        self.assertEqual(self.client.put('/api/rules',json=valid).status_code,200)
+        valid={'watchlist':{'kl 07 ab 1234':'Review this local plate'},'restricted_cameras':['CAM-07'],'dwell_zones':[],
+            'watchlist_conditions':{'kl 07 ab 1234':{'minimum_sightings':2,'history_window_seconds':120}},
+            'zone_permits':[{'permit_id':'LOCAL-2','plate':'kl 07 ab 1234','camera_ids':['CAM-07'],
+                'valid_from':self.now-10,'valid_until':self.now+10,'reason':'scheduled maintenance'}]}
+        response=self.client.put('/api/rules',json=valid)
+        self.assertEqual(response.status_code,200)
         self.assertIn('KL07AB1234',self.client.get('/api/rules').json()['watchlist'])
+        normalized=self.client.get('/api/rules').json()
+        self.assertIn('KL07AB1234',normalized['watchlist_conditions'])
+        self.assertEqual(normalized['zone_permits'][0]['plate'],'KL07AB1234')
+        audit=self.repo.db.execute("SELECT action FROM audit ORDER BY id DESC LIMIT 1").fetchone()[0]
+        self.assertEqual(audit,'rules_updated')
+        self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         valid['dwell_zones']=[{'camera_id':'CAM-01','zone':[1,0,0,1]}]
         self.assertEqual(self.client.put('/api/rules',json=valid).status_code,422)
+        bad_condition={**valid,'dwell_zones':[],'watchlist_conditions':{'TN22ZZ0007':{'minimum_sightings':1}}}
+        self.assertEqual(self.client.put('/api/rules',json=bad_condition).status_code,422)
+        bad_permit={**valid,'dwell_zones':[],'zone_permits':[{'permit_id':'LOCAL-3','plate':'KL07AB1234',
+            'camera_ids':['CAM-99'],'valid_from':self.now-1,'valid_until':self.now+1,'reason':'bad camera'}]}
+        self.assertEqual(self.client.put('/api/rules',json=bad_permit).status_code,404)
 
     def test_consumers_do_not_ingest_or_run_models(self):
         p=processing.Processor(cameras=[{'id':'CAM-01','kind':'vehicle'}])

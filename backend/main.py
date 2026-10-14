@@ -412,13 +412,37 @@ def review(alert_id:str,body:ReviewRequest):
 @app.get('/api/rules')
 def get_rules():
     from events import DEFAULT_RULES
-    return store.setting('rules',DEFAULT_RULES)
+    configured=store.setting('rules',DEFAULT_RULES)
+    return {**DEFAULT_RULES,**configured,
+            'watchlist_conditions':configured.get('watchlist_conditions',{}),
+            'zone_permits':configured.get('zone_permits',[])}
 
 @app.put('/api/rules')
 def update_rules(body:RuleConfig):
-    for camera in body.restricted_cameras+[z.camera_id for z in body.dwell_zones]: check_camera(camera)
-    config=body.model_dump(); config['watchlist']={check_plate(k):v for k,v in config['watchlist'].items()}
-    store.set_setting('rules',config); return config
+    config=body.model_dump()
+    normalized_watchlist={}
+    for plate,reason in config['watchlist'].items():
+        normalized=check_plate(plate)
+        if normalized in normalized_watchlist: raise HTTPException(422,'Watchlist plates must be unique after normalization')
+        normalized_watchlist[normalized]=reason.strip()
+    config['watchlist']=normalized_watchlist
+    normalized_conditions={}
+    for plate,condition in config['watchlist_conditions'].items():
+        normalized=check_plate(plate)
+        if normalized in normalized_conditions: raise HTTPException(422,'Watchlist condition plates must be unique after normalization')
+        if normalized not in normalized_watchlist: raise HTTPException(422,'Watchlist conditions must refer to a configured watchlist plate')
+        normalized_conditions[normalized]=condition
+    config['watchlist_conditions']=normalized_conditions
+    for camera in config['restricted_cameras']+[z['camera_id'] for z in config['dwell_zones']]: check_camera(camera)
+    if len(set(config['restricted_cameras']))!=len(config['restricted_cameras']):
+        raise HTTPException(422,'Restricted cameras must be unique')
+    permit_ids=set()
+    for permit in config['zone_permits']:
+        permit['plate']=check_plate(permit['plate'])
+        if permit['permit_id'] in permit_ids: raise HTTPException(422,'Permit IDs must be unique')
+        permit_ids.add(permit['permit_id'])
+        for camera in permit['camera_ids']: check_camera(camera)
+    store.update_rules(config,time.time()); return config
 
 @app.post('/api/nlquery')
 def nlquery(body:QueryRequest): return redact_analytics_payload(nl_answer(body.question))

@@ -1,6 +1,6 @@
 """Validation shared by HTTP and ingestion; no model loading required."""
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictStr, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt, StrictStr, field_validator, model_validator
 import math
 
 class Observation(BaseModel):
@@ -55,10 +55,52 @@ class ZoneRule(BaseModel):
             raise ValueError('Zone must be a normalized positive rectangle')
         return v
 
+class WatchlistCondition(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    active_from: StrictFloat | None = None
+    active_until: StrictFloat | None = None
+    minimum_sightings: StrictInt = Field(default=1, ge=1, le=1000)
+    history_window_seconds: StrictFloat = Field(default=0, ge=0, le=7*86400)
+
+    @model_validator(mode='after')
+    def valid_window(self):
+        if self.active_from is not None and self.active_until is not None and self.active_from >= self.active_until:
+            raise ValueError('Watchlist active_from must be before active_until')
+        if self.minimum_sightings > 1 and self.history_window_seconds <= 0:
+            raise ValueError('A positive history window is required for multiple sightings')
+        return self
+
+class ZonePermit(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False, str_strip_whitespace=True)
+    permit_id: StrictStr = Field(min_length=1, max_length=64)
+    plate: StrictStr = Field(min_length=1, max_length=16)
+    camera_ids: list[StrictStr] = Field(min_length=1, max_length=9)
+    valid_from: StrictFloat
+    valid_until: StrictFloat
+    reason: StrictStr = Field(min_length=1, max_length=500)
+
+    @model_validator(mode='after')
+    def valid_period(self):
+        if self.valid_from >= self.valid_until:
+            raise ValueError('Permit valid_from must be before valid_until')
+        if len(set(self.camera_ids)) != len(self.camera_ids):
+            raise ValueError('Permit camera IDs must be unique')
+        return self
+
 class RuleConfig(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
     watchlist: dict[str, str] = Field(default_factory=dict)
+    watchlist_conditions: dict[str, WatchlistCondition] = Field(default_factory=dict)
     restricted_cameras: list[str] = Field(default_factory=list)
+    zone_permits: list[ZonePermit] = Field(default_factory=list, max_length=1000)
     dwell_zones: list[ZoneRule] = Field(default_factory=list)
+
+    @field_validator('watchlist')
+    @classmethod
+    def watchlist_reasons_nonblank(cls, value):
+        if any(not isinstance(reason,str) or not reason.strip() for reason in value.values()):
+            raise ValueError('Every watchlist entry needs a nonblank reason')
+        return value
 
 class CameraConfigurationUpdate(BaseModel):
     model_config = ConfigDict(extra='forbid', allow_inf_nan=False, str_strip_whitespace=True)

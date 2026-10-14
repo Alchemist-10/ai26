@@ -87,7 +87,7 @@ review, with null speed for equal/nonpositive timestamps.
 | GET | `/api/stats`, `/api/flows` | Frame/passages counts, confidence, computed accepted-link flows |
 | GET | `/api/trajectory/{plate}` | Supported observations, accepted/rejected/unresolved links |
 | GET | `/api/alerts`, `/api/rules` | Persistent rule alerts / current local configuration |
-| PUT | `/api/rules` | Validated persistent watchlist, camera zones, dwell zones |
+| PUT | `/api/rules` | Audited persistent watchlist, history/effective-date conditions, local zone permits, camera zones and dwell zones |
 | POST | `/api/alerts/{id}/review` | Acknowledgement/review/disposition with history |
 | POST | `/api/nlquery` | Supported deterministic intent or explicit unsupported response |
 | POST | `/api/evidence/{plate}` | Immutable versioned report; empty interval rejected |
@@ -100,7 +100,7 @@ Interval-capable routes accept UTC epoch `since`/`until`. Query dates use
 includes one plate/camera, vehicle class, busiest camera, alerts and simple
 calendar/time bounds. Multiple identities/clocks and unsupported colors/congestion
 are rejected rather than silently broadening a query. There is no LLM, fake SQL,
-government registry, permit database or measured congestion classifier.
+external government registry or permit authority, or measured congestion classifier.
 
 ## Alerts and traffic
 
