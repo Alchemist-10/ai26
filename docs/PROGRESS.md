@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **42 done, 24 partial, 14 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **42 done, 25 partial, 13 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -18,12 +18,28 @@ revisioned camera metadata, settings editor with draft/conflict recovery and que
 
 ## Persistence update
 
-Schema 4 stores audited camera metadata revisions, immutable queried journey
+Schema 5 stores user/session records, audit context, camera metadata revisions, immutable queried journey
 link decisions, and locally hash-chained audit records. The read-only verifier can
 detect changed rows but has no external checkpoint or signature. New observations preserve configuration snapshots; legacy metadata
 fallback is explicit. Source routes remain fixed, calibration remains unverified,
 and stored decisions are historical conclusions rather than verified identity.
 See `docs/PERSISTENCE.md` and `AI26_PERSISTENCE_VALIDATION.json` in the delivery.
+
+## Authentication and access-scope update
+
+The optional auth overlay now bootstraps one administrator, hashes passwords and
+session tokens, rate-limits failed login, supports session/CSRF protection, and
+enforces administrator/operator/analyst/viewer API roles. The UI provides sign-in,
+case/purpose selection, sign-out, and administrator account management. Sensitive
+requests carry case and purpose context and append to the local audit chain; repeated
+GET polls for the same route are coalesced once per minute to keep previews light.
+Media URLs carry that context as query parameters because native browser media requests
+cannot attach custom headers. Auth is disabled in the default local stack. Case
+context is audited but does not grant or restrict access by case. Account recovery,
+MFA, external identity providers and case-level authorization remain pending.
+The isolated full backend suite passes 220 tests; frontend TypeScript build and lint
+pass with the repository's two existing Fast Refresh warnings. See
+`docs/AUTHENTICATION.md`.
 
 ## Camera settings update
 
@@ -259,7 +275,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-02 | Done | Define inference ownership so multiple viewers do not create duplicate processing/event streams. | Streams/snapshots only consume cache; two-consumer regression and exclusive Linux data-directory ownership lock. |
 | P1-03 | Done | Add a typed observation schema with stable event IDs and per-track passage IDs. | Typed finite observations, deterministic idempotent read IDs, per-session local passage IDs. |
 | P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay source position and processing time are separate; original capture times and synchronized clocks are missing. |
-| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-4 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; audit records are locally hash chained and verifiable; offline source onboarding and metadata editing work; browser source preparation, selection and retained-parent rollback work; activation requires host restart, and authenticated calibration remains separate work. |
+| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-5 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist immutable queried link decisions with support and algorithm/config snapshots; audit records are locally hash chained and verifiable; offline source onboarding and metadata editing work; browser source preparation, selection and retained-parent rollback work; activation requires host restart, and authenticated calibration remains separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
 | P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and nine component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |
@@ -334,9 +350,9 @@ local results. Short runtime samples do not establish sustained throughput.
 | ID | Status | Task | Evidence / remaining work |
 | --- | --- | --- | --- |
 | OP-01 | Pending | RTSP/ONVIF camera integration and resilient capture queues. | Optional production/edge work; not implemented for this local course prototype. |
-| OP-02 | Pending | Authentication, role-based access and purpose/case-scoped sensitive operations. | Optional production/edge work; not implemented for this local course prototype. |
+| OP-02 | Partial | Authentication, role-based access and purpose/case-scoped sensitive operations. | Optional auth overlay now includes sessions, role enforcement, CSRF, case/purpose access audit, sign-in and administrator user management. It is opt-in; case IDs do not enforce case-level grants, and recovery, MFA and external identity remain pending. |
 | OP-03 | Pending | Occupant face blurring and keyed plate pseudonyms in analytics views if those privacy features remain in scope. | Optional production/edge work; not implemented for this local course prototype. |
-| OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Schema-4 local SQLite audit chain detects row/link edits; optional TLS 1.2/1.3 proxy and Ed25519 report-signing overlays mount host-managed keys read-only. External audit anchoring, authenticated identity, managed secret rotation and key lifecycle controls remain pending. |
+| OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Schema-5 local SQLite audit chain detects row/link edits; optional TLS 1.2/1.3, authentication and Ed25519 report-signing overlays use host-managed secrets/keys. External audit anchoring, secret rotation, and key lifecycle controls remain pending. |
 | OP-05 | Done | Container/Compose setup, database backups and production frontend-to-API routing. | Compose packages a non-root single-worker API and production-built Nginx same-origin frontend behind loopback by default; persistent app data, online integrity-checked SQLite backups with rotation, and explicit stopped-service restore are implemented. Backup snapshots cover SQLite only; media/artifact/model backup and public-network hardening remain. |
 | OP-06 | Pending | Edge model export/quantization and benchmark on actual target hardware. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-07 | Partial | Canary/model-version pinning, rollback and branch-level disablement. | Frozen dependencies, exact loaded model/config identifiers and processing-disable switch exist; canary rollout/model rollback are absent. |

@@ -21,7 +21,7 @@ class Repository:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version > 4:
+        if version > 5:
             self.db.close()
             raise RuntimeError('Database version is newer than this application')
         with self.db:
@@ -72,7 +72,39 @@ class Repository:
                                     (previous,digest,row['id']))
                     previous=digest
                 self.db.execute('PRAGMA user_version=4')
-        self.schema_version = 4
+            if version < 5:
+                self.db.executescript('''
+                    BEGIN IMMEDIATE;
+                    CREATE TABLE IF NOT EXISTS users(
+                        username TEXT PRIMARY KEY COLLATE NOCASE,
+                        password_salt BLOB NOT NULL,
+                        password_hash BLOB NOT NULL,
+                        iterations INTEGER NOT NULL,
+                        role TEXT NOT NULL,
+                        disabled INTEGER NOT NULL DEFAULT 0,
+                        created_at REAL NOT NULL,
+                        updated_at REAL NOT NULL
+                    );
+                    CREATE TABLE IF NOT EXISTS auth_sessions(
+                        token_hash TEXT PRIMARY KEY,
+                        username TEXT NOT NULL,
+                        csrf_token TEXT NOT NULL,
+                        created_at REAL NOT NULL,
+                        expires_at REAL NOT NULL
+                    );
+                    CREATE INDEX IF NOT EXISTS auth_session_expiry ON auth_sessions(expires_at);
+                    CREATE TABLE IF NOT EXISTS auth_login_failures(
+                        id INTEGER PRIMARY KEY,
+                        client_hash TEXT NOT NULL,
+                        failed_at REAL NOT NULL
+                    );
+                    CREATE INDEX IF NOT EXISTS auth_failure_window ON auth_login_failures(client_hash,failed_at);
+                    PRAGMA user_version=5;
+                    COMMIT;
+                ''')
+        with self.db:
+            self.db.execute('CREATE INDEX IF NOT EXISTS audit_subject_action_time ON audit(subject,action,ts)')
+        self.schema_version = 5
         # Seed only missing IDs. Restart never overwrites operator metadata or its history.
         from cameras import CAMERAS
         with self.lock, self.db:
@@ -344,6 +376,22 @@ class Repository:
             previous=expected
         return {'status':'valid','records':len(rows),'head_hash':previous}
 
+    def audit_sensitive_access(self, username, case_id, purpose, method, route, now):
+        with self.lock, self.db:
+            # The UI polls previews and live panels. Coalesce identical reads for a
+            # minute to keep the durable hash chain useful without growing once per poll.
+            if method == 'GET':
+                repeated = self.db.execute('''SELECT 1 FROM audit WHERE subject=? AND action='sensitive_access'
+                    AND ts>? AND json_extract(data,'$.case_id')=? AND json_extract(data,'$.purpose')=?
+                    AND json_extract(data,'$.method')=? AND json_extract(data,'$.route')=? LIMIT 1''',
+                    (username, now-60, case_id, purpose, method, route)).fetchone()
+                if repeated:
+                    return False
+            self._append_audit(now, 'sensitive_access', username, {
+                'case_id': case_id, 'purpose': purpose, 'method': method, 'route': route,
+            })
+            return True
+
     def cleanup(self, cutoff, now):
         with self.lock, self.db:
             self.db.execute('DELETE FROM observations WHERE ts<?', (cutoff,))
@@ -353,6 +401,8 @@ class Repository:
             self.db.execute('DELETE FROM reports WHERE expires<=?', (now,))
             self.db.execute('DELETE FROM alerts WHERE ts<?', (cutoff,))
             self.db.execute("DELETE FROM sessions WHERE started<? AND NOT EXISTS (SELECT 1 FROM observations WHERE json_extract(observations.data,'$.session_id')=sessions.id)", (cutoff,))
+            self.db.execute('DELETE FROM auth_sessions WHERE expires_at<=?', (now,))
+            self.db.execute('DELETE FROM auth_login_failures WHERE failed_at<=?', (now-900,))
 
     def close(self):
         with self.lock: self.db.close()

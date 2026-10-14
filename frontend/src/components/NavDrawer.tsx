@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { MapIcon, History, TriangleAlert, ChartColumn, Gauge, MessageSquare, LayoutGrid, Settings, X, ShieldCheck } from "lucide-react"
+import { MapIcon, History, TriangleAlert, ChartColumn, Gauge, MessageSquare, LayoutGrid, Settings, X, ShieldCheck, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
 
@@ -12,6 +12,7 @@ const NAV: { id: Page; label: string; icon: typeof MapIcon; blurb: string }[] = 
   { id: "analytics", label: "Analytics", icon: ChartColumn, blurb: "Stats + congestion map" },
   { id: "query", label: "Ask the Grid", icon: MessageSquare, blurb: "Natural-language query" },
   { id: "settings", label: "Camera settings", icon: Settings, blurb: "Footage, metadata and history" },
+  { id: "accounts", label: "User administration", icon: Users, blurb: "Accounts, roles and passwords" },
 ]
 
 export function NavDrawer({
@@ -19,11 +20,13 @@ export function NavDrawer({
   page,
   onNavigate,
   onClose,
+  isAdmin = false,
 }: {
   open: boolean
   page: Page
   onNavigate: (p: Page) => void
   onClose: () => void
+  isAdmin?: boolean
 }) {
   const root = useRef<HTMLElement>(null)
   useEffect(() => {
@@ -87,7 +90,7 @@ export function NavDrawer({
 
         {/* Navigation items */}
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
-          {NAV.map((item) => {
+          {NAV.filter(item => item.id !== "accounts" || isAdmin).map((item) => {
             const Icon = item.icon
             const active = page === item.id
             return (

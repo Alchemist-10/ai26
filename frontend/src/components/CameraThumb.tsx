@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react"
 import { usePolling } from "@/hooks/usePolling"
+import { scopedResourceUrl } from "@/lib/api"
 
 export const CameraThumb = memo(function CameraThumb({ cameraId, available, className }: { cameraId: string; available: boolean; className?: string }) {
   const [image, setImage] = useState("")
@@ -8,7 +9,7 @@ export const CameraThumb = memo(function CameraThumb({ cameraId, available, clas
   const objectUrl = useRef("")
   usePolling(async signal => {
     try {
-      const response = await fetch(`/api/preview/${cameraId}`, { signal, headers: etag.current ? { "If-None-Match": etag.current } : {} })
+      const response = await fetch(scopedResourceUrl(`/api/preview/${cameraId}`), { signal, credentials: "same-origin", headers: etag.current ? { "If-None-Match": etag.current } : {} })
       if (response.status === 304) { if (!signal.aborted) setFailed(false); return }
       if (!response.ok) throw new Error("Preview unavailable")
       const nextEtag = response.headers.get("etag") || ""

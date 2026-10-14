@@ -33,11 +33,13 @@
 
 `schemas.py` validates finite timestamps/confidence, ordered boxes, query strings
 and rule configuration. Invalid requests return a consistent JSON error envelope.
-SQLite schema version 4 has sessions, observations, passages, alerts, reports,
-settings, hash-chained audit, report artifact leases, camera revisions and immutable
+SQLite schema version 5 has users, hashed authentication sessions, login-failure
+limits, observations, passages, alerts, reports, settings, hash-chained audit,
+report artifact leases, camera revisions and immutable
 queried journey-link decisions. Versions 1–3 migrate automatically; unknown future
 versions fail. Audit consistency is locally verifiable but has no external checkpoint
-or signature. New observations retain camera metadata snapshots. Legacy reads
+or signature. Sensitive-access entries include the user, case ID, purpose, route,
+and method. New observations retain camera metadata snapshots. Legacy reads
 explicitly use current-catalog fallback. See [persistence contracts](PERSISTENCE.md)
 for API edits, version history and limits. The repository is intended for a
 single local API process, not a distributed ingestion deployment.
@@ -47,6 +49,10 @@ uses a protected host-mounted private key; an offline verifier checks the report
 digest and signature against a separately trusted public key. Unsigned reports
 remain available when no key is configured, and signatures establish neither
 camera truth nor OCR/identity accuracy. See [report signing](REPORT_SIGNING.md).
+
+Authentication is an optional overlay with role checks, CSRF protection,
+case/purpose access auditing, and a first-run administrator bootstrap secret.
+See [authentication and access scope](AUTHENTICATION.md).
 
 A read ID identifies an immutable model observation. A passage ID combines camera,
 replay session, model kind and local track. Plate and vehicle tracks remain
@@ -68,6 +74,9 @@ review, with null speed for equal/nonpositive timestamps.
 
 | Method | Route | Output |
 | --- | --- | --- |
+| GET / POST | `/api/auth/status`, `/api/auth/login` | Authentication mode and session creation |
+| GET / POST | `/api/auth/me`, `/api/auth/logout` | Current identity and session termination |
+| GET / POST / PATCH | `/api/auth/users` | Administrator account management; password reset is a nested POST |
 | GET | `/api/cameras`, `/api/health` | Persisted catalog, availability and actual processor health |
 | GET / PUT | `/api/cameras/{camera}/configuration` | Current/historical metadata or audited revision update with stale-edit protection |
 | GET | `/api/journey-links` | Stored queried decision history; plate/arrival-time filters and bounded limit |

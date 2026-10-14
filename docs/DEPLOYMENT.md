@@ -18,9 +18,9 @@ docker compose up --build
 
 Open <http://127.0.0.1:5174>. Set `AI26_PROCESSING_ENABLED=0` in the shell or
 `.env` file for a UI/API-only run. `AI26_HOST` and `AI26_FRONTEND_PORT` can change
-the published interface and port. The default binds only to loopback. AI26 has
-no authentication or role access control, so do not bind it to a public or
-untrusted network.
+the published interface and port. The default binds only to loopback. This base
+stack has authentication disabled; add the [authentication overlay](AUTHENTICATION.md)
+before sharing the UI, and use it with TLS outside a trusted local machine.
 
 Create a consistent SQLite snapshot without stopping the service with:
 
@@ -50,10 +50,10 @@ stack use `docker compose down`; named application data remains. `docker compose
 down -v` removes that persistent data volume.
 
 This is a self-hosted packaging baseline, not a hardened public deployment.
-Pin image digests and add authentication, role access controls, monitored
-off-host backups and tested full-data restoration before exposing sensitive
-camera feeds outside a trusted local network. The optional TLS overlay below
-provides transport encryption only.
+Authentication and role checks are available as an opt-in overlay; off-host
+backups, tested full-data restoration, external audit checkpoints and case-level
+authorization remain deployment work. The optional TLS overlay below provides
+transport encryption only.
 
 ## Optional TLS reverse proxy
 
@@ -75,10 +75,12 @@ files.
 Renew the certificate on the host and recreate/reload the TLS service after
 renewal. The proxy accepts TLS 1.2/1.3 and sends HSTS on HTTPS responses.
 
-This overlay adds transport encryption only. The base local HTTP frontend remains
-available on its loopback port; the TLS listener itself does not authenticate
-users, authorize roles or create an externally trusted audit checkpoint. Do not
-publish either listener to an untrusted network until those controls are in place.
+This overlay adds transport encryption only. Combine it with the authentication
+overlay and set `AI26_AUTH_COOKIE_SECURE=1` before using the TLS listener for
+authenticated access. The TLS listener alone does not authenticate users or
+authorize roles, and authentication does not create an externally trusted audit
+checkpoint. Do not publish either listener to an untrusted network without a
+deployment review.
 
 References: Docker [Compose startup order and health checks](https://docs.docker.com/compose/how-tos/startup-order/),
 [Compose production configuration](https://docs.docker.com/compose/how-tos/production/),

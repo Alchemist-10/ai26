@@ -1,7 +1,8 @@
-import { lazy, Suspense, useCallback, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useState } from "react"
 import { usePolling } from "@/hooks/usePolling"
 import { Menu, ShieldCheck } from "lucide-react"
-import { getCameras, type Camera } from "@/lib/api"
+import { getCameras, setSecurityContext, type AuthUser, type Camera } from "@/lib/api"
+import { AuthGate } from "@/components/AuthGate"
 import { CameraWall } from "@/components/CameraWall"
 import { MainVideo } from "@/components/MainVideo"
 import { NavDrawer } from "@/components/NavDrawer"
@@ -14,8 +15,9 @@ import { CongestionPage } from "@/pages/CongestionPage"
 import { IntroSplash } from "@/components/IntroSplash"
 
 const CameraSettings = lazy(() => import("@/pages/CameraSettings"))
+const UserAdministration = lazy(() => import("@/pages/UserAdministration"))
 
-export type Page = "cameras" | "map" | "congestion" | "timeline" | "alerts" | "analytics" | "query" | "settings"
+export type Page = "cameras" | "map" | "congestion" | "timeline" | "alerts" | "analytics" | "query" | "settings" | "accounts"
 
 const TITLES: Record<Page, string> = {
   cameras: "Camera Wall",
@@ -26,9 +28,19 @@ const TITLES: Record<Page, string> = {
   analytics: "Analytics",
   query: "Ask the Grid",
   settings: "Camera settings",
+  accounts: "User administration",
 }
 
 export default function App() {
+  return <AuthGate>{(user, context, signOut, changeContext) => <Dashboard user={user} context={context} signOut={signOut} changeContext={changeContext} />}</AuthGate>
+}
+
+function Dashboard({ user, context, signOut, changeContext }: {
+  user: AuthUser | null
+  context: { caseId: string; purpose: string }
+  signOut: () => Promise<void>
+  changeContext: (caseId: string, purpose: string) => void
+}) {
   const [cameras, setCameras] = useState<Camera[]>([])
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [focused, setFocused] = useState<string>("CAM-01")
@@ -36,6 +48,10 @@ export default function App() {
   const [page, setPage] = useState<Page>("cameras")
   const [settingsVisited, setSettingsVisited] = useState(false)
   const [introVisible, setIntroVisible] = useState(() => !window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+  const [caseDraft, setCaseDraft] = useState(context.caseId)
+  const [purposeDraft, setPurposeDraft] = useState(context.purpose)
+
+  useEffect(() => { setSecurityContext(context.caseId, context.purpose) }, [context.caseId, context.purpose])
 
   usePolling(async signal => {
     try {
@@ -87,7 +103,15 @@ export default function App() {
         </div>
       </header>
 
-      <NavDrawer open={drawerOpen} page={page} onNavigate={navigate} onClose={closeNavigation} />
+      {user && <form onSubmit={event => { event.preventDefault(); changeContext(caseDraft, purposeDraft) }} className="flex flex-none flex-wrap items-center gap-2 border-b border-zinc-800 bg-zinc-950 px-4 py-2 text-xs sm:px-5">
+        <span className="mr-1 text-zinc-400">Signed in as <strong className="text-zinc-200">{user.username}</strong> · {user.role}</span>
+        <label className="flex items-center gap-2 text-zinc-300">Case ID<input value={caseDraft} onChange={event => setCaseDraft(event.target.value)} required minLength={3} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,63}" className="w-40 rounded border border-zinc-700 bg-black px-2 py-1.5 text-white" /></label>
+        <label className="flex items-center gap-2 text-zinc-300">Purpose<select value={purposeDraft} onChange={event => setPurposeDraft(event.target.value)} className="rounded border border-zinc-700 bg-black px-2 py-1.5 text-white"><option value="investigation">Investigation</option><option value="traffic_analysis">Traffic analysis</option><option value="incident_response">Incident response</option><option value="system_test">System test</option></select></label>
+        <button type="submit" className="rounded border border-zinc-600 px-2.5 py-1.5 text-zinc-100 hover:bg-zinc-800">Apply context</button>
+        <button type="button" onClick={() => void signOut()} className="ml-auto rounded border border-zinc-700 px-2.5 py-1.5 text-zinc-300 hover:bg-zinc-800">Sign out</button>
+      </form>}
+
+      <NavDrawer open={drawerOpen} page={page} onNavigate={navigate} onClose={closeNavigation} isAdmin={user?.role === "admin"} />
 
       <main className="min-h-0 flex-1">
         {cameraError && <div className="absolute left-1/2 top-16 z-30 -translate-x-1/2 rounded-md border border-red-400/30 bg-red-950/90 px-3 py-2 text-xs text-red-100">Camera API unavailable: {cameraError}</div>}
@@ -107,6 +131,7 @@ export default function App() {
         {page === "alerts" && <AlertsPanel />}
         {page === "analytics" && <AnalyticsPanel cameras={cameras} />}
         {page === "query" && <QueryPage />}
+        {page === "accounts" && user?.role === "admin" && <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading user administration…</p>}><UserAdministration /></Suspense>}
         {settingsVisited && (
           <div hidden={page !== "settings"} className="h-full">
             <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading camera settings…</p>}>

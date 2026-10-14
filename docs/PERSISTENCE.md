@@ -1,8 +1,9 @@
 # Camera revisions and journey decision persistence
 
-Schema version 4 stores the nine-camera catalog and immutable queried link decisions
-alongside existing sessions, immutable reads, camera-local passages, alerts, rules,
-reports and hash-chained audit records. Versions 1 through 3 migrate automatically; future schema
+Schema version 5 stores users, hashed authentication sessions, login-failure limits,
+the nine-camera catalog, and immutable queried link decisions alongside existing
+sessions, immutable reads, camera-local passages, alerts, rules, reports and
+hash-chained audit records. Versions 1 through 4 migrate automatically; future schema
 versions fail explicitly. Startup seeds missing catalog IDs without replacing
 operator edits. Recording paths and detector kinds remain deployment configuration.
 Godseye's SIH checkout is unchanged.

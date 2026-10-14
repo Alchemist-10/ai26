@@ -214,8 +214,74 @@ export class ApiError extends Error {
   }
 }
 
+export interface AuthUser { username: string; role: "admin" | "operator" | "analyst" | "viewer" }
+export type AuthRole = AuthUser["role"]
+export interface ManagedUser extends AuthUser { disabled: boolean; created_at: number; updated_at: number }
+export interface AuthState { enabled: boolean; user: AuthUser | null; csrfToken: string }
+let csrfToken = ""
+let securityContext = { caseId: "", purpose: "investigation" }
+
+export function setSecurityContext(caseId: string, purpose: string) {
+  securityContext = { caseId: caseId.trim(), purpose }
+}
+
+export function scopedResourceUrl(url: string): string {
+  const target = new URL(url, window.location.href)
+  target.searchParams.set("case_id", securityContext.caseId)
+  target.searchParams.set("purpose", securityContext.purpose)
+  return `${target.pathname}${target.search}`
+}
+
+export async function getAuthState(): Promise<AuthState> {
+  const status = await requestJson<{ enabled: boolean }>("/api/auth/status")
+  if (!status.enabled) return { enabled: false, user: null, csrfToken: "" }
+  try {
+    const session = await requestJson<{ user: AuthUser; csrf_token: string }>("/api/auth/me")
+    csrfToken = session.csrf_token
+    return { enabled: true, user: session.user, csrfToken }
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return { enabled: true, user: null, csrfToken: "" }
+    throw error
+  }
+}
+
+export async function login(username: string, password: string): Promise<AuthState> {
+  const session = await requestJson<{ user: AuthUser; csrf_token: string }>("/api/auth/login", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password }),
+  })
+  csrfToken = session.csrf_token
+  return { enabled: true, user: session.user, csrfToken }
+}
+
+export async function logout(): Promise<void> {
+  await requestJson("/api/auth/logout", { method: "POST" })
+  csrfToken = ""
+}
+
+export function getUsers(signal?: AbortSignal): Promise<ManagedUser[]> {
+  return requestJson("/api/auth/users", { signal })
+}
+export function createUser(username: string, password: string, role: AuthRole): Promise<ManagedUser> {
+  return requestJson("/api/auth/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role }) })
+}
+export function updateUser(username: string, changes: { role?: AuthRole; disabled?: boolean }): Promise<ManagedUser> {
+  return requestJson(`/api/auth/users/${encodeURIComponent(username)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) })
+}
+export function resetUserPassword(username: string, password: string): Promise<{ password_reset: boolean; sessions_revoked: boolean }> {
+  return requestJson(`/api/auth/users/${encodeURIComponent(username)}/password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) })
+}
+
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init)
+  const requestUrl = input instanceof Request ? input.url : String(input)
+  const path = new URL(requestUrl, window.location.href)
+  const scoped = path.pathname.startsWith("/api/") && ["/api/cameras/", "/api/source-preparations/", "/api/journey-links", "/api/stream/", "/api/video/", "/api/snapshot/", "/api/preview/", "/api/events", "/api/stats", "/api/flows", "/api/alerts", "/api/rules", "/api/nlquery", "/api/trajectory/", "/api/evidence/", "/api/reports/", "/api/artifacts/"].some(prefix => path.pathname.startsWith(prefix))
+  const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined))
+  if (scoped) {
+    headers.set("X-AI26-Case-ID", securityContext.caseId)
+    headers.set("X-AI26-Purpose", securityContext.purpose)
+  }
+  if (csrfToken && ["POST", "PUT", "PATCH", "DELETE"].includes((init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase())) headers.set("X-AI26-CSRF-Token", csrfToken)
+  const response = await fetch(scoped ? path : input, { ...init, headers, credentials: "same-origin" })
   if (!response.ok) {
     const body = await response.json().catch(() => null)
     throw new ApiError(body?.error?.message ?? `Request failed (${response.status})`, response.status)
@@ -275,11 +341,11 @@ export function streamUrl(cameraId: string, startAt?: number, retry = 0, anchorA
   const params = new URLSearchParams({ retry: String(retry) })
   if (startAt !== undefined) params.set("start", startAt.toFixed(3))
   if (anchorAt !== undefined) params.set("anchor", anchorAt.toFixed(3))
-  return `/api/stream/${cameraId}?${params}`
+  return scopedResourceUrl(`/api/stream/${cameraId}?${params}`)
 }
 
 export function videoUrl(cameraId: string) {
-  return `/api/video/${cameraId}`
+  return scopedResourceUrl(`/api/video/${cameraId}`)
 }
 
 export function cameraPlaybackOffset(cameraId: string, duration: number, now = Date.now()) {
@@ -289,7 +355,7 @@ export function cameraPlaybackOffset(cameraId: string, duration: number, now = D
 }
 
 export function snapshotUrl(cameraId: string) {
-  return `/api/snapshot/${cameraId}?t=${Date.now()}`
+  return scopedResourceUrl(`/api/snapshot/${cameraId}?t=${Date.now()}`)
 }
 
 export async function getFlows(signal?: AbortSignal): Promise<{ from: string; to: string; count: number }[]> {

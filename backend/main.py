@@ -8,6 +8,9 @@ import time
 import zipfile
 from contextlib import asynccontextmanager
 from typing import Annotated
+import hmac
+import re
+import sqlite3
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -30,11 +33,15 @@ from source_uploads import uploads, parse_metadata, UploadBusy
 from starlette.requests import ClientDisconnect
 from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
+from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
+from auth import CASE_PATTERN, PURPOSES
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest
 
 
 @asynccontextmanager
 async def lifespan(app):
     janitor = Maintenance(store)
+    AuthService(store).ensure_bootstrap_admin()
     janitor.start()
     try:
         if os.environ.get('AI26_PROCESSING_ENABLED','1')=='1': processor.start()
@@ -48,6 +55,67 @@ frontend_port=os.environ.get('AI26_FRONTEND_PORT','5174')
 app=FastAPI(title='AI26 observation API',lifespan=lifespan)
 app.add_middleware(CORSMiddleware,allow_origins=[f'http://localhost:{frontend_port}',f'http://127.0.0.1:{frontend_port}'],allow_methods=['*'],allow_headers=['*'])
 
+SENSITIVE_PREFIXES=('/api/cameras/','/api/source-preparations/','/api/journey-links','/api/stream/','/api/video/',
+                    '/api/snapshot/','/api/preview/','/api/events','/api/stats','/api/flows','/api/alerts',
+                    '/api/rules','/api/nlquery','/api/trajectory/','/api/evidence/','/api/reports/','/api/artifacts/')
+
+
+def required_role(method, path):
+    if path == '/api/health': return None
+    if path in {'/api/auth/status','/api/auth/login'}: return None
+    if path == '/api/auth/me' or path == '/api/auth/logout': return 'authenticated'
+    if path.startswith('/api/auth/users'): return 'admin'
+    if path == '/api/cameras' and method == 'GET': return 'viewer'
+    if path.startswith('/api/cameras/'):
+        if '/source' in path: return 'operator'
+        if path.endswith('/configuration'):
+            return 'analyst' if method == 'GET' else 'operator'
+    if path.startswith('/api/source-preparations/'): return 'operator'
+    if path == '/api/audit/integrity': return 'admin'
+    if path.startswith('/api/alerts/') and path.endswith('/review'): return 'operator'
+    if path == '/api/rules' and method == 'PUT': return 'operator'
+    if path.startswith('/api/evidence/') and method == 'POST': return 'analyst'
+    if path == '/api/nlquery' and method == 'POST': return 'analyst'
+    if path.startswith(('/api/events','/api/stats','/api/flows','/api/alerts','/api/rules','/api/nlquery',
+                        '/api/trajectory/','/api/journey-links','/api/reports/','/api/artifacts/','/api/stream/',
+                        '/api/video/','/api/snapshot/','/api/preview/')) and method == 'GET': return 'analyst'
+    return 'admin'
+
+
+@app.middleware('http')
+async def authentication_and_case_scope(request, call_next):
+    if not request.url.path.startswith('/api/') or request.method == 'OPTIONS' or not auth_enabled():
+        return await call_next(request)
+    path=request.url.path
+    if path in {'/api/health','/api/auth/status','/api/auth/login'}:
+        return await call_next(request)
+    service=AuthService(store)
+    session=service.session(request.cookies.get(SESSION_COOKIE))
+    if not session:
+        return JSONResponse(status_code=401,content={'error':{'code':401,'message':'Sign in to access AI26'}})
+    role=required_role(request.method,path)
+    allowed={'authenticated':{'admin','operator','analyst','viewer'},
+             'admin':{'admin'},'operator':{'admin','operator'},
+             'analyst':{'admin','operator','analyst'},'viewer':{'admin','operator','analyst','viewer'}}
+    if role not in allowed or session['role'] not in allowed[role]:
+        return JSONResponse(status_code=403,content={'error':{'code':403,'message':'Your role cannot perform this action'}})
+    if request.method in {'POST','PUT','PATCH','DELETE'}:
+        csrf=request.headers.get(CSRF_HEADER,'')
+        if not csrf or not hmac.compare_digest(csrf,session['csrf_token']):
+            return JSONResponse(status_code=403,content={'error':{'code':403,'message':'Refresh the session before changing data'}})
+    request.state.actor=session
+    if any(path.startswith(prefix) for prefix in SENSITIVE_PREFIXES):
+        case_id=request.headers.get('x-ai26-case-id') or request.query_params.get('case_id','')
+        purpose=request.headers.get('x-ai26-purpose') or request.query_params.get('purpose','')
+        if not CASE_PATTERN.fullmatch(case_id):
+            return JSONResponse(status_code=422,content={'error':{'code':422,'message':'A valid case ID is required for sensitive access'}})
+        if purpose not in PURPOSES:
+            return JSONResponse(status_code=422,content={'error':{'code':422,'message':'Choose a recognized purpose for sensitive access'}})
+        request.state.case_id=case_id
+        request.state.purpose=purpose
+        service.audit_sensitive_access(session,case_id,purpose,request.method,path)
+    return await call_next(request)
+
 
 @app.exception_handler(HTTPException)
 async def http_error(request,exc):
@@ -58,6 +126,68 @@ async def validation_error(request,exc):
     return JSONResponse(status_code=422,content={'error':{'code':422,'message':'; '.join(f'{".".join(map(str,e["loc"]))}: {e["msg"]}' for e in exc.errors())}})
 
 TimeFilter=Annotated[float|None,Query(ge=0,allow_inf_nan=False)]
+
+
+@app.get('/api/auth/status')
+def auth_status():
+    return {'enabled':auth_enabled()}
+
+
+@app.post('/api/auth/login')
+def auth_login(body:AuthLoginRequest,request:Request,response:Response):
+    if not auth_enabled(): raise HTTPException(404,'Authentication is disabled')
+    # The bundled reverse proxy overwrites X-Real-IP; when calling the API directly,
+    # fall back to the ASGI peer address.
+    address=request.headers.get('x-real-ip') or (request.client.host if request.client else 'unknown')
+    try: result,reason=AuthService(store).login(body.username,body.password,address)
+    except AuthenticationError: result,reason=None,'invalid'
+    if reason=='limited': raise HTTPException(429,'Too many sign-in attempts; try again in 15 minutes')
+    if not result: raise HTTPException(401,'Username or password is incorrect')
+    response.set_cookie(SESSION_COOKIE,result['token'],max_age=int(result['expires_at']-time.time()),
+                        httponly=True,secure=cookie_secure(),samesite='strict',path='/api')
+    return {'user':result['user'],'csrf_token':result['csrf_token'],'expires_at':result['expires_at']}
+
+
+@app.get('/api/auth/me')
+def auth_me(request:Request):
+    actor=request.state.actor
+    return {'user':{'username':actor['username'],'role':actor['role']},
+            'csrf_token':actor['csrf_token'],'expires_at':actor['expires_at']}
+
+
+@app.post('/api/auth/logout')
+def auth_logout(request:Request,response:Response):
+    AuthService(store).logout(request.cookies.get(SESSION_COOKIE))
+    response.delete_cookie(SESSION_COOKIE,path='/api',secure=cookie_secure(),httponly=True,samesite='strict')
+    return {'signed_out':True}
+
+
+@app.get('/api/auth/users')
+def auth_users():
+    return AuthService(store).users()
+
+
+@app.post('/api/auth/users',status_code=201)
+def auth_create_user(body:AuthUserCreateRequest):
+    try: return AuthService(store).create_user(body.username,body.password,body.role)
+    except AuthenticationError as exc: raise HTTPException(422,str(exc)) from exc
+    except sqlite3.IntegrityError as exc: raise HTTPException(409,'Username already exists') from exc
+
+
+@app.patch('/api/auth/users/{username}')
+def auth_update_user(username:str,body:AuthUserUpdateRequest):
+    try: result=AuthService(store).update_user(username,body.role,body.disabled)
+    except AuthenticationError as exc: raise HTTPException(409,str(exc)) from exc
+    if not result: raise HTTPException(404,'Unknown user')
+    return result
+
+
+@app.post('/api/auth/users/{username}/password')
+def auth_reset_password(username:str,body:AuthPasswordResetRequest):
+    try: changed=AuthService(store).reset_password(username,body.password)
+    except AuthenticationError as exc: raise HTTPException(422,str(exc)) from exc
+    if not changed: raise HTTPException(404,'Unknown user')
+    return {'password_reset':True,'sessions_revoked':True}
 
 
 def check_camera(camera_id):

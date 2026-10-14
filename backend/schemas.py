@@ -1,6 +1,6 @@
 """Validation shared by HTTP and ingestion; no model loading required."""
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator, model_validator
 import math
 
 class Observation(BaseModel):
@@ -77,3 +77,29 @@ class SourceSelectionRequest(BaseModel):
     intent: Literal['select', 'rollback']
     reviewer: StrictStr = Field(min_length=1, max_length=100)
     reason: StrictStr = Field(min_length=1, max_length=1000)
+
+class AuthLoginRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    username: StrictStr = Field(min_length=3, max_length=32)
+    password: StrictStr = Field(min_length=1, max_length=256)
+
+class AuthUserCreateRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    username: StrictStr = Field(min_length=3, max_length=32)
+    password: StrictStr = Field(min_length=14, max_length=256)
+    role: Literal['admin', 'operator', 'analyst', 'viewer']
+
+class AuthUserUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    role: Literal['admin', 'operator', 'analyst', 'viewer'] | None = None
+    disabled: StrictBool | None = None
+
+    @model_validator(mode='after')
+    def at_least_one_change(self):
+        if self.role is None and self.disabled is None:
+            raise ValueError('Set role or disabled')
+        return self
+
+class AuthPasswordResetRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    password: StrictStr = Field(min_length=14, max_length=256)

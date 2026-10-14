@@ -158,8 +158,8 @@ class Persistence(unittest.TestCase):
         db=sqlite3.connect(self.path)
         db.executescript('DROP TABLE camera_catalog; DROP TABLE journey_links; ALTER TABLE audit DROP COLUMN record_hash; ALTER TABLE audit DROP COLUMN previous_hash; PRAGMA user_version=2;');db.close()
         self.repo=Repository(self.path)
-        self.assertEqual(self.repo.schema_version,4)
-        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],4)
+        self.assertEqual(self.repo.schema_version,5)
+        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],5)
         self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         self.assertEqual(len(self.repo.observations()),2)
         self.assertEqual(self.repo.report(report['report_id'],self.now+1),report)
@@ -170,7 +170,7 @@ class Persistence(unittest.TestCase):
 
     def test_future_schema_refused(self):
         path=Path(self.folder.name)/'future.sqlite3';db=sqlite3.connect(path)
-        db.execute('PRAGMA user_version=5');db.close()
+        db.execute('PRAGMA user_version=6');db.close()
         with self.assertRaisesRegex(RuntimeError,'newer'):
             Repository(path)
 
