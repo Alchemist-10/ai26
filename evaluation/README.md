@@ -79,6 +79,9 @@ used in live processing and do not imply an OCR accuracy gain.
 For seeded rain, fog, low-light, motion-blur and sensor-noise derivatives, see
 [Synthetic degradation](DEGRADATION_GENERATOR.md). These are controlled image
 corruptions, not collected adverse-weather footage or OCR robustness evidence.
+For bounded same-camera burst alignment with dense optical flow, see
+[Frame alignment](FLOW_ALIGNMENT.md). It is an offline image experiment and
+does not infer identities, fuse OCR, or provide calibrated confidence.
 For read-only condition hints and enhancement candidates, see
 [Heuristic quality routing](QUALITY_ROUTER.md); its weather-like flags are
 unverified and do not control the live pipeline.
