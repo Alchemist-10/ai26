@@ -101,6 +101,10 @@ test samples and a ready, hashed dataset manifest for all four variants.
 For read-only condition hints and enhancement candidates, see
 [Heuristic quality routing](QUALITY_ROUTER.md); its weather-like flags are
 unverified and do not control the live pipeline.
+For supervised plate-crop readability training with camera/session/source-clip
+held-out splits, see [Plate-crop quality classifier](PLATE_QUALITY_CLASSIFIER.md).
+The workspace has no reviewed quality labels, so only synthetic trainer tests
+are available and no field model metrics are reported.
 
 Per-track character voting can expose a review-only candidate when OCR strings
 conflict. See [tracking limits](../docs/TRACKING.md): the identity remains

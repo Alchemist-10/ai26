@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "dataset_id": "replace-with-reviewed-dataset-id",
+  "label_definitions": {
+    "readable": "Most plate characters are manually judged legible at the intended review scale.",
+    "marginal": "Some characters are uncertain; human recheck is required.",
+    "unreadable": "No reliable plate string can be manually read."
+  },
+  "records": [
+    {
+      "record_id": "crop-0001",
+      "camera_id": "CAM-01",
+      "session_id": "recording-session-001",
+      "source_clip_path": "clips/CAM-01-session-001.mp4",
+      "source_clip_sha256": "replace-with-64-character-lowercase-sha256",
+      "crop_path": "crops/crop-0001.png",
+      "sha256": "replace-with-64-character-lowercase-sha256",
+      "label": "readable",
+      "split": "train"
+    }
+  ]
+}
