@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **42 done, 25 partial, 13 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **42 done, 26 partial, 12 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -41,6 +41,17 @@ recovery, MFA and external identity remain pending.
 The isolated full backend suite passes 220 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
+
+## Optional privacy mode update
+
+Opt-in privacy mode now uses a protected installation key to pseudonymize valid
+plate identifiers in analytics responses. Sampled camera views pixelate detected
+person boxes and detected plate regions, replace recognized plate overlay text,
+and the API rejects raw recorded playback while enabled. Database observations
+and signed evidence remain raw for authorized review. The browser defaults to
+sampled detections in this mode. This remains partial: detection can miss people
+or plates, intermediate footage frames are not processed, and no labeled footage
+has established a false-negative rate. See `docs/PRIVACY.md`.
 
 ## Camera settings update
 
@@ -352,7 +363,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | --- | --- | --- | --- |
 | OP-01 | Pending | RTSP/ONVIF camera integration and resilient capture queues. | Optional production/edge work; not implemented for this local course prototype. |
 | OP-02 | Partial | Authentication, role-based access and purpose/case-scoped sensitive operations. | Optional auth overlay includes sessions, role enforcement, CSRF, case/purpose audit, per-account case grants, sign-in and administrator user management. It is opt-in; recovery, MFA and external identity remain pending. |
-| OP-03 | Pending | Occupant face blurring and keyed plate pseudonyms in analytics views if those privacy features remain in scope. | Optional production/edge work; not implemented for this local course prototype. |
+| OP-03 | Partial | Occupant face blurring and keyed plate pseudonyms in analytics views if those privacy features remain in scope. | Opt-in installation-keyed plate pseudonyms, detected-person/plate pixelation in sampled views, and API-blocked raw playback are implemented. Evidence remains raw; model misses and unsampled frames are possible, and no labeled field validation has measured coverage. This is not complete face blurring or guaranteed anonymization. |
 | OP-04 | Partial | Durable audit logs, retention jobs, secrets handling and TLS. | Schema-6 local SQLite audit chain detects row/link edits; optional TLS 1.2/1.3, authentication and Ed25519 report-signing overlays use host-managed secrets/keys. External audit anchoring, secret rotation, and key lifecycle controls remain pending. |
 | OP-05 | Done | Container/Compose setup, database backups and production frontend-to-API routing. | Compose packages a non-root single-worker API and production-built Nginx same-origin frontend behind loopback by default; persistent app data, online integrity-checked SQLite backups with rotation, and explicit stopped-service restore are implemented. Backup snapshots cover SQLite only; media/artifact/model backup and public-network hardening remain. |
 | OP-06 | Pending | Edge model export/quantization and benchmark on actual target hardware. | Optional production/edge work; not implemented for this local course prototype. |

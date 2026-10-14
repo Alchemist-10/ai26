@@ -18,12 +18,16 @@ log = logging.getLogger(__name__)
 
 
 def annotate(frame, kind, camera_id):
-    from inference import annotate_plate_frame, annotate_vehicle_frame
+    from inference import annotate_plate_frame, annotate_vehicle_frame, take_person_boxes
     if kind == 'vehicle': return annotate_vehicle_frame(frame, camera_id)
     raw = frame.copy()
     frame, vehicles = annotate_vehicle_frame(frame, camera_id)
+    people = take_person_boxes(camera_id)
     # OCR sees the raw frame, not vehicle annotation strokes.
     plate_frame, plates = annotate_plate_frame(raw, camera_id)
+    if people:
+        from privacy import enabled, pixelate_person_boxes
+        if enabled(): pixelate_person_boxes(plate_frame, people)
     # Plate cameras prioritize plate overlays; observations retain both model outputs.
     return plate_frame, plates + vehicles
 

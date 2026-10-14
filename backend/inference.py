@@ -12,6 +12,7 @@ from ultralytics import YOLO
 from plate_format import normalize_plate
 from tracking import CentroidTracker, TRACKER_VERSION
 from model_provenance import load_plate_model, pipeline_components
+from privacy import enabled as privacy_enabled, pixelate_person_boxes, plate_alias
 
 VEHICLE_CLASS_IDS = {2, 3, 5, 7}  # car, motorcycle, bus, truck (COCO)
 DEVICE = 0 if torch.cuda.is_available() else "cpu"
@@ -25,6 +26,7 @@ PLATE_MIN_CONF = 0.35
 _consensus = PlateConsensus()
 _vehicle_trackers: dict[str, CentroidTracker] = defaultdict(CentroidTracker)
 _plate_trackers: dict[str, CentroidTracker] = defaultdict(lambda: CentroidTracker(max_distance=90))
+_person_boxes: dict[str, list[list[int]]] = {}
 
 _checkpoint = Path(__file__).parent / "yolov8n.pt"
 _yolo = YOLO(str(_checkpoint))
@@ -54,7 +56,12 @@ def _plate_metadata():
 def reset_camera(camera_id):
     _vehicle_trackers.pop(camera_id, None)
     _plate_trackers.pop(camera_id, None)
+    _person_boxes.pop(camera_id, None)
     _consensus.reset(camera_id)
+
+
+def take_person_boxes(camera_id):
+    return _person_boxes.pop(camera_id, [])
 
 ACCENT = (200, 211, 34)  # BGR, matches the detection overlay accent
 CRIT = (114, 92, 255)
@@ -62,19 +69,28 @@ CRIT = (114, 92, 255)
 
 def annotate_vehicle_frame(frame, camera_id: str):
     """Runs real YOLO vehicle detection, draws boxes, returns (frame, detections)."""
-    results = _yolo.predict(frame, device=DEVICE, verbose=False, classes=list(VEHICLE_CLASS_IDS), conf=0.4)
+    classes = list(VEHICLE_CLASS_IDS | ({0} if privacy_enabled() else set()))
+    results = _yolo.predict(frame, device=DEVICE, verbose=False, classes=classes, conf=0.4)
     # Ultralytics resets the thread count during its first predictor setup. Restore
     # the desktop budget for subsequent inference; no global library patch needed.
     if DEVICE == 'cpu' and torch.get_num_threads()!=CPU_THREADS: torch.set_num_threads(CPU_THREADS)
     detections = []
     r = results[0]
     raw_detections = []
+    people = []
     for box in r.boxes:
         cls_id = int(box.cls[0])
         conf = float(box.conf[0])
         x1, y1, x2, y2 = [int(v) for v in box.xyxy[0]]
         label = _yolo.names[cls_id]
+        if cls_id == 0:
+            people.append([x1, y1, x2, y2])
+            continue
         raw_detections.append({"label": label, "bbox": [x1, y1, x2, y2], "confidence": conf})
+
+    if privacy_enabled():
+        pixelate_person_boxes(frame, people)
+    _person_boxes[camera_id] = people
 
     for detection in _vehicle_trackers[camera_id].update(raw_detections, timestamp=time.monotonic()):
         label = detection["label"]
@@ -129,6 +145,8 @@ def annotate_plate_frame(frame, camera_id: str):
 
     for detection in _plate_trackers[camera_id].update(raw_detections, timestamp=time.monotonic()):
         x1, y1, x2, y2 = detection["bbox"]
+        if privacy_enabled():
+            pixelate_person_boxes(frame, [[x1, y1, x2, y2]], padding=0.18)
         plate_text = detection["plate_text"]
         ocr_conf = detection["ocr_conf"]
         normalized = detection["normalized"]
@@ -156,7 +174,8 @@ def annotate_plate_frame(frame, camera_id: str):
                                     detection["association_status"], confidence=ocr_conf)
         fused_text = plate_norm
 
-        tag = f"PLATE #{detection['track_id']} {fused_text} {ocr_conf * 100:.0f}%"
+        shown_text = plate_alias(fused_text)
+        tag = f"PLATE #{detection['track_id']} {shown_text} {ocr_conf * 100:.0f}%"
         (tw, th), _ = cv2.getTextSize(tag, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 1)
         cv2.rectangle(frame, (x1, y1 - th - 8), (x1 + tw + 6, y1), CRIT, -1)
         cv2.putText(frame, tag, (x1 + 3, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1, cv2.LINE_AA)

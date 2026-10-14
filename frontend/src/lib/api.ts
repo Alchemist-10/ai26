@@ -8,6 +8,12 @@ export interface Camera {
   source_available: boolean
   health: CameraHealth
 }
+export interface PrivacyStatus {
+  enabled: boolean
+  plate_identifiers: "raw" | "keyed_pseudonyms"
+  sampled_person_mask: "disabled" | "person_box_pixelation"
+  scope: string
+}
 export interface CameraConfiguration {
   id: string
   kind: "vehicle" | "plate"
@@ -291,6 +297,10 @@ async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Pro
 
 export async function getCameras(signal?: AbortSignal): Promise<Camera[]> {
   return requestJson<Camera[]>("/api/cameras", { signal })
+}
+
+export function getPrivacyStatus(signal?: AbortSignal): Promise<PrivacyStatus> {
+  return requestJson<PrivacyStatus>("/api/privacy/status", { signal })
 }
 
 export function getCameraConfiguration(cameraId: string, revision?: number, signal?: AbortSignal): Promise<CameraConfiguration> {

@@ -36,10 +36,12 @@ from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
 from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest
+from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 
 
 @asynccontextmanager
 async def lifespan(app):
+    validate_configuration()
     janitor = Maintenance(store)
     AuthService(store).ensure_bootstrap_admin()
     janitor.start()
@@ -87,7 +89,7 @@ async def authentication_and_case_scope(request, call_next):
     if not request.url.path.startswith('/api/') or request.method == 'OPTIONS' or not auth_enabled():
         return await call_next(request)
     path=request.url.path
-    if path in {'/api/health','/api/auth/status','/api/auth/login'}:
+    if path in {'/api/health','/api/auth/status','/api/auth/login','/api/privacy/status'}:
         return await call_next(request)
     service=AuthService(store)
     session=service.session(request.cookies.get(SESSION_COOKIE))
@@ -133,6 +135,11 @@ TimeFilter=Annotated[float|None,Query(ge=0,allow_inf_nan=False)]
 @app.get('/api/auth/status')
 def auth_status():
     return {'enabled':auth_enabled()}
+
+
+@app.get('/api/privacy/status')
+def get_privacy_status():
+    return privacy_status()
 
 
 @app.post('/api/auth/login')
@@ -271,7 +278,7 @@ def journey_links(plate:str|None=None,since:TimeFilter=None,until:TimeFilter=Non
                   limit:Annotated[int,Query(ge=1,le=5000)]=5000):
     interval(since,until)
     if plate: plate=check_plate(plate)
-    return store.journey_links(plate,0 if since is None else since,until,limit)
+    return redact_analytics_payload(store.journey_links(plate,0 if since is None else since,until,limit))
 
 @app.get('/api/audit/integrity')
 def audit_integrity():
@@ -290,6 +297,7 @@ def stream(camera_id:str,start:float|None=None,anchor:float|None=None):
 
 @app.get('/api/video/{camera_id}')
 def video(camera_id:str):
+    if privacy_enabled(): raise HTTPException(403,'Raw recorded playback is disabled while privacy mode is enabled')
     check_camera(camera_id); path=camera_playback_source(camera_id)
     if not path.is_file(): raise HTTPException(404,'Camera source is unavailable')
     return FileResponse(path,media_type='video/mp4')
@@ -318,7 +326,7 @@ def events(camera:str|None=None,plate:str|None=None,since:TimeFilter=None,until:
     interval(since,until)
     if camera: check_camera(camera)
     if plate: plate=check_plate(plate)
-    return get_events(camera,plate,since,until,limit=limit)
+    return redact_analytics_payload(get_events(camera,plate,since,until,limit=limit))
 
 @app.get('/api/stats')
 def get_stats(since:TimeFilter=None,until:TimeFilter=None):
@@ -332,9 +340,9 @@ def get_flows(since:TimeFilter=None,until:TimeFilter=None):
 def alerts(since:TimeFilter=None,until:TimeFilter=None,include_escalated:bool=False):
     interval(since,until)
     recent=derive_alerts(since,until)
-    if not include_escalated: return recent
+    if not include_escalated: return redact_analytics_payload(recent)
     known={a['alert_id'] for a in recent}
-    return recent+[a for a in store.escalated_alerts() if a['alert_id'] not in known]
+    return redact_analytics_payload(recent+[a for a in store.escalated_alerts() if a['alert_id'] not in known])
 
 @app.post('/api/alerts/{alert_id}/review')
 def review(alert_id:str,body:ReviewRequest):
@@ -355,11 +363,11 @@ def update_rules(body:RuleConfig):
     store.set_setting('rules',config); return config
 
 @app.post('/api/nlquery')
-def nlquery(body:QueryRequest): return nl_answer(body.question)
+def nlquery(body:QueryRequest): return redact_analytics_payload(nl_answer(body.question))
 
 @app.get('/api/trajectory/{plate}')
 def trajectory(plate:str,since:TimeFilter=None,until:TimeFilter=None):
-    interval(since,until); return get_trajectory(check_plate(plate),since,until)
+    interval(since,until); return redact_analytics_payload(get_trajectory(check_plate(plate),since,until))
 
 @app.post('/api/evidence/{plate}')
 def evidence(plate:str,since:TimeFilter=None,until:TimeFilter=None):

@@ -1,0 +1,7 @@
+services:
+  backend:
+    environment:
+      AI26_PRIVACY_ENABLED: "1"
+      AI26_PRIVACY_KEY_FILE: /run/secrets/ai26-privacy.key
+    volumes:
+      - ${AI26_PRIVACY_KEY_FILE:?Set AI26_PRIVACY_KEY_FILE to a protected key file}:/run/secrets/ai26-privacy.key:ro
