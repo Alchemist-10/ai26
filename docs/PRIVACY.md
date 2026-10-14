@@ -18,7 +18,7 @@ Set `AI26_PRIVACY_KEY_FILE` in the environment and add the overlay to each Compo
 docker compose -f compose.yaml -f compose.privacy.yaml up --build
 ```
 
-The key must be readable by the backend container user and must not grant group or other access. The API validates it at startup and fails closed if it is missing, too short, or too broadly accessible. Keep the key stable for an installation: changing it changes every pseudonym and breaks comparisons with previously displayed aliases. Back it up securely if stable aliases are required.
+The key must be readable by the backend container user (`10001` in the supplied image) and must not grant group or other access. For a host-mounted key, set its owner to UID `10001` (for example, `chown 10001:10001 /absolute/path/to/ai26-privacy.key`) before starting Compose. The API validates it at startup and fails closed if it is missing, too short, or too broadly accessible. Keep the key stable for an installation: changing it changes every pseudonym and breaks comparisons with previously displayed aliases. Back it up securely if stable aliases are required.
 
 ## What the mode changes
 
