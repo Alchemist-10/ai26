@@ -186,6 +186,23 @@ export interface EvidenceReport {
   artifacts: {sha256: string; role: string; url: string}[]
   package_hash: string
   trajectory: Trajectory
+  image_review_candidates?: {
+    scorer: string
+    status: string
+    raw_reads_retained: boolean
+    accuracy_claim: false
+    groups: {
+      passage_id: string
+      candidate_count: number
+      top_k: {
+        event_id?: string
+        crop_sha256: string
+        score: number
+        quality_components: Record<string, number>
+        ts?: number
+      }[]
+    }[]
+  }
 }
 
 export class ApiError extends Error {

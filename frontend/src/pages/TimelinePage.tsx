@@ -1,5 +1,5 @@
 import { usePolling } from "@/hooks/usePolling"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { FileText, Search } from "lucide-react"
 import { createEvidenceReport, getTrajectory, type Camera, type EvidenceReport, type Trajectory } from "@/lib/api"
 import { EvidenceTimeline } from "@/components/panels/EvidenceTimeline"
@@ -31,6 +31,15 @@ function Results({ query }: { query: Investigation }) {
     finally { setExporting(false) }
   }
   const hops = trajectory?.observations ?? []
+  const topImageCandidates = useMemo(() => {
+    const groups = report?.image_review_candidates?.groups ?? []
+    const unique = new Map<string, (typeof groups)[number]["top_k"][number]>()
+    for (const group of groups) for (const candidate of group.top_k) {
+      const existing = unique.get(candidate.crop_sha256)
+      if (!existing || candidate.score > existing.score) unique.set(candidate.crop_sha256, candidate)
+    }
+    return [...unique.values()].sort((a, b) => b.score - a.score).slice(0, 3)
+  }, [report?.image_review_candidates])
   const lines: MapLine[] = []
   if (trajectory) {
     for (const [state, links] of [["accepted", trajectory.accepted_links], ["rejected", trajectory.rejected_links], ["candidate", trajectory.candidate_links]] as const) {
@@ -48,7 +57,9 @@ function Results({ query }: { query: Investigation }) {
       <button type="button" className={button} disabled={!hops.length || !!error || exporting} onClick={generate}><FileText className="mr-2 inline h-4 w-4" />{exporting ? "Creating report…" : "Create report snapshot"}</button>
     </div>
     {trajectory && hops.length === 0 && <div className="rounded border border-zinc-700 p-6"><h3 className="font-semibold">No matching supported plate observations</h3><p className="mt-2 text-sm text-zinc-400">This plate has no supported reads in the selected interval. Check source availability or choose another interval. No route or evidence has been inferred.</p></div>}
-    {report && <div className="rounded border border-zinc-700 p-3 text-sm"><p>Saved snapshot {report.report_id} · {report.trajectory.observations.length} observations</p><p className="my-2 break-all font-mono text-xs text-zinc-400">SHA-256 {report.package_hash}</p><div className="flex flex-wrap gap-4"><a className="underline" href={`/api/reports/${report.report_id}`}>Download JSON</a><a className="underline" href={`/api/reports/${report.report_id}/package`}>Download artifact package</a><a className="underline" target="_blank" rel="noreferrer" href={`/api/reports/${report.report_id}/print`}>Open report / Save PDF</a></div><p className="mt-2 text-xs text-zinc-400">{report.retention}. This saved report remains separate from subsequent live updates.</p></div>}
+    {report && <div className="rounded border border-zinc-700 p-3 text-sm"><p>Saved snapshot {report.report_id} · {report.trajectory.observations.length} observations</p><p className="my-2 break-all font-mono text-xs text-zinc-400">SHA-256 {report.package_hash}</p><div className="flex flex-wrap gap-4"><a className="underline underline-offset-4 hover:text-teal-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400" href={`/api/reports/${report.report_id}`}>Download JSON</a><a className="underline underline-offset-4 hover:text-teal-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400" href={`/api/reports/${report.report_id}/package`}>Download artifact package</a><a className="underline underline-offset-4 hover:text-teal-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400" target="_blank" rel="noreferrer" href={`/api/reports/${report.report_id}/print`}>Open report / Save PDF</a></div><p className="mt-2 text-xs text-zinc-400">{report.retention}. This saved report remains separate from subsequent live updates.</p>
+      {report.image_review_candidates && <div className="mt-4 border-t border-zinc-800 pt-3"><h3 className="font-medium">Image review shortlist</h3><p className="mt-1 text-xs text-zinc-400">Highest-scoring three crops · heuristic only, not OCR accuracy. All raw images remain in the report.</p>{topImageCandidates.length > 0 ? <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">{topImageCandidates.map((candidate,index)=><li key={candidate.crop_sha256} className="min-w-0"><a className="block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400" href={`/api/artifacts/${candidate.crop_sha256}`} target="_blank" rel="noreferrer" aria-label={`Open image review candidate ${index+1}`}><img src={`/api/artifacts/${candidate.crop_sha256}`} alt={`Plate crop review candidate ${index+1}`} loading="lazy" decoding="async" width="240" height="96" className="h-24 w-full rounded-sm border border-zinc-800 bg-zinc-950 object-contain" /><span className="mt-1 block text-xs text-zinc-300">Candidate {index+1} · heuristic {candidate.score.toFixed(2)}</span><span className="block truncate font-mono text-[10px] text-zinc-500">{candidate.crop_sha256}</span></a></li>)}</ul> : <p className="mt-2 text-xs text-zinc-400">No current stored plate crops were available to rank.</p>}</div>}
+    </div>}
     {!!hops.length && <div className="grid gap-4 lg:grid-cols-2">
       <div className="h-80 overflow-hidden rounded border border-zinc-700"><OsmMap points={hops.map((h,i)=>({id:`${h.camera_id}-${i}`,lat:h.lat,lon:h.lon,label:h.camera_id,detail:h.location_confirmed?h.location:"Location unconfirmed"}))} lines={lines} className="h-full w-full" /></div>
       <div className="space-y-3"><p className="text-sm text-zinc-400">Solid teal: travel-gated candidates. Dashed amber: unresolved calibration. Dashed red: rejected transitions.</p>
