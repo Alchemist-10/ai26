@@ -85,6 +85,9 @@ does not infer identities, fuse OCR, or provide calibrated confidence.
 For bounded 2× shift-and-add burst reconstruction, see
 [Burst super-resolution](BURST_SUPER_RESOLUTION.md). Outputs are explicitly
 reconstructed derivatives; real burst quality and OCR benefit remain unmeasured.
+For session-held-out camera-pair topology and empirical travel-time windows, see
+[Route topology](ROUTE_TOPOLOGY.md). It only emits review candidates and cannot
+write live route constraints or establish independent coordinate/clock validity.
 For review-only plate-string similarity and false-candidate threshold sweeps on
 explicitly labeled pairs, see [Plate matching](PLATE_MATCHING.md). It never
 merges identities and does not produce a real-data measurement without supplied

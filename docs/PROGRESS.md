@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **44 done, 32 partial, 4 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **44 done, 33 partial, 3 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -39,7 +39,7 @@ cannot attach custom headers. Auth is disabled in the default local stack. Case
 grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. Self-service account recovery
 and external identity remain pending.
-The isolated full backend suite passes 266 tests; frontend TypeScript build and lint
+The isolated full backend suite passes 274 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 
@@ -357,7 +357,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | RS-06 | Pending | Train/evaluate a quality classifier, dehazing and deblurring models, and Indian-plate OCR adaptation. | Optional research work; no implementation or measured evaluation claimed. |
 | RS-07 | Partial | Add restoration safety checks and preserve raw versus enhanced/reconstructed artifact provenance. | Offline enhancement derivatives carry method/parameter metadata and hashes while source hashes/status remain explicit and outputs never overwrite files; live restoration/reconstruction integration, OCR safety tests on labeled footage and deployment provenance remain. |
 | RS-08 | Partial | Optional burst super-resolution with an explicit reconstructed status, not a raw-evidence claim. | Offline 2× phase-correlation/shift-and-add utility accepts bounded same-camera bursts, rejects weak registration or missing subpixel diversity, and writes no-clobber PNG derivatives with source/output hashes and explicit `reconstructed` status. Synthetic tests cover bounds, plumbing and provenance; real burst quality, motion/occlusion handling and OCR benefit remain unmeasured. |
-| RS-09 | Pending | Learned camera topology and calibrated travel-time distributions. | Optional research work; no implementation or measured evaluation claimed. |
+| RS-09 | Partial | Learned camera topology and calibrated travel-time distributions. | Offline trainer estimates directed edge windows from positive training sessions and reports held-out precision/recall/false-accept denominators on session-disjoint positive/negative candidates. It rejects repeated pair samples within a session and requires coordinate/clock calibration declarations. Tests are synthetic; declarations, labels and route coverage are not independently verified. Output is review-only and never writes production constraints. |
 | RS-10 | Partial | Complete raw/classical/learned/fusion ablations and model cards with data lineage. | Paired ablation runner enforces identical manifest-hashed test samples, exact labels, per-variant configuration/weight provenance and reports deltas against raw. A model-card template captures intended use, data, metrics, conditions and failure cases. No complete labeled dataset or real four-way ablation is available, so model cards remain unfilled and no best-variant claim is made. |
 
 ### Optional production and edge
