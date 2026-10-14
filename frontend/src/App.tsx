@@ -6,14 +6,14 @@ import { AuthGate } from "@/components/AuthGate"
 import { CameraWall } from "@/components/CameraWall"
 import { MainVideo } from "@/components/MainVideo"
 import { NavDrawer } from "@/components/NavDrawer"
-import { MapView } from "@/components/panels/MapView"
-import { AlertsPanel } from "@/components/panels/AlertsPanel"
-import { AnalyticsPanel } from "@/components/panels/AnalyticsPanel"
-import { TimelinePage } from "@/pages/TimelinePage"
-import { QueryPage } from "@/pages/QueryPage"
-import { CongestionPage } from "@/pages/CongestionPage"
 import { IntroSplash } from "@/components/IntroSplash"
 
+const MapView = lazy(() => import("@/components/panels/MapView").then(module => ({ default: module.MapView })))
+const AlertsPanel = lazy(() => import("@/components/panels/AlertsPanel").then(module => ({ default: module.AlertsPanel })))
+const AnalyticsPanel = lazy(() => import("@/components/panels/AnalyticsPanel").then(module => ({ default: module.AnalyticsPanel })))
+const TimelinePage = lazy(() => import("@/pages/TimelinePage").then(module => ({ default: module.TimelinePage })))
+const QueryPage = lazy(() => import("@/pages/QueryPage").then(module => ({ default: module.QueryPage })))
+const CongestionPage = lazy(() => import("@/pages/CongestionPage").then(module => ({ default: module.CongestionPage })))
 const CameraSettings = lazy(() => import("@/pages/CameraSettings"))
 const UserAdministration = lazy(() => import("@/pages/UserAdministration"))
 const SecuritySettings = lazy(() => import("@/pages/SecuritySettings"))
@@ -130,12 +130,14 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
             </div>
           </div>
         )}
-        {page === "map" && <MapView cameras={cameras} focused={focused} onFocus={focusCamera} />}
-        {page === "congestion" && <CongestionPage cameras={cameras} />}
-        {page === "timeline" && <TimelinePage cameras={cameras} />}
-        {page === "alerts" && <AlertsPanel />}
-        {page === "analytics" && <AnalyticsPanel cameras={cameras} />}
-        {page === "query" && <QueryPage />}
+        <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading dashboard view…</p>}>
+          {page === "map" && <MapView cameras={cameras} focused={focused} onFocus={focusCamera} />}
+          {page === "congestion" && <CongestionPage cameras={cameras} />}
+          {page === "timeline" && <TimelinePage cameras={cameras} />}
+          {page === "alerts" && <AlertsPanel />}
+          {page === "analytics" && <AnalyticsPanel cameras={cameras} />}
+          {page === "query" && <QueryPage />}
+        </Suspense>
         {page === "accounts" && user?.role === "admin" && <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading user administration…</p>}><UserAdministration /></Suspense>}
         {page === "security" && user && <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading account security…</p>}><SecuritySettings /></Suspense>}
         {page === "routes" && (!user || user.role === "admin" || user.role === "operator") && <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading camera-pair constraints…</p>}><RouteConstraintsPage cameras={cameras} /></Suspense>}

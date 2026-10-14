@@ -120,6 +120,18 @@ one flows request; camera-catalog polls continued separately. This verifies the
 new cadence, not a measured reduction in CPU, end-to-end latency or Core Web
 Vitals.
 
+## Dashboard route chunks — 14 October 2026
+
+The camera wall is the initial view, but map, congestion, timeline, alerts,
+analytics, and query pages were statically imported into the initial JavaScript
+entry. Those page modules now load on first navigation behind an accessible
+loading status. Production builds from the same checkout/toolchain changed the
+entry from 343.42 kB (104.04 kB gzip) to 284.20 kB (88.45 kB gzip), saving
+59.22 kB (15.59 kB gzip, about 15% compressed) from the initial entry. The
+deferred page chunks total 52.32 kB raw / 18.23 kB gzip in this build; they are
+requested only when a corresponding page is selected. This is a bundle-size
+comparison, not an instrumented LCP/INP or real-device measurement.
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded
