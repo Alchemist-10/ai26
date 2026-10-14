@@ -13,6 +13,9 @@ backend/static/playback/CAM-0[789].mp4
 
 evaluation/results/
 backups/
+secrets/
+*.key
+*.pem
 
 # Local UI review captures; durable validation facts live in docs/validation.
 .impeccable/review/

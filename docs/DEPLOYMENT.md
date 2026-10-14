@@ -50,9 +50,35 @@ stack use `docker compose down`; named application data remains. `docker compose
 down -v` removes that persistent data volume.
 
 This is a self-hosted packaging baseline, not a hardened public deployment.
-Pin image digests and add authentication, TLS, access controls, monitored
+Pin image digests and add authentication, role access controls, monitored
 off-host backups and tested full-data restoration before exposing sensitive
-camera feeds outside a trusted local network.
+camera feeds outside a trusted local network. The optional TLS overlay below
+provides transport encryption only.
+
+## Optional TLS reverse proxy
+
+For an HTTPS endpoint with an existing certificate, set `AI26_TLS_CERT_FILE` and
+`AI26_TLS_KEY_FILE` to absolute host paths outside the repository, then run:
+
+```sh
+docker compose -f compose.yaml -f compose.tls.yaml up --build backend frontend_tls
+```
+
+The TLS service publishes the UI on `127.0.0.1:8443` by default and redirects its
+HTTP port (`8080`) to HTTPS. Set `AI26_TLS_HOST` to a LAN interface only when the
+host firewall and access policy are ready; set `AI26_TLS_PORT` and
+`AI26_HTTP_REDIRECT_PORT` if those host ports are occupied. Mount the full-chain
+certificate and private key read-only. Keep the private key owned by the host
+operator with mode `0600`, outside source control and outside routine database
+backups. `.gitignore` excludes the local `secrets/` directory and `*.key`/`*.pem`
+files.
+Renew the certificate on the host and recreate/reload the TLS service after
+renewal. The proxy accepts TLS 1.2/1.3 and sends HSTS on HTTPS responses.
+
+This overlay adds transport encryption only. The base local HTTP frontend remains
+available on its loopback port; the TLS listener itself does not authenticate
+users, authorize roles or create an externally trusted audit checkpoint. Do not
+publish either listener to an untrusted network until those controls are in place.
 
 References: Docker [Compose startup order and health checks](https://docs.docker.com/compose/how-tos/startup-order/),
 [Compose production configuration](https://docs.docker.com/compose/how-tos/production/),

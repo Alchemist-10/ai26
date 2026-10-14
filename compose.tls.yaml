@@ -1,0 +1,19 @@
+services:
+  frontend_tls:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      NGINX_ENVSUBST_FILTER: ^AI26_
+      AI26_TLS_PORT: ${AI26_TLS_PORT:-8443}
+    ports:
+      - "${AI26_TLS_HOST:-127.0.0.1}:${AI26_HTTP_REDIRECT_PORT:-8080}:80"
+      - "${AI26_TLS_HOST:-127.0.0.1}:${AI26_TLS_PORT:-8443}:443"
+    volumes:
+      - ./frontend/nginx-tls.conf:/etc/nginx/templates/default.conf.template:ro
+      - ${AI26_TLS_CERT_FILE:?Set AI26_TLS_CERT_FILE to the full-chain certificate path}:/etc/nginx/tls/fullchain.pem:ro
+      - ${AI26_TLS_KEY_FILE:?Set AI26_TLS_KEY_FILE to the private-key path}:/etc/nginx/tls/privkey.pem:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
