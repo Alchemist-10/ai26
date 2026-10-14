@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **44 done, 31 partial, 5 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **44 done, 32 partial, 4 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -356,7 +356,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | RS-05 | Partial | Collect adverse-weather data and build a controlled degradation generator. | Offline deterministic rain, fog, low-light, motion-blur and sensor-noise derivatives write no-clobber PNGs with source/output hashes, seed and explicit synthetic-only labels. Real adverse-weather clips, temporal consistency, held-out labels and OCR robustness measurements remain pending. |
 | RS-06 | Pending | Train/evaluate a quality classifier, dehazing and deblurring models, and Indian-plate OCR adaptation. | Optional research work; no implementation or measured evaluation claimed. |
 | RS-07 | Partial | Add restoration safety checks and preserve raw versus enhanced/reconstructed artifact provenance. | Offline enhancement derivatives carry method/parameter metadata and hashes while source hashes/status remain explicit and outputs never overwrite files; live restoration/reconstruction integration, OCR safety tests on labeled footage and deployment provenance remain. |
-| RS-08 | Pending | Optional burst super-resolution with an explicit reconstructed status, not a raw-evidence claim. | Optional research work; no implementation or measured evaluation claimed. |
+| RS-08 | Partial | Optional burst super-resolution with an explicit reconstructed status, not a raw-evidence claim. | Offline 2× phase-correlation/shift-and-add utility accepts bounded same-camera bursts, rejects weak registration or missing subpixel diversity, and writes no-clobber PNG derivatives with source/output hashes and explicit `reconstructed` status. Synthetic tests cover bounds, plumbing and provenance; real burst quality, motion/occlusion handling and OCR benefit remain unmeasured. |
 | RS-09 | Pending | Learned camera topology and calibrated travel-time distributions. | Optional research work; no implementation or measured evaluation claimed. |
 | RS-10 | Partial | Complete raw/classical/learned/fusion ablations and model cards with data lineage. | Paired ablation runner enforces identical manifest-hashed test samples, exact labels, per-variant configuration/weight provenance and reports deltas against raw. A model-card template captures intended use, data, metrics, conditions and failure cases. No complete labeled dataset or real four-way ablation is available, so model cards remain unfilled and no best-variant claim is made. |
 

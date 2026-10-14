@@ -82,6 +82,9 @@ corruptions, not collected adverse-weather footage or OCR robustness evidence.
 For bounded same-camera burst alignment with dense optical flow, see
 [Frame alignment](FLOW_ALIGNMENT.md). It is an offline image experiment and
 does not infer identities, fuse OCR, or provide calibrated confidence.
+For bounded 2× shift-and-add burst reconstruction, see
+[Burst super-resolution](BURST_SUPER_RESOLUTION.md). Outputs are explicitly
+reconstructed derivatives; real burst quality and OCR benefit remain unmeasured.
 For review-only plate-string similarity and false-candidate threshold sweeps on
 explicitly labeled pairs, see [Plate matching](PLATE_MATCHING.md). It never
 merges identities and does not produce a real-data measurement without supplied
