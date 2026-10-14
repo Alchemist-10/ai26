@@ -282,6 +282,31 @@ class Reliability(unittest.TestCase):
         try:self.assertEqual(reopened.alerts()[0]['review'][0]['reviewer'],'Course reviewer')
         finally:reopened.close()
 
+    def test_escalation_requires_target_and_stays_queued_until_decided(self):
+        events.add_events([self.plate()]);alert=events.derive_alerts()[0]
+        url=f'/api/alerts/{alert["alert_id"]}/review'
+        missing=self.client.post(url,json={'state':'escalated','reviewer':'Operator'})
+        self.assertEqual(missing.status_code,422)
+        escalated=self.client.post(url,json={'state':'escalated','reviewer':'Operator',
+                                               'escalation_target':'Traffic desk','note':'Please verify crop'})
+        self.assertEqual(escalated.status_code,200)
+        self.assertEqual(escalated.json()['escalation_target'],'Traffic desk')
+        # A caller looking only after the alert timestamp still sees the active handoff.
+        queued=self.client.get('/api/alerts',params={'since':self.now+1,'include_escalated':'true'})
+        self.assertEqual([item['alert_id'] for item in queued.json()],[alert['alert_id']])
+        reopened=Repository(self.path)
+        try:
+            item=reopened.escalated_alerts()[0]
+            self.assertEqual(item['review'][-1]['escalation_target'],'Traffic desk')
+        finally:reopened.close()
+        reassigned=self.client.post(url,json={'state':'escalated','reviewer':'Operator',
+                                                'escalation_target':'Duty supervisor','note':'Reassigned'})
+        self.assertEqual(reassigned.status_code,200)
+        self.assertEqual(self.client.get('/api/alerts',params={'include_escalated':'true'}).json()[0]['review'][-1]['escalation_target'],'Duty supervisor')
+        resolved=self.client.post(url,json={'state':'acknowledged','reviewer':'Duty supervisor','note':'Reviewed'})
+        self.assertEqual(resolved.status_code,200)
+        self.assertEqual(self.repo.escalated_alerts(),[])
+
     def test_rule_configuration_validated_and_persisted(self):
         valid={'watchlist':{'kl 07 ab 1234':'Review this local plate'},'restricted_cameras':['CAM-07'],'dwell_zones':[]}
         self.assertEqual(self.client.put('/api/rules',json=valid).status_code,200)

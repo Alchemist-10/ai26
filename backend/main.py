@@ -190,8 +190,12 @@ def get_flows(since:TimeFilter=None,until:TimeFilter=None):
     interval(since,until); return flows(since,until)
 
 @app.get('/api/alerts')
-def alerts(since:TimeFilter=None,until:TimeFilter=None):
-    interval(since,until); return derive_alerts(since,until)
+def alerts(since:TimeFilter=None,until:TimeFilter=None,include_escalated:bool=False):
+    interval(since,until)
+    recent=derive_alerts(since,until)
+    if not include_escalated: return recent
+    known={a['alert_id'] for a in recent}
+    return recent+[a for a in store.escalated_alerts() if a['alert_id'] not in known]
 
 @app.post('/api/alerts/{alert_id}/review')
 def review(alert_id:str,body:ReviewRequest):

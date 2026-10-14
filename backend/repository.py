@@ -267,6 +267,11 @@ class Repository:
             rows = self.db.execute('SELECT * FROM alerts WHERE ts>=? ORDER BY ts DESC LIMIT 200', (since,)).fetchall()
         return [{**json.loads(r['data']), 'state': r['state'], 'review': json.loads(r['review']) if r['review'] else None} for r in rows]
 
+    def escalated_alerts(self, limit=200):
+        with self.lock:
+            rows = self.db.execute("SELECT * FROM alerts WHERE state='escalated' ORDER BY ts DESC,id DESC LIMIT ?", (limit,)).fetchall()
+        return [{**json.loads(r['data']), 'state': r['state'], 'review': json.loads(r['review']) if r['review'] else None} for r in rows]
+
     def review_alert(self, alert_id, review):
         with self.lock, self.db:
             old = self.db.execute('SELECT review FROM alerts WHERE id=?', (alert_id,)).fetchone()

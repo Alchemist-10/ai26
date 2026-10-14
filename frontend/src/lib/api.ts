@@ -122,7 +122,8 @@ export interface DetectionEvent {
 export interface Alert {
   alert_id?: string
   state?: string
-  review?: { reviewer: string; state: string; note: string; ts: number }[]
+  review?: { reviewer: string; state: string; note: string; escalation_target?: string | null; ts: number }[]
+  escalation_target?: string | null
   severity: "info" | "warning" | "critical"
   type: string
   summary: string
@@ -229,8 +230,8 @@ export async function getEvents(params: { camera?: string; plate?: string; limit
   return requestJson<DetectionEvent[]>(`/api/events${q ? `?${q}` : ""}`, { signal })
 }
 
-export async function getAlerts(signal?: AbortSignal): Promise<Alert[]> {
-  return requestJson<Alert[]>("/api/alerts", { signal })
+export async function getAlerts(signal?: AbortSignal, includeEscalated = false): Promise<Alert[]> {
+  return requestJson<Alert[]>(`/api/alerts${includeEscalated ? "?include_escalated=true" : ""}`, { signal })
 }
 
 export async function getStats(signal?: AbortSignal): Promise<Stats> {
@@ -277,8 +278,8 @@ export function snapshotUrl(cameraId: string) {
 export async function getFlows(signal?: AbortSignal): Promise<{ from: string; to: string; count: number }[]> {
   return requestJson("/api/flows", { signal })
 }
-export async function reviewAlert(id: string, state: string, reviewer: string, note: string) {
-  return requestJson(`/api/alerts/${encodeURIComponent(id)}/review`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({state, reviewer, note}) })
+export async function reviewAlert(id: string, state: string, reviewer: string, note: string, escalationTarget?: string) {
+  return requestJson(`/api/alerts/${encodeURIComponent(id)}/review`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({state, reviewer, note, ...(escalationTarget ? { escalation_target: escalationTarget } : {})}) })
 }
 export interface RuleConfig {
   watchlist: Record<string, string>

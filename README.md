@@ -41,7 +41,8 @@ CPU PyTorch on Linux. After the first installation, restart with
 - Camera settings with source inspection/pending-restart status, bounded import history,
   audited metadata edits, read-only revision history, preserved
   drafts and explicit concurrent-save recovery.
-- Editable local watchlists, zone sightings, elapsed-time dwell rules, and review.
+- Editable local watchlists, zone sightings, elapsed-time dwell rules, and a
+  durable local alert-escalation queue with reassignment and audit history.
 - Recorded sampling advances nearby verified frame positions with bounded grabs,
   retaining seeks for resets and larger jumps.
 - Available cameras share the configured sampling budget without missing/retry slots;
@@ -76,6 +77,7 @@ investigations never receive its observations automatically.
 | `docs/PROGRESS.md` | Full implementation checklist with completion evidence |
 | `docs/PERSISTENCE.md` | Camera revision and stored journey decision API |
 | `docs/SETTINGS.md` | Metadata editor, draft/conflict recovery and browser validation |
+| `docs/ALERT_REVIEW.md` | Alert decisions, durable escalations and workflow limits |
 | `docs/SOURCE_IMPORT.md` | Validated recorded footage import, activation and recovery |
 | `docs/SOURCE_STATUS.md` | Read-only source inspection, pending imports and history |
 | `docs/SOURCE_UPLOADS.md` | Streamed browser preparation, cancellation and retained receipts |

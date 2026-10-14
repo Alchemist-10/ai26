@@ -1,6 +1,6 @@
 """Validation shared by HTTP and ingestion; no model loading required."""
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator, model_validator
 import math
 
 class Observation(BaseModel):
@@ -28,9 +28,19 @@ class QueryRequest(BaseModel):
         return value.strip()
 
 class ReviewRequest(BaseModel):
-    state: Literal['acknowledged', 'dismissed', 'reviewed', 'open']
+    model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+    state: Literal['acknowledged', 'dismissed', 'reviewed', 'open', 'escalated']
     reviewer: StrictStr = Field(min_length=1, max_length=100)
     note: StrictStr = Field(default='', max_length=1000)
+    escalation_target: StrictStr | None = Field(default=None, min_length=1, max_length=100)
+
+    @model_validator(mode='after')
+    def escalation_requires_target(self):
+        if self.state == 'escalated' and not self.escalation_target:
+            raise ValueError('An escalation target is required')
+        if self.state != 'escalated' and self.escalation_target is not None:
+            raise ValueError('An escalation target is only valid for escalated state')
+        return self
 
 class ZoneRule(BaseModel):
     camera_id: str

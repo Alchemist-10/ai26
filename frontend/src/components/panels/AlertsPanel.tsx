@@ -5,6 +5,7 @@ import { DEMO_ALERTS } from "@/lib/demo"
 
 const button="rounded border border-zinc-700 px-3 py-2 text-sm hover:bg-zinc-800 disabled:opacity-50"
 const field="min-w-0 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-base"
+type ReviewState = "acknowledged" | "reviewed" | "dismissed" | "escalated"
 
 function Rules() {
   const [rules,setRules]=useState<RuleConfig|null>(null)
@@ -49,29 +50,54 @@ export function AlertsPanel() {
   const [demo,setDemo]=useState(false)
   const [reviewer,setReviewer]=useState("")
   const [note,setNote]=useState("")
+  const [escalationTarget,setEscalationTarget]=useState("")
   const [busy,setBusy]=useState<string|null>(null)
   const [error,setError]=useState<string|null>(null)
   usePolling(async signal => {
     try {
-      const result = await getAlerts(signal)
+      const result = await getAlerts(signal,true)
       if (!signal.aborted) { setAlerts(result); setError(null) }
     } catch (e) { if (!signal.aborted) setError(e instanceof Error ? e.message : "Alerts failed") }
   }, 3000, !demo)
-  async function review(alert:Alert,state:string){
+  async function review(alert:Alert,state:ReviewState){
     if(!alert.alert_id||busy)return
     if(!reviewer.trim()){setError("Enter your reviewer name before recording a decision");return}
+    if(state==="escalated"&&!escalationTarget.trim()){setError("Enter the reviewer or team receiving this escalation");return}
     setBusy(alert.alert_id)
-    try{await reviewAlert(alert.alert_id,state,reviewer,note);setAlerts(await getAlerts());setError(null)}
+    try{await reviewAlert(alert.alert_id,state,reviewer,note,state==="escalated"?escalationTarget.trim():undefined);setAlerts(await getAlerts(undefined,true));setError(null)}
     catch(e){setError(e instanceof Error?e.message:"Review could not be saved")}
     finally{setBusy(null)}
   }
-  const shown=demo?DEMO_ALERTS:alerts
+  const queued=demo?[]:alerts.filter(a=>a.state==="escalated")
+  const shown=demo?DEMO_ALERTS:alerts.filter(a=>a.state!=="escalated")
+  const renderAlert=(a:Alert,i:number)=>(
+    <article key={a.alert_id ?? i} className="rounded border border-zinc-800 p-4">
+      <p className={`text-sm ${a.severity==="critical"?"text-red-200":a.severity==="warning"?"text-amber-200":"text-zinc-400"}`}>
+        {a.severity} · {a.type} · {a.state ?? "synthetic"}
+      </p>
+      <h2 className="my-2 font-semibold">{a.summary}</h2>
+      <p className="text-sm text-zinc-400">{a.detail}</p>
+      <p className="mt-2 text-xs text-zinc-400">{new Date(a.ts*1000).toLocaleString()}</p>
+      {a.escalation_target&&<p className="mt-2 text-sm">Escalated to <span className="font-medium">{a.escalation_target}</span></p>}
+      {a.review?.map((r,j)=><p key={j} className="mt-2 break-words text-sm">
+        {r.reviewer} · {r.state}{r.escalation_target?` → ${r.escalation_target}`:""}{r.note?` · ${r.note}`:""}
+      </p>)}
+      {a.alert_id&&<div className="mt-3 flex flex-wrap gap-2">
+        {(["acknowledged","reviewed","dismissed","escalated"] as const).map(state=><button
+          key={state}
+          className={button}
+          disabled={!!busy}
+          onClick={()=>review(a,state)}
+        >{busy===a.alert_id?"Saving…":state==="acknowledged"?"Acknowledge":state==="reviewed"?"Mark reviewed":state==="dismissed"?"Dismiss":"Escalate / reassign"}</button>)}
+      </div>}
+    </article>
+  )
   return <div className="h-full overflow-y-auto bg-black p-4 text-white sm:p-6"><div className="mx-auto flex max-w-5xl flex-col gap-4">
-    <div><h1 className="text-lg font-semibold">Rule alerts and review</h1><p className="mt-2 text-sm text-zinc-400">Supported plate watchlist, zone sightings, camera-transition review, and configured per-track dwell. Class co-occurrence is not an identity match.</p></div>
+    <div><h1 className="text-lg font-semibold">Rule alerts and review</h1><p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-400">Review plate watchlist, zone-sighting, camera-transition, and per-track dwell alerts. Escalations stay in the queue beyond the recent-alert window. Reviewer names and recipients are local claims; this app sends no external notifications.</p></div>
     <button className={`${button} self-start`} onClick={()=>setDemo(!demo)}>{demo?"Return to real rule alerts":"Preview synthetic alerts"}</button>
-    {demo?<p className="text-sm text-amber-200">Synthetic examples only. Review actions are unavailable for these fixtures.</p>:<><Rules /><div className="flex flex-wrap gap-3"><label className="flex flex-col gap-1 text-sm">Reviewer<input className={field} maxLength={100} value={reviewer} onChange={e=>setReviewer(e.target.value)} /></label><label className="flex flex-1 flex-col gap-1 text-sm">Review note<input className={field} maxLength={1000} value={note} onChange={e=>setNote(e.target.value)} /></label></div></>}
+    {demo?<p className="text-sm text-amber-200">Synthetic examples only. Review and escalation actions are unavailable for these fixtures.</p>:<><Rules /><div className="grid gap-3 sm:grid-cols-2"><label className="flex min-w-0 flex-col gap-1 text-sm">Reviewer name<input className={field} maxLength={100} value={reviewer} onChange={e=>setReviewer(e.target.value)} /></label><label className="flex min-w-0 flex-col gap-1 text-sm">Escalation recipient<input className={field} maxLength={100} value={escalationTarget} onChange={e=>setEscalationTarget(e.target.value)} placeholder="Reviewer or team" /></label><label className="flex min-w-0 flex-col gap-1 text-sm sm:col-span-2">Review or handoff note<input className={field} maxLength={1000} value={note} onChange={e=>setNote(e.target.value)} /></label></div></>}
     {error && <p role="alert" className="rounded border border-red-400/40 p-3 text-red-200">{error}</p>}
-    {!shown.length && <p className="rounded border border-zinc-800 p-6 text-sm text-zinc-400">No configured rule alerts in the last five minutes. This does not establish that every camera is processing or that no event occurred.</p>}
-    {shown.map((a,i)=><article key={a.alert_id ?? i} className="rounded border border-zinc-800 p-4"><p className={`text-sm ${a.severity==="critical"?"text-red-200":a.severity==="warning"?"text-amber-200":"text-zinc-400"}`}>{a.severity} · {a.type} · {a.state ?? "synthetic"}</p><h2 className="my-2 font-semibold">{a.summary}</h2><p className="text-sm text-zinc-400">{a.detail}</p><p className="mt-2 text-xs text-zinc-400">{new Date(a.ts*1000).toLocaleString()}</p>{a.review?.map((r,j)=><p key={j} className="mt-2 text-sm">{r.reviewer} · {r.state} · {r.note}</p>)}{a.alert_id && <div className="mt-3 flex flex-wrap gap-2">{["acknowledged","reviewed","dismissed"].map(state=><button key={state} className={button} disabled={!!busy} onClick={()=>review(a,state)}>{busy===a.alert_id?"Saving…":state === "acknowledged"?"Acknowledge":state==="reviewed"?"Mark reviewed":"Dismiss"}</button>)}</div>}</article>)}
+    {!demo&&<section aria-labelledby="escalations-heading" className="flex flex-col gap-3"><div><h2 id="escalations-heading" className="font-semibold">Escalation queue <span className="text-sm font-normal text-zinc-400">{queued.length}</span></h2><p className="mt-1 text-sm text-zinc-400">Open handoffs remain visible here until a reviewer records the next decision.</p></div>{queued.length===0?<p className="rounded border border-zinc-800 p-4 text-sm text-zinc-400">No active escalations.</p>:queued.map(renderAlert)}</section>}
+    <section aria-labelledby="recent-alerts-heading" className="flex flex-col gap-3"><div><h2 id="recent-alerts-heading" className="font-semibold">{demo?"Synthetic examples":"Recent alerts"}</h2>{!demo&&<p className="mt-1 text-sm text-zinc-400">Recent rule alerts, including unresolved items. Empty results do not prove every camera is processing.</p>}</div>{shown.length===0?<p className="rounded border border-zinc-800 p-4 text-sm text-zinc-400">No recent configured rule alerts.</p>:shown.map(renderAlert)}</section>
   </div></div>
 }
