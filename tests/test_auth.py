@@ -193,6 +193,11 @@ class Authentication(unittest.TestCase):
                 totp_login = TestClient(main.app, base_url="https://testserver")
                 accepted = totp_login.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":mfa_tools.code_at(secret)})
                 self.assertEqual(accepted.status_code, 200)
+                with patch.dict(os.environ, {"AI26_AUTH_ENABLED":"1"}, clear=True):
+                    unavailable = TestClient(main.app, base_url="https://testserver")
+                    response = unavailable.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":mfa_tools.code_at(secret)})
+                    self.assertEqual(response.status_code, 503)
+                    self.assertIn("MFA cannot be verified", response.json()["error"]["message"])
                 first_recovery = TestClient(main.app, base_url="https://testserver")
                 self.assertEqual(first_recovery.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":recovery}).status_code, 200)
                 reuse = TestClient(main.app, base_url="https://testserver")

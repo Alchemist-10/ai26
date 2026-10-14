@@ -151,6 +151,7 @@ def auth_login(body:AuthLoginRequest,request:Request,response:Response):
     address=request.headers.get('x-real-ip') or (request.client.host if request.client else 'unknown')
     try: result,reason=AuthService(store).login(body.username,body.password,address,mfa_code=body.mfa_code)
     except AuthenticationError: result,reason=None,'invalid'
+    except RuntimeError as exc: raise HTTPException(503,'MFA cannot be verified; contact an administrator') from exc
     if reason=='limited': raise HTTPException(429,'Too many sign-in attempts; try again in 15 minutes')
     if reason=='mfa_required': raise HTTPException(401,'MFA_CODE_REQUIRED')
     if reason=='mfa_invalid': raise HTTPException(401,'Authenticator or recovery code is invalid')

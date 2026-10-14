@@ -36,8 +36,9 @@ requests carry case and purpose context and append to the local audit chain; rep
 GET polls for the same route are coalesced once per minute to keep previews light.
 Media URLs carry that context as query parameters because native browser media requests
 cannot attach custom headers. Auth is disabled in the default local stack. Case
-grants gate non-admin access; the service has no shared case registry. Account
-Self-service account recovery and external identity remain pending; MFA is available through a separate protected-key overlay.
+grants gate non-admin access; the service has no shared case registry. MFA is
+available through a separate protected-key overlay. Self-service account recovery
+and external identity remain pending.
 The isolated full backend suite passes 227 tests; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
