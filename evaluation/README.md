@@ -72,3 +72,7 @@ API PID. It writes endpoint latency, camera counter deltas, bounded timing windo
 and CPU/RSS conditions. It is separate from labeled accuracy evaluation, creates
 no model/processor and writes only the requested output. See
 [Runtime profiling](../docs/RUNTIME_PROFILE.md) for bounds, command and limits.
+
+For isolated classical image experiments, see
+[Classical enhancement](CLASSICAL_ENHANCEMENT.md). Those derivatives are not
+used in live processing and do not imply an OCR accuracy gain.
