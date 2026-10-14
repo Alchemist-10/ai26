@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **44 done, 27 partial, 9 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **44 done, 28 partial, 8 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -299,7 +299,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-11 | Done | Add actual health/FPS/frame-age/queue/last-event metrics per camera. | Real per-camera frame age, monotonic FPS, bounded six-phase timings, failed/overrun attempt counters, last read and source/error state; missing/retry cameras do not consume sampling slots. Queue depth zero for the no-queue architecture. |
 | P1-12 | Done | Separate local tracking from cross-camera identity; improve association under occlusion and clip loops. | Motion/box global assignment, ambiguity abstention, elapsed-time expiry and loop/reopen resets are tested; this is heuristic local tracking, with real occlusion/ID accuracy still unmeasured. |
 | P1-13 | Done | Deduplicate repeated same-track plate reads and retain corrections without silently overwriting evidence. | Immutable raw reads, deduplicated plate passages and conflict exclusion; uncertain corrections do not silently become supported identity. |
-| P1-14 | Pending | Add plate matching confidence and fuzzy matching with measured false-link limits. | Measured fuzzy matching/confidence and false-link limits require labeled identity data. |
+| P1-14 | Partial | Add plate matching confidence and fuzzy matching with measured false-link limits. | Review-only canonical plate edit-distance scores and labeled-pair threshold metrics report false-candidate denominators; identity linking is always false. Scores are uncalibrated, and operational false-link limits require independent labeled vehicle pairs and held-out recordings. |
 | P1-15 | Partial | Use validated camera locations and camera-pair travel constraints for cross-camera links. | Directed, audited min/max travel windows gate new cross-camera links; missing pair data stays unresolved and disabled pairs are rejected. Configuration requires both camera locations marked confirmed and is snapshotted with each link. Independent coordinate validation, road topology and measured travel windows remain absent. |
 | P1-16 | Partial | Handle missing cameras, clock skew, conflicting identities and disconnected routes explicitly. | Missing sources, unsynchronized replay, conflicting tracks and operator-marked disconnected camera pairs are explicit; calibrated skew and independently verified road connectivity remain pending. |
 | P1-17 | Done | Add an explicit mock known-plates registry if that is part of course scope, or remove registry-verification wording. | Removed registry-verification wording; no government registry or mock registry is presented as real verification. |

@@ -82,6 +82,10 @@ corruptions, not collected adverse-weather footage or OCR robustness evidence.
 For bounded same-camera burst alignment with dense optical flow, see
 [Frame alignment](FLOW_ALIGNMENT.md). It is an offline image experiment and
 does not infer identities, fuse OCR, or provide calibrated confidence.
+For review-only plate-string similarity and false-candidate threshold sweeps on
+explicitly labeled pairs, see [Plate matching](PLATE_MATCHING.md). It never
+merges identities and does not produce a real-data measurement without supplied
+labeled pairs.
 For read-only condition hints and enhancement candidates, see
 [Heuristic quality routing](QUALITY_ROUTER.md); its weather-like flags are
 unverified and do not control the live pipeline.
