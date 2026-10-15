@@ -119,8 +119,9 @@ trajectory queries exclude conflicting passages, while stored decision history
 preserves what that earlier query concluded.
 
 Replay clocks, live capture-arrival clocks and unconfirmed locations produce
-unresolved candidates with null physical speed. For manual observations with confirmed location labels, the existing
-straight-line speed gate can produce an `accepted` baseline link; that status still
+unresolved candidates with null physical speed. For manual observations with
+confirmed location labels, the existing straight-line speed gate can produce an
+`accepted` baseline link; that status still
 does not validate coordinates, clocks or vehicle identity. No learned cross-camera
 appearance model or calibrated road topology is introduced.
 

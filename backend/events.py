@@ -100,7 +100,7 @@ def build_trajectory(observations):
                 'metadata_basis':[first['metadata_basis'],second['metadata_basis']],
                 'time_bases':[first.get('time_basis','unspecified'),second.get('time_basis','unspecified')],
                 'identity_verified':False}
-        # Recorded playback time is not original synchronized capture time.
+        # Replay position and reader-arrival times are not synchronized capture clocks.
         uncalibrated = not first['location_confirmed'] or not second['location_confirmed'] or any(
             e.get('time_basis') in ('replay_clock', 'capture_arrival_clock') for e in (first, second))
         if elapsed <= 0:

@@ -79,8 +79,9 @@ capture-arrival clocks cannot support physical travel-time inference; those
 links remain unresolved candidates with null speed until synchronized capture
 clocks are available. The claimed offset uses frame index divided by reported
 FPS and is approximate for variable-frame-rate sources. For manual observations with confirmed
-location labels, the baseline uses exact plate equality and a fixed straight-line
-speed gate; coordinate and clock validation are not established by this status;
+FPS and is approximate for variable-frame-rate sources. For manual observations
+with confirmed location labels, the baseline uses exact plate equality and a fixed
+straight-line speed gate; coordinate and clock validation are not established by this status;
 accepted links still do not prove identity. Rejected links and mixed routes require
 review, with null speed for equal/nonpositive timestamps.
 
