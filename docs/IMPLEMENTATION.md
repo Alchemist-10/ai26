@@ -144,7 +144,8 @@ match their referenced digests. Packages over 64 MiB are refused. Print contains
 both passage observations and supporting raw reads, rather than the dashboard.
 
 Reports expire after 24 hours. A separate lifespan maintenance thread cleans
-expired reports/leases and seven-day sources every minute, including when inference
+expired reports/leases and observations/images using the configured retention
+period (seven days by default, 7–365 days) every minute, including when inference
 is disabled or fails. Active reports protect their existing source images until
 report expiry; version-1 reports receive leases during migration. Report creation
 checks referenced images and acquires leases under the same repository lock as

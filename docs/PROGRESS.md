@@ -37,7 +37,7 @@ grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. MFA-enrolled users can recover
 passwords using their authenticator or an unused recovery code; no-MFA accounts still
 depend on an administrator, and external identity remains pending.
-The isolated full backend suite passes 308 tests, including a simultaneous TOTP
+The isolated full backend suite passes 309 tests, including a simultaneous TOTP
 replay regression; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
@@ -321,7 +321,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P2-07 | Partial | Connect a real human-review/escalation workflow; add notifications only if required by the project. | Durable local escalation/reassignment queue records recipient, reviewer, note, timestamp and audit history; authenticated mode binds reviewer to the session account while local mode labels freeform names as claims. Active handoffs remain visible beyond the recent-alert window and resolve on a new decision. External notifications remain pending. |
 | P2-08 | Done | Package evidence observations, raw/canonical OCR, frames/crops, accepted/rejected paths and metadata consistently. | Manifest/raw reads/canonical strings/artifacts/link decisions/provenance packaged consistently with verified digests; derivative and coverage limits stated. |
 | P2-09 | Done | Provide direct JSON/package download and a dedicated PDF/print layout with matching report data. | Browser JSON/ZIP downloads verified; dedicated print contains the same stored snapshot and raw reads. PDF uses the browser print dialog. |
-| P2-10 | Done | Enforce defined retention/expiry rather than displaying a retention string. | 24-hour report expiry, seven-day source cleanup, schema-2 artifact leases, and independent maintenance; boundary and processing-disabled tests pass. |
+| P2-10 | Done | Enforce defined retention/expiry rather than displaying a retention string. | 24-hour report expiry, configurable 7–365-day observation/JPEG cleanup (seven-day default), schema-2 artifact leases, and independent maintenance; boundary and processing-disabled tests pass. |
 | P2-11 | Done | Add report access/audit records and signing if independently verifiable evidence is required. | JSON, ZIP and print report reads append audit records; regression tests verify each route and the audit chain. Version-5 evidence reports can be Ed25519-signed and verified offline with a separately trusted public key; unsigned mode is explicit. Operators can also sign verified audit heads and retain checkpoints off-host; automated anchoring remains an OP-04 limitation. |
 | P2-12 | Done | Keep demonstrations separate from live queries, including colors, confidence values and statuses. | Synthetic walkthrough/alerts are explicit selection; real queries never substitute them or export them as observed evidence. |
 | P2-13 | Done | Test query, camera recovery, empty investigation and evidence export flows end to end. | Browser empty investigation, focused missing-to-working camera recovery, keyboard/mobile and isolated synthetic report downloads/print verified; API query regressions pass. |

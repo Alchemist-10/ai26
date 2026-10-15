@@ -35,7 +35,7 @@ processed `source_mode=live`, `time_basis=capture_arrival_clock` frames and
 camera-local vehicle passage starts contribute. The aggregates contain camera,
 UTC quarter-hour, processed-sample count and passage count; they do not retain
 plate IDs or raw observations. They are retained for 90 days, independently of
-the seven-day raw-observation cleanup. A zero count is meaningful only when the
+the configurable raw-observation cleanup (seven days by default). A zero count is meaningful only when the
 hour has at least four processed frames across two UTC quarter-hour buckets.
 Missing or partial coverage is left unknown. Replay
 time is excluded so looping demo media cannot create a false historical pattern.

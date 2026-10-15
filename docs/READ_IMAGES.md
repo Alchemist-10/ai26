@@ -30,8 +30,9 @@ does not delete existing files; new unique images fail explicitly until capacity
 becomes available. This is an application budget, not an operating-system quota.
 
 Usage is indexed once and updated after successful publication. Age-based cleanup
-reconciles the index while deleting eligible seven-day files, preserving active
-report leases. Frame processing and health polling do not scan the directory for
+reconciles the index while deleting files older than the configured observation
+retention period (seven days by default, configurable from 7 to 365), preserving
+active report leases. Frame processing and health polling do not scan the directory for
 each read. The processor has no best-image reference cache to grow with track IDs.
 
 `/api/health` and camera catalog health expose `artifact_storage` (used/limit bytes),

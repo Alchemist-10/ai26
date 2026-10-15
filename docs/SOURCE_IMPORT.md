@@ -115,7 +115,7 @@ For invalid-pointer or configured-default recovery while the app is stopped, use
 `manifest.json` to restore `active.json`, then restart. Startup verifies the
 selected files. Keep a copy of the prior active manifest when performing manual
 recovery. The CLI is not a database backup/restore or forensic custody system.
-Managed video retention is independent of seven-day sampled JPEG retention and
+Managed video retention is independent of configurable sampled JPEG retention (seven days by default) and
 the 2 GiB JPEG budget. Avoid manually altering active release files.
 
 ## Validation

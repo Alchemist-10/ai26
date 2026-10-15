@@ -25,8 +25,9 @@ to the recipient.
 
 Watchlist entries can have a time window and a minimum number of supported
 sightings in a bounded lookback period. The current observation counts toward
-that minimum; the lookback is capped at the seven-day local observation-retention
-window. Local zone permits match a canonical plate, camera and half-open validity
+that minimum; the lookback is capped at seven days. Observation retention can be
+configured up to 365 days, but longer retention does not expand this rule window.
+Local zone permits match a canonical plate, camera and half-open validity
 period. A matching permit changes a restricted-camera warning into an informational
 permitted-visit alert. These records are manually entered and persisted in local
 settings; AI26 does not verify issuers, legal validity or external permit status.
