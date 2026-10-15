@@ -97,14 +97,15 @@ transport encryption only.
 
 For a host-managed Linux process, `deploy/systemd/ai26.service.example` runs the
 repository launcher as the dedicated `ai26` service account. Create that system
-account, deploy the checkout at `/opt/ai26` with read/execute access for it,
-install the frozen backend and frontend dependencies as that account, and
-prepare persistent paths before enabling the service. Run `useradd` only when
-the service account does not already exist:
+account, deploy the checkout at `/opt/ai26`, and prepare persistent paths before
+enabling the service. The launcher rebuilds the optimized frontend during
+startup, so the service account needs write access to the checkout/build output.
+Run `useradd` only when the service account does not already exist:
 
 ```sh
 sudo useradd --system --create-home --home-dir /var/lib/ai26 --shell /usr/sbin/nologin ai26
 sudo install -d -o ai26 -g ai26 /var/lib/ai26 /var/lib/ai26/sources
+sudo chown -R ai26:ai26 /opt/ai26
 sudo -u ai26 -H sh -c 'cd /opt/ai26/backend && uv sync --frozen'
 sudo -u ai26 -H npm ci --prefix /opt/ai26/frontend
 sudo install -d -o root -g root -m 0755 /etc/ai26
