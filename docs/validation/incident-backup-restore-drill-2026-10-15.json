@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "tested_on": "2026-10-15",
+  "scope": "isolated temporary AI26 API and SQLite database; no user data or persistent service was modified",
+  "configuration": {
+    "processing_enabled": false,
+    "authentication_enabled": false,
+    "temporary_data_root": true
+  },
+  "steps": [
+    "Started the API on an isolated loopback port and passed GET /api/health.",
+    "Created an audited rules update and verified the audit chain before backup.",
+    "Created a SQLite online snapshot and confirmed mode 0600 and integrity_check=ok.",
+    "Made a second temporary rules update after the snapshot.",
+    "Stopped the API cleanly, restored the snapshot with explicit stopped-service confirmation, and restarted the API.",
+    "Confirmed the post-snapshot update was absent and the restored audit chain remained valid with one record."
+  ],
+  "result": {
+    "api_health": "passed",
+    "snapshot_integrity": "passed",
+    "post_snapshot_change_removed": "passed",
+    "restored_audit_chain": "valid",
+    "restored_audit_records": 1,
+    "snapshot_mode": "0600"
+  },
+  "limitations": [
+    "This was a database-only restore drill; SQLite backup does not include footage, managed source releases, model weights, or JPEG evidence artifacts.",
+    "Authentication was disabled for the disposable test; this does not validate production account/MFA recovery or access controls.",
+    "No real incident, exposed secret, external checkpoint, TLS renewal, or off-host restore was simulated."
+  ]
+}

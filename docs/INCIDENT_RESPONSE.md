@@ -98,5 +98,14 @@ and evidence-handling rules; AI26 does not supply those external policies.
 
 AI26 currently has no automated TLS lifecycle, external alert delivery, complete
 off-host media backup workflow, automatic incident-response workflow, or
-independently managed case registry. Exercise these procedures against a
-disposable deployment before relying on them during an incident.
+independently managed case registry. Key-compromise, TLS, media-restoration and
+off-host procedures still need deployment-specific exercises before relying on
+them during an incident.
+
+The database-only stop/backup/mutate/restore/restart path was exercised with an
+isolated temporary API on 2026-10-15. Its health check passed, the backup had mode
+`0600` and passed SQLite integrity checking, the post-backup test change was
+removed by restore, and the restored audit chain verified. The record is in
+[`validation/incident-backup-restore-drill-2026-10-15.json`](validation/incident-backup-restore-drill-2026-10-15.json).
+This drill did not restore footage, source releases, model weights or image
+artifacts, and did not exercise auth, TLS, key compromise or off-host storage.

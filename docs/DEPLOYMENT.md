@@ -57,8 +57,10 @@ down -v` removes that persistent data volume.
 
 This is a self-hosted packaging baseline, not a hardened public deployment.
 Authentication and role checks are available as an opt-in overlay; off-host
-backups, tested full-data restoration, external audit checkpoints and case-level
-authorization remain deployment work. The optional TLS overlay below provides
+backups, tested full-media restoration, independent audit-checkpoint custody and
+case-level authorization remain deployment work. The database-only restore path
+has an isolated integration drill; it does not restore source/media/model files.
+The optional TLS overlay below provides
 transport encryption only.
 
 The backend exposes Prometheus text metrics at `/api/metrics`. It reports bounded
