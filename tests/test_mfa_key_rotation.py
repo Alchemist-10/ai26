@@ -114,6 +114,13 @@ class MfaKeyRotation(unittest.TestCase):
         self.assertFalse(self.recovery_output.exists())
         self.assertEqual(list(self.root.glob('*.pre-mfa-rotation-*.sqlite3')), [])
 
+    def test_rotation_rejects_symlinked_key_files(self):
+        key_link = self.root / 'old-key-link'
+        key_link.symlink_to(self.old_key_path)
+        with self.assertRaisesRegex(RuntimeError, 'unavailable|regular file'):
+            rotate(self.database, key_link, self.new_key_path, self.recovery_output)
+        self.assertFalse(self.recovery_output.exists())
+
 
 if __name__ == '__main__':
     unittest.main()

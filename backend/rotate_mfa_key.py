@@ -54,13 +54,22 @@ def append_audit(connection, ts, action, subject, data):
 
 def read_protected_key(path):
     path = Path(path)
+    descriptor = None
     try:
-        info = path.lstat()
+        descriptor = os.open(path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
+        info = os.fstat(descriptor)
         if not stat.S_ISREG(info.st_mode):
             raise RuntimeError(f'Key must be a regular file, not a symlink: {path}')
-        key = mfa._read_key(path)
+        if stat.S_IMODE(info.st_mode) & 0o077:
+            raise RuntimeError(f'MFA key file must not be accessible to group or other users: {path}')
+        with os.fdopen(descriptor, 'rb') as stream:
+            descriptor = None
+            key = stream.read(33)
     except OSError as error:
         raise RuntimeError(f'Key file is unavailable: {path}') from error
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
     if len(key) != 32:
         raise RuntimeError(f'Key must contain exactly 32 random bytes: {path}')
     return key
@@ -116,13 +125,15 @@ def recoveries_for(key):
 
 def rotate(database, active_key_path, new_key_path, recovery_output):
     database = Path(database).resolve(strict=True)
-    active_key_path = Path(active_key_path).resolve(strict=True)
-    new_key_path = Path(new_key_path).resolve(strict=True)
+    active_key_path = Path(active_key_path)
+    new_key_path = Path(new_key_path)
     recovery_output = Path(recovery_output).resolve()
-    if len({database, active_key_path, new_key_path, recovery_output}) != 4:
-        raise ValueError('Database, old key, new key and recovery-code output must be separate paths')
     old_key = read_protected_key(active_key_path)
     new_key = read_protected_key(new_key_path)
+    active_key_path = active_key_path.resolve(strict=True)
+    new_key_path = new_key_path.resolve(strict=True)
+    if len({database, active_key_path, new_key_path, recovery_output}) != 4:
+        raise ValueError('Database, old key, new key and recovery-code output must be separate paths')
     if hmac.compare_digest(old_key, new_key):
         raise ValueError('New MFA key must contain different random bytes')
 
