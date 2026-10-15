@@ -11,6 +11,8 @@ from source_selection import selection_token, same_release_manifest
 from source_clock import validate_recording_clock
 
 HISTORY_LIMIT = 10
+SELECTION_HISTORY_LIMIT = 20
+MAX_SELECTION_RECORD_BYTES = 16 * 1024
 
 
 def text(value, limit=1000):
@@ -87,6 +89,67 @@ def recent_releases(camera_id, selected, root):
             'error': error}
 
 
+def selection_history(camera_id, selected, root):
+    """Project the bounded linked selection journal without scanning directories."""
+    entries, seen, error = [], set(), None
+    manifest = selected['manifest'] if selected else None
+    marker = manifest.get('source_selection') if isinstance(manifest, dict) else None
+    if not isinstance(marker, dict):
+        return {'entries': entries, 'more': False, 'error': None}
+    try:
+        root = Path(root).resolve()
+        folder = root / camera_id / 'selection_history'
+        folder = folder.resolve()
+        if not folder.is_relative_to(root):
+            raise ValueError('Selection history directory is outside the managed source root.')
+    except (OSError, ValueError, RuntimeError):
+        return {'entries': entries, 'more': False, 'error': 'Selection history directory is unavailable or unsafe.'}
+    expected = marker.get('id')
+    if not isinstance(expected, str) or not re.fullmatch(r'[a-f0-9]{32}', expected):
+        return {'entries': entries, 'more': False, 'error': 'Selection history contains an invalid record reference.'}
+    while expected is not None and len(entries) < SELECTION_HISTORY_LIMIT:
+        if not isinstance(expected, str) or not re.fullmatch(r'[a-f0-9]{32}', expected) or expected in seen:
+            error = 'Selection history contains an invalid or repeated record reference.'
+            break
+        seen.add(expected)
+        path = folder / f'{expected}.json'
+        try:
+            resolved = path.resolve()
+            if not resolved.is_relative_to(folder):
+                raise ValueError('Outside selection history directory')
+            with resolved.open('rb') as stream:
+                raw = stream.read(MAX_SELECTION_RECORD_BYTES + 1)
+            if len(raw) > MAX_SELECTION_RECORD_BYTES:
+                raise ValueError('Selection record too large')
+            record = json.loads(raw)
+            if (not isinstance(record, dict) or record.get('id') != expected or
+                    record.get('camera_id') != camera_id or type(record.get('version')) is not int or
+                    record.get('version') != 1 or record.get('intent') not in {'select', 'rollback'}):
+                raise ValueError('Wrong selection record identity')
+            if not entries and record != marker:
+                raise ValueError('Selected marker does not match its journal record')
+            prior = record.get('previous_selection')
+            if prior is not None and (not isinstance(prior, str) or not re.fullmatch(r'[a-f0-9]{32}', prior)):
+                raise ValueError('Invalid previous selection reference')
+            authenticated = record.get('reviewer_authenticated') is True
+            entries.append({
+                'id': expected,
+                'intent': record['intent'],
+                'reviewer': text(record.get('reviewer'), 100),
+                'reason': text(record.get('reason'), 1000),
+                'reviewer_authenticated': authenticated,
+                'authenticated_user': text(record.get('authenticated_user'), 100) if authenticated else None,
+                'from_release': text(record.get('from_release'), 32),
+                'to_release': text(record.get('to_release'), 32),
+                'selected_at': number(record.get('selected_at')),
+            })
+            expected = prior
+        except (OSError, ValueError, TypeError, RuntimeError, json.JSONDecodeError):
+            error = 'A linked selection record is unavailable or invalid.'
+            break
+    return {'entries': entries, 'more': expected is not None and not error, 'error': error}
+
+
 def source_status(camera_id, root=SOURCE_ROOT):
     if camera_id not in cameras.CAMERAS_BY_ID: raise ValueError('Unknown camera')
     binding = cameras.MANAGED_SOURCES.get(camera_id)
@@ -114,10 +177,12 @@ def source_status(camera_id, root=SOURCE_ROOT):
             claim['authenticated_user']=text(marker.get('authenticated_user')) if marker.get('reviewer_authenticated') is True else None
         if claim: claim['selected_at']=number(marker.get('selected_at'))
         selection = {'status': status, 'release': release_summary(selected['manifest']) if selected else None,
-                     'error': None,'token':selection_token(selected),'last_action':claim}
+                     'error': None,'token':selection_token(selected),'last_action':claim,
+                     'history': selection_history(camera_id, selected, root)}
         history = recent_releases(camera_id, selected, root)
     except (OSError, ValueError):
         selection = {'status': 'invalid', 'release': None,'token':None,'last_action':None,
+                     'history': {'entries': [], 'more': False, 'error': 'Selection history could not be loaded.'},
                      'error': 'The selected import is missing or invalid. Restore a retained manifest while the app is stopped before restarting.'}
         history = {'releases': [], 'more': False, 'error': 'History could not be loaded from the selected import.'}
     return {'camera_id': camera_id, 'checked_at': time.time(), 'time_basis': 'replay_clock',

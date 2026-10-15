@@ -68,7 +68,20 @@ export default function CameraSources({ cameraId,sourceBusy,onBusyChange }: { ca
         <p className="break-words leading-relaxed text-zinc-300">{selected.last_action.selected_at ? new Date(selected.last_action.selected_at*1000).toLocaleString() : "Date unavailable"} · {selected.last_action.reviewer || "Reviewer unavailable"}</p>
         <p className="mt-2 break-words leading-relaxed text-zinc-300">{selected.last_action.reviewer_authenticated ? `Authenticated account: ${selected.last_action.authenticated_user || "unavailable"}` : "Reviewer is an unauthenticated local claim."}</p>
         <p className="mt-2 break-words leading-relaxed">{selected.last_action.reason || "Reason unavailable"}</p>
-        <p className="mt-2 leading-relaxed text-zinc-300">Local unauthenticated claim. This records selection, not activation or verified content.</p>
+        <p className="mt-2 leading-relaxed text-zinc-300">Selection records the change; it does not mean the release is active or its content verified.</p>
+      </details>}
+      {(selected.history.entries.length > 0 || selected.history.error) && <details className="mt-2 border-t border-zinc-800 pt-2 text-sm">
+        <summary className="min-h-11 cursor-pointer py-3 font-medium">Source selection history · {selected.history.entries.length}{selected.history.more ? "+" : ""}</summary>
+        {selected.history.error && <p role="alert" className="mt-2 text-red-200">{selected.history.error} The linked history may be incomplete.</p>}
+        <ol className="divide-y divide-zinc-800">
+          {selected.history.entries.map((entry,index)=><li key={entry.id} className="py-3">
+            <p className="break-words font-medium">{index===0 ? "Latest selection" : entry.intent === "rollback" ? "Earlier release selected" : "Prepared release selected"} · {entry.selected_at ? new Date(entry.selected_at*1000).toLocaleString() : "Date unavailable"}</p>
+            <p className="mt-1 break-words text-zinc-300">{entry.reviewer_authenticated ? `Authenticated account: ${entry.authenticated_user || "unavailable"}` : `Reviewer claim: ${entry.reviewer || "unavailable"}`}</p>
+            <p className="mt-1 break-words text-zinc-300">{entry.reason || "Reason unavailable"}</p>
+            <p className="mt-1 break-all text-xs text-zinc-400">{entry.from_release || "Default source"} → {entry.to_release || "Unknown release"}</p>
+          </li>)}
+        </ol>
+        {selected.history.more && <p className="mt-2 text-zinc-300">Older records remain on the host; this view is limited to the latest twenty selections.</p>}
       </details>}
       {active.release && <details className="mt-4 text-sm"><summary className="min-h-11 cursor-pointer py-3 font-medium">Running import · {active.release.release}</summary><ReleaseDetails release={active.release} /></details>}
       <p className="mt-3 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Checked {new Date(current.checked_at * 1000).toLocaleTimeString()}. {current.verification}</p>

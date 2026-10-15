@@ -121,6 +121,24 @@ class SourceSelection(unittest.TestCase):
         two=load_source('CAM-07',self.root)['manifest']['source_selection'];self.assertEqual(two['previous_selection'],one['id'])
         self.assertTrue(self.select(first,'rollback')['already_selected'])
         self.assertEqual(len(list((self.root/'CAM-07/selection_history').glob('*.json'))),2)
+        history=source_status('CAM-07',self.root)['selection']['history']
+        self.assertEqual([entry['id'] for entry in history['entries']],[two['id'],one['id']])
+        self.assertFalse(history['more']);self.assertIsNone(history['error'])
+    def test_selection_history_reports_corrupt_link_as_partial_without_paths(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);self.select(second)
+        marker=load_source('CAM-07',self.root)['manifest']['source_selection']
+        receipt=self.root/'CAM-07/selection_history'/f"{marker['id']}.json"
+        receipt.write_text(json.dumps({**marker,'reason':'Edited after publication'}))
+        history=source_status('CAM-07',self.root)['selection']['history']
+        self.assertEqual(history['entries'],[]);self.assertFalse(history['more'])
+        self.assertIn('unavailable or invalid',history['error'])
+        self.assertNotIn(str(self.base),json.dumps(history))
+    def test_selection_history_is_bounded_to_twenty_linked_records(self):
+        previous=self.release(1,select=True)
+        for index in range(2,24):
+            current=self.release(index,previous['release']);self.select(current);previous=current
+        history=source_status('CAM-07',self.root)['selection']['history']
+        self.assertEqual(len(history['entries']),20);self.assertTrue(history['more']);self.assertIsNone(history['error'])
     def test_authenticated_selection_records_server_verified_account(self):
         first=self.release(1,select=True);second=self.release(2,first['release'])
         result=selector.select_for_restart('CAM-07',self.body(second),root=self.root,authenticated_user='operator-1')

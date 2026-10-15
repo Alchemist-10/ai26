@@ -102,11 +102,12 @@ The separate POST adds no SQL writes, polling, media or ML workers. Thirteen new
 contracts and actual synthetic browser selection/rollback with stale recovery
 pass; two host restarts activated both roles, six linked selection records were
 retained and the fixture database had zero observations/audit rows. Six idle
-seconds added zero source/preparation requests. Authenticated selection now records
-the server-verified operator in the durable marker and status projection; its API
-test confirms spoofed reviewer names are overridden. See `docs/SOURCE_SELECTION.md`
-and `AI26_SOURCE_SELECTION_VALIDATION.json`. Host restart controls, full history UI
-and video cleanup remain separate work.
+seconds added zero source/preparation requests. Authenticated selection records the
+server-verified operator in the durable marker and status projection; the API test
+confirms spoofed reviewer names are overridden. Camera settings now shows a bounded
+linked selection history and reports broken records as partial. See
+`docs/SOURCE_SELECTION.md` and `AI26_SOURCE_SELECTION_VALIDATION.json`. Host restart
+controls and video cleanup remain separate work.
 
 ## Recorded source import update
 
@@ -293,7 +294,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-02 | Done | Define inference ownership so multiple viewers do not create duplicate processing/event streams. | Streams/snapshots only consume cache; two-consumer regression and exclusive Linux data-directory ownership lock. |
 | P1-03 | Done | Add a typed observation schema with stable event IDs and per-track passage IDs. | Typed finite observations, deterministic idempotent read IDs, per-session local passage IDs. |
 | P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay frame offsets and processing times remain separate. Imports can retain an optional timezone-aware, operator-claimed recording start plus uncertainty; detections and image references carry a derived UTC claim based on frame index ÷ reported FPS, with that approximate basis identified. `replay_clock` continues to block physical cross-camera links. Original NVR timestamps and synchronized/verified clocks are still missing. |
-| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-12 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist directed pair constraints plus immutable queried link decisions with support and algorithm/config snapshots; 90-day camera traffic buckets store live-source samples/passages; audit records are locally hash chained and verifiable; offline source onboarding and metadata editing work; browser source preparation, selection and retained-parent rollback work; activation requires host restart, and authenticated calibration remains separate work. |
+| P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-12 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist directed pair constraints plus immutable queried link decisions with support and algorithm/config snapshots; 90-day camera traffic buckets store live-source samples/passages; audit records are locally hash chained and verifiable; offline source onboarding and metadata editing work; browser source preparation, authenticated selection attribution, bounded selection-history display and retained-parent rollback work; activation requires host restart, and authenticated calibration remains separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
 | P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and nine component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |
 | P1-08 | Done | Test reconnect, corrupt video, end-of-file, missing clips and inference exceptions with bounded retry/backoff. | Controlled reconnect, loop boundary, missing/corrupt input, decode failure and model-download exception tests; 10-second retry and stale-frame suppression. |

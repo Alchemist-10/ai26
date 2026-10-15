@@ -62,9 +62,10 @@ The same proposal is retained under `CAM-XX/selection_history/ID.json` before
 pointer publication. A proposal is committed only if the current pointer references
 its ID or a later committed record links back to it. Publication failure removes
 an uncommitted proposal; interruption after publication retains the record. A
-forced kill/power failure can leave an unlinked proposal. There is no aggregate
-selection-history cleanup, full selection-history browser, or independently
-verifiable audit chain.
+forced kill/power failure can leave an unlinked proposal. Camera settings shows
+linked records in reverse chronological order, bounded to twenty entries; unsafe,
+missing or mismatched links are reported as partial history. There is no aggregate
+selection-history cleanup or independently verifiable audit chain.
 Offline/manual pointer edits may break the selection-record chain.
 
 Original release manifests and footage are unchanged by selection. Old, unselected
@@ -74,8 +75,8 @@ Source selection creates no SQLite observations, configuration revisions or audi
 rows. **Last browser selection** projects reviewer/reason/time and, when API
 authentication is enabled, the server-verified account. It records selection, not
 activation or verified content. The default local prototype remains unauthenticated.
-Capture clocks, location, real plate/OCR accuracy, a full history browser, host
-restart orchestration, RTSP and automatic imported-video retention remain pending.
+Capture clocks, location, real plate/OCR accuracy, host restart orchestration, RTSP
+and automatic imported-video retention remain pending.
 
 Hashing adds explicit selection and startup I/O; it is performed in a request worker
 thread, never in source polling or per-frame selection. It does not create another
@@ -99,7 +100,9 @@ Replace placeholders with status/ready-release values. `intent` is `select` or
 `rollback`; reviewer/reason are strict nonblank strings limited to 100/1000 chars.
 Unknown fields and invalid IDs/tokens are rejected. Success is 200 with camera_id,
 release, already_selected and refreshed source status. An already-selected target
-is idempotent only with a current token and valid files. Unknown camera is 404;
+is idempotent only with a current token and valid files. Refreshed status includes
+up to twenty linked selection records, newest first, with authenticated-account
+attribution where available; an invalid link marks history partial. Unknown camera is 404;
 stale selection or import ownership is 409; invalid input, hashes, paths or failed
 publication is 422 with a path-safe error. No endpoint stops or restarts the API.
 
