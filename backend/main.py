@@ -40,13 +40,14 @@ from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, 
 from auth import CASE_PATTERN, PURPOSES
 from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
-from auth_key_lock import api_lifetime_lock, verify_active_mfa_key
+from auth_key_lock import api_lifetime_lock, verify_active_mfa_key, verify_active_privacy_key
 
 
 @asynccontextmanager
 async def lifespan(app):
     with api_lifetime_lock(store.path):
         verify_active_mfa_key(store.path)
+        verify_active_privacy_key(store.path)
         validate_configuration()
         validate_branch_configuration()
         janitor = Maintenance(store)

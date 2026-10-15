@@ -58,6 +58,7 @@ fingerprint check is intentional: the old key cannot decrypt the rotated
 secrets. The backup contains pre-rotation encrypted secrets and must be protected
 with the old key for any restore.
 
-This procedure rotates the MFA key only. Privacy pseudonym keys, TLS private
-keys, report-signing keys and independently retained audit-checkpoint keys have
+This procedure rotates the MFA key only. Privacy pseudonym rotation is documented
+in [PRIVACY_KEY_ROTATION.md](PRIVACY_KEY_ROTATION.md). TLS private keys,
+report-signing keys and independently retained audit-checkpoint keys have
 separate lifecycles.
