@@ -240,6 +240,21 @@ development proxy ([Vite preview options](https://vite.dev/config/preview-option
 These short measurements do not establish real-device Core Web Vitals or
 sustained inference performance.
 
+## Browser responsiveness with inference enabled — 15 October 2026
+
+An isolated optimized production preview ran with vehicle/person processing
+enabled, plate recognition disabled, six bundled sources and a temporary data
+root. During a 10.1-second sample, API health latency was 8.3 ms median / 25.0 ms
+p95, CPU was 75% of one core by `/proc` process ticks, and no camera attempt
+failed. Accessibility-driven browser action calls took 145–182 ms for opening
+navigation, switching to sampled detections, opening Analytics after its first
+lazy load, and returning to the Camera Wall. The resulting route states were
+visible, but these are single action-call durations, not INP or click-to-paint.
+The sample suggests the optimized local UI stayed responsive during warmed
+inference on this host; it does not explain lag on lower-powered hardware or
+network conditions. Full scope and limits are in
+[`validation/live-ui-responsiveness-2026-10-15.json`](validation/live-ui-responsiveness-2026-10-15.json).
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded

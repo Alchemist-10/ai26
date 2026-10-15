@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-15",
+  "application": "AI26 local optimized production preview",
+  "scope": "Single local browser session with vehicle/person processing enabled, plate recognition disabled, six bundled sources, and an isolated temporary data root",
+  "browser": {
+    "viewport": "1280x720",
+    "ui_action_ack_ms": {
+      "select_sampled_detections": 180,
+      "open_navigation": 145,
+      "open_analytics_after_initial_route_load": 182,
+      "return_to_camera_wall": 169
+    },
+    "ui_timing_limit": "Single accessibility-driven action call durations; not INP, click-to-paint, or a real-device performance measurement",
+    "route_state_verified": [
+      "sampled detections displayed for CAM-01",
+      "navigation drawer opened",
+      "analytics route rendered with map and health table",
+      "camera wall rendered with six available and three missing sources"
+    ]
+  },
+  "api_window": {
+    "duration_seconds": 10.1,
+    "health_requests": 10,
+    "health_latency_p50_ms": 8.3,
+    "health_latency_p95_ms": 24.99,
+    "api_cpu_percent_of_one_core": 75.0,
+    "cpu_method": "Uvicorn process user+system ticks from /proc over wall time",
+    "failed_attempts": 0,
+    "successful_frames_per_available_camera": 3,
+    "available_sources": 6,
+    "missing_sources": ["CAM-07", "CAM-08", "CAM-09"]
+  },
+  "limitations": [
+    "One warmed local workstation/browser sample; no CPU or network throttling",
+    "No six-stream browser dropped-frame measurement, INP/LCP/CLS, or low-end mobile test",
+    "CPU figure is a 10-second window and does not establish sustained resource use",
+    "The missing CAM-07/08/09 clips were unavailable and were not substituted"
+  ]
+}
