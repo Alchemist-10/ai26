@@ -51,15 +51,45 @@ docker compose run --rm restore --source /backups/ai26-YYYYMMDDTHHMMSS.ffffffZ.s
 docker compose start backend
 ```
 
+For a consistent backup of the database plus AI26-managed media, use:
+
+```sh
+./scripts/backup-full.sh
+```
+
+This stops the backend if it was running, snapshots SQLite, packages the
+`artifacts/`, `sources/`, `uploads/`, and `models/` directories with a
+SHA-256/size manifest, restricts the archive to mode `0600`, rotates old full
+snapshots using `AI26_BACKUP_KEEP`, and restarts the backend on exit. A full
+archive is an unencrypted `.tar` file; store it on encrypted, access-controlled
+backup storage. It excludes the externally mounted original-footage directory,
+custom model files mounted from `./models`, TLS/authentication secrets, and
+anything outside `/app/data`.
+
+To restore one full archive, keep it under `backups/` and run:
+
+```sh
+./scripts/restore-full.sh backups/ai26-full-YYYYMMDDTHHMMSS.ffffffZ.tar
+```
+
+The script stops a running backend, verifies every manifest digest and the
+restored database before replacing managed data, assigns files to the invoking
+host user, and restarts the backend if it stopped it. On validation or install
+failure, the current managed paths are restored. A successful restore replaces
+the database and managed directories; take a fresh full backup first if the
+current state must remain recoverable. The destination data volume needs enough
+free space to stage the incoming managed files alongside current content.
+
 For a quick configuration check use `docker compose config -q`. To stop the
 stack use `docker compose down`; named application data remains. `docker compose
 down -v` removes that persistent data volume.
 
 This is a self-hosted packaging baseline, not a hardened public deployment.
 Authentication and role checks are available as an opt-in overlay; off-host
-backups, tested full-media restoration, independent audit-checkpoint custody and
-case-level authorization remain deployment work. The database-only restore path
-has an isolated integration drill; it does not restore source/media/model files.
+backup custody, original-footage/custom-model restoration, independent
+audit-checkpoint custody and a deployment-specific case registry remain
+deployment work. Database-only and AI26-managed-data restore paths have isolated
+integration drills; neither captures files mounted outside `/app/data`.
 The optional TLS overlay below provides
 transport encryption only.
 

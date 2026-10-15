@@ -53,6 +53,18 @@ services:
       - ai26-data:/app/data
       - ./backups:/backups
 
+  backup-full:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    profiles: ["backup"]
+    user: "0:0"
+    entrypoint: ["python", "full_backup.py", "create"]
+    command: ["--data-root", "/app/data", "--directory", "/backups", "--keep", "${AI26_BACKUP_KEEP:-30}", "--owner-uid", "${AI26_HOST_UID:-1000}", "--owner-gid", "${AI26_HOST_GID:-1000}", "--confirm-backend-stopped"]
+    volumes:
+      - ai26-data:/app/data
+      - ./backups:/backups
+
   restore:
     build:
       context: .
@@ -60,6 +72,17 @@ services:
     profiles: ["restore"]
     user: "0:0"
     entrypoint: ["python", "restore.py"]
+    volumes:
+      - ai26-data:/app/data
+      - ./backups:/backups:ro
+
+  restore-full:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    profiles: ["restore"]
+    user: "0:0"
+    entrypoint: ["python", "full_backup.py", "restore"]
     volumes:
       - ai26-data:/app/data
       - ./backups:/backups:ro

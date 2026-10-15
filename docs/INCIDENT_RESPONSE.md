@@ -28,11 +28,12 @@ disabled; do not treat its local audit records as proof of who accessed it.
    Omit service names not present in that deployment. Review logs before sharing;
    never attach `.env`, key files, passwords, RTSP URLs, recovery codes, database
    files, or unredacted evidence to a public issue.
-4. Create a protected SQLite snapshot using `./scripts/backup.sh`. It runs the
-   online backup API and `PRAGMA integrity_check`; this snapshot contains the
-   database only. Preserve footage, managed source releases, model files, and
-   read-artifact images with the deployment's separately protected storage
-   procedure. Do not assume the database backup contains those files.
+4. Create a protected database snapshot using `./scripts/backup.sh`, or stop the
+   backend and use `./scripts/backup-full.sh` to capture SQLite plus managed
+   source releases, upload receipts, cached models, and read-artifact images.
+   Full archives are unencrypted and must be stored on access-controlled,
+   encrypted backup storage. Neither procedure includes externally mounted
+   footage, custom model mounts, or host secrets.
 5. Avoid destructive cleanup or speculative repair. Keep the original database,
    affected source files, reports, logs, and any off-host checkpoints unchanged.
    Record hashes and copies through the approved evidence-handling procedure.
@@ -49,7 +50,7 @@ disabled; do not treat its local audit records as proof of who accessed it.
 | TLS certificate/private key compromised or expired | Stop the `frontend_tls` listener if it is exposed, replace the certificate/key through the deployment's certificate authority process, then recreate the TLS service and verify the HTTPS listener. AI26 does not renew certificates automatically. Keep the private key outside routine database backups. |
 | Audit integrity check fails | Preserve the database and latest trusted checkpoints. In authenticated mode, an administrator can inspect `GET /api/audit/integrity`; do not edit or truncate audit rows to make the result pass. Verify the database against each independently retained checkpoint with its trusted public key and record the exact verification output. A valid checkpoint only protects history through its signed record. |
 | Database corruption or accidental data loss | Preserve the current database and WAL/SHM files before any restore. Run `./scripts/backup.sh` if the service can still produce a consistent snapshot. Restore only with the backend stopped, using the explicit confirmation workflow in [deployment and backups](DEPLOYMENT.md). Verify integrity, audit chain, users, and application health before reopening access. |
-| Source media missing, changed, or selected incorrectly | Do not run source cleanup. Preserve `active.json`, release manifests, and both original/playback files. Camera settings reports missing/size-changed files; startup verifies managed-file hashes. Follow [source selection and rollback](SOURCE_SELECTION.md) or [source import recovery](SOURCE_IMPORT.md) with the app stopped where required. The database-only backup does not restore these files. |
+| Source media missing, changed, or selected incorrectly | Do not run source cleanup. Preserve `active.json`, release manifests, and both original/playback files. Camera settings reports missing/size-changed files; startup verifies managed-file hashes. Follow [source selection and rollback](SOURCE_SELECTION.md) or [source import recovery](SOURCE_IMPORT.md) with the app stopped where required. A full data-volume backup restores managed source releases; external footage and host-mounted files must be recovered separately. |
 | Suspected exposure of plates, faces, or report contents | Restrict the affected listener and accounts, preserve relevant access/audit records, and identify whether evidence JSON, ZIP, print, image, or video endpoints were available. Privacy display mode masks detected regions in sampled views only; reports and source files retain original data. The configured rules do not send notifications. |
 
 ## Recovery checks
@@ -67,8 +68,9 @@ Before restoring access, record and verify the recovery steps that apply:
   latest independent checkpoint when one exists. Record the checkpoint time and
   how much later history it cannot protect.
 - Verify any restored SQLite snapshot with the repository's restore command and
-  integrity check. Separately verify source/artifact restoration; database restore
-  alone does not restore media.
+  integrity check. For a full data-volume restore, verify the SHA-256 manifest,
+  source status, representative artifact downloads, and report integrity. Recover
+  external footage and custom model mounts separately.
 - For signed evidence, verify representative reports offline using the trusted
   public key(s) and record any key overlap/revocation decisions.
 - Re-enable only the listener and users needed for service, then observe source,
@@ -107,5 +109,9 @@ isolated temporary API on 2026-10-15. Its health check passed, the backup had mo
 `0600` and passed SQLite integrity checking, the post-backup test change was
 removed by restore, and the restored audit chain verified. The record is in
 [`validation/incident-backup-restore-drill-2026-10-15.json`](validation/incident-backup-restore-drill-2026-10-15.json).
-This drill did not restore footage, source releases, model weights or image
-artifacts, and did not exercise auth, TLS, key compromise or off-host storage.
+The isolated managed-data drill additionally restored database state, source
+manifests, upload receipts, cached model files and image artifacts from a
+manifest-verified archive; a tampered member was rejected without replacing the
+current data. It did not restore externally mounted footage, custom model mounts
+or host secrets, and did not exercise auth, TLS, key compromise or off-host
+storage.
