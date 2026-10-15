@@ -90,6 +90,29 @@ class PruneSourceReleases(unittest.TestCase):
         self.assertEqual(result['skipped'][0]['release'], bad)
         self.assertTrue(bad_folder.is_dir())
 
+    def test_old_receipts_prune_but_latest_ready_receipt_and_release_remain(self):
+        old_release = 'f' * 32
+        newest_release = 'e' * 32
+        old_folder, _ = self.release('CAM-07', old_release)
+        newest_folder, _ = self.release('CAM-07', newest_release)
+        jobs = self.data / 'uploads' / 'jobs'
+        jobs.mkdir(parents=True)
+        old_job, latest_job = '1' * 32, '2' * 32
+        for job, created, release in ((old_job, self.now - 60 * 86400, old_release),
+                                      (latest_job, self.now - 45 * 86400, newest_release)):
+            (jobs / f'{job}.json').write_text(json.dumps({
+                'job_id': job, 'camera_id': 'CAM-07', 'status': 'ready',
+                'created_at': created, 'release': {'release': release},
+            }))
+
+        result = prune(self.sources, self.data, now=self.now, days=30, apply=True)
+        self.assertEqual([item['job_id'] for item in result['receipt_candidates']], [old_job])
+        self.assertEqual(result['removed_receipts'], [old_job])
+        self.assertFalse((jobs / f'{old_job}.json').exists())
+        self.assertTrue((jobs / f'{latest_job}.json').is_file())
+        self.assertFalse(old_folder.exists())
+        self.assertTrue(newest_folder.is_dir())
+
     def test_active_processor_blocks_pruning(self):
         locks = ((self.data / '.processing.lock', 'processor'),
                  (self.sources / '.import.lock', 'import or selection'),

@@ -19,6 +19,13 @@ MAX_METADATA_BYTES = 64 * 1024
 RELEASE_ID = re.compile(r'[0-9a-f]{32}')
 
 
+def _finite_number(value):
+    try:
+        return type(value) in (int, float) and math.isfinite(value)
+    except (OverflowError, ValueError, TypeError):
+        return False
+
+
 def _lock(path, label):
     path.parent.mkdir(parents=True, exist_ok=True)
     handle = path.open('a+')
@@ -102,23 +109,37 @@ def _selected_chain(camera, source_root):
     return protected
 
 
-def _recent_ready_receipts(camera, data_root, cutoff):
-    protected = set()
+def _receipt_inventory(data_root, cutoff):
+    receipts, skipped = [], []
     jobs = data_root / 'uploads' / 'jobs'
     if not _regular_directory(jobs, data_root):
-        return protected
+        return {'all': receipts, 'keep': set(), 'removable': [], 'skipped': skipped}, skipped
     for path in jobs.iterdir():
-        receipt = _read_json(path)
-        if (not receipt or receipt.get('camera_id') != camera or receipt.get('status') != 'ready'
-                or type(receipt.get('created_at')) not in (int, float)
-                or not math.isfinite(receipt['created_at']) or receipt['created_at'] < cutoff):
+        if not re.fullmatch(r'[0-9a-f]{32}\.json', path.name):
             continue
-        release = receipt.get('release')
-        if isinstance(release, dict):
-            value = release.get('release')
-            if isinstance(value, str) and RELEASE_ID.fullmatch(value):
-                protected.add(value)
-    return protected
+        receipt = _read_json(path)
+        if (not receipt or receipt.get('job_id') != path.stem
+                or receipt.get('camera_id') not in CAMERAS_BY_ID
+                or receipt.get('status') not in {'ready', 'failed', 'cancelled'}
+                or not _finite_number(receipt.get('created_at'))):
+            skipped.append({'job_id': path.stem, 'reason': 'Invalid terminal upload receipt retained'})
+            continue
+        try:
+            receipts.append({'job_id': path.stem, 'camera_id': receipt['camera_id'],
+                             'status': receipt['status'], 'created_at': receipt['created_at'],
+                             'bytes': path.stat().st_size, 'path': str(path), 'release': receipt.get('release')})
+        except OSError:
+            skipped.append({'job_id': path.stem, 'reason': 'Upload receipt changed during inventory'})
+    latest = {}
+    for receipt in receipts:
+        old = latest.get(receipt['camera_id'])
+        if old is None or (receipt['created_at'], receipt['job_id']) > (old['created_at'], old['job_id']):
+            latest[receipt['camera_id']] = receipt
+    keep = {value['job_id'] for value in receipts
+            if value['created_at'] >= cutoff or latest[value['camera_id']]['job_id'] == value['job_id']}
+    removable = [value for value in receipts
+                 if value['created_at'] < cutoff and value['job_id'] not in keep]
+    return {'all': receipts, 'keep': keep, 'removable': removable, 'skipped': skipped}, skipped
 
 
 def plan_prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=30):
@@ -132,10 +153,20 @@ def plan_prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=3
     if root.exists() and not root.is_dir():
         raise ValueError('Source root must be a directory')
     checked_at = time.time() if now is None else now
-    if type(checked_at) not in (int, float) or not math.isfinite(checked_at):
+    if not _finite_number(checked_at):
         raise ValueError('Prune timestamp must be finite')
     cutoff = checked_at - days * 86400
-    candidates, skipped = [], []
+    release_candidates, skipped = [], []
+    receipts, invalid_receipts = _receipt_inventory(data, cutoff)
+    skipped.extend(invalid_receipts)
+    receipt_release_ids = set()
+    for receipt in receipts['all']:
+        if receipt['job_id'] not in receipts['keep'] or receipt['status'] != 'ready':
+            continue
+        value = receipt['release']
+        release_id = value.get('release') if isinstance(value, dict) else None
+        if isinstance(release_id, str) and RELEASE_ID.fullmatch(release_id):
+            receipt_release_ids.add((receipt['camera_id'], release_id))
     for camera in sorted(CAMERAS_BY_ID):
         folder = root / camera
         if not _regular_directory(folder, root):
@@ -145,7 +176,7 @@ def plan_prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=3
             continue
         try:
             protected = _selected_chain(camera, root)
-            protected.update(_recent_ready_receipts(camera, data, cutoff))
+            protected.update(release for receipt_camera, release in receipt_release_ids if receipt_camera == camera)
         except (OSError, ValueError) as error:
             skipped.append({'camera_id': camera, 'reason': f'Selected release chain is invalid: {error}'})
             continue
@@ -158,22 +189,28 @@ def plan_prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=3
             try:
                 binding = load_release(camera, path.name, root, verify=True)
                 imported_at = binding['manifest'].get('imported_at')
-                if (type(imported_at) not in (int, float) or not math.isfinite(imported_at)
+                if (not _finite_number(imported_at)
                         or imported_at >= cutoff):
                     continue
                 # Don't remove directories containing unexpected symlinked entries.
                 if any(item.is_symlink() for item in path.rglob('*')):
                     skipped.append({'camera_id': camera, 'release': path.name, 'reason': 'Contains symlinked files'})
                     continue
-                candidates.append({'camera_id': camera, 'release': path.name,
-                                   'imported_at': imported_at, 'bytes': _tree_bytes(path),
-                                   'path': str(path)})
+                release_candidates.append({'camera_id': camera, 'release': path.name,
+                                           'imported_at': imported_at, 'bytes': _tree_bytes(path),
+                                           'path': str(path)})
             except (OSError, ValueError, KeyError, TypeError) as error:
                 skipped.append({'camera_id': camera, 'release': path.name,
                                 'reason': f'Invalid release retained: {error}'})
+    receipt_candidates = [{'job_id': item['job_id'], 'camera_id': item['camera_id'],
+                           'created_at': item['created_at'], 'bytes': item['bytes'], 'path': item['path']}
+                          for item in receipts['removable']]
+    candidates = release_candidates + receipt_candidates
     return {'retention_days': days, 'cutoff_utc_epoch': cutoff,
-            'candidate_count': len(candidates), 'candidate_bytes': sum(item['bytes'] for item in candidates),
-            'candidates': candidates, 'skipped': skipped}
+            'candidate_count': len(candidates),
+            'candidate_bytes': sum(item['bytes'] for item in release_candidates + receipt_candidates),
+            'candidates': release_candidates, 'receipt_candidates': receipt_candidates,
+            'skipped': skipped}
 
 
 def prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=30, apply=False):
@@ -187,6 +224,7 @@ def prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=30, ap
         handles.append(_lock(source / '.upload.lock', 'an upload or preparation'))
         result = plan_prune(source, data, now=now, days=days)
         removed = []
+        removed_receipts = []
         if apply:
             for candidate in result['candidates']:
                 path = Path(candidate['path'])
@@ -198,7 +236,16 @@ def prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=30, ap
                     raise RuntimeError('Release path changed during cleanup; stopping')
                 shutil.rmtree(path)
                 removed.append(candidate['release'])
-        result.update(applied=bool(apply), removed=removed)
+            jobs = data / 'uploads' / 'jobs'
+            for receipt in result['receipt_candidates']:
+                path = Path(receipt['path'])
+                if (path.parent != jobs or path.name != f"{receipt['job_id']}.json"
+                        or path.is_symlink() or not path.is_file()
+                        or not path.resolve().is_relative_to(data)):
+                    raise RuntimeError('Upload receipt path changed during cleanup; stopping')
+                path.unlink()
+                removed_receipts.append(receipt['job_id'])
+        result.update(applied=bool(apply), removed=removed, removed_receipts=removed_receipts)
         return result
     finally:
         for handle in reversed(handles):
