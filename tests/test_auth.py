@@ -18,7 +18,7 @@ import events
 from auth import AuthService, AuthenticationError, CSRF_HEADER, MAX_AUTH_ATTEMPTS, SESSION_COOKIE
 import auth as auth_module
 import mfa as mfa_tools
-from repository import Repository
+from repository import Repository, canonical_json
 
 
 class Authentication(unittest.TestCase):
@@ -175,6 +175,41 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.client.get("/api/alerts/escalations",headers={k:v for k,v in headers_one.items() if k!=CSRF_HEADER}).json()["items"][0]["case_id"],"CASE-ALPHA")
         self.assertEqual(self.repo.verify_audit_chain()["status"],"valid")
         other.close()
+
+    def test_evidence_reports_and_artifacts_are_bound_to_the_selected_case(self):
+        password="Correct-Horse-Battery-Staple-26"
+        self.auth.create_user("case_alpha",password,"analyst",case_ids=["CASE-ALPHA"])
+        self.auth.create_user("case_bravo",password,"analyst",case_ids=["CASE-BRAVO"])
+        alpha=TestClient(main.app,base_url="https://testserver")
+        bravo=TestClient(main.app,base_url="https://testserver")
+        login_alpha=alpha.post("/api/auth/login",json={"username":"case_alpha","password":password}).json()
+        login_bravo=bravo.post("/api/auth/login",json={"username":"case_bravo","password":password}).json()
+        headers_alpha={"X-AI26-Case-ID":"CASE-ALPHA","X-AI26-Purpose":"investigation"}
+        headers_bravo={"X-AI26-Case-ID":"CASE-BRAVO","X-AI26-Purpose":"investigation"}
+        digest=hashlib.sha256(b"case-specific artifact").hexdigest()
+        report={"report_id":"EVD-CASESCOPED1","generated_at":time.time(),"expires_at":time.time()+3600,
+                "case_id":"CASE-ALPHA","artifacts":[{"sha256":digest,"size":21,"role":"frame"}]}
+        report["package_hash"]=hashlib.sha256(canonical_json(report).encode()).hexdigest()
+        self.repo.put_report(report)
+
+        headers_alpha[CSRF_HEADER]=login_alpha["csrf_token"]
+        headers_bravo[CSRF_HEADER]=login_bravo["csrf_token"]
+        with patch.object(main,"evidence_report",return_value={"case_id":"CASE-ALPHA"}) as create_report:
+            generated=alpha.post("/api/evidence/KL07AB1234",headers=headers_alpha)
+            self.assertEqual(generated.status_code,200)
+            create_report.assert_called_once_with("KL07AB1234",None,None,case_id="CASE-ALPHA")
+        route=f"/api/reports/{report['report_id']}"
+        self.assertEqual(alpha.get(route,headers=headers_alpha).status_code,200)
+        self.assertEqual(bravo.get(route,headers=headers_bravo).status_code,404)
+        with patch.object(main,"artifact_bytes",return_value=b"case-specific artifact") as read_artifact:
+            allowed=alpha.get(f"/api/artifacts/{digest}",headers=headers_alpha)
+            self.assertEqual(allowed.status_code,200)
+            self.assertEqual(allowed.content,b"case-specific artifact")
+            denied=bravo.get(f"/api/artifacts/{digest}",headers=headers_bravo)
+            self.assertEqual(denied.status_code,404)
+            self.assertEqual(read_artifact.call_count,1)
+        self.assertEqual(self.repo.verify_audit_chain()["status"],"valid")
+        alpha.close();bravo.close()
 
     def test_self_service_password_change_checks_current_password_and_revokes_sessions(self):
         self.create()

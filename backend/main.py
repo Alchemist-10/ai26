@@ -570,15 +570,17 @@ def trajectory(plate:str,since:TimeFilter=None,until:TimeFilter=None):
     interval(since,until); return redact_analytics_payload(get_trajectory(check_plate(plate),since,until))
 
 @app.post('/api/evidence/{plate}')
-def evidence(plate:str,since:TimeFilter=None,until:TimeFilter=None):
+def evidence(plate:str,request:Request,since:TimeFilter=None,until:TimeFilter=None):
     interval(since,until); plate=check_plate(plate)
-    try: return evidence_report(plate,since,until)
+    actor=getattr(request.state,'actor',None)
+    case_id=request.state.case_id if actor else None
+    try: return evidence_report(plate,since,until,case_id=case_id)
     except EvidenceSigningError as exc: raise HTTPException(503,'Evidence signing is configured but the signing key is unavailable or invalid') from exc
     except ValueError as exc: raise HTTPException(409,str(exc)) from exc
 
 
-def report_payload(report_id):
-    report=store.report(report_id,time.time())
+def report_payload(report_id,scope_case_id=None):
+    report=store.report(report_id,time.time(),scope_case_id=scope_case_id)
     if not report: raise HTTPException(404,'Report unavailable or expired')
     unsigned={k:v for k,v in report.items() if k!='package_hash'}
     if hashlib.sha256(canonical_json(unsigned).encode()).hexdigest()!=report['package_hash']:
@@ -586,13 +588,17 @@ def report_payload(report_id):
     return report
 
 @app.get('/api/reports/{report_id}')
-def report_json(report_id:str):
-    report=report_payload(report_id)
+def report_json(report_id:str,request:Request):
+    actor=getattr(request.state,'actor',None)
+    scope_case_id=request.state.case_id if actor and actor['role']!='admin' else None
+    report=report_payload(report_id,scope_case_id)
     return Response(canonical_json(report),media_type='application/json',headers={'Content-Disposition':f'attachment; filename="{report["report_id"]}.json"'})
 
 @app.get('/api/reports/{report_id}/package')
-def report_package(report_id:str):
-    report=report_payload(report_id); out=io.BytesIO()
+def report_package(report_id:str,request:Request):
+    actor=getattr(request.state,'actor',None)
+    scope_case_id=request.state.case_id if actor and actor['role']!='admin' else None
+    report=report_payload(report_id,scope_case_id); out=io.BytesIO()
     with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as package:
         package.writestr('manifest.json',canonical_json(report))
         if sum(a['size'] for a in report['artifacts']) > 64*1024*1024:
@@ -605,15 +611,21 @@ def report_package(report_id:str):
     return Response(out.getvalue(),media_type='application/zip',headers={'Content-Disposition':f'attachment; filename="{report["report_id"]}.zip"'})
 
 @app.get('/api/artifacts/{digest}')
-def artifact(digest:str):
-    try: data=artifact_bytes(digest, store.artifact_expiry(digest, time.time()))
+def artifact(digest:str,request:Request):
+    actor=getattr(request.state,'actor',None)
+    scope_case_id=request.state.case_id if actor and actor['role']!='admin' else None
+    protected_until=store.artifact_expiry(digest, time.time(), scope_case_id=scope_case_id)
+    if scope_case_id is not None and protected_until is None: raise HTTPException(404,'Artifact unavailable or expired')
+    try: data=artifact_bytes(digest, protected_until)
     except ValueError as exc: raise HTTPException(409,str(exc)) from exc
     if data is None: raise HTTPException(404,'Artifact unavailable or expired')
     return Response(data,media_type='image/jpeg')
 
 @app.get('/api/reports/{report_id}/print',response_class=HTMLResponse)
-def report_print(report_id:str):
-    report=report_payload(report_id)
+def report_print(report_id:str,request:Request):
+    actor=getattr(request.state,'actor',None)
+    scope_case_id=request.state.case_id if actor and actor['role']!='admin' else None
+    report=report_payload(report_id,scope_case_id)
     esc=lambda value:html.escape(str(value))
     rows=''.join(f'<tr><td>{esc(h["camera_id"])}</td><td>{esc(h["ts"])}</td><td>{esc(h.get("plate_raw",""))}</td><td>{esc(h.get("plate_norm",""))}</td><td>{esc(h.get("source_mode","manual"))} / {esc(h.get("time_basis","provided"))}</td></tr>' for h in report['trajectory']['observations'])
     raw_rows=''.join(f'<tr><td>{esc(h["event_id"])}</td><td>{esc(h["ts"])}</td><td>{esc(h.get("plate_raw",""))}</td><td>{esc(h.get("plate_norm",""))}</td><td>{esc(h.get("identity_status","supported"))}</td></tr>' for h in report.get('raw_reads',[]))

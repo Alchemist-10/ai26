@@ -541,17 +541,25 @@ class Repository:
         with self.lock:
             return {r[0] for r in self.db.execute('SELECT DISTINCT digest FROM artifact_leases WHERE expires>?', (now,))}
 
-    def artifact_expiry(self, digest, now):
+    def artifact_expiry(self, digest, now, scope_case_id=None):
         with self.lock:
-            return self.db.execute('SELECT max(expires) FROM artifact_leases WHERE digest=? AND expires>?', (digest,now)).fetchone()[0]
+            if scope_case_id is None:
+                row = self.db.execute('SELECT max(expires) FROM artifact_leases WHERE digest=? AND expires>?', (digest,now)).fetchone()
+            else:
+                row = self.db.execute('''SELECT max(l.expires) FROM artifact_leases l JOIN reports r ON r.id=l.report
+                    WHERE l.digest=? AND l.expires>? AND r.expires>? AND json_extract(r.data,'$.case_id')=?''',
+                    (digest,now,now,scope_case_id)).fetchone()
+            return row[0]
 
 
-    def report(self, report_id, now):
+    def report(self, report_id, now, scope_case_id=None):
         with self.lock, self.db:
             row = self.db.execute('SELECT data,expires FROM reports WHERE id=?', (report_id,)).fetchone()
             if not row or row['expires'] <= now: return None
-            self._append_audit(now,'report_read',report_id,{})
-            return json.loads(row['data'])
+            report = json.loads(row['data'])
+            if scope_case_id is not None and report.get('case_id') != scope_case_id: return None
+            self._append_audit(now,'report_read',report_id,{'case_id':report.get('case_id')})
+            return report
 
     def _append_audit(self, ts, action, subject, data):
         """Append a record linked to the current tail; callers hold the SQL transaction."""
