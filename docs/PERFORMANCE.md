@@ -174,6 +174,34 @@ than a six-stream or production performance result. Raw samples are in
 The browser API defines total frames as frames displayed or dropped and exposes
 dropped frames since media load ([MDN reference](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/getVideoPlaybackQuality)).
 
+## Local production launcher and deferred camera media — 15 October 2026
+
+Two uncached headless Chromium runs at 1280×800 compared the local Vite dev
+server with the optimized production preview. Before this change, Vite dev loaded
+31–32 resources, transferred 10.8 MB, recorded 1–2 main-thread tasks of
+61–91 ms, and reached its final observed LCP at 764–1008 ms. The production
+preview loaded 9 resources and transferred 1.55 MB, but 1.43 MB was the focused
+camera video automatically loaded on startup. These are local browser samples,
+not low-end-device or network-throttling results.
+
+The launcher now builds and serves the production frontend by default. Pass
+`--dev-frontend` when hot reload is needed. With playback and detection views
+both left unselected, two new runs loaded 31 resources / 9.38 MB in Vite dev,
+versus 8 resources / 115 KB in production preview. First contentful paint was
+492–552 ms in dev and 208–236 ms in preview; final observed LCP was 776–804 ms
+and 384–484 ms respectively. The preview recorded no long tasks in either run;
+dev recorded 1–2 tasks of 55–106 ms. Selecting **Recorded playback** then issued
+one `/api/video/CAM-01` request; neither video nor MJPEG was requested before
+the operator chose a view. The second preview run used a disposable data root and
+disabled processor. See
+[`validation/local-launcher-performance-2026-10-15.json`](validation/local-launcher-performance-2026-10-15.json).
+
+The launcher changes the local default only; it does not remove the explicit
+development-server path. Vite's preview proxy defaults to the configured
+development proxy ([Vite preview options](https://vite.dev/config/preview-options)).
+These short measurements do not establish real-device Core Web Vitals or
+sustained inference performance.
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded

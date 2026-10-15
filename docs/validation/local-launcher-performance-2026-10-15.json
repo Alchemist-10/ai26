@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-15",
+  "application": "AI26 local dashboard",
+  "method": {
+    "browser": "Chromium headless",
+    "viewport": "1280x800",
+    "cache": "disabled for each page load",
+    "samples_per_mode": 2,
+    "network_throttling": false,
+    "processor": "disabled for optimized-launcher playback-selection check",
+    "metrics": "Navigation timing, first contentful paint, final observed largest contentful paint, PerformanceObserver long tasks, request count and Resource Timing transfer sizes"
+  },
+  "before": {
+    "view_mode": "focused recorded playback selected automatically when privacy mode was off",
+    "vite_development": {
+      "runs": [
+        {
+          "requests": 45,
+          "resources": 32,
+          "transferred_bytes": 10817749,
+          "fcp_ms": 508,
+          "final_lcp_ms": 1008,
+          "long_task_ms": [89, 91]
+        },
+        {
+          "requests": 49,
+          "resources": 32,
+          "transferred_bytes": 10817749,
+          "fcp_ms": 376,
+          "final_lcp_ms": 764,
+          "long_task_ms": [61]
+        }
+      ],
+      "largest_transfers": {
+        "lucide_react_js_bytes": 5105318,
+        "react_dom_client_js_bytes": 3132538,
+        "focused_video_bytes": 1434235
+      }
+    },
+    "production_preview": {
+      "runs": [
+        {
+          "requests": 18,
+          "resources": 9,
+          "transferred_bytes": 1549478,
+          "fcp_ms": 248,
+          "final_lcp_ms": 796,
+          "long_task_ms": [68]
+        },
+        {
+          "requests": 18,
+          "resources": 9,
+          "transferred_bytes": 1549478,
+          "fcp_ms": 200,
+          "final_lcp_ms": 676,
+          "long_task_ms": []
+        }
+      ],
+      "focused_video_bytes": 1434235
+    }
+  },
+  "after": {
+    "view_mode": "idle until the user chooses recorded playback or sampled detections; privacy mode still opens directly to detections",
+    "vite_development": {
+      "runs": [
+        {
+          "requests": 36,
+          "resources": 31,
+          "transferred_bytes": 9384942,
+          "fcp_ms": 492,
+          "final_lcp_ms": 776,
+          "long_task_ms": [106, 55],
+          "video_requests_before_selection": 0,
+          "mjpeg_requests_before_selection": 0
+        },
+        {
+          "requests": 38,
+          "resources": 31,
+          "transferred_bytes": 9384942,
+          "fcp_ms": 552,
+          "final_lcp_ms": 804,
+          "long_task_ms": [72],
+          "video_requests_before_selection": 0,
+          "mjpeg_requests_before_selection": 0
+        }
+      ]
+    },
+    "optimized_launcher_preview": {
+      "runs": [
+        {
+          "requests": 12,
+          "resources": 8,
+          "transferred_bytes": 115373,
+          "fcp_ms": 236,
+          "final_lcp_ms": 484,
+          "long_task_ms": [],
+          "video_requests_before_selection": 0,
+          "mjpeg_requests_before_selection": 0
+        },
+        {
+          "requests": 10,
+          "resources": 8,
+          "transferred_bytes": 115373,
+          "fcp_ms": 208,
+          "final_lcp_ms": 384,
+          "long_task_ms": [],
+          "video_requests_before_selection": 0,
+          "mjpeg_requests_before_selection": 0
+        }
+      ]
+    },
+    "selection_check": {
+      "action": "Click Recorded playback",
+      "video_requests_before": 0,
+      "video_requests_after": 1,
+      "video_request_path": "/api/video/CAM-01"
+    }
+  },
+  "limitations": [
+    "Two local samples per mode are directional measurements, not a statistical performance guarantee.",
+    "No physical mobile device, CPU throttling, network throttling, or field camera was tested.",
+    "LCP may continue to change after the sampled capture window.",
+    "This measures frontend startup and browser media requests, not sustained inference throughput or OCR accuracy."
+  ]
+}

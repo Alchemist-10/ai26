@@ -19,7 +19,9 @@ uv run run.py
 
 Open **http://localhost:5174**, API **http://127.0.0.1:8001**. The frozen lock uses
 CPU PyTorch on Linux. After the first installation, restart with
-`uv run run.py --skip-install`. See [RUN.md](RUN.md) for configuration and checks.
+`uv run run.py --skip-install`. The launcher serves the optimized frontend by
+default; use `--dev-frontend` when actively editing the UI. See [RUN.md](RUN.md)
+for configuration and checks.
 
 ## Working functionality
 

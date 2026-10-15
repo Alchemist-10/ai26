@@ -15,6 +15,8 @@
 uv run run.py
 # Subsequent starts after dependencies were installed:
 uv run run.py --skip-install
+# During frontend development, opt into Vite hot reload:
+uv run run.py --skip-install --dev-frontend
 ```
 
 Open http://localhost:5174. Ctrl+C or SIGTERM stops both service process groups,
@@ -23,9 +25,13 @@ Only one API worker may own a data directory. Do not use Uvicorn `--workers` or
 `--reload` with processing enabled. Stop the existing instance before restarting.
 Observations remain in SQLite; a restart creates new replay/track sessions.
 
-The first command runs `uv sync --frozen` and `npm ci`; `--skip-install` reuses
-those installations. If the lock or package manifest changes, run the first
-command again. A process exiting stops its sibling automatically.
+The default launcher builds and serves the optimized frontend, keeping local
+demo startup close to production behavior. `--dev-frontend` uses Vite's
+unbundled hot-reload server while you are editing frontend code. The first
+command runs `uv sync --frozen` and `npm ci`; `--skip-install` reuses those
+installations but still rebuilds the production frontend. If the lock or package
+manifest changes, run the first command again. A process exiting stops its
+sibling automatically.
 
 ## Configuration
 
@@ -94,7 +100,7 @@ starts with the API, independent of which dashboard page is open.
 # Terminal 1, repository root:
 uv sync --frozen --directory backend
 uv run --frozen --directory backend uvicorn main:app --host 127.0.0.1 --port 8001
-# Terminal 2:
+# Terminal 2, frontend development server (the production build is the default launcher mode):
 cd frontend
 npm ci
 npm run dev
@@ -102,8 +108,9 @@ npm run dev
 
 API catalog: http://127.0.0.1:8001/api/cameras; processing health:
 http://127.0.0.1:8001/api/health; interactive docs: http://127.0.0.1:8001/docs.
-A production frontend needs separate `/api` routing; Vite's proxy is development
-configuration. Model/capture failures appear in health and retry after 10 seconds.
+Vite dev and local preview proxy `/api` to the configured backend. Networked
+deployment uses the Nginx same-origin proxy described in [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Model/capture failures appear in health and retry after 10 seconds.
 
 ## Checks and evaluation
 

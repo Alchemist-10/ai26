@@ -46,6 +46,7 @@ def cleanup():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--skip-install', action='store_true', help='Reuse an already synced backend and frontend installation')
+    parser.add_argument('--dev-frontend', action='store_true', help='Run Vite with hot reload instead of the optimized production build')
     options = parser.parse_args()
     if sys.platform != 'linux':
         parser.error('The current shared-processor launcher requires Linux')
@@ -58,12 +59,16 @@ def main():
     if not options.skip_install:
         subprocess.run(["uv", "sync", "--frozen"], cwd=ROOT / "backend", check=True)
         subprocess.run(["npm", "ci"], cwd=ROOT / "frontend", check=True)
+    if not options.dev_frontend:
+        subprocess.run(["npm", "run", "build"], cwd=ROOT / "frontend", check=True)
     PROCS.append(subprocess.Popen(
         ["uv", "run", "--frozen", "--no-sync", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", backend_port],
         cwd=ROOT / "backend", start_new_session=True,
     ))
-    PROCS.append(subprocess.Popen(["npm", "run", "dev"], cwd=ROOT / "frontend", start_new_session=True))
-    print(f"AI26: http://localhost:{frontend_port} (API :{backend_port}). Ctrl+C to stop.", flush=True)
+    frontend_command = ["npm", "run", "dev"] if options.dev_frontend else ["npm", "run", "preview"]
+    PROCS.append(subprocess.Popen(frontend_command, cwd=ROOT / "frontend", start_new_session=True))
+    mode = "Vite development" if options.dev_frontend else "optimized production build"
+    print(f"AI26: http://localhost:{frontend_port} (API :{backend_port}, {mode}). Ctrl+C to stop.", flush=True)
     while not SHUTDOWN_REQUESTED and all(process.poll() is None for process in PROCS):
         time.sleep(0.2)
     return next((process.returncode for process in PROCS if process.returncode is not None), 0)

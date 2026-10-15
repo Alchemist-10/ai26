@@ -215,6 +215,11 @@ claim OCR accuracy. See `evaluation/README.md`.
 - The current branch passes all 328 backend tests with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
+- The local launcher now serves an optimized frontend by default (`--dev-frontend`
+  retains hot reload). With privacy mode off, two headless browser runs confirmed
+  no video/MJPEG request until a view is chosen; local preview transferred 115 KB
+  versus 9.38 MB from the Vite dev server for the initial page. These short
+  1280×800 samples are not real-device Core Web Vitals. See `docs/PERFORMANCE.md`.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
 - Live restart retained all ten sampled observation IDs; all six available cameras
   returned decodable JPEG snapshots. No old service children survived launcher stop.
