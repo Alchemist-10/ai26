@@ -52,7 +52,12 @@ Drafts survive internal navigation/source refresh, but not browser reload.
 ## Local records and limitations
 
 The selected pointer contains `source_selection`: a unique ID, camera, version,
-selection time, intent, from/to releases, reviewer/reason and prior selection ID.
+selection time, intent, from/to releases, reviewer/reason, authentication status,
+authenticated account when available, and prior selection ID. With authentication
+enabled, the server replaces the typed reviewer with the signed-in operator account;
+without authentication, the reviewer remains a local claim. The route requires an
+operator role and case/purpose scope in authenticated mode, and mutations also
+require CSRF validation.
 The same proposal is retained under `CAM-XX/selection_history/ID.json` before
 pointer publication. A proposal is committed only if the current pointer references
 its ID or a later committed record links back to it. Publication failure removes
@@ -66,10 +71,10 @@ Original release manifests and footage are unchanged by selection. Old, unselect
 managed releases can be pruned with the guarded offline dry-run/apply tool described
 in [SOURCE_IMPORT.md](SOURCE_IMPORT.md); the selected rollback chain is retained.
 Source selection creates no SQLite observations, configuration revisions or audit
-rows. **Last browser selection**
-projects a local name/reason/time claim; it records selection, not activation,
-authenticated identity or verified content. The local prototype API is unauthenticated.
-Capture clocks, location, real plate/OCR accuracy, authenticated administration,
+rows. **Last browser selection** projects reviewer/reason/time and, when API
+authentication is enabled, the server-verified account. It records selection, not
+activation or verified content. The default local prototype remains unauthenticated.
+Capture clocks, location, real plate/OCR accuracy, a full history browser, host
 restart orchestration, RTSP and automatic imported-video retention remain pending.
 
 Hashing adds explicit selection and startup I/O; it is performed in a request worker

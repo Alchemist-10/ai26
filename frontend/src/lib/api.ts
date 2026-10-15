@@ -86,7 +86,7 @@ export interface CameraSourceStatus {
   selection: {
     status: "current" | "restart_required" | "invalid"; release: SourceRelease | null; error: string | null
     token: string | null
-    last_action: { id: string | null; intent: string | null; reviewer: string | null; reason: string | null; from_release: string | null; to_release: string | null; selected_at: number | null } | null
+    last_action: { id: string | null; intent: string | null; reviewer: string | null; reason: string | null; from_release: string | null; to_release: string | null; reviewer_authenticated: boolean; authenticated_user: string | null; selected_at: number | null } | null
   }
   history: { releases: SourceRelease[]; more: boolean; error: string | null }
   verification: string

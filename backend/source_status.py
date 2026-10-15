@@ -109,6 +109,9 @@ def source_status(camera_id, root=SOURCE_ROOT):
         marker=selected['manifest'].get('source_selection') if selected else None
         if not isinstance(marker,dict): marker=None
         claim={key:text(marker.get(key)) for key in ('id','intent','reviewer','reason','from_release','to_release')} if marker else None
+        if claim:
+            claim['reviewer_authenticated']=marker.get('reviewer_authenticated') is True
+            claim['authenticated_user']=text(marker.get('authenticated_user')) if marker.get('reviewer_authenticated') is True else None
         if claim: claim['selected_at']=number(marker.get('selected_at'))
         selection = {'status': status, 'release': release_summary(selected['manifest']) if selected else None,
                      'error': None,'token':selection_token(selected),'last_action':claim}

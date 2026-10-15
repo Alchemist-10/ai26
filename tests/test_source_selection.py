@@ -24,7 +24,7 @@ class SourceSelection(unittest.TestCase):
         patch.dict(cameras.MANAGED_SOURCES,{},clear=True).start()
         patch.dict(cameras.CAMERAS_BY_ID,{'CAM-07':{'path':str(self.base/'missing')}}).start()
         patch.object(cameras,'PLAYBACK_ROOT',self.base/'proxies').start()
-        patch.object(main,'select_for_restart',side_effect=lambda cam,body:selector.select_for_restart(cam,body,root=self.root)).start()
+        patch.object(main,'select_for_restart',side_effect=lambda cam,body,**kwargs:selector.select_for_restart(cam,body,root=self.root,**kwargs)).start()
         patch.object(main,'source_status',side_effect=lambda cam:source_status(cam,self.root)).start()
         self.client=TestClient(main.app)
     def release(self,index,previous=None,select=False):
@@ -121,6 +121,26 @@ class SourceSelection(unittest.TestCase):
         two=load_source('CAM-07',self.root)['manifest']['source_selection'];self.assertEqual(two['previous_selection'],one['id'])
         self.assertTrue(self.select(first,'rollback')['already_selected'])
         self.assertEqual(len(list((self.root/'CAM-07/selection_history').glob('*.json'))),2)
+    def test_authenticated_selection_records_server_verified_account(self):
+        first=self.release(1,select=True);second=self.release(2,first['release'])
+        result=selector.select_for_restart('CAM-07',self.body(second),root=self.root,authenticated_user='operator-1')
+        status=source_status('CAM-07',self.root)['selection']['last_action']
+        record=json.loads((self.root/'CAM-07/selection_history'/f"{status['id']}.json").read_text())
+        self.assertEqual(result['release'],second['release'])
+        self.assertTrue(status['reviewer_authenticated']);self.assertEqual(status['authenticated_user'],'operator-1')
+        self.assertTrue(record['reviewer_authenticated']);self.assertEqual(record['authenticated_user'],'operator-1')
+        self.assertEqual(record['reviewer'],'Local operator')
+    def test_authenticated_api_selection_overrides_spoofed_reviewer(self):
+        first=self.release(1,select=True);second=self.release(2,first['release'])
+        session={'username':'real-operator','role':'operator','csrf_token':'csrf'}
+        auth_service=MagicMock();auth_service.session.return_value=session;auth_service.can_access_case.return_value=True
+        with patch.object(main,'auth_enabled',return_value=True),patch.object(main,'AuthService',return_value=auth_service):
+            response=self.client.post('/api/cameras/CAM-07/source/selection',json=self.body(second),
+                cookies={main.SESSION_COOKIE:'session'},headers={main.CSRF_HEADER:'csrf','X-AI26-Case-ID':'CASE-1','X-AI26-Purpose':'system_test'})
+        self.assertEqual(response.status_code,200,response.text)
+        claim=response.json()['source']['selection']['last_action']
+        self.assertEqual(claim['reviewer'],'real-operator');self.assertEqual(claim['authenticated_user'],'real-operator')
+        self.assertTrue(claim['reviewer_authenticated']);auth_service.audit_sensitive_access.assert_called_once()
     def test_selection_record_symlink_escape_rejects_without_pointer_changes(self):
         first=self.release(1,select=True);second=self.release(2,first['release']);outside=self.base/'outside';outside.mkdir()
         (self.root/'CAM-07/selection_history').symlink_to(outside,target_is_directory=True)

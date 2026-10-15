@@ -39,7 +39,7 @@ def rollback_allowed(camera, current, target, root):
     return False
 
 
-def select_for_restart(camera, body, *, root=SOURCE_ROOT):
+def select_for_restart(camera, body, *, root=SOURCE_ROOT, authenticated_user=None):
     if camera not in CAMERAS_BY_ID: raise ValueError('Unknown camera')
     body=SourceSelectionRequest.model_validate(body).model_dump()
     root=Path(root).resolve()
@@ -64,6 +64,8 @@ def select_for_restart(camera, body, *, root=SOURCE_ROOT):
         if not isinstance(previous,dict): previous={}
         marker={'id':uuid.uuid4().hex,'camera_id':camera,'version':1,'selected_at':time.time(),
                 'intent':body['intent'],'reviewer':body['reviewer'],'reason':body['reason'],
+                'reviewer_authenticated':bool(authenticated_user),
+                'authenticated_user':authenticated_user,
                 'from_release':current_id,'to_release':body['release'],'previous_selection':previous.get('id')}
         pointer={**target['manifest'],'source_selection':marker}
         folder=root/camera/'selection_history'

@@ -29,7 +29,7 @@ export default function SourceSelection({cameraId,release,source,intent,disabled
   }
   return <form onSubmit={submit} className="mt-4 border-t border-zinc-800 pt-4">
     <h4 className="text-sm font-medium">{intent==="rollback" ? "Select an earlier import" : "Select prepared footage"}</h4>
-    <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-300">{intent==="rollback" ? "Both retained files are verified before selecting this earlier release." : "Both prepared files are verified before selection."} Running inference and playback keep their current footage until the API restarts. The reviewer and reason are retained as local, unauthenticated claims.</p>
+    <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-300">{intent==="rollback" ? "Both retained files are verified before selecting this earlier release." : "Both prepared files are verified before selection."} Running inference and playback keep their current footage until the API restarts. Authenticated sessions record the signed-in account; local mode records the reviewer as an unauthenticated claim.</p>
     <fieldset disabled={disabled || busy || needsRefresh || selected || !source.selection.token} className="mt-4 grid min-w-0 gap-4 sm:grid-cols-2">
       <label htmlFor={`${prefix}-reviewer`} className="block text-sm font-medium">Selection reviewer
         <input id={`${prefix}-reviewer`} required maxLength={100} value={reviewer} className={`${control} mt-2`} onChange={event=>setReviewer(event.target.value)} />

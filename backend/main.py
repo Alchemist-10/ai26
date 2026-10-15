@@ -360,9 +360,15 @@ def source_preparation(job_id:str):
     except KeyError as error: raise HTTPException(404,'Preparation unavailable') from error
 
 @app.post('/api/cameras/{camera_id}/source/selection')
-def select_camera_source(camera_id:str,body:SourceSelectionRequest):
+def select_camera_source(camera_id:str,body:SourceSelectionRequest,request:Request):
     check_camera(camera_id)
-    try: result=select_for_restart(camera_id,body.model_dump())
+    actor=getattr(request.state,'actor',None)
+    selection=body.model_dump()
+    if actor:
+        # The authenticated account is server supplied; a client cannot claim
+        # another account through the reviewer field.
+        selection['reviewer']=actor['username']
+    try: result=select_for_restart(camera_id,selection,authenticated_user=actor['username'] if actor else None)
     except (SelectionConflict,ImportBusy) as error: raise HTTPException(409,str(error)) from error
     except (ValueError,OSError) as error:
         raise HTTPException(422,'Imported files or selection records could not be verified or written. Running footage is unchanged; check host files before retrying.') from error

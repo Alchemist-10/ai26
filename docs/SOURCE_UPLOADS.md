@@ -104,8 +104,11 @@ are bounded to 64 KiB. Host absolute paths and arbitrary receipt fields are omit
 The raw-body route uses [Starlette request streaming](https://starlette.dev/requests/)
 and [FastAPI's direct Request interface](https://fastapi.tiangolo.com/advanced/using-request-directly/)
 so the application enforces its byte bound rather than buffering a multipart file.
-The existing local prototype remains unauthenticated; authenticated source
-administration and remote deployment controls are separate work.
+The default local prototype remains unauthenticated. When authentication is
+enabled, source routes require an operator role, case/purpose scope and CSRF on
+mutations. The upload's reviewer/reason fields remain operator-entered claims;
+selection records additionally bind the signed-in account on the server. Remote
+deployment restart controls remain separate work.
 
 ## Validation scope
 

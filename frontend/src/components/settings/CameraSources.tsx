@@ -66,6 +66,7 @@ export default function CameraSources({ cameraId,sourceBusy,onBusyChange }: { ca
       {selected.error && <p role="alert" className="mt-3 rounded border border-red-400/40 bg-red-950/40 p-3 text-sm leading-relaxed text-red-100">{selected.error} The running source has not been switched.</p>}
       {selected.last_action && <details className="mt-3 text-sm"><summary className="min-h-11 cursor-pointer py-3 font-medium">Last browser selection · {selected.last_action.intent === "rollback" ? "Earlier import" : "Prepared import"}</summary>
         <p className="break-words leading-relaxed text-zinc-300">{selected.last_action.selected_at ? new Date(selected.last_action.selected_at*1000).toLocaleString() : "Date unavailable"} · {selected.last_action.reviewer || "Reviewer unavailable"}</p>
+        <p className="mt-2 break-words leading-relaxed text-zinc-300">{selected.last_action.reviewer_authenticated ? `Authenticated account: ${selected.last_action.authenticated_user || "unavailable"}` : "Reviewer is an unauthenticated local claim."}</p>
         <p className="mt-2 break-words leading-relaxed">{selected.last_action.reason || "Reason unavailable"}</p>
         <p className="mt-2 leading-relaxed text-zinc-300">Local unauthenticated claim. This records selection, not activation or verified content.</p>
       </details>}

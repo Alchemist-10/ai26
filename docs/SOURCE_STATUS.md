@@ -31,8 +31,10 @@ The checked timestamp refers to file presence/size and manifest inspection.
 Managed file hashes were checked at API startup. Pending imports and retained
 history are not rehashed by inspection; same-size content tampering after startup
 is not detected here. Missing/size-changed running imported files are flagged.
-Displayed reviewer/reason, times, source assignments and metadata are local,
-unauthenticated claims. The recording time basis remains replay_clock.
+Displayed reviewer/reason, times, source assignments and metadata are local
+claims; authenticated source-selection records separately expose the server-verified
+operator identity when authentication is enabled. The recording time basis remains
+replay_clock.
 
 **Recent imported releases** follows up to ten parent manifests from the selected
 release without scanning directories. It labels Running, Selected for restart
@@ -49,8 +51,9 @@ as the app. See [SOURCE_IMPORT.md](SOURCE_IMPORT.md) and
 While an upload/preparation is active, source refresh and camera selection are
 disabled until a terminal job check. An idle refresh preserves both upload and
 metadata drafts. Browser [selection and retained-parent rollback](SOURCE_SELECTION.md) are now available.
-Host restart is still required for activation. New camera creation, RTSP and
-authenticated source administration remain pending.
+Host restart is still required for activation. New camera creation and RTSP remain
+pending. Authenticated operator attribution is available when authentication is
+enabled; unauthenticated local mode continues to accept reviewer claims.
 
 ## API contract and bounded work
 

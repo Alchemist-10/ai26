@@ -86,8 +86,9 @@ Seventeen new contracts, actual synthetic browser uploads, failure/retry, cancel
 502 recovery and restart activation pass. Six idle seconds added zero preparation/source
 requests. Desktop/mobile/user captures received ship at extension scope.
 Ready videos/receipts are retained without aggregate cleanup; original clocks, real
-plate footage, authenticated source administration and host restart management remain
-separate. See `docs/SOURCE_UPLOADS.md` and `AI26_SOURCE_UPLOADS_VALIDATION.json`.
+plate footage and host restart management remain separate. Authenticated source
+routes require operator role and case/purpose scope when auth is enabled. See
+`docs/SOURCE_UPLOADS.md` and `AI26_SOURCE_UPLOADS_VALIDATION.json`.
 
 ## Browser selection and rollback update
 
@@ -101,9 +102,11 @@ The separate POST adds no SQL writes, polling, media or ML workers. Thirteen new
 contracts and actual synthetic browser selection/rollback with stale recovery
 pass; two host restarts activated both roles, six linked selection records were
 retained and the fixture database had zero observations/audit rows. Six idle
-seconds added zero source/preparation requests. See `docs/SOURCE_SELECTION.md`
-and `AI26_SOURCE_SELECTION_VALIDATION.json`. Host restart controls, authenticated
-operator identity, full history UI and video cleanup remain separate work.
+seconds added zero source/preparation requests. Authenticated selection now records
+the server-verified operator in the durable marker and status projection; its API
+test confirms spoofed reviewer names are overridden. See `docs/SOURCE_SELECTION.md`
+and `AI26_SOURCE_SELECTION_VALIDATION.json`. Host restart controls, full history UI
+and video cleanup remain separate work.
 
 ## Recorded source import update
 
@@ -252,8 +255,9 @@ local results. Short runtime samples do not establish sustained throughput.
    evaluate exact/fuzzy identity links (P1-14–16, EV-06).
 4. Calibrate traffic counts/density/speed and historical segment baselines;
    evaluate rules on positive and negative real cases (P2-01–04, EV-07–09).
-5. Add authenticated source administration and host restart management where needed.
-   Browser preparation, selection and retained-parent rollback are implemented;
+5. Complete source operations: operator/case-gated administration and authenticated
+   selection attribution work when auth is enabled; browser preparation, selection
+   and retained-parent rollback are implemented. Host restart management is pending;
    activation continues to require a host restart.
    Metadata settings UI, metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
