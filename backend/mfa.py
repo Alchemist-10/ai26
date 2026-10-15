@@ -17,7 +17,11 @@ def _key():
     path_value = os.environ.get("AI26_AUTH_MFA_KEY_FILE")
     if not path_value:
         raise RuntimeError("MFA requires AI26_AUTH_MFA_KEY_FILE")
-    path = Path(path_value)
+    return _read_key(Path(path_value))
+
+
+def _read_key(path):
+    path = Path(path)
     try:
         info = path.stat()
         if stat.S_IMODE(info.st_mode) & 0o077:
@@ -35,13 +39,19 @@ def create_secret():
 
 
 def encrypt_secret(secret):
-    key = _key()
+    return encrypt_secret_with_key(secret, _key())
+
+
+def encrypt_secret_with_key(secret, key):
     nonce = secrets.token_bytes(12)
     return nonce + AESGCM(key).encrypt(nonce, secret.encode("ascii"), b"AI26 TOTP v1")
 
 
 def decrypt_secret(ciphertext):
-    key = _key()
+    return decrypt_secret_with_key(ciphertext, _key())
+
+
+def decrypt_secret_with_key(ciphertext, key):
     raw = bytes(ciphertext)
     if len(raw) < 29:
         raise RuntimeError("Stored MFA secret is invalid")
@@ -87,5 +97,9 @@ def new_recovery_codes(count=10):
 
 
 def recovery_hash(code):
+    return recovery_hash_with_key(code, _key())
+
+
+def recovery_hash_with_key(code, key):
     canonical = "".join(char for char in str(code).upper() if char.isalnum())
-    return hmac.new(_key(), b"AI26 recovery v1:" + canonical.encode("ascii", errors="ignore"), hashlib.sha256).hexdigest()
+    return hmac.new(key, b"AI26 recovery v1:" + canonical.encode("ascii", errors="ignore"), hashlib.sha256).hexdigest()

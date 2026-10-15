@@ -42,9 +42,11 @@ Verification checks the checkpoint signature, trusted-key fingerprint, and the
 database chain through the signed record. It reports records appended after the
 checkpoint. A valid result does not detect deletion or rollback of records that
 occurred after the most recent checkpoint, and it does not prove that the source
-events were truthful. Checkpoint frequency, off-host retention, key rotation,
-revocation, and incident response remain operator responsibilities; the wrapper
-does not configure the remote filesystem or manage keys automatically.
+events were truthful. Checkpoint frequency, off-host retention, signing-key
+rotation/revocation, and incident response remain operator responsibilities; the
+wrapper does not configure the remote filesystem or manage keys automatically.
+The separate offline MFA-key procedure is documented in
+[`MFA_KEY_ROTATION.md`](MFA_KEY_ROTATION.md).
 
 ## Optional daily Compose/systemd schedule
 

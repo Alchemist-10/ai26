@@ -104,6 +104,8 @@ time-step so each authenticator code can be used only once. Counter updates are
 transactional, so simultaneous requests presenting the same code create at most
 one authenticated session. The key file must be protected and backed up securely.
 If the key is lost, stored TOTP secrets cannot be decrypted.
+For the offline rotation procedure, including recovery-code reissue and the
+startup key-fingerprint check, see [MFA key rotation](MFA_KEY_ROTATION.md).
 
 Signed-in users can open Account security, enroll a standards-based six-digit
 TOTP authenticator, and confirm enrollment before MFA is enabled. Ten one-use

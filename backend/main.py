@@ -40,22 +40,25 @@ from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, 
 from auth import CASE_PATTERN, PURPOSES
 from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
+from auth_key_lock import api_lifetime_lock, verify_active_mfa_key
 
 
 @asynccontextmanager
 async def lifespan(app):
-    validate_configuration()
-    validate_branch_configuration()
-    janitor = Maintenance(store)
-    AuthService(store).ensure_bootstrap_admin()
-    janitor.start()
-    try:
-        if os.environ.get('AI26_PROCESSING_ENABLED','1')=='1': processor.start()
-        yield
-    finally:
-        await asyncio.to_thread(uploads.close)
-        await asyncio.to_thread(processor.stop)
-        await asyncio.to_thread(janitor.stop)
+    with api_lifetime_lock(store.path):
+        verify_active_mfa_key(store.path)
+        validate_configuration()
+        validate_branch_configuration()
+        janitor = Maintenance(store)
+        AuthService(store).ensure_bootstrap_admin()
+        janitor.start()
+        try:
+            if os.environ.get('AI26_PROCESSING_ENABLED','1')=='1': processor.start()
+            yield
+        finally:
+            await asyncio.to_thread(uploads.close)
+            await asyncio.to_thread(processor.stop)
+            await asyncio.to_thread(janitor.stop)
 
 frontend_port=os.environ.get('AI26_FRONTEND_PORT','5174')
 app=FastAPI(title='AI26 observation API',lifespan=lifespan)

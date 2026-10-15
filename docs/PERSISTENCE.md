@@ -23,8 +23,9 @@ database with `backend/audit_checkpoint.py`. Optional host wrapper/systemd
 templates can schedule daily checkpoints to an active mounted destination. The
 checkpoint file and trusted public key must be retained independently to provide
 rollback evidence; the template does not prove the mount is off-host or manage
-key rotation/revocation. See [AUDIT_CHECKPOINTS.md](AUDIT_CHECKPOINTS.md) for
-setup and verification.
+signing-key rotation/revocation. MFA encryption-key rotation is separate; see
+[MFA_KEY_ROTATION.md](MFA_KEY_ROTATION.md). See [AUDIT_CHECKPOINTS.md](AUDIT_CHECKPOINTS.md)
+for checkpoint setup and verification.
 
 ## Live traffic history
 
