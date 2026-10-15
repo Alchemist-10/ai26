@@ -79,6 +79,33 @@ def _read_json(path):
         return None
 
 
+def _old_staging(parent, prefix, cutoff, *, area, camera_id=None):
+    candidates, skipped = [], []
+    if not _regular_directory(parent, parent.parent):
+        return candidates, skipped
+    for path in parent.iterdir():
+        if not path.name.startswith(prefix):
+            continue
+        if not _regular_directory(path, parent):
+            skipped.append({'camera_id': camera_id, 'staging': path.name,
+                            'reason': 'Staging path is not a regular contained directory'})
+            continue
+        try:
+            info = path.stat()
+            if info.st_mtime >= cutoff:
+                continue
+            if any(item.is_symlink() for item in path.rglob('*')):
+                skipped.append({'camera_id': camera_id, 'staging': path.name,
+                                'reason': 'Staging directory contains symlinked files'})
+                continue
+            candidates.append({'area': area, 'camera_id': camera_id, 'name': path.name,
+                               'bytes': _tree_bytes(path), 'path': str(path)})
+        except OSError:
+            skipped.append({'camera_id': camera_id, 'staging': path.name,
+                            'reason': 'Staging directory changed during inventory'})
+    return candidates, skipped
+
+
 def _selected_chain(camera, source_root):
     selected = load_source(camera, source_root, verify=True)
     protected = set()
@@ -156,9 +183,12 @@ def plan_prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=3
     if not _finite_number(checked_at):
         raise ValueError('Prune timestamp must be finite')
     cutoff = checked_at - days * 86400
-    release_candidates, skipped = [], []
+    release_candidates, staging_candidates, skipped = [], [], []
     receipts, invalid_receipts = _receipt_inventory(data, cutoff)
     skipped.extend(invalid_receipts)
+    upload_staging, upload_skipped = _old_staging(data / 'uploads', '.upload-', cutoff, area='upload')
+    staging_candidates.extend(upload_staging)
+    skipped.extend(upload_skipped)
     receipt_release_ids = set()
     for receipt in receipts['all']:
         if receipt['job_id'] not in receipts['keep'] or receipt['status'] != 'ready':
@@ -171,6 +201,10 @@ def plan_prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=3
         folder = root / camera
         if not _regular_directory(folder, root):
             continue
+        import_staging, import_skipped = _old_staging(folder, '.import-', cutoff,
+                                                      area='import', camera_id=camera)
+        staging_candidates.extend(import_staging)
+        skipped.extend(import_skipped)
         releases = folder / 'releases'
         if not _regular_directory(releases, root):
             continue
@@ -205,11 +239,12 @@ def plan_prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=3
     receipt_candidates = [{'job_id': item['job_id'], 'camera_id': item['camera_id'],
                            'created_at': item['created_at'], 'bytes': item['bytes'], 'path': item['path']}
                           for item in receipts['removable']]
-    candidates = release_candidates + receipt_candidates
+    candidates = release_candidates + receipt_candidates + staging_candidates
     return {'retention_days': days, 'cutoff_utc_epoch': cutoff,
             'candidate_count': len(candidates),
-            'candidate_bytes': sum(item['bytes'] for item in release_candidates + receipt_candidates),
+            'candidate_bytes': sum(item['bytes'] for item in candidates),
             'candidates': release_candidates, 'receipt_candidates': receipt_candidates,
+            'staging_candidates': staging_candidates,
             'skipped': skipped}
 
 
@@ -225,6 +260,7 @@ def prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=30, ap
         result = plan_prune(source, data, now=now, days=days)
         removed = []
         removed_receipts = []
+        removed_staging = []
         if apply:
             for candidate in result['candidates']:
                 path = Path(candidate['path'])
@@ -245,7 +281,18 @@ def prune(source_root=SOURCE_ROOT, data_root=DATA_ROOT, *, now=None, days=30, ap
                     raise RuntimeError('Upload receipt path changed during cleanup; stopping')
                 path.unlink()
                 removed_receipts.append(receipt['job_id'])
-        result.update(applied=bool(apply), removed=removed, removed_receipts=removed_receipts)
+            for staging in result['staging_candidates']:
+                path = Path(staging['path'])
+                parent = (data / 'uploads' if staging['area'] == 'upload'
+                          else source / staging['camera_id'])
+                prefix = '.upload-' if staging['area'] == 'upload' else '.import-'
+                if (path.parent != parent or not path.name.startswith(prefix)
+                        or not _regular_directory(path, parent)):
+                    raise RuntimeError('Staging path changed during cleanup; stopping')
+                shutil.rmtree(path)
+                removed_staging.append(path.name)
+        result.update(applied=bool(apply), removed=removed, removed_receipts=removed_receipts,
+                      removed_staging=removed_staging)
         return result
     finally:
         for handle in reversed(handles):

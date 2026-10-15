@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -112,6 +113,25 @@ class PruneSourceReleases(unittest.TestCase):
         self.assertTrue((jobs / f'{latest_job}.json').is_file())
         self.assertFalse(old_folder.exists())
         self.assertTrue(newest_folder.is_dir())
+
+    def test_only_stale_upload_and_import_staging_is_removed(self):
+        uploads = self.data / 'uploads'
+        stale_upload = uploads / '.upload-stale'
+        recent_upload = uploads / '.upload-recent'
+        stale_import = self.sources / 'CAM-07' / '.import-stale'
+        for path in (stale_upload, recent_upload, stale_import):
+            path.mkdir(parents=True)
+            (path / 'partial.media').write_bytes(b'abandoned bytes')
+        old_time = self.now - 60 * 86400
+        for path in (stale_upload, stale_import):
+            os.utime(path, (old_time, old_time))
+        os.utime(recent_upload, (self.now - 2 * 86400, self.now - 2 * 86400))
+        result = prune(self.sources, self.data, now=self.now, days=30, apply=True)
+        self.assertEqual({item['name'] for item in result['staging_candidates']},
+                         {'.upload-stale', '.import-stale'})
+        self.assertFalse(stale_upload.exists())
+        self.assertFalse(stale_import.exists())
+        self.assertTrue(recent_upload.is_dir())
 
     def test_active_processor_blocks_pruning(self):
         locks = ((self.data / '.processing.lock', 'processor'),

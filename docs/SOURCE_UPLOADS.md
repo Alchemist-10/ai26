@@ -77,9 +77,9 @@ preparation automatically.
   releases and terminal receipts remain on disk; in-memory receipt cache is
   bounded to 16. There is no automatic managed-video or receipt cleanup. The
   offline `prune_source_releases.py` command can remove old, verified, unselected
-  releases and aged terminal receipts after dry-run review. It preserves the
-  latest receipt per camera. Forced kill/power loss may leave unreferenced staging.
-  Review host files while stopped before any manual cleanup.
+  releases, aged terminal receipts and abandoned `.upload-*`/`.import-*` staging
+  after dry-run review. It preserves the latest receipt per camera. Forced
+  kill/power loss may leave staging until that operator cleanup is run.
 - No observations, configuration revisions or SQLite audit rows are created by
   preparation/selection. The manifest records the local reviewer/reason and
   conversion identity. Existing observation provenance is unchanged. Prepared
