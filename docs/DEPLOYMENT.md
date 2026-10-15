@@ -10,6 +10,12 @@ managed source releases, model cache and read-artifact files across container
 recreation. Put original footage under `backend/data/footage` before startup, or
 set `AI26_FOOTAGE_DIR` to its host directory.
 
+Sampled observations and evidence images expire after seven days by default.
+Set `AI26_OBSERVATION_RETENTION_DAYS` to an integer from 7 to 365 to retain them
+longer. The API rejects values outside that range at startup. Report leases can
+extend referenced image retention until a report's independent 24-hour expiry;
+original managed video releases and model files have separate storage lifecycles.
+
 Start the local stack with:
 
 ```sh

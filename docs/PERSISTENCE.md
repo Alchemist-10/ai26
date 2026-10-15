@@ -119,8 +119,11 @@ appearance model or calibrated road topology is introduced.
 JSON/ZIP/print continue using the immutable report snapshot. Camera edits, new
 observations or decision algorithm changes leave stored report content and its
 hash unchanged. Maintenance removes decision rows with arrival times older than
-seven days; reports retain their copied decision snapshot until their separate
-24-hour expiry. Camera revision/audit history currently has no automatic expiry.
+the configured observation-retention period, which defaults to seven days. Set
+`AI26_OBSERVATION_RETENTION_DAYS` to an integer from 7 to 365 to choose a longer
+period; invalid settings prevent API startup. Reports retain their copied
+decision snapshot until their separate 24-hour expiry. Camera revision/audit
+history currently has no automatic expiry.
 
 Audit rows for camera configuration edits, alert reviews and report reads include
 the previous record hash and a SHA-256 hash over the canonical row fields. Existing

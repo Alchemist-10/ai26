@@ -1,5 +1,6 @@
 """Regression/contract tests use isolated storage and deterministic fixtures, never live data."""
 import asyncio
+from contextlib import nullcontext
 import sqlite3
 import hashlib
 import io
@@ -277,6 +278,22 @@ class Reliability(unittest.TestCase):
         self.assertFalse(path.exists())
         self.assertEqual(self.repo.protected_artifacts(report['expires_at']+1),set())
         self.assertIsNone(self.repo.report(report['report_id'],report['expires_at']+1))
+
+    def test_observation_retention_period_is_operator_configurable(self):
+        fake_repository=Mock()
+        fake_repository.lock=nullcontext()
+        fake_repository.protected_artifacts.return_value=set()
+        with patch.dict(os.environ,{'AI26_OBSERVATION_RETENTION_DAYS':'30'}), \
+             patch('maintenance.cleanup_artifacts') as cleanup_artifacts:
+            janitor=Maintenance(fake_repository)
+            janitor.run_once(now=self.now)
+        self.assertEqual(janitor.retention_days,30)
+        fake_repository.cleanup.assert_called_once_with(self.now-30*86400,self.now)
+        cleanup_artifacts.assert_called_once_with(self.now-30*86400,set())
+        for invalid in ('', '6', '366', 'seven'):
+            with self.subTest(invalid=invalid), patch.dict(os.environ,{'AI26_OBSERVATION_RETENTION_DAYS':invalid}):
+                with self.assertRaisesRegex(ValueError,'7 to 365'):
+                    Maintenance(self.repo)
 
     def test_schema_one_migration_backfills_report_leases(self):
         path=Path(self.folder.name)/'legacy.sqlite3'
