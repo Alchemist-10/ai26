@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **44 done, 35 partial, 1 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **45 done, 34 partial, 1 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -136,12 +136,15 @@ See `docs/READ_IMAGES.md` and `AI26_READ_ARTIFACT_VALIDATION.json` in the delive
 The alert panel now supports a durable local escalation queue with recipient,
 reviewer, handoff note, reassignment, resolution and audit history. With auth
 enabled, the reviewer is taken from the signed-in account; local mode labels
-freeform reviewer names as claims.
-Active escalations remain visible outside the recent-alert window. This is an
-unauthenticated local workflow; it does not send email, SMS or push notifications.
-The API rejects escalation without a recipient. Isolated contracts verify target
-validation, stale-window queue visibility, persistence across repository reopen,
-reassignment and resolution. See `docs/ALERT_REVIEW.md`.
+freeform reviewer names as claims. Authenticated active handoffs are scoped to
+the selected case. Active escalations remain visible outside the recent-alert
+window, with stable cursor pagination beyond 200 items. The API rejects
+escalation without a recipient. Isolated contracts verify target validation,
+case scope, stale-window queue visibility, persistence across repository reopen,
+pagination, reassignment and resolution. Notifications are conditional in the
+task and were not required by the local project scope; external delivery remains
+an optional deployment integration. General evidence row-level case isolation
+remains tracked separately under OP-02. See `docs/ALERT_REVIEW.md`.
 
 ## Compose deployment update
 
@@ -335,7 +338,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P2-04 | Partial | Implement a measured spatial/road-segment heatmap with honest unobserved/unknown states. | Camera map, analytics and congestion views now omit unconfirmed coordinates; missing sources show unknown passage counts, and investigation maps plot only confirmed locations/transitions. Camera-local activity is shown honestly; a measured road-segment heatmap still needs calibrated locations and road data. |
 | P2-05 | Done | Keep detector confidence separate from measured accuracy and human verification status. | Model confidence is explicitly separate from measured accuracy and human verification. |
 | P2-06 | Done | Persist alert IDs, trigger observations, acknowledgement/review/disposition and reviewer timestamps. | Stable alert IDs, supporting read IDs, review state/history, named reviewer and timestamps persisted across reopen. |
-| P2-07 | Partial | Connect a real human-review/escalation workflow; add notifications only if required by the project. | Durable local escalation/reassignment queue records recipient, reviewer, note, timestamp and audit history; authenticated mode binds reviewer to the session account and scopes active handoffs to the selected case, while local mode labels freeform names as claims. Stable cursor pages keep active handoffs reachable beyond both the recent-alert window and the first 200 entries. External notifications remain pending; this does not provide general row-level data isolation. |
+| P2-07 | Done | Connect a real human-review/escalation workflow; add notifications only if required by the project. | Durable local escalation/reassignment queue records recipient, reviewer, note, timestamp and audit history; authenticated mode binds reviewer to the session account and scopes active handoffs to the selected case, while local mode labels freeform names as claims. Stable cursor pages keep active handoffs reachable beyond both the recent-alert window and the first 200 entries. The project scope does not require external notifications; general evidence row-level isolation remains tracked under OP-02. |
 | P2-08 | Done | Package evidence observations, raw/canonical OCR, frames/crops, accepted/rejected paths and metadata consistently. | Manifest/raw reads/canonical strings/artifacts/link decisions/provenance packaged consistently with verified digests; derivative and coverage limits stated. |
 | P2-09 | Done | Provide direct JSON/package download and a dedicated PDF/print layout with matching report data. | Browser JSON/ZIP downloads verified; dedicated print contains the same stored snapshot and raw reads. PDF uses the browser print dialog. |
 | P2-10 | Done | Enforce defined retention/expiry rather than displaying a retention string. | 24-hour report expiry, configurable 7–365-day observation/JPEG cleanup (seven-day default), schema-2 artifact leases, and independent maintenance; boundary and processing-disabled tests pass. |
