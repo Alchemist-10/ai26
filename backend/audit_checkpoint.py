@@ -103,15 +103,31 @@ def verify_checkpoint(checkpoint, public_key_path, database_path):
               "audit_head_hash", "key_fingerprint_sha256", "signature_base64"}
     if set(checkpoint) != fields or checkpoint.get("format") != "ai26-audit-checkpoint-v1":
         raise AuditCheckpointError("Checkpoint has unknown, missing, or unsupported fields")
+    checkpoint_fingerprint = checkpoint["key_fingerprint_sha256"]
+    if (not isinstance(checkpoint_fingerprint, str) or len(checkpoint_fingerprint) != 64
+            or any(character not in "0123456789abcdef" for character in checkpoint_fingerprint)):
+        raise AuditCheckpointError("Checkpoint trusted-key fingerprint is invalid")
+    if isinstance(public_key_path, (str, os.PathLike)):
+        trusted_paths = [public_key_path]
+    else:
+        trusted_paths = list(public_key_path)
+    if not trusted_paths:
+        raise AuditCheckpointError("At least one trusted public key is required")
+    trusted_keys = {}
     try:
-        public = serialization.load_pem_public_key(Path(public_key_path).read_bytes())
+        for path in trusted_paths:
+            public = serialization.load_pem_public_key(Path(path).read_bytes())
+            if not isinstance(public, Ed25519PublicKey):
+                raise AuditCheckpointError("Trusted public key must use Ed25519")
+            fingerprint = hashlib.sha256(_raw_public(public)).hexdigest()
+            trusted_keys[fingerprint] = public
+    except AuditCheckpointError:
+        raise
     except (OSError, ValueError, TypeError) as exc:
         raise AuditCheckpointError("Trusted public key is unavailable or invalid") from exc
-    if not isinstance(public, Ed25519PublicKey):
-        raise AuditCheckpointError("Trusted public key must use Ed25519")
-    fingerprint = hashlib.sha256(_raw_public(public)).hexdigest()
-    if checkpoint["key_fingerprint_sha256"] != fingerprint:
-        raise AuditCheckpointError("Trusted public key fingerprint does not match checkpoint")
+    public = trusted_keys.get(checkpoint_fingerprint)
+    if public is None:
+        raise AuditCheckpointError("No trusted public key fingerprint matches checkpoint")
     payload = {key: checkpoint[key] for key in fields if key != "signature_base64"}
     try:
         signature = base64.b64decode(checkpoint["signature_base64"], validate=True)
@@ -133,7 +149,7 @@ def verify_checkpoint(checkpoint, public_key_path, database_path):
         raise AuditCheckpointError("Database audit history does not match the signed checkpoint")
     return {"status": "valid", "audit_head_id": checkpoint_id, "audit_head_hash": head_hash,
             "records_at_checkpoint": count, "records_after_checkpoint": records_after,
-            "key_fingerprint_sha256": fingerprint}
+            "key_fingerprint_sha256": checkpoint_fingerprint}
 
 
 def main(argv=None):
@@ -146,10 +162,11 @@ def main(argv=None):
     create.add_argument("--database", required=True)
     create.add_argument("--private-key", required=True)
     create.add_argument("--output", required=True)
-    verify = commands.add_parser("verify", help="verify a signed checkpoint against a database and trusted key")
+    verify = commands.add_parser("verify", help="verify a signed checkpoint against a database and trusted key(s)")
     verify.add_argument("--database", required=True)
     verify.add_argument("--checkpoint", required=True)
-    verify.add_argument("--public-key", required=True)
+    verify.add_argument("--public-key", action="append", required=True,
+                        help="trusted Ed25519 public key; repeat during/after rotation to retain old verification")
     args = parser.parse_args(argv)
     try:
         if args.command == "generate":

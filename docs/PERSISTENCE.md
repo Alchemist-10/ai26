@@ -23,7 +23,10 @@ database with `backend/audit_checkpoint.py`. Optional host wrapper/systemd
 templates can schedule daily checkpoints to an active mounted destination. The
 checkpoint file and trusted public key must be retained independently to provide
 rollback evidence; the template does not prove the mount is off-host or manage
-signing-key rotation/revocation. MFA encryption-key rotation is separate; see
+remote trust distribution. Checkpoint signer rotation supports overlapping
+old/new trusted public keys during local verification; public-key distribution
+and revocation outside this verifier remain operator-managed. MFA encryption-key
+rotation is separate; see
 [MFA_KEY_ROTATION.md](MFA_KEY_ROTATION.md). See [AUDIT_CHECKPOINTS.md](AUDIT_CHECKPOINTS.md)
 for checkpoint setup and verification.
 
@@ -144,8 +147,9 @@ signs new reports; the offline verifier requires a public key supplied independe
 and checks its SHA-256 fingerprint before accepting the signature. Without a
 configured key, new reports explicitly contain `signature: null`. Signatures bind
 bytes to a key, not to correct footage, a real camera, a true plate identity or a
-trusted operator. Key custody, distribution, rotation and external audit anchoring
-remain operator responsibilities. See [report signing](REPORT_SIGNING.md).
+trusted operator. Key custody, distribution and external audit anchoring remain
+operator responsibilities. Report-signing rotation supports overlapping trusted
+keys for offline verification; see [report signing](REPORT_SIGNING.md).
 
 213 isolated backend tests pass, including 14 persistence tests for migrations,
 restarts, stale edits, validation, snapshot/report immutability, all decision

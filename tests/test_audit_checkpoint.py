@@ -1,4 +1,6 @@
 import os
+import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -41,6 +43,9 @@ class AuditCheckpointTests(unittest.TestCase):
         tampered = {**checkpoint, "audit_head_id": 4}
         with self.assertRaisesRegex(AuditCheckpointError, "signature"):
             verify_checkpoint(tampered, self.public, self.db_path)
+        malformed = {**checkpoint, "key_fingerprint_sha256": []}
+        with self.assertRaisesRegex(AuditCheckpointError, "fingerprint is invalid"):
+            verify_checkpoint(malformed, self.public, self.db_path)
         with self.repo.lock, self.repo.db:
             self.repo.db.execute("UPDATE audit SET subject='changed' WHERE id=1")
         with self.assertRaisesRegex(AuditCheckpointError, "invalid"):
@@ -52,12 +57,36 @@ class AuditCheckpointTests(unittest.TestCase):
         generate_key_pair(wrong_private, wrong_public)
         self.add_audit()
         checkpoint = create_checkpoint(self.db_path, self.private)
-        with self.assertRaisesRegex(AuditCheckpointError, "fingerprint"):
+        with self.assertRaisesRegex(AuditCheckpointError, "No trusted public key fingerprint"):
             verify_checkpoint(checkpoint, wrong_public, self.db_path)
         with self.repo.lock, self.repo.db:
             self.repo.db.execute("UPDATE audit SET record_hash='bad' WHERE id=1")
         with self.assertRaisesRegex(AuditCheckpointError, "invalid"):
             create_checkpoint(self.db_path, self.private)
+
+    def test_checkpoint_verification_keeps_old_and_new_rotation_keys_trusted(self):
+        self.add_audit("before_rotation")
+        old_checkpoint = create_checkpoint(self.db_path, self.private, created_at=456.0)
+        new_private = Path(self.temp.name) / "new-private.pem"
+        new_public = Path(self.temp.name) / "new-public.pem"
+        generate_key_pair(new_private, new_public)
+        self.add_audit("after_rotation")
+        new_checkpoint = create_checkpoint(self.db_path, new_private, created_at=789.0)
+        trusted = [self.public, new_public]
+        self.assertEqual(verify_checkpoint(old_checkpoint, trusted, self.db_path)["status"], "valid")
+        self.assertEqual(verify_checkpoint(new_checkpoint, trusted, self.db_path)["status"], "valid")
+        with self.assertRaisesRegex(AuditCheckpointError, "No trusted public key"):
+            verify_checkpoint(old_checkpoint, [new_public], self.db_path)
+
+        checkpoint_file = Path(self.temp.name) / "old-checkpoint.json"
+        checkpoint_file.write_text(json.dumps(old_checkpoint))
+        script = Path(__file__).resolve().parents[1] / "backend" / "audit_checkpoint.py"
+        result = subprocess.run(
+            [sys.executable, str(script), "verify", "--database", str(self.db_path),
+             "--checkpoint", str(checkpoint_file), "--public-key", str(self.public),
+             "--public-key", str(new_public)], check=True, capture_output=True, text=True,
+        )
+        self.assertIn('"status": "valid"', result.stdout)
 
     @unittest.skipIf(os.name != "posix", "POSIX file permissions required")
     def test_private_key_permissions_are_enforced(self):

@@ -17,6 +17,29 @@ The private key is created with mode `0600`; the command refuses to overwrite
 either file. Distribute the public key and its SHA-256 fingerprint through an
 independent trusted channel. Keep old public keys for verifying old checkpoints.
 
+To rotate the checkpoint signer, generate a new pair at new, non-existing paths
+with the same `generate` command. Distribute the new public key and fingerprint
+through the independent trusted channel, update the scheduled service's private
+key path, and create the next checkpoint with the new private key. Keep both
+public keys in the trusted set while historical checkpoints signed by either
+key remain in scope. Verify a checkpoint during or after the overlap with
+repeated `--public-key` arguments:
+
+```sh
+uv run --frozen --directory backend python audit_checkpoint.py verify \
+  --database /srv/ai26/data/ai26.sqlite3 \
+  --checkpoint /mnt/off-host/ai26-audit-2026-10-14.json \
+  --public-key /srv/ai26-trusted-keys/audit-checkpoint-old-public.pem \
+  --public-key /srv/ai26-trusted-keys/audit-checkpoint-new-public.pem
+```
+
+The verifier matches the checkpoint's fingerprint to one supplied trusted key.
+Removing a public key from this set revokes local trust for checkpoints signed
+by it; this does not rewrite checkpoint files or publish revocation to other
+verifiers. Retire the old private key only after the new signer has successfully
+created a checkpoint and its verification has been independently checked. Keep
+old public keys as long as their checkpoints must remain verifiable.
+
 Create a checkpoint from a stopped or running SQLite database. The database is
 opened read-only and the command refuses to sign an invalid chain. The output
 file must not already exist:
@@ -42,9 +65,9 @@ Verification checks the checkpoint signature, trusted-key fingerprint, and the
 database chain through the signed record. It reports records appended after the
 checkpoint. A valid result does not detect deletion or rollback of records that
 occurred after the most recent checkpoint, and it does not prove that the source
-events were truthful. Checkpoint frequency, off-host retention, signing-key
-rotation/revocation, and incident response remain operator responsibilities; the
-wrapper does not configure the remote filesystem or manage keys automatically.
+events were truthful. Checkpoint frequency, off-host retention, trusted-key
+distribution/revocation, and incident response remain operator responsibilities;
+the wrapper does not configure the remote filesystem or manage keys automatically.
 The separate offline MFA-key procedure is documented in
 [`MFA_KEY_ROTATION.md`](MFA_KEY_ROTATION.md).
 
