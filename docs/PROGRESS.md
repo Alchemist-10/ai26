@@ -272,7 +272,7 @@ local results. Short runtime samples do not establish sustained throughput.
 
 | ID | Status | Task | Evidence / remaining work |
 | --- | --- | --- | --- |
-| P0-01 | Partial | Supply CAM-07–09 readable-plate clips, or reduce the catalog honestly to available inputs. | Six available sources and three missing sources are explicit; readable plate inputs are still absent. |
+| P0-01 | Partial | Supply CAM-07–09 readable-plate clips, or reduce the catalog honestly to available inputs. | Six available sources and three missing sources are explicit; readable plate inputs are still absent. The local AI26 tree and upstream [Godseye repository](https://github.com/moneytosms/godseye) were checked on 2026-10-15; its reachable `main` commit `3d575f68de391e178d18380092e816cd1d2b4eef` tracks playback clips only for CAM-01–06, with no CAM-07–09 clip or dataset archive found in the inspected tree. |
 | P0-02 | Pending | Prove real plate reads on supplied footage, retaining raw and canonical strings. | Real OCR cannot be proved without CAM-07–09 readable plate footage. |
 | P0-03 | Done | Isolate OCR voting by camera + vehicle/plate track, not camera alone. | Camera + local plate-track consensus; independent tracks and conflicts are regression-tested. |
 | P0-04 | Done | Keep `plate`, `plate_norm`, watchlist checks and UI labels consistent. | Canonical plate fields, identity queries and local watchlist use the same normalization; raw strings remain separate. |
