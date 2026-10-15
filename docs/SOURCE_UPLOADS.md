@@ -114,7 +114,9 @@ The default local prototype remains unauthenticated. When authentication is
 enabled, source routes require an operator role, case/purpose scope and CSRF on
 mutations. The upload's reviewer/reason fields remain operator-entered claims;
 prepared releases bind the signed-in uploader account on the server, and source
-selection records separately bind the account selecting a release. The
+selection records separately bind the account selecting a release. A ready
+browser receipt and the later source history display the reviewer claim and
+authenticated uploader as separate fields. The
 Compose helper restarts only the backend and waits for its local health endpoint;
 other deployment managers still need their own restart procedure.
 
