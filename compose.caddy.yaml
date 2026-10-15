@@ -1,0 +1,30 @@
+services:
+  backend:
+    environment:
+      AI26_AUTH_ENABLED: "1"
+      AI26_AUTH_COOKIE_SECURE: "1"
+      AI26_ADMIN_USERNAME: ${AI26_ADMIN_USERNAME:-admin}
+      AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE: /run/secrets/ai26-admin-bootstrap-password
+    volumes:
+      - ${AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE:?Set AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE to a protected password file}:/run/secrets/ai26-admin-bootstrap-password:ro
+
+  caddy:
+    image: caddy:2.11.6-alpine
+    environment:
+      AI26_DOMAIN: ${AI26_DOMAIN:?Set AI26_DOMAIN to the public DNS hostname for automatic HTTPS}
+    ports:
+      - "${AI26_CADDY_HOST:-0.0.0.0}:80:80"
+      - "${AI26_CADDY_HOST:-0.0.0.0}:443:443"
+      - "${AI26_CADDY_HOST:-0.0.0.0}:443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

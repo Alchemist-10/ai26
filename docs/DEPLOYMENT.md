@@ -186,6 +186,35 @@ authorize roles, and authentication does not create an externally trusted audit
 checkpoint. Do not publish either listener to an untrusted network without a
 deployment review.
 
+For public-domain HTTPS with automatic certificate issuance, renewal, and HTTP
+redirects, use the optional Caddy overlay instead:
+
+```sh
+AI26_DOMAIN=ai26.example.org \
+AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE=/absolute/path/to/ai26-admin-password \
+docker compose -f compose.yaml -f compose.caddy.yaml up --build -d
+```
+
+The overlay enables AI26 authentication with Secure cookies and requires the
+bootstrap password file. Before starting, point the domain's DNS A/AAAA records
+to the host and allow inbound TCP 80/443 (UDP 443 is optional for HTTP/3).
+`AI26_CADDY_HOST` defaults to `0.0.0.0` for public certificate challenges; set
+it to a specific interface if your network policy requires that. Caddy proxies
+the existing production frontend, which continues to route `/api/` internally,
+and stores its certificate state in persistent `caddy_data`/`caddy_config`
+volumes. Keep those volumes persistent; include them in protected deployment
+backups if you need their current certificate keys and account state. Caddy
+automatically manages certificate renewals and HTTP-to-HTTPS redirects when the
+hostname, network and persistent-storage prerequisites are met. This flow is
+packaged and configuration-validated locally; public issuance and renewal still
+need a real domain and reachable deployment to verify.
+
+The Caddy overlay requires its own `.env` entries rather than certificate file
+paths. It does not alter the base local launcher or the manual-certificate TLS
+overlay. See Caddy's [automatic HTTPS requirements](https://caddyserver.com/docs/automatic-https),
+[HTTPS quick-start](https://caddyserver.com/docs/quick-starts/https), and
+[Docker Compose setup](https://caddyserver.com/docs/running#docker-compose).
+
 References: Docker [Compose startup order and health checks](https://docs.docker.com/compose/how-tos/startup-order/),
 [Compose production configuration](https://docs.docker.com/compose/how-tos/production/),
 [Compose profiles](https://docs.docker.com/compose/how-tos/profiles/), Prometheus
