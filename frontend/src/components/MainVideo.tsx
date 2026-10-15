@@ -2,12 +2,16 @@ import { useEffect, useRef, useState } from "react"
 import { cameraPlaybackOffset, getPrivacyStatus, streamUrl, videoUrl, type Camera } from "@/lib/api"
 import { usePageVisible } from "@/hooks/usePolling"
 
+type PlaybackQuality = { droppedFrames: number; totalFrames: number }
+
 function VideoFeed({ camera }: { camera: Camera | undefined }) {
   const [mode, setMode] = useState<"playback" | "detections">("detections")
   const [privacyEnabled, setPrivacyEnabled] = useState(true)
   const [privacyStatusReady, setPrivacyStatusReady] = useState(false)
   const [retry, setRetry] = useState(0)
   const [failed, setFailed] = useState(false)
+  const [playbackQuality, setPlaybackQuality] = useState<PlaybackQuality | null>(null)
+  const [playbackQualitySupported, setPlaybackQualitySupported] = useState<boolean | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const visible = usePageVisible()
   useEffect(() => {
@@ -25,6 +29,30 @@ function VideoFeed({ camera }: { camera: Camera | undefined }) {
     if (visible) void video.play().catch(() => undefined)
     else video.pause()
   }, [visible, mode, camera?.id])
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !visible || mode !== "playback" || failed) {
+      setPlaybackQuality(null)
+      setPlaybackQualitySupported(null)
+      return
+    }
+    if (typeof video.getVideoPlaybackQuality !== "function") {
+      setPlaybackQuality(null)
+      setPlaybackQualitySupported(false)
+      return
+    }
+    setPlaybackQualitySupported(true)
+    const update = () => {
+      const quality = video.getVideoPlaybackQuality()
+      const next = { droppedFrames: quality.droppedVideoFrames, totalFrames: quality.totalVideoFrames }
+      setPlaybackQuality(current => current?.droppedFrames === next.droppedFrames && current.totalFrames === next.totalFrames
+        ? current
+        : next)
+    }
+    update()
+    const timer = window.setInterval(update, 2000)
+    return () => window.clearInterval(timer)
+  }, [visible, mode, camera?.id, retry, failed])
   const seek = () => {
     const video = videoRef.current
     if (video && camera && Number.isFinite(video.duration)) {
@@ -38,6 +66,11 @@ function VideoFeed({ camera }: { camera: Camera | undefined }) {
     <div className="flex flex-none flex-wrap items-center gap-2 border-b border-zinc-800 px-3 py-2 text-xs">
       {(!privacyEnabled ? (["playback", "detections"] as const) : (["detections"] as const)).map(value => <button key={value} type="button" aria-pressed={mode === value} onClick={() => { setMode(value); setFailed(false) }} className={`rounded border px-3 py-1.5 ${mode === value ? "border-white bg-white text-black" : "border-zinc-700 text-zinc-300"}`}>{value === "playback" ? "Recorded playback" : "Sampled detections"}</button>)}
       <span className="text-zinc-400">{mode === "playback" ? "Smooth source video · no detection overlay" : `Shared inference · ${camera.health.processed_fps.toFixed(2)} FPS sampled`}</span>
+      {mode === "playback" && <span className="ml-auto text-[11px] tabular-nums text-zinc-400" aria-label="Local browser playback frame loss">
+        {playbackQualitySupported === false ? "Browser playback counters unavailable" : playbackQuality
+          ? `Browser playback frame loss: ${playbackQuality.droppedFrames}/${playbackQuality.totalFrames} (${playbackQuality.totalFrames ? (playbackQuality.droppedFrames / playbackQuality.totalFrames * 100).toFixed(1) : "0.0"}%)`
+          : "Reading browser playback counters…"}
+      </span>}
     </div>
     <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
       {privacyStatusReady && camera.source_available && (mode === "playback" ? <video key={`${camera.id}-${retry}`} ref={videoRef} src={videoUrl(camera.id)} aria-label={`${camera.id} recorded playback`} className="h-full w-full object-contain" controls muted playsInline preload="metadata" onLoadedMetadata={seek} onCanPlay={() => setFailed(false)} onEnded={seek} onError={() => setFailed(true)} /> : visible && <img key={`${camera.id}-${retry}`} src={streamUrl(camera.id, undefined, retry)} alt={`${camera.id} sampled detections`} className="h-full w-full object-contain" onLoad={() => setFailed(false)} onError={() => setFailed(true)} />)}

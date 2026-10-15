@@ -163,6 +163,17 @@ focused recorded player immediately; six available sources correctly displayed
 This verifies removal of the interaction gate, not a measured LCP/INP or a
 real-device load-time improvement.
 
+The focused native player now shows a browser-local dropped-frame count and
+percentage, sampled every two seconds only while the page is visible in playback
+mode. It reads `HTMLVideoElement.getVideoPlaybackQuality()`; no metric is sent to
+the API. Two 10-second samples of one CAM-01 playback in the 1280×720 local
+browser showed 5/416 (1.20%) and 9/650 (1.38%) incremental dropped frames. The
+isolated API had processing disabled, so this is a focused player check rather
+than a six-stream or production performance result. Raw samples are in
+[`browser-playback-quality-2026-10-15.json`](validation/browser-playback-quality-2026-10-15.json).
+The browser API defines total frames as frames displayed or dropped and exposes
+dropped frames since media load ([MDN reference](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/getVideoPlaybackQuality)).
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded

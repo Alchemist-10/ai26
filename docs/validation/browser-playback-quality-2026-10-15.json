@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-15",
+  "measurement": "HTMLVideoElement.getVideoPlaybackQuality()",
+  "environment": {
+    "application": "AI26 local frontend and API",
+    "browser": "Codex in-app browser",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "api_processing_enabled": false,
+    "isolated_temporary_data_root": true,
+    "playing_video_elements": 1
+  },
+  "source": {
+    "camera_id": "CAM-01",
+    "mode": "recorded playback"
+  },
+  "sampling_windows": [
+    {
+      "duration_seconds": 10.007,
+      "before": {
+        "dropped_video_frames": 2,
+        "total_video_frames": 344
+      },
+      "after": {
+        "dropped_video_frames": 7,
+        "total_video_frames": 760
+      },
+      "dropped_frames_delta": 5,
+      "total_frames_delta": 416,
+      "interval_dropped_percent": 1.2
+    },
+    {
+      "duration_seconds": 10.011,
+      "before": {
+        "dropped_video_frames": 29,
+        "total_video_frames": 1622
+      },
+      "after": {
+        "dropped_video_frames": 38,
+        "total_video_frames": 2272
+      },
+      "dropped_frames_delta": 9,
+      "total_frames_delta": 650,
+      "interval_dropped_percent": 1.38
+    }
+  ],
+  "telemetry_scope": "Read from the local video element; no backend telemetry or persistence.",
+  "limitations": [
+    "Two short intervals from one desktop browser and one recorded video do not represent multi-camera load or production deployment.",
+    "The isolated API ran with processing disabled.",
+    "Counters reset when the video media is loaded or replaced and depend on browser support."
+  ]
+}
