@@ -14,7 +14,7 @@ from tracking import CentroidTracker, TRACKER_VERSION
 from model_provenance import load_plate_model, pipeline_components
 from model_provenance import snapshot_model_file, verify_model_files
 from model_rollout import CONFIGURATION as _vehicle_rollout
-from model_rollout import profile_for_camera
+from model_rollout import DetectorCompatibilityError, profile_for_camera, preflight_detector
 from privacy import enabled as privacy_enabled, pixelate_person_boxes, plate_alias
 
 VEHICLE_CLASS_IDS = {2, 3, 5, 7}  # car, motorcycle, bus, truck (COCO)
@@ -45,6 +45,12 @@ def _vehicle_model(camera_id="CAM-01"):
     loaded = _vehicle_models.get(profile)
     if loaded is None:
         configured = _vehicle_rollout[profile]
+        previous_compatibility = configured.get('compatibility') or {}
+        if previous_compatibility.get('preflight_status') == 'failed':
+            raise DetectorCompatibilityError(
+                f"Configured {profile} checkpoint failed detection compatibility: "
+                f"{previous_compatibility.get('failure_reason', 'preflight failed')}"
+            )
         data_root = Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data'))
         snapshot, record = snapshot_model_file(configured['path'], data_root / 'models' / 'vehicle',
                                                f'vehicle_{profile}_weights')
@@ -52,18 +58,24 @@ def _vehicle_model(camera_id="CAM-01"):
         if expected and record['sha256'] != expected:
             raise RuntimeError(f"The pinned {profile} vehicle model SHA-256 does not match the configured digest")
         model = YOLO(str(snapshot))
+        try:
+            compatibility = preflight_detector(model, device=DEVICE, include_person=privacy_enabled())
+        except DetectorCompatibilityError as error:
+            configured['compatibility'] = {"preflight_status":"failed", "failure_reason":str(error)}
+            raise
         verify_model_files([(snapshot, record)])
         model_id = f"ultralytics-yolo:{profile}:{record['sha256']}"
         metadata = {"checkpoint_sha256": record['sha256'], "checkpoint_name": configured['path'].name,
                     "model_profile": profile, "model_id": model_id,
                     "weight_provenance_status": "hashed_loaded_file",
+                    "compatibility": compatibility,
                     "torch_version": str(torch.__version__), "cpu_threads": CPU_THREADS,
                     "tracker_version": TRACKER_VERSION, "ultralytics_version": version("ultralytics"),
                     "pipeline_sha256": _pipeline_hash,
                     "pipeline_components_sha256": _pipeline_components}
         loaded = {"model": model, "metadata": metadata}
         _vehicle_models[profile] = loaded
-        configured.update(loaded_sha256=record['sha256'], loaded=True)
+        configured.update(loaded_sha256=record['sha256'], loaded=True, compatibility=compatibility)
         _model_metadata = metadata
     else:
         _model_metadata = loaded['metadata']

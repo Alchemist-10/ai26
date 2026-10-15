@@ -26,13 +26,24 @@ vehicle classes and preprocessing. The API refuses incomplete settings,
 unknown camera IDs, unreadable files, or a digest mismatch. Model initialization
 stays lazy, so unused branches do not load either checkpoint.
 
-`GET /api/health` exposes path-free rollout status and loaded digests. Each
-vehicle event also carries `model_profile`, `checkpoint_sha256`, and a
-`model_id` used as its persisted `model_version`. No runtime traffic split,
+`GET /api/health` exposes path-free rollout status, loaded digests and the
+checkpoint compatibility result. Each vehicle event also carries
+`model_profile`, `checkpoint_sha256`, and a `model_id` used as its persisted
+`model_version`. No runtime traffic split,
 automatic promotion, accuracy gate, or UI-based hot swap is performed. To
 rollback, remove the three canary variables and restart the API; the camera
 allowlist then uses the stable model. A stable-checkpoint change also requires
 an API restart. Existing events retain the model version that produced them.
+
+On first use of either checkpoint, AI26 requires Ultralytics task `detect`, the
+COCO class IDs/names used by this pipeline (and `person` when privacy masking is
+enabled), then runs a 640×640 synthetic BGR forward pass and verifies the returned
+detection-box/class interface. Failed compatibility checks prevent the model
+from entering the active cache; that camera reports the inference error and no
+observations are produced by that failed attempt. This is a runtime compatibility
+check, not accuracy validation or a canary quality gate. It uses Ultralytics'
+documented [`task` and `names` properties](https://docs.ultralytics.com/reference/models/yolo/model/)
+and [detection result boxes](https://docs.ultralytics.com/tasks/detect/).
 
 This supports a controlled operator-managed canary and exact rollback target,
 not a measured canary result. Validate the candidate on held-out labeled data

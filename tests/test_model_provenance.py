@@ -129,7 +129,11 @@ class InferenceProvenance(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             checkpoint=Path(folder)/'fixture.pt';checkpoint.write_bytes(b'pinned vehicle checkpoint')
             digest=hashlib.sha256(checkpoint.read_bytes()).hexdigest()
-            model=SimpleNamespace()
+            model=SimpleNamespace(
+                task='detect',
+                names={0:'person',2:'car',3:'motorcycle',5:'bus',7:'truck'},
+                predict=Mock(return_value=[SimpleNamespace(boxes=SimpleNamespace(cls=[]))]),
+            )
             loader=Mock(return_value=model)
             configuration={'stable':{'path':checkpoint,'expected_sha256':digest},'canary':None}
             record={'sha256':digest,'size':checkpoint.stat().st_size,'filename':checkpoint.name}
@@ -143,6 +147,8 @@ class InferenceProvenance(unittest.TestCase):
             self.assertEqual(module._model_metadata['checkpoint_sha256'],digest)
             self.assertEqual(module._model_metadata['model_profile'],'stable')
             self.assertEqual(module._model_metadata['model_id'],f'ultralytics-yolo:stable:{digest}')
+            self.assertEqual(module._model_metadata['compatibility']['preflight_status'],'passed')
+            self.assertEqual(configuration['stable']['compatibility']['required_class_ids'],[2,3,5,7])
 
     def test_lazy_failure_retries_and_success_initializes_once(self):
         module=self.module();model=SimpleNamespace(predict=lambda _:[])
@@ -189,6 +195,30 @@ class InferenceProvenance(unittest.TestCase):
                 module._vehicle_model()
             loader.assert_not_called()
             self.assertEqual(module._vehicle_models,{})
+
+    def test_vehicle_checkpoint_compatibility_failure_is_not_cached_or_activated(self):
+        module=self.module()
+        with tempfile.TemporaryDirectory() as folder:
+            checkpoint=Path(folder)/'candidate.pt';checkpoint.write_bytes(b'pinned but incompatible checkpoint')
+            digest=hashlib.sha256(checkpoint.read_bytes()).hexdigest()
+            config={'stable':{'path':checkpoint,'expected_sha256':digest},'canary':None}
+            record={'sha256':digest,'size':checkpoint.stat().st_size,'filename':checkpoint.name}
+            incompatible=SimpleNamespace(task='detect',names={0:'person',2:'car',3:'motorcycle',5:'bus',7:'airplane'},predict=Mock())
+            loader=Mock(return_value=incompatible)
+            with patch.object(module,'_vehicle_rollout',config), \
+                 patch.object(module,'snapshot_model_file',return_value=(checkpoint,record)), \
+                 patch.object(module,'verify_model_files'),patch.object(module,'YOLO',loader), \
+                 self.assertRaisesRegex(RuntimeError,'class 7 must be named'):
+                module._vehicle_model()
+            self.assertEqual(module._vehicle_models,{})
+            self.assertFalse(config['stable'].get('loaded',False))
+            self.assertNotIn('loaded_sha256',config['stable'])
+            self.assertEqual(config['stable']['compatibility']['preflight_status'],'failed')
+            with patch.object(module,'_vehicle_rollout',config), \
+                 patch.object(module,'YOLO',loader), \
+                 self.assertRaisesRegex(RuntimeError,'failed detection compatibility'):
+                module._vehicle_model()
+            loader.assert_called_once()
 
     def test_initialized_frames_do_not_repeat_hash_or_package_metadata_io(self):
         import numpy as np
