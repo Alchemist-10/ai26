@@ -24,6 +24,7 @@ import processing
 import artifacts
 import stream
 import nlquery
+from source_clock import normalize_recording_clock, source_capture_clock_fields
 from repository import Repository, canonical_json
 from fusion import PlateConsensus
 from maintenance import Maintenance
@@ -489,10 +490,19 @@ class Reliability(unittest.TestCase):
                                 set=lambda *args:True,read=lambda:(True,np.zeros((100,100,3),dtype=np.uint8)),release=lambda:None)
         p=processing.Processor(cameras=[{'id':'CAM-01','kind':'vehicle'}],source=lambda _:path,
                                annotator=lambda frame,kind,camera:(frame,[self.vehicle()]))
-        with patch.object(processing.cv2,'VideoCapture',return_value=capture):p.step(p.cameras[0])
+        clock=normalize_recording_clock('2026-10-14T06:30:00Z',2.0)
+        with patch.object(processing.cameras,'MANAGED_SOURCES',{'CAM-01':{'manifest':{'recording_clock':clock}}}), \
+             patch.object(processing.cv2,'VideoCapture',return_value=capture):p.step(p.cameras[0])
         self.assertEqual(p.health()[0]['status'],'processing')
         read=self.repo.observations()[0]
         self.assertEqual(read['time_basis'],'replay_clock');self.assertIn('source_sha256',read)
+        self.assertEqual(read['recording_clock_status'],'operator_claimed_unverified')
+        self.assertEqual(read['source_offset_basis'],'frame_index_divided_by_reported_fps')
+        self.assertEqual(read['claimed_source_capture_time_utc'],
+                         source_capture_clock_fields(clock,read['source_time_seconds'])['claimed_source_capture_time_utc'])
+        self.assertTrue(any(ref.get('claimed_source_capture_time_utc')==read['claimed_source_capture_time_utc']
+                            and ref.get('source_offset_basis')==read['source_offset_basis']
+                            for ref in read['artifacts']))
         self.assertEqual(len(read['artifacts']),2)
         self.assertTrue(p.jpeg('CAM-01')[1].startswith(b'\xff\xd8'))
         preview=processing.cv2.imdecode(np.frombuffer(p.preview('CAM-01')[1],np.uint8),processing.cv2.IMREAD_COLOR)

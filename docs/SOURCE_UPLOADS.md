@@ -9,9 +9,10 @@ the app on the host. An offline host selector is also available.
 ## Operator workflow
 
 1. Install FFmpeg/libx264 and ffprobe on the API host. Choose an existing camera,
-   a nonempty video up to 128 MiB, your name and a reason. Existing footage requires
-   an explicit replacement checkbox. These are local unauthenticated claims;
-   review location metadata separately.
+   a nonempty video up to 128 MiB, your name and a reason. The optional original
+   recording start and clock uncertainty are retained as operator claims, not
+   verified timestamps. Existing footage requires an explicit replacement checkbox.
+   These are local unauthenticated claims; review location metadata separately.
 2. Choose **Upload and prepare clip**. **Cancel upload** aborts the request.
    After transfer, use **Check preparation** to retrieve progress or **Cancel
    preparation** to stop the owned conversion process. There is no progress timer.
@@ -38,7 +39,9 @@ the app on the host. An offline host selector is also available.
    it does not fingerprint configured/bundled files.
 4. Refresh source status after restart. Both original inference and derivative
    playback activate together. The preparation then reports running. Original
-   recording clocks, content, site and plate/OCR accuracy remain unverified.
+   recording clocks, content, site and plate/OCR accuracy remain unverified. An
+   optional clock claim is retained with an approximate frame-index/reported-FPS
+   offset but excluded from replay-time trajectories and cross-camera speed decisions.
 
 Only the most recent returned job ID per camera is stored in browser localStorage.
 Reopening the same camera fetches that receipt once; file/name/reason drafts are

@@ -10,10 +10,12 @@ from collections import deque
 from pathlib import Path
 
 import cv2
+import cameras
 from cameras import CAMERAS, camera_source
 from events import add_events, derive_alerts, store
 from artifacts import capture_read_images, storage_usage
 from live_capture import LiveCapture, load_live_sources
+from source_clock import source_capture_clock_fields
 
 log = logging.getLogger(__name__)
 
@@ -285,10 +287,13 @@ class Processor:
             processing_time=time.time()
             height,width=raw.shape[:2]
             for detection in detections:
-                detection.update(session_id=session,frame_id=frame_id,ts=now,source_time_seconds=frame_id/fps,
+                source_time_seconds=frame_id/fps
+                detection.update(session_id=session,frame_id=frame_id,ts=now,source_time_seconds=source_time_seconds,
                                  processed_at=processing_time,source_mode='recorded',time_basis='replay_clock',
                                  source_sha256=self.source_hashes[camera_id],frame_size=[width,height],
                                  model_version=model_version_for_detection(detection))
+                manifest=cameras.MANAGED_SOURCES.get(camera_id,{}).get('manifest',{})
+                detection.update(source_capture_clock_fields(manifest.get('recording_clock'),source_time_seconds))
             capture_began=time.monotonic()
             artifact_metrics=capture_read_images(raw,detections)
             artifact_ms=round((time.monotonic()-capture_began)*1000,1)

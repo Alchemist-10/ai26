@@ -14,6 +14,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'backend'))
 import cameras
 import import_source as importer
 from source_catalog import load_source, load_catalog
+from source_status import release_summary
 
 REAL_PROBE=importer.probe
 VIDEO={'codec':'h264','pixel_format':'yuv420p','fps':10,'duration_seconds':1.,'width':320,'height':240,'frame_count':10}
@@ -40,6 +41,31 @@ class SourceImport(unittest.TestCase):
         self.assertNotEqual(loaded['original'],loaded['playback'])
         self.assertEqual(result['time_basis'],'replay_clock');self.assertTrue(result['restart_required'])
         self.assertFalse((self.data/'ai26.sqlite3').exists());self.assertEqual(self.input.read_bytes(),b'original-video-bytes')
+
+    def test_optional_recording_clock_is_retained_as_an_unverified_claim(self):
+        result=self.run_import(recording_start_utc='2026-10-14T12:00:00+05:30',clock_uncertainty_seconds=2.5)
+        self.assertEqual(result['recording_clock'],{
+            'start_utc':'2026-10-14T06:30:00.000000Z',
+            'start_epoch':1791959400.0,
+            'uncertainty_seconds':2.5,
+            'provenance':'operator_claimed',
+            'status':'unverified',
+        })
+        loaded=load_source('CAM-07',self.root,verify=True)
+        self.assertEqual(loaded['manifest']['recording_clock'],result['recording_clock'])
+        self.assertEqual(release_summary(loaded['manifest'])['recording_clock'],{
+            'start_utc':'2026-10-14T06:30:00.000000Z',
+            'uncertainty_seconds':2.5,
+            'provenance':'operator_claimed',
+            'status':'unverified',
+        })
+
+    def test_invalid_recording_clock_publishes_nothing(self):
+        for start,uncertainty in (('2026-10-14T12:00:00',None),(None,1),('not-a-date',None),
+                                  ('2026-10-14T12:00:00Z',float('inf'))):
+            with self.subTest(start=start,uncertainty=uncertainty),self.assertRaises(ValueError):
+                self.run_import(recording_start_utc=start,clock_uncertainty_seconds=uncertainty)
+        self.assertFalse((self.root/'CAM-07'/'active.json').exists())
 
     def test_check_has_no_directory_or_conversion_side_effect(self):
         result=self.run_import(check=True)

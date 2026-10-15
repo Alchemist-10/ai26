@@ -18,6 +18,7 @@ function ReleaseDetails({ release }: { release: SourceRelease }) {
     <dt className="text-zinc-300">Imported</dt><dd>{importedAt(release)}</dd>
     <dt className="text-zinc-300">Operator claim</dt><dd className="break-words">{release.reviewer || "Not recorded"}</dd>
     <dt className="text-zinc-300">Reason</dt><dd className="break-words">{release.reason || "Not recorded"}</dd>
+    <dt className="text-zinc-300">Recording clock</dt><dd className="break-words">{release.recording_clock ? `${new Date(release.recording_clock.start_utc).toLocaleString()} · ${release.recording_clock.uncertainty_seconds === null ? "uncertainty unknown" : `±${release.recording_clock.uncertainty_seconds} s`} · operator claim, unverified` : "Not supplied; source clock unknown"}</dd>
     <dt className="text-zinc-300">Video metadata</dt><dd className="tabular-nums">{video.width ?? "?"} × {video.height ?? "?"} · {video.fps ?? "?"} fps · {video.duration_seconds ?? "?"} seconds</dd>
     <dt className="text-zinc-300">Original</dt><dd>{bytes(release.original.bytes)}</dd>
     <dt className="text-zinc-300">Playback copy</dt><dd>{bytes(release.playback.bytes)}</dd>

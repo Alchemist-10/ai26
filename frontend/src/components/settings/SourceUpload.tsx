@@ -12,6 +12,8 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
   const [file,setFile]=useState<File|null>(null)
   const [reviewer,setReviewer]=useState("")
   const [reason,setReason]=useState("")
+  const [recordingStart,setRecordingStart]=useState("")
+  const [clockUncertainty,setClockUncertainty]=useState("")
   const [replace,setReplace]=useState(false)
   const [job,setJob]=useState<SourcePreparation|null>(null)
   const [error,setError]=useState("")
@@ -41,11 +43,16 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
     if(!file.size || file.size>maxBytes) {setError("Choose a nonempty video up to 128 MiB.");return}
     if(file.name.length>200 || !reviewer.trim() || !reason.trim()) {setError("Enter your name and reason. The filename must be at most 200 characters.");return}
     if(needsReplace && !replace) {setError("Confirm replacement of this camera’s existing footage before preparing a new clip.");return}
+    if(clockUncertainty && !recordingStart) {setError("Add the original recording start time before entering clock uncertainty.");return}
+    const uncertainty=clockUncertainty ? Number(clockUncertainty) : undefined
+    if(uncertainty!==undefined && (!Number.isFinite(uncertainty) || uncertainty<0 || uncertainty>86400)) {setError("Clock uncertainty must be between 0 and 86400 seconds.");return}
+    if(recordingStart && !Number.isFinite(new Date(recordingStart).getTime())) {setError("Enter a valid original recording start time.");return}
+    const startUTC=recordingStart ? new Date(recordingStart).toISOString() : ""
     setBusy(true);onBusyChange(true);setError("");setJob(null)
     const controller=new AbortController();transfer.current=controller
     let keepBusy=false
     try {
-      const result=await prepareCameraSource(cameraId,file,reviewer.trim(),reason.trim(),replace,controller.signal)
+      const result=await prepareCameraSource(cameraId,file,reviewer.trim(),reason.trim(),replace,startUTC,uncertainty,controller.signal)
       setJob(result);keepBusy=result.status==="preparing" || result.status==="uploading"
       try {localStorage.setItem(`ai26:source-preparation:${cameraId}`,result.job_id)} catch { /* Receipt ID remains visible if storage is unavailable. */ }
     } catch(error) {setError(controller.signal.aborted ? "Upload cancelled. Existing footage is unchanged." : message(error))}
@@ -80,8 +87,15 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
         <label htmlFor="source-upload-reason" className="block text-sm font-medium">Reason for this footage
           <input id="source-upload-reason" required maxLength={1000} value={reason} className={`${control} mt-2`} onChange={event=>setReason(event.target.value)} />
         </label>
+        <label htmlFor="source-upload-recording-start" className="block text-sm font-medium">Original recording start (optional)
+          <input id="source-upload-recording-start" type="datetime-local" value={recordingStart} className={`${control} mt-2`} onChange={event=>setRecordingStart(event.target.value)} />
+          <span className="mt-1 block text-xs font-normal text-zinc-400">Interpreted in this browser’s timezone and stored in UTC.</span>
+        </label>
+        <label htmlFor="source-upload-clock-uncertainty" className="block text-sm font-medium">Clock uncertainty in seconds (optional)
+          <input id="source-upload-clock-uncertainty" type="number" min="0" max="86400" step="any" value={clockUncertainty} className={`${control} mt-2`} onChange={event=>setClockUncertainty(event.target.value)} />
+        </label>
         {needsReplace && <label htmlFor="source-upload-replace" className="flex min-h-11 items-start gap-3 text-sm leading-relaxed sm:col-span-2"><input id="source-upload-replace" type="checkbox" required checked={replace} className="mt-1 h-5 w-5 shrink-0 accent-teal-400" onChange={event=>setReplace(event.target.checked)} />I intend to replace this camera’s footage after validation, selection and restart.</label>}
-        <p className="text-sm leading-relaxed text-zinc-300 sm:col-span-2">One clip can be prepared at a time. Names and reasons are local claims; upload does not verify this camera’s location or recording clock. Ready releases remain on the host until managed separately.</p>
+        <p className="text-sm leading-relaxed text-zinc-300 sm:col-span-2">One clip can be prepared at a time. Names, locations and recording clocks are operator claims, not verification. A supplied start time is paired with frame index ÷ reported FPS as an approximate source offset; it does not replace replay time or enable calibrated cross-camera links. Ready releases remain on the host until managed separately.</p>
         <button type="submit" className={`${button} w-fit border-white bg-white text-black hover:bg-zinc-200`} disabled={!file}>{busy ? "Uploading clip…" : "Upload and prepare clip"}</button>
       </fieldset>
     </form>

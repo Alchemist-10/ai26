@@ -67,9 +67,13 @@ city-wide vehicle. Raw reads are API-limited to 5,000; SQL aggregate queries do
 not inherit that limit. Default windows expire at read time even if no data arrives.
 
 `ts` is replay observation time; `source_time_seconds` is position in the clip;
-`processed_at` is the processing completion time. Original capture timestamps are
-unknown. Cross-camera replay clocks cannot support physical travel-time inference.
-Those links remain unresolved candidates. For manual observations with confirmed
+`processed_at` is the processing completion time. Imports may also carry an
+operator-claimed original recording start and uncertainty; reads and image
+references retain the derived UTC claim as unverified metadata. It does not replace
+replay time or enable physical cross-camera links. Cross-camera replay clocks
+cannot support physical travel-time inference. Those links remain unresolved
+candidates. The claimed offset uses frame index divided by reported FPS and is
+approximate for variable-frame-rate sources. For manual observations with confirmed
 location labels, the baseline uses exact plate equality and a fixed straight-line
 speed gate; coordinate and clock validation are not established by this status;
 accepted links still do not prove identity. Rejected links and mixed routes require

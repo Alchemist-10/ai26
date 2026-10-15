@@ -109,6 +109,7 @@ def capture_read_images(frame, detections):
     crops={}
     for read in detections:
         context={key:read[key] for key in ('camera_id','session_id','frame_id','source_sha256','source_time_seconds')}
+        context.update({key:read[key] for key in ('claimed_source_capture_time_utc','source_offset_basis','recording_clock_status','recording_clock_uncertainty_seconds') if key in read})
         refs=[{**shared,**context,'frame_size':[width,height]}] if shared else []
         x1,y1,x2,y2=read['bbox']
         box=[max(0,min(width,x1)),max(0,min(height,y1)),max(0,min(width,x2)),max(0,min(height,y2))]

@@ -38,6 +38,12 @@ processing disabled can remain open, but it keeps its old bindings until restart
 Using the same source root across different data directories does not hot-switch
 those processes either; each must restart to activate the new selection.
 
+When the original recording clock is known, optional `--recording-start-utc
+2026-10-14T12:00:00+05:30 --clock-uncertainty-seconds 2.5` arguments retain an
+operator claim in the release manifest. The timestamp must include a timezone;
+uncertainty is optional and bounded to one day. This claim is unverified and does
+not change replay-time analytics or physical cross-camera links.
+
 If the camera already has a managed source or configured/bundled footage, use
 `--replace` explicitly. Replacement retains prior imported release directories
 and leaves configured originals and bundled proxies untouched. Set `--max-bytes`

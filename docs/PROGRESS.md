@@ -37,7 +37,7 @@ grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. MFA-enrolled users can recover
 passwords using their authenticator or an unused recovery code; no-MFA accounts still
 depend on an administrator, and external identity remains pending.
-The isolated full backend suite passes 299 tests, including a simultaneous TOTP
+The isolated full backend suite passes 303 tests, including a simultaneous TOTP
 replay regression; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
@@ -288,7 +288,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | P1-01 | Done | Add background per-camera ingestion/inference independent of the current browser page. | One background round-robin owner processes all available cameras without a browser; six live snapshots verified. |
 | P1-02 | Done | Define inference ownership so multiple viewers do not create duplicate processing/event streams. | Streams/snapshots only consume cache; two-consumer regression and exclusive Linux data-directory ownership lock. |
 | P1-03 | Done | Add a typed observation schema with stable event IDs and per-track passage IDs. | Typed finite observations, deterministic idempotent read IDs, per-session local passage IDs. |
-| P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay source position and processing time are separate; original capture times and synchronized clocks are missing. |
+| P1-04 | Partial | Preserve source clip/frame timestamp separately from processing time; define cross-camera clock handling. | Replay frame offsets and processing times remain separate. Imports can retain an optional timezone-aware, operator-claimed recording start plus uncertainty; detections and image references carry a derived UTC claim based on frame index ÷ reported FPS, with that approximate basis identified. `replay_clock` continues to block physical cross-camera links. Original NVR timestamps and synchronized/verified clocks are still missing. |
 | P1-05 | Done | Add persistent observations, camera catalog, tracks, links and alert storage with migrations. | Schema-12 migrations retain reads/local passages/alerts, seed a revisioned camera catalog and persist directed pair constraints plus immutable queried link decisions with support and algorithm/config snapshots; 90-day camera traffic buckets store live-source samples/passages; audit records are locally hash chained and verifiable; offline source onboarding and metadata editing work; browser source preparation, selection and retained-parent rollback work; activation requires host restart, and authenticated calibration remains separate work. |
 | P1-06 | Done | Expose a validated ingestion path rather than relying only on streaming request side effects. | Processor writes through typed validated ingestion rather than request-side streaming effects. No external ingestion API is claimed. |
 | P1-07 | Done | Store source-frame and plate-crop references with hashes and model/version metadata. | Every new sampled read attempts its own frame/crop references with exact camera/session/frame/source context, clipped crop bounds, image/model hashes and nine component digests; capture failures/capacity/legacy gaps are explicit. Shared frame encoded once; reports store current-image coverage. Not a full video-frame archive. |

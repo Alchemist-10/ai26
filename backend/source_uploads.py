@@ -16,13 +16,14 @@ import threading
 import time
 import uuid
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, ValidationError, field_validator, model_validator
 from starlette.requests import ClientDisconnect
 
 from cameras import CAMERAS_BY_ID
 from import_source import atomic_json
 from source_catalog import DATA_ROOT, SOURCE_ROOT, MAX_MANIFEST_BYTES, load_release
 from source_status import release_summary, text, number
+from source_clock import normalize_recording_clock
 
 MAX_UPLOAD_BYTES = 128 * 1024**2
 UPLOAD_TIMEOUT = 120
@@ -37,12 +38,27 @@ class UploadMetadata(BaseModel):
     reviewer: StrictStr = Field(min_length=1, max_length=100)
     reason: StrictStr = Field(min_length=1, max_length=1000)
     replace: StrictBool = False
+    recording_start_utc: StrictStr | None = Field(default=None, max_length=64)
+    clock_uncertainty_seconds: float | None = Field(default=None, ge=0, le=86400, allow_inf_nan=False)
 
     @field_validator('filename', 'reviewer', 'reason')
     @classmethod
     def nonblank(cls, value):
         if not value.strip(): raise ValueError('Enter a nonblank value')
         return value.strip()
+
+    @field_validator('clock_uncertainty_seconds', mode='before')
+    @classmethod
+    def strict_clock_uncertainty(cls, value):
+        if value is None: return None
+        if isinstance(value, bool) or type(value) not in (int, float):
+            raise ValueError('Clock uncertainty must be numeric')
+        return float(value)
+
+    @model_validator(mode='after')
+    def recording_clock_is_valid(self):
+        normalize_recording_clock(self.recording_start_utc, self.clock_uncertainty_seconds)
+        return self
 
 
 def parse_metadata(header):
@@ -157,6 +173,10 @@ class SourceUploads:
                 args=[sys.executable,str(Path(__file__).parent/'import_source.py'),self.jobs[job]['camera_id'],str(path),
                       '--prepare','--reviewer',meta['reviewer'],'--reason',meta['reason'],'--max-bytes',str(MAX_UPLOAD_BYTES),'--timeout','600']
                 if meta['replace']: args.append('--replace')
+                if meta['recording_start_utc']:
+                    args.extend(['--recording-start-utc',meta['recording_start_utc']])
+                if meta['clock_uncertainty_seconds'] is not None:
+                    args.extend(['--clock-uncertainty-seconds',str(meta['clock_uncertainty_seconds'])])
                 env=dict(os.environ,AI26_DATA_ROOT=str(self.data),AI26_SOURCE_ROOT=str(self.root),AI26_PROCESSING_ENABLED='0')
                 self.process=subprocess.Popen(args,cwd=Path(__file__).parent,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)
                 process=self.process

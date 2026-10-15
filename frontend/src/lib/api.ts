@@ -64,6 +64,7 @@ export interface SourceRelease {
   imported_at: number | null
   time_basis: string | null
   previous_release: string | null
+  recording_clock: { start_utc: string; uncertainty_seconds: number | null; provenance: "operator_claimed"; status: "unverified" } | null
   original: SourceFileMetadata
   playback: SourceFileMetadata
 }
@@ -99,8 +100,8 @@ export interface SourcePreparation {
   error: string | null
   release: SourceRelease | null
 }
-export function prepareCameraSource(cameraId: string, file: File, reviewer: string, reason: string, replace: boolean, signal: AbortSignal): Promise<SourcePreparation> {
-  const metadata = JSON.stringify({filename:file.name,bytes:file.size,reviewer,reason,replace})
+export function prepareCameraSource(cameraId: string, file: File, reviewer: string, reason: string, replace: boolean, recordingStartUTC: string, uncertaintySeconds: number | undefined, signal: AbortSignal): Promise<SourcePreparation> {
+  const metadata = JSON.stringify({filename:file.name,bytes:file.size,reviewer,reason,replace,recording_start_utc:recordingStartUTC || undefined,clock_uncertainty_seconds:uncertaintySeconds})
   const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(metadata)))
   if (encoded.length > 8192) return Promise.reject(new Error("Upload details are too long. Shorten the filename or reason."))
   return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/source/prepare`, {

@@ -8,6 +8,7 @@ from pathlib import Path
 import cameras
 from source_catalog import SOURCE_ROOT, MAX_MANIFEST_BYTES, load_source
 from source_selection import selection_token, same_release_manifest
+from source_clock import validate_recording_clock
 
 HISTORY_LIMIT = 10
 
@@ -27,6 +28,11 @@ def release_summary(manifest):
     """Project local metadata rather than exposing arbitrary manifest fields/paths."""
     result = {key: text(manifest.get(key)) for key in ('release', 'reviewer', 'reason', 'time_basis', 'previous_release')}
     result['imported_at'] = number(manifest.get('imported_at'))
+    clock = validate_recording_clock(manifest.get('recording_clock'))
+    result['recording_clock'] = ({'start_utc': clock['start_utc'],
+                                  'uncertainty_seconds': clock['uncertainty_seconds'],
+                                  'provenance': clock['provenance'],
+                                  'status': clock['status']} if clock else None)
     for role in ('original', 'playback'):
         info = manifest.get(role, {})
         video = info.get('video', {}) if isinstance(info, dict) else {}

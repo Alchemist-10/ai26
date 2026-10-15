@@ -17,6 +17,7 @@ from fractions import Fraction
 
 from cameras import CAMERAS_BY_ID, camera_source
 from source_catalog import DATA_ROOT, SOURCE_ROOT, file_digest, load_source
+from source_clock import normalize_recording_clock
 
 DEFAULT_MAX_BYTES = 1024**3
 
@@ -92,11 +93,13 @@ def inspect_source(source, max_bytes):
 
 
 def import_source(camera, source, reviewer=None, reason=None, *, replace=False, check=False, prepare=False,
-                  source_root=SOURCE_ROOT, data_root=DATA_ROOT, max_bytes=DEFAULT_MAX_BYTES, timeout=600):
+                  source_root=SOURCE_ROOT, data_root=DATA_ROOT, max_bytes=DEFAULT_MAX_BYTES, timeout=600,
+                  recording_start_utc=None, clock_uncertainty_seconds=None):
     if camera not in CAMERAS_BY_ID: raise ValueError('Unknown camera; choose an existing catalog ID')
     if not check and (not isinstance(reviewer,str) or not 1 <= len(reviewer.strip()) <= 100 or not isinstance(reason,str) or not 1 <= len(reason.strip()) <= 1000):
         raise ValueError('Enter a reviewer name (1–100) and reason (1–1000), excluding surrounding spaces')
     if not math.isfinite(timeout) or not 0 < timeout <= 3600: raise ValueError('Conversion timeout must be between 0 and 3600 seconds')
+    recording_clock = normalize_recording_clock(recording_start_utc, clock_uncertainty_seconds)
     source, metadata = inspect_source(source, max_bytes)
     if check:
         return {'check_only':True,'camera_id':camera,'bytes':source.stat().st_size,'sha256':file_digest(source),
@@ -151,6 +154,7 @@ def import_source(camera, source, reviewer=None, reason=None, *, replace=False, 
                       'playback':{'file':playback.name,'bytes':playback.stat().st_size,'sha256':file_digest(playback),'video':playback_video,
                                   'derivative':'Silent H.264/yuv420p, max 1280px width; original bytes unchanged'},
                       'previous_release':existing['manifest']['release'] if existing else None}
+            if recording_clock is not None: manifest['recording_clock'] = recording_clock
             atomic_json(staging/'manifest.json',manifest)
             with playback.open('rb') as stream: os.fsync(stream.fileno())
             published=releases/release;staging.rename(published)
@@ -175,10 +179,13 @@ def main(argv=None):
     parser.add_argument('--reviewer');parser.add_argument('--reason')
     parser.add_argument('--replace',action='store_true');parser.add_argument('--check',action='store_true')
     parser.add_argument('--prepare',action='store_true',help='Prepare a retained release without changing active.json; processing may continue')
+    parser.add_argument('--recording-start-utc',help='Operator-claimed original recording start, ISO-8601 with timezone')
+    parser.add_argument('--clock-uncertainty-seconds',type=float,help='Operator estimate of recording-clock uncertainty (0–86400 seconds)')
     parser.add_argument('--max-bytes',type=int,default=DEFAULT_MAX_BYTES);parser.add_argument('--timeout',type=float,default=600)
     args=parser.parse_args(argv)
     try:
-        result=import_source(args.camera,args.file,args.reviewer,args.reason,replace=args.replace,check=args.check,prepare=args.prepare,max_bytes=args.max_bytes,timeout=args.timeout)
+        result=import_source(args.camera,args.file,args.reviewer,args.reason,replace=args.replace,check=args.check,prepare=args.prepare,max_bytes=args.max_bytes,timeout=args.timeout,
+                             recording_start_utc=args.recording_start_utc,clock_uncertainty_seconds=args.clock_uncertainty_seconds)
     except (OSError,ValueError,subprocess.SubprocessError) as error:
         detail=error.stderr[-1500:] if isinstance(error,subprocess.CalledProcessError) and error.stderr else str(error)
         print(f'Import failed: {detail}',file=sys.stderr);return 1

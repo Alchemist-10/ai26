@@ -72,7 +72,13 @@ class Preparation(unittest.TestCase):
         value={**META,'reviewer':'测试者'}
         encode=lambda val:base64.b64encode(json.dumps(val).encode()).decode()
         self.assertEqual(parse_metadata(encode(value))['reviewer'],'测试者')
+        clock={**META,'recording_start_utc':'2026-10-14T12:00:00+05:30','clock_uncertainty_seconds':1.5}
+        self.assertEqual(parse_metadata(encode(clock))['recording_start_utc'],clock['recording_start_utc'])
         for value in ({**META,'bytes':True},{**META,'bytes':MAX_UPLOAD_BYTES+1},{**META,'reviewer':' '},{**META,'replace':'false'},{**META,'extra':'field'}):
+            with self.assertRaises(ValueError):parse_metadata(encode(value))
+        for value in ({**META,'recording_start_utc':'2026-10-14T12:00:00'},
+                      {**META,'clock_uncertainty_seconds':2},
+                      {**META,'recording_start_utc':'2026-10-14T12:00:00Z','clock_uncertainty_seconds':True}):
             with self.assertRaises(ValueError):parse_metadata(encode(value))
         for value in ('invalid','x'*8193,None):
             with self.assertRaises(ValueError):parse_metadata(value)
@@ -135,7 +141,10 @@ class Preparation(unittest.TestCase):
         self.assertEqual(restored.get(job)['status'],'failed')
         with self.assertRaises(KeyError):restored.get('../outside')
     def test_worker_is_separate_bounded_process_and_never_selects(self):
-        result=self.prepare();job,path=self.manager.reserve('CAM-07',META);path.write_bytes(b'abcd')
+        start='2026-10-14T06:30:00.000000Z'
+        result=self.prepare(recording_start_utc=start,clock_uncertainty_seconds=1.5)
+        metadata={**META,'recording_start_utc':start,'clock_uncertainty_seconds':1.5}
+        job,path=self.manager.reserve('CAM-07',metadata);path.write_bytes(b'abcd')
         process=unittest.mock.Mock(returncode=0)
         process.communicate.return_value=(json.dumps({'release':result['release']}),'')
         process.poll.return_value=0
@@ -143,6 +152,8 @@ class Preparation(unittest.TestCase):
             self.manager._prepare(job,path)
         args,kwargs=launch.call_args
         self.assertIn('--prepare',args[0]);self.assertIn(str(MAX_UPLOAD_BYTES),args[0])
+        self.assertIn('--recording-start-utc',args[0]);self.assertIn(start,args[0])
+        self.assertIn('--clock-uncertainty-seconds',args[0]);self.assertIn('1.5',args[0])
         self.assertTrue(kwargs['start_new_session']);self.assertEqual(kwargs['env']['AI26_PROCESSING_ENABLED'],'0')
         process.communicate.assert_called_once_with(timeout=650)
         self.assertEqual(self.manager.get(job)['status'],'ready');self.assertIsNone(load_source('CAM-07',self.root))

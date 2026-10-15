@@ -4,6 +4,7 @@ import json
 import os
 import re
 from pathlib import Path
+from source_clock import validate_recording_clock
 
 DATA_ROOT = Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data'))
 SOURCE_ROOT = Path(os.environ.get('AI26_SOURCE_ROOT', DATA_ROOT / 'sources'))
@@ -43,6 +44,8 @@ def load_manifest(camera_id, root, pointer, *, verify=False):
         release = manifest['release']
         if type(manifest['version']) is not int or manifest['version'] != 1 or manifest['camera_id'] != camera_id or not re.fullmatch(r'[0-9a-f]{32}', release):
             raise ValueError('Invalid source binding identity/version')
+        if 'recording_clock' in manifest:
+            validate_recording_clock(manifest['recording_clock'])
         base = (root / camera_id / 'releases' / release).resolve()
         if not base.is_relative_to(root): raise ValueError('Source release escapes managed root')
         for role, name in [('original', 'original.media'), ('playback', 'playback.mp4')]:
