@@ -173,6 +173,10 @@ class Preparation(unittest.TestCase):
         self.assertTrue(release['uploader_authenticated'])
         self.assertEqual(release['authenticated_uploader'],'signed-in-operator')
         self.assertEqual(release['reviewer'],'Tester')
+        restored=SourceUploads(self.data,self.root);self.addCleanup(restored.close)
+        persisted=restored.get(job)['release']
+        self.assertTrue(persisted['uploader_authenticated'])
+        self.assertEqual(persisted['authenticated_uploader'],'signed-in-operator')
     def test_worker_failure_and_timeout_release_ownership(self):
         for timeout in (False,True):
             job,path=self.manager.reserve('CAM-07',META)
