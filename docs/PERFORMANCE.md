@@ -150,6 +150,19 @@ deferred page chunks total 52.32 kB raw / 18.23 kB gzip in this build; they are
 requested only when a corresponding page is selected. This is a bundle-size
 comparison, not an instrumented LCP/INP or real-device measurement.
 
+## Dashboard startup gate — 15 October 2026
+
+The initial camera wall was hidden behind a full-screen welcome dialog with an
+“Enter Console” button and no automatic continuation. Camera metadata was
+already being requested behind the dialog, but the camera wall and focused player
+did not mount until the user clicked. Removed the blocking intro so the operator
+sees and can use the dashboard on the first render. A local browser check against
+an isolated API with processing disabled showed all nine camera tiles and the
+focused recorded player immediately; six available sources correctly displayed
+“Processing paused” and the three absent sources remained labelled missing.
+This verifies removal of the interaction gate, not a measured LCP/INP or a
+real-device load-time improvement.
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded

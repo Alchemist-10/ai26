@@ -6,7 +6,6 @@ import { AuthGate } from "@/components/AuthGate"
 import { CameraWall } from "@/components/CameraWall"
 import { MainVideo } from "@/components/MainVideo"
 import { NavDrawer } from "@/components/NavDrawer"
-import { IntroSplash } from "@/components/IntroSplash"
 
 const MapView = lazy(() => import("@/components/panels/MapView").then(module => ({ default: module.MapView })))
 const AlertsPanel = lazy(() => import("@/components/panels/AlertsPanel").then(module => ({ default: module.AlertsPanel })))
@@ -52,7 +51,6 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [page, setPage] = useState<Page>("cameras")
   const [settingsVisited, setSettingsVisited] = useState(false)
-  const [introVisible, setIntroVisible] = useState(() => !window.matchMedia("(prefers-reduced-motion: reduce)").matches)
   const [caseDraft, setCaseDraft] = useState(context.caseId)
   const [purposeDraft, setPurposeDraft] = useState(context.purpose)
 
@@ -78,7 +76,6 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground">
-      {introVisible && <IntroSplash onComplete={() => setIntroVisible(false)} />}
       <header className="flex flex-none items-center justify-between border-b border-zinc-800 bg-black/95 px-4 py-2.5 backdrop-blur-md sm:px-5 font-sans text-white select-none">
         <button
           type="button"
@@ -120,7 +117,7 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
 
       <main className="min-h-0 flex-1">
         {cameraError && <div className="absolute left-1/2 top-16 z-30 -translate-x-1/2 rounded-md border border-red-400/30 bg-red-950/90 px-3 py-2 text-xs text-red-100">Camera API unavailable: {cameraError}</div>}
-        {page === "cameras" && !introVisible && (
+        {page === "cameras" && (
           <div className="grid h-full grid-rows-[260px_1fr]">
             <div className="min-h-0 border-b border-zinc-800 bg-black">
               <CameraWall cameras={cameras} focused={focused} onFocus={focusCamera} />

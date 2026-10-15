@@ -13,7 +13,7 @@ Across all 80 planned tasks: **44 done, 35 partial, 1 pending**. Done means the 
 Shared background six-camera processing; durable SQLite observations/passages;
 per-track OCR abstention; real empty investigations; editable persistent local
 rules and review; operator-managed camera-pair travel constraints; truthful camera health/activity; bounded historical query
-intents; immutable evidence JSON/ZIP/print; source/derivative hashes; report expiry and artifact leases; cached camera previews;
+intents; immediate camera-wall startup without a blocking welcome gate; immutable evidence JSON/ZIP/print; source/derivative hashes; report expiry and artifact leases; cached camera previews;
 revisioned camera metadata, settings editor with draft/conflict recovery and queried decision history; CPU lockfile; clean launcher shutdown/restart; regression and evaluation tooling.
 
 ## Persistence update
