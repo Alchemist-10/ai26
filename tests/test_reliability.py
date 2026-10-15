@@ -531,7 +531,7 @@ class Reliability(unittest.TestCase):
 
     def test_processor_owns_one_frame_and_records_provenance(self):
         path=Path(self.folder.name)/'source.mp4';path.write_bytes(b'test clip identity')
-        capture=SimpleNamespace(isOpened=lambda:True,get=lambda key:25 if key==processing.cv2.CAP_PROP_FPS else 1000,
+        capture=SimpleNamespace(isOpened=lambda:True,get=lambda key:25 if key==processing.cv2.CAP_PROP_FPS else 1000 if key==processing.cv2.CAP_PROP_FRAME_COUNT else 2375 if key==processing.cv2.CAP_PROP_POS_MSEC else 0,
                                 set=lambda *args:True,read=lambda:(True,np.zeros((100,100,3),dtype=np.uint8)),release=lambda:None)
         p=processing.Processor(cameras=[{'id':'CAM-01','kind':'vehicle'}],source=lambda _:path,
                                annotator=lambda frame,kind,camera:(frame,[self.vehicle()]))
@@ -542,11 +542,14 @@ class Reliability(unittest.TestCase):
         read=self.repo.observations()[0]
         self.assertEqual(read['time_basis'],'replay_clock');self.assertIn('source_sha256',read)
         self.assertEqual(read['recording_clock_status'],'operator_claimed_unverified')
-        self.assertEqual(read['source_offset_basis'],'frame_index_divided_by_reported_fps')
+        self.assertEqual(read['source_offset_basis'],'decoder_reported_position_msec')
+        self.assertEqual(read['source_time_basis'],'decoder_reported_position_msec')
+        self.assertEqual(read['source_time_seconds'],2.375)
         self.assertEqual(read['claimed_source_capture_time_utc'],
                          source_capture_clock_fields(clock,read['source_time_seconds'])['claimed_source_capture_time_utc'])
         self.assertTrue(any(ref.get('claimed_source_capture_time_utc')==read['claimed_source_capture_time_utc']
                             and ref.get('source_offset_basis')==read['source_offset_basis']
+                            and ref.get('source_time_basis')==read['source_time_basis']
                             for ref in read['artifacts']))
         self.assertEqual(len(read['artifacts']),2)
         self.assertTrue(p.jpeg('CAM-01')[1].startswith(b'\xff\xd8'))

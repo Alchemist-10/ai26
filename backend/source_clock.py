@@ -58,7 +58,21 @@ def validate_recording_clock(value):
     return normalized
 
 
-def source_capture_clock_fields(clock, source_time_seconds):
+def source_time_from_decoder(reported_milliseconds, frame_index, fps, duration_seconds):
+    """Prefer a useful decoder timestamp; otherwise preserve the explicit FPS estimate."""
+    estimate = frame_index / fps if (type(frame_index) is int and frame_index >= 0 and
+                                      type(fps) in (int, float) and _finite(fps) and fps > 0) else None
+    if (type(reported_milliseconds) in (int, float) and _finite(reported_milliseconds) and
+            reported_milliseconds > 0 and type(duration_seconds) in (int, float) and
+            _finite(duration_seconds) and duration_seconds > 0 and
+            reported_milliseconds <= duration_seconds * 1000):
+        return reported_milliseconds / 1000, 'decoder_reported_position_msec'
+    if estimate is not None:
+        return estimate, 'frame_index_divided_by_reported_fps'
+    return None, 'source_time_unavailable'
+
+
+def source_capture_clock_fields(clock, source_time_seconds, source_time_basis='frame_index_divided_by_reported_fps'):
     """Project a claimed absolute source time without promoting it to event time."""
     if clock is None or type(source_time_seconds) not in (int, float) or not _finite(source_time_seconds):
         return {}
@@ -70,6 +84,6 @@ def source_capture_clock_fields(clock, source_time_seconds):
     except (OverflowError, OSError, ValueError):
         return {}
     return {'claimed_source_capture_time_utc': timestamp,
-            'source_offset_basis': 'frame_index_divided_by_reported_fps',
+            'source_offset_basis': source_time_basis,
             'recording_clock_status': 'operator_claimed_unverified',
             'recording_clock_uncertainty_seconds': clock['uncertainty_seconds']}

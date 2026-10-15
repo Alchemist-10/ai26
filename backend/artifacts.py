@@ -108,7 +108,7 @@ def capture_read_images(frame, detections):
     shared,frame_error=save(frame,'unannotated-frame-jpeg')
     crops={}
     for read in detections:
-        context={key:read[key] for key in ('camera_id','session_id','frame_id','source_sha256','source_time_seconds')}
+        context={key:read[key] for key in ('camera_id','session_id','frame_id','source_sha256','source_time_seconds','source_time_basis') if key in read}
         context.update({key:read[key] for key in ('claimed_source_capture_time_utc','source_offset_basis','recording_clock_status','recording_clock_uncertainty_seconds') if key in read})
         refs=[{**shared,**context,'frame_size':[width,height]}] if shared else []
         x1,y1,x2,y2=read['bbox']
@@ -151,12 +151,13 @@ def summarize_read_images(reads):
             continue
         if capture.get('frame_status')=='failed' or capture.get('crop_status')=='failed':
             summary['reads_with_capture_failures']+=1
+        identity_keys=('camera_id','session_id','frame_id','source_sha256','source_time_seconds','frame_size')
+        if read.get('source_time_basis') is not None: identity_keys+=('source_time_basis',)
         def matches(ref,role):
             return (isinstance(ref,dict) and ref.get('role')==role and
                     isinstance(ref.get('sha256'),str) and re.fullmatch(r'[a-f0-9]{64}',ref['sha256']) and
                     type(ref.get('size')) is int and ref['size']>0 and
-                    all(read.get(key) is not None and ref.get(key)==read[key] for key in
-                        ('camera_id','session_id','frame_id','source_sha256','source_time_seconds','frame_size')))
+                    all(read.get(key) is not None and ref.get(key)==read[key] for key in identity_keys))
         refs=read.get('artifacts',[])
         if not isinstance(refs,list): refs=[]
         frame=any(matches(ref,'unannotated-frame-jpeg') for ref in refs)
@@ -183,6 +184,8 @@ def rank_read_image_candidates(reads, top_k=3):
     by_passage=defaultdict(list)
     for read in reads:
         if read.get('kind')!='plate' or not isinstance(read.get('passage_id'),str): continue
+        identity_keys=('camera_id','session_id','frame_id','source_sha256','source_time_seconds','frame_size')
+        if read.get('source_time_basis') is not None: identity_keys+=('source_time_basis',)
         quality=read.get('image_quality')
         if not isinstance(quality,dict) or quality.get('version')!='sampled-crop-statistics-v1': continue
         digest=quality.get('crop_sha256')
@@ -191,8 +194,7 @@ def rank_read_image_candidates(reads, top_k=3):
         if (not isinstance(digest,str) or not re.fullmatch(r'[a-f0-9]{64}',digest) or
             not isinstance(capture,dict) or capture.get('crop_status')!='stored' or not isinstance(refs,list) or
             not any(isinstance(ref,dict) and ref.get('role')=='plate-crop' and ref.get('sha256')==digest and
-                    all(read.get(key) is not None and ref.get(key)==read.get(key) for key in
-                        ('camera_id','session_id','frame_id','source_sha256','source_time_seconds','frame_size'))
+                    all(read.get(key) is not None and ref.get(key)==read.get(key) for key in identity_keys)
                     for ref in refs)):
             continue
         try:

@@ -79,8 +79,12 @@ original bytes remain unchanged. Conversion stops on decode/encode errors and is
 bounded by time/output size. Probe checks require matching duration within the
 stated tolerance and matching frame counts when the original reports a count.
 Rate/duration probes are metadata checks; they do not independently establish
-constant-rate timestamps or original capture time. Variable-rate/frame-index
-accuracy and synchronized clocks remain separate pipeline work.
+original capture time. Sampled source offsets prefer the decoder-reported frame
+position in milliseconds and fall back to frame-index ÷ reported FPS; each
+observation and image reference records which basis was used. Decoder positions
+can still be approximate or absent, and neither basis verifies the camera/NVR
+clock. Original capture timestamps and synchronized clocks remain separate
+pipeline work.
 
 The recipe uses [FFmpeg's error and frame timestamp options](https://ffmpeg.org/ffmpeg.html),
 [ffprobe's video metadata output](https://ffmpeg.org/ffprobe.html) and

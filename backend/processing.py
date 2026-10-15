@@ -15,7 +15,7 @@ from cameras import CAMERAS, camera_source
 from events import add_events, derive_alerts, store
 from artifacts import capture_read_images, storage_usage
 from live_capture import LiveCapture, load_live_sources
-from source_clock import source_capture_clock_fields
+from source_clock import source_capture_clock_fields, source_time_from_decoder
 
 log = logging.getLogger(__name__)
 
@@ -279,6 +279,8 @@ class Processor:
                                      'time_basis':'replay_clock','loop_epoch':epoch,'run_id':self.run_id})
             mark('decode')
             raw=self.decode_frame(camera_id,cap,frame_id)
+            source_time_seconds,source_time_basis=source_time_from_decoder(
+                cap.get(cv2.CAP_PROP_POS_MSEC),frame_id,fps,duration)
             self._set(camera_id,status='loading',error=None)
             mark('inference')
             began=time.monotonic()
@@ -287,13 +289,13 @@ class Processor:
             processing_time=time.time()
             height,width=raw.shape[:2]
             for detection in detections:
-                source_time_seconds=frame_id/fps
                 detection.update(session_id=session,frame_id=frame_id,ts=now,source_time_seconds=source_time_seconds,
+                                 source_time_basis=source_time_basis,
                                  processed_at=processing_time,source_mode='recorded',time_basis='replay_clock',
                                  source_sha256=self.source_hashes[camera_id],frame_size=[width,height],
                                  model_version=model_version_for_detection(detection))
                 manifest=cameras.MANAGED_SOURCES.get(camera_id,{}).get('manifest',{})
-                detection.update(source_capture_clock_fields(manifest.get('recording_clock'),source_time_seconds))
+                detection.update(source_capture_clock_fields(manifest.get('recording_clock'),source_time_seconds,source_time_basis))
             capture_began=time.monotonic()
             artifact_metrics=capture_read_images(raw,detections)
             artifact_ms=round((time.monotonic()-capture_began)*1000,1)
@@ -314,7 +316,8 @@ class Processor:
                          last_event_at=processing_time if detections else s['last_event_at'],
                          frames=s['frames']+1,latency_ms=round((time.monotonic()-began)*1000,1),
                          artifact_capture_ms=artifact_ms,artifact_capture=artifact_metrics,
-                         session_id=session,frame_id=frame_id,source_time_seconds=frame_id/fps)
+                         session_id=session,frame_id=frame_id,source_time_seconds=source_time_seconds,
+                         source_time_basis=source_time_basis)
             success=True
         except Exception as exc:
             log.exception('Camera %s processing failed',camera_id)

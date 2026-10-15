@@ -3,10 +3,22 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'backend'))
-from source_clock import normalize_recording_clock, source_capture_clock_fields, validate_recording_clock
+from source_clock import normalize_recording_clock, source_capture_clock_fields, source_time_from_decoder, validate_recording_clock
 
 
 class RecordingClock(unittest.TestCase):
+    def test_decoder_timestamp_is_preferred_and_invalid_values_fall_back_explicitly(self):
+        self.assertEqual(source_time_from_decoder(2375, 60, 25, 10),
+                         (2.375, 'decoder_reported_position_msec'))
+        self.assertEqual(source_time_from_decoder(0, 60, 25, 10),
+                         (2.4, 'frame_index_divided_by_reported_fps'))
+        self.assertEqual(source_time_from_decoder(float('nan'), 60, 25, 10),
+                         (2.4, 'frame_index_divided_by_reported_fps'))
+        self.assertEqual(source_time_from_decoder(20000, 60, 25, 10),
+                         (2.4, 'frame_index_divided_by_reported_fps'))
+        self.assertEqual(source_time_from_decoder(None, 0, 0, 10),
+                         (None, 'source_time_unavailable'))
+
     def test_timezone_offset_normalizes_and_projects_source_offset_separately(self):
         clock = normalize_recording_clock('2026-10-14T12:00:00+05:30', 1.25)
         self.assertEqual(clock['start_utc'], '2026-10-14T06:30:00.000000Z')
