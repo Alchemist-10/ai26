@@ -7,11 +7,14 @@ SHA-256 digests before publishing the next-startup pointer. This works while the
 processor is running because its original/playback paths were cached at startup.
 A different selection shows **Restart required** with both currently running roles.
 
-Stop the app with Ctrl+C on its host, then run `uv run run.py --skip-install` with
-the same data/source settings. **Refresh source status** afterwards. Startup
-verifies the selected files again and activates both roles together. There is no
-browser restart command or live source switching. Selecting the already-running
-release to revert a pending replacement clears the notice without a restart.
+For the local launcher, stop the app with Ctrl+C on its host, then run
+`uv run run.py --skip-install` with the same data/source settings. For a Docker
+Compose deployment, run `ops/restart-backend.sh` from the deployment directory; it
+restarts only the API and waits up to 90 seconds for its health endpoint.
+**Refresh source status** afterwards. Startup verifies the selected files again
+and activates both roles together. There is no browser restart control or live
+source switching. Selecting the already-running release to revert a pending
+replacement clears the notice without a restart.
 
 ## Retained-parent rollback
 

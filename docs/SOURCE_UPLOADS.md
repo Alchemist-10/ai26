@@ -22,9 +22,12 @@ the app on the host. An offline host selector is also available.
 3. At **ready**, enter the selection reviewer and reason, then choose **Select
    for restart**. Both files are rehashed and the displayed selection token must
    still match. A stale or unconfirmed request preserves the entries and requires
-   **Refresh source status** before another explicit attempt. Stop the app with
-   Ctrl+C on the host, then run `uv run run.py --skip-install` using the same
-   exported `AI26_DATA_ROOT` / `AI26_SOURCE_ROOT`. See [SOURCE_SELECTION.md](SOURCE_SELECTION.md).
+   **Refresh source status** before another explicit attempt. For the local
+   launcher, stop the app with Ctrl+C on the host, then run
+   `uv run run.py --skip-install` using the same exported `AI26_DATA_ROOT` /
+   `AI26_SOURCE_ROOT`. For Docker Compose, run `ops/restart-backend.sh` from the
+   deployment directory and refresh source status after its health check passes.
+   See [SOURCE_SELECTION.md](SOURCE_SELECTION.md).
 
    **Select with a host command instead** retains the offline path:
 
@@ -107,8 +110,9 @@ so the application enforces its byte bound rather than buffering a multipart fil
 The default local prototype remains unauthenticated. When authentication is
 enabled, source routes require an operator role, case/purpose scope and CSRF on
 mutations. The upload's reviewer/reason fields remain operator-entered claims;
-selection records additionally bind the signed-in account on the server. Remote
-deployment restart controls remain separate work.
+selection records additionally bind the signed-in account on the server. The
+Compose helper restarts only the backend and waits for its local health endpoint;
+other deployment managers still need their own restart procedure.
 
 ## Validation scope
 

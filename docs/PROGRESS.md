@@ -257,9 +257,10 @@ local results. Short runtime samples do not establish sustained throughput.
 4. Calibrate traffic counts/density/speed and historical segment baselines;
    evaluate rules on positive and negative real cases (P2-01–04, EV-07–09).
 5. Complete source operations: operator/case-gated administration and authenticated
-   selection attribution work when auth is enabled; browser preparation, selection
-   and retained-parent rollback are implemented. Host restart management is pending;
-   activation continues to require a host restart.
+   selection attribution work when auth is enabled; browser preparation, selection,
+   linked history and retained-parent rollback are implemented. A Docker Compose
+   backend restart/health-check helper is available; other host managers still need
+   documented restart procedures.
    Metadata settings UI, metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
    pixels, registry verification, authenticated investigator identity, anchored
