@@ -520,14 +520,19 @@ class AuthService:
             self.repository.db.execute("DELETE FROM auth_sessions WHERE username=? AND token_hash<>?", (username, current_token_hash))
             self.repository._append_audit(now, "auth_mfa_disabled", username, {})
 
-    def reset_mfa(self, username, now=None):
+    def reset_mfa(self, username, reason, now=None):
+        username = _username(username)
+        if not isinstance(reason, str) or not 10 <= len(reason.strip()) <= 500:
+            raise AuthenticationError("A reset reason between 10 and 500 characters is required")
+        reason = reason.strip()
         now = time.time() if now is None else now
         with self.repository.lock, self.repository.db:
             if not self.repository.db.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone():
                 return False
             self.repository.db.execute("DELETE FROM user_mfa WHERE username=?", (username,))
             self.repository.db.execute("DELETE FROM auth_sessions WHERE username=?", (username,))
-            self.repository._append_audit(now, "auth_mfa_admin_reset", username, {})
+            self.repository._append_audit(now, "auth_mfa_admin_reset", username,
+                                          {"reason": reason, "sessions_revoked": True})
         return True
 
     def session(self, token, now=None):

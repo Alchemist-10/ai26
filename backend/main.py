@@ -40,7 +40,7 @@ from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
-from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate, OnvifDiscoveryRequest
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, AuthMfaResetRequest, CameraPairConstraintUpdate, OnvifDiscoveryRequest
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 from auth_key_lock import api_lifetime_lock, verify_active_mfa_key, verify_active_privacy_key
 
@@ -296,11 +296,13 @@ def auth_mfa_disable(request:Request,body:AuthMfaDisableRequest):
     return {'enabled':False,'sessions_revoked':True}
 
 
-@app.delete('/api/auth/users/{username}/mfa')
-def auth_reset_mfa(username:str,request:Request):
+@app.post('/api/auth/users/{username}/mfa/reset')
+def auth_reset_mfa(username:str,body:AuthMfaResetRequest,request:Request):
     if not auth_enabled(): raise HTTPException(404,'Authentication is disabled')
     if request.state.actor['role'] != 'admin': raise HTTPException(403,'Administrator access is required')
-    if not AuthService(store).reset_mfa(username): raise HTTPException(404,'Unknown user')
+    try: changed=AuthService(store).reset_mfa(username,body.reason)
+    except AuthenticationError as exc: raise HTTPException(422,str(exc)) from exc
+    if not changed: raise HTTPException(404,'Unknown user')
     return {'mfa_reset':True,'sessions_revoked':True}
 
 

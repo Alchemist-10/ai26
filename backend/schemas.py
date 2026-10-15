@@ -155,6 +155,10 @@ class AuthMfaDisableRequest(BaseModel):
     password: StrictStr = Field(min_length=1, max_length=256)
     code: StrictStr = Field(min_length=1, max_length=32)
 
+class AuthMfaResetRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    reason: StrictStr = Field(min_length=10, max_length=500)
+
 class AuthUserCreateRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     username: StrictStr = Field(min_length=3, max_length=32)

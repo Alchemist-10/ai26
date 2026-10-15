@@ -343,8 +343,8 @@ export function enableMfa(code:string): Promise<{enabled:boolean;recovery_codes:
 export function disableMfa(password:string,code:string): Promise<{enabled:boolean;sessions_revoked:boolean}> {
   return requestJson("/api/auth/mfa/disable", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password,code})})
 }
-export function resetUserMfa(username:string): Promise<{mfa_reset:boolean;sessions_revoked:boolean}> {
-  return requestJson(`/api/auth/users/${encodeURIComponent(username)}/mfa`, {method:"DELETE"})
+export function resetUserMfa(username:string, reason:string): Promise<{mfa_reset:boolean;sessions_revoked:boolean}> {
+  return requestJson(`/api/auth/users/${encodeURIComponent(username)}/mfa/reset`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reason})})
 }
 
 export async function logout(): Promise<void> {

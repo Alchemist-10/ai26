@@ -527,10 +527,24 @@ class Authentication(unittest.TestCase):
                 setup_again = owner.post("/api/auth/mfa/setup", headers=headers).json()
                 confirmed_again = owner.post("/api/auth/mfa/enable", json={"code":mfa_tools.code_at(setup_again["secret"])}, headers=headers)
                 self.assertEqual(confirmed_again.status_code, 200)
-                reset = owner.delete("/api/auth/users/admin/mfa", headers=headers)
+                reset = owner.post("/api/auth/users/admin/mfa/reset", json={
+                    "reason":"Verified administrator authenticator loss",
+                }, headers=headers)
                 self.assertEqual(reset.status_code, 200)
                 self.assertEqual(owner.get("/api/auth/me").status_code, 401)
                 self.assertIsNone(self.repo.db.execute("SELECT 1 FROM user_mfa WHERE username='admin'").fetchone())
+                entry = self.repo.db.execute(
+                    "SELECT data FROM audit WHERE action='auth_mfa_admin_reset' ORDER BY id DESC LIMIT 1"
+                ).fetchone()
+                self.assertEqual(json.loads(entry["data"]), {
+                    "reason":"Verified administrator authenticator loss", "sessions_revoked":True,
+                })
+
+    def test_admin_mfa_reset_rejects_missing_reason(self):
+        self.create()
+        self.assertEqual(self.login().status_code, 200)
+        response = self.client.post("/api/auth/users/admin/mfa/reset", json={}, headers=self.csrf_headers())
+        self.assertEqual(response.status_code, 422)
 
     def test_mfa_key_permissions_and_totp_rfc6238_vector(self):
         key_file = Path(self.folder.name) / "mfa.key"

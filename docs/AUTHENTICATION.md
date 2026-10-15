@@ -123,8 +123,9 @@ TOTP authenticator, and confirm enrollment before MFA is enabled. Ten one-use
 recovery codes are shown once at enrollment and stored only as keyed hashes.
 Login requires a TOTP or unused recovery code for enrolled accounts. Users can
 disable MFA only after re-entering their password and a current TOTP code.
-Administrators can reset a user's MFA from User administration; this disables
-the factor and revokes that user's sessions. The reset is audited. There is no
+Administrators can reset a user's MFA from User administration after entering a
+10–500 character reason; this disables the factor and revokes that user's
+sessions. The reason and revocation are recorded in the audit chain. There is no
 self-service email/phone recovery. Keep the MFA key available and protected:
 without it, TOTP cannot be checked and recovery-code hashes cannot be verified.
 Users who lose both their authenticator and every recovery code need an
