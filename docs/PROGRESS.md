@@ -218,7 +218,7 @@ claim OCR accuracy. See `evaluation/README.md`.
 
 ## Validation
 
-- The current branch passes all 328 backend tests with the frozen Python 3.12 CPU environment.
+- The current branch passes all 354 backend tests with the frozen Python 3.12 CPU environment (verified 2026-10-15).
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - The local launcher now serves an optimized frontend by default (`--dev-frontend`
@@ -273,8 +273,9 @@ local results. Short runtime samples do not establish sustained throughput.
    selection attribution work when auth is enabled; browser preparation records a
    server-verified uploader account separately from reviewer claims when auth is enabled; selection,
    linked history and retained-parent rollback are implemented. A Docker Compose
-   backend restart/health-check helper is available; other host managers still need
-   documented restart procedures.
+   backend restart/health-check helper and a Linux systemd service template with
+   install, restart and health-check instructions are available; other host
+   managers still need their own procedures.
    Metadata settings UI, metadata/link persistence, exact ALPR model provenance and per-read image capture are implemented.
 6. Optional research/production phases remain separate. No restored/reconstructed
    pixels, registry verification, authenticated investigator identity, anchored
@@ -286,7 +287,7 @@ local results. Short runtime samples do not establish sustained throughput.
 
 | ID | Status | Task | Evidence / remaining work |
 | --- | --- | --- | --- |
-| P0-01 | Partial | Supply CAM-07–09 readable-plate clips, or reduce the catalog honestly to available inputs. | Six available sources and three missing sources are explicit; readable plate inputs are still absent. On 2026-10-15 the local AI26/Godseye trees, exact expected clip filenames and source-folder names across the home and mounted Windows SSD, all 18 accessible ZIP archives, and all three visible upstream [Godseye branches](https://github.com/moneytosms/godseye) were checked. `main` at `3d575f68de391e178d18380092e816cd1d2b4eef` and both other branch heads list playback clips only for CAM-01–06; the only project archive likewise contains CAM-01–06. No CAM-07–09 media, dataset archive, or Git LFS asset was found. |
+| P0-01 | Partial | Supply CAM-07–09 readable-plate clips, or reduce the catalog honestly to available inputs. | Six available sources and three missing sources are explicit; readable plate inputs are still absent. On 2026-10-15 the local AI26/Godseye trees, exact expected clip filenames and source-folder names across the home and mounted Windows SSD, all 18 accessible ZIP archives, and all three visible upstream [Godseye branches](https://github.com/moneytosms/godseye) were checked. `main` at `3d575f68de391e178d18380092e816cd1d2b4eef` and both other branch heads list playback clips only for CAM-01–06; the only project archive likewise contains CAM-01–06. No CAM-07–09 media, dataset archive, or Git LFS asset was found. A [2023 Government of India response](https://sansad.in/getFile/loksabhaquestions/annex/1711/AU1239.pdf?source=pqals) independently lists Subhashchandra Bose, Kathrikkadavu and Petta among CSML ITMS camera junctions; it confirms the intended locations, not availability of footage. |
 | P0-02 | Pending | Prove real plate reads on supplied footage, retaining raw and canonical strings. | Real OCR cannot be proved without CAM-07–09 readable plate footage. |
 | P0-03 | Done | Isolate OCR voting by camera + vehicle/plate track, not camera alone. | Camera + local plate-track consensus; independent tracks and conflicts are regression-tested. |
 | P0-04 | Done | Keep `plate`, `plate_norm`, watchlist checks and UI labels consistent. | Canonical plate fields, identity queries and local watchlist use the same normalization; raw strings remain separate. |

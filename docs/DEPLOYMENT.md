@@ -93,6 +93,59 @@ integration drills; neither captures files mounted outside `/app/data`.
 The optional TLS overlay below provides
 transport encryption only.
 
+## Linux systemd deployment
+
+For a host-managed Linux process, `deploy/systemd/ai26.service.example` runs the
+repository launcher as the dedicated `ai26` service account. Create that system
+account, deploy the checkout at `/opt/ai26` with read/execute access for it,
+install the frozen backend and frontend dependencies as that account, and
+prepare persistent paths before enabling the service. Run `useradd` only when
+the service account does not already exist:
+
+```sh
+sudo useradd --system --create-home --home-dir /var/lib/ai26 --shell /usr/sbin/nologin ai26
+sudo install -d -o ai26 -g ai26 /var/lib/ai26 /var/lib/ai26/sources
+sudo -u ai26 -H sh -c 'cd /opt/ai26/backend && uv sync --frozen'
+sudo -u ai26 -H npm ci --prefix /opt/ai26/frontend
+sudo install -d -o root -g root -m 0755 /etc/ai26
+```
+
+Create `/etc/ai26/ai26.env` with the same deployment-specific settings used by
+the app. At minimum, point `AI26_DATA_ROOT` to `/var/lib/ai26` and
+`AI26_SOURCE_ROOT` to `/var/lib/ai26/sources`; add `AI26_FOOTAGE_DIR` if the
+recordings are stored elsewhere. Keep that file root-owned and mode `0600`, and
+grant the service account read access to footage and write access to managed
+data. Never put RTSP passwords in command-line arguments.
+
+Install and start the example unit:
+
+```sh
+sudo install -o root -g root -m 0644 /opt/ai26/deploy/systemd/ai26.service.example /etc/systemd/system/ai26.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now ai26.service
+sudo systemctl status ai26.service
+sudo journalctl -u ai26.service -n 100 --no-pager
+curl -fsS http://127.0.0.1:8001/api/health
+curl -fsS http://127.0.0.1:5174/ -o /dev/null
+```
+
+The unit uses `run.py` so systemd starts and stops the API and optimized
+frontend together; the launcher handles graceful shutdown of both child process
+groups. After selecting replacement footage or changing restart-bound model or
+camera settings, activate them and verify health with:
+
+```sh
+sudo systemctl restart ai26.service
+curl -fsS http://127.0.0.1:8001/api/health
+```
+
+Use `sudo systemctl stop ai26.service` for planned maintenance and
+`sudo journalctl -fu ai26.service` to follow startup/recovery logs. The template
+assumes the checkout, `uv`, Node.js/npm and configured footage paths exist on the
+host. It does not configure a public reverse proxy, TLS, firewall, external
+identity provider, or camera/NVR credentials; configure those separately before
+allowing remote access.
+
 The backend exposes Prometheus text metrics at `/api/metrics`. It reports bounded
 per-camera health and recent processor timing summaries without event, plate, or
 person data. When the authentication overlay is enabled, only administrator
