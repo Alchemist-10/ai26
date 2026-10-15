@@ -76,9 +76,13 @@ class SourceUploads:
         self.lock = threading.RLock(); self.jobs = {}; self.active = None; self.closed = False
         self.owner = None; self.process = None; self.thread = None
 
-    def reserve(self, camera, metadata):
+    def reserve(self, camera, metadata, *, authenticated_uploader=None):
         if camera not in CAMERAS_BY_ID: raise ValueError('Unknown camera')
         metadata = UploadMetadata.model_validate(metadata).model_dump()
+        # Authentication identity is injected by the API from trusted session
+        # state; it is never accepted from the upload metadata header.
+        if isinstance(authenticated_uploader, str) and authenticated_uploader.strip():
+            metadata['_authenticated_uploader'] = authenticated_uploader.strip()[:100]
         with self.lock:
             if self.closed: raise UploadBusy('Source preparation is shutting down')
             if self.active: raise UploadBusy('Another clip is uploading or being prepared; finish or cancel it first')
@@ -119,8 +123,9 @@ class SourceUploads:
                     shutil.rmtree(self.active['stage'],ignore_errors=True);self.active=None;self._unlock()
             while len(self.jobs)>16: self.jobs.pop(next(iter(self.jobs)))
 
-    async def reserve_async(self, camera, metadata):
-        task=asyncio.create_task(asyncio.to_thread(self.reserve,camera,metadata))
+    async def reserve_async(self, camera, metadata, *, authenticated_uploader=None):
+        task=(asyncio.create_task(asyncio.to_thread(self.reserve,camera,metadata)) if authenticated_uploader is None else
+              asyncio.create_task(asyncio.to_thread(self.reserve,camera,metadata,authenticated_uploader=authenticated_uploader)))
         try: return await asyncio.shield(task)
         except asyncio.CancelledError:
             try:
@@ -189,6 +194,18 @@ class SourceUploads:
             else:
                 result=json.loads(output)
                 binding=load_release(self.jobs[job]['camera_id'],result['release'],self.root,verify=True)
+                authenticated_uploader=self.active['metadata'].get('_authenticated_uploader')
+                if authenticated_uploader:
+                    # Bind the trusted API session identity after import_source
+                    # has published the release, then re-read and verify it.
+                    manifest_path=(self.root/self.jobs[job]['camera_id']/'releases'/result['release']/'manifest.json')
+                    resolved=manifest_path.resolve()
+                    if not resolved.is_relative_to(self.root): raise ValueError('Release manifest escapes managed source root')
+                    manifest=dict(binding['manifest'])
+                    manifest['uploader_authenticated']=True
+                    manifest['authenticated_uploader']=authenticated_uploader
+                    atomic_json(resolved,manifest)
+                    binding=load_release(self.jobs[job]['camera_id'],result['release'],self.root,verify=True)
                 self._finish(job,'ready',release=release_summary(binding['manifest']))
         except BaseException:
             log.exception('Preparation worker failed for %s',job)

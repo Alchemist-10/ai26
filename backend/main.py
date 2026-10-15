@@ -346,7 +346,8 @@ async def prepare_camera_source(camera_id:str,request:Request):
     try:
         metadata=parse_metadata(request.headers.get('x-ai26-upload'))
         if request.headers.get('content-length') and int(request.headers['content-length'])!=metadata['bytes']: raise ValueError('Upload size header does not match the file')
-        job,path=await uploads.reserve_async(camera_id,metadata)
+        actor=getattr(request.state,'actor',None)
+        job,path=await uploads.reserve_async(camera_id,metadata,authenticated_uploader=actor['username'] if actor else None)
     except UploadBusy as error: raise HTTPException(409,str(error)) from error
     except (ValueError,OSError) as error: raise HTTPException(422,str(error)) from error
     try: return await uploads.receive(request,job,path)

@@ -84,8 +84,11 @@ preparation automatically.
   after dry-run review. It preserves the latest receipt per camera. Forced
   kill/power loss may leave staging until that operator cleanup is run.
 - No observations, configuration revisions or SQLite audit rows are created by
-  preparation/selection. The manifest records the local reviewer/reason and
-  conversion identity. Existing observation provenance is unchanged. Prepared
+  preparation/selection. The manifest records the reviewer/reason claim and
+  conversion identity. When authentication is enabled, the API separately binds
+  the verified uploader account to the prepared manifest; this does not convert
+  the reviewer, location or recording-clock fields into verified claims.
+  Existing observation provenance is unchanged. Prepared
   releases are unlinked from source history until selected.
 
 ## API
@@ -110,7 +113,8 @@ so the application enforces its byte bound rather than buffering a multipart fil
 The default local prototype remains unauthenticated. When authentication is
 enabled, source routes require an operator role, case/purpose scope and CSRF on
 mutations. The upload's reviewer/reason fields remain operator-entered claims;
-selection records additionally bind the signed-in account on the server. The
+prepared releases bind the signed-in uploader account on the server, and source
+selection records separately bind the account selecting a release. The
 Compose helper restarts only the backend and waits for its local health endpoint;
 other deployment managers still need their own restart procedure.
 

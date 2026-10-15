@@ -64,6 +64,8 @@ export interface SourceRelease {
   imported_at: number | null
   time_basis: string | null
   previous_release: string | null
+  uploader_authenticated: boolean
+  authenticated_uploader: string | null
   recording_clock: { start_utc: string; uncertainty_seconds: number | null; provenance: "operator_claimed"; status: "unverified" } | null
   original: SourceFileMetadata
   playback: SourceFileMetadata

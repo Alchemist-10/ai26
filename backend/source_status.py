@@ -29,6 +29,8 @@ def number(value):
 def release_summary(manifest):
     """Project local metadata rather than exposing arbitrary manifest fields/paths."""
     result = {key: text(manifest.get(key)) for key in ('release', 'reviewer', 'reason', 'time_basis', 'previous_release')}
+    result['uploader_authenticated'] = manifest.get('uploader_authenticated') is True
+    result['authenticated_uploader'] = text(manifest.get('authenticated_uploader'), 100) if result['uploader_authenticated'] else None
     result['imported_at'] = number(manifest.get('imported_at'))
     clock = validate_recording_clock(manifest.get('recording_clock'))
     result['recording_clock'] = ({'start_utc': clock['start_utc'],

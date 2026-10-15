@@ -158,6 +158,21 @@ class Preparation(unittest.TestCase):
         process.communicate.assert_called_once_with(timeout=650)
         self.assertEqual(self.manager.get(job)['status'],'ready');self.assertIsNone(load_source('CAM-07',self.root))
         self.assertFalse(path.exists())
+    def test_worker_binds_only_trusted_session_uploader_to_manifest(self):
+        result=self.prepare();job,path=self.manager.reserve('CAM-07',META,authenticated_uploader='signed-in-operator');path.write_bytes(b'abcd')
+        process=unittest.mock.Mock(returncode=0)
+        process.communicate.return_value=(json.dumps({'release':result['release']}),'')
+        process.poll.return_value=0
+        with patch.object(source_uploads.subprocess,'Popen',return_value=process) as launch:
+            self.manager._prepare(job,path)
+        manifest=load_release('CAM-07',result['release'],self.root,verify=True)['manifest']
+        self.assertTrue(manifest['uploader_authenticated'])
+        self.assertEqual(manifest['authenticated_uploader'],'signed-in-operator')
+        self.assertNotIn('signed-in-operator',launch.call_args.args[0])
+        release=self.manager.get(job)['release']
+        self.assertTrue(release['uploader_authenticated'])
+        self.assertEqual(release['authenticated_uploader'],'signed-in-operator')
+        self.assertEqual(release['reviewer'],'Tester')
     def test_worker_failure_and_timeout_release_ownership(self):
         for timeout in (False,True):
             job,path=self.manager.reserve('CAM-07',META)
@@ -208,5 +223,20 @@ class Preparation(unittest.TestCase):
             self.assertEqual(client.post('/api/cameras/CAM-08/source/prepare',content=b'abcd',headers=headers).status_code,409)
             self.assertEqual(client.get('/api/source-preparations/not-a-job').status_code,404)
             self.assertIsNone(load_source('CAM-07',self.root));self.manager._finish(job,'cancelled')
+    def test_authenticated_api_upload_uses_session_account_not_header_claim(self):
+        import main
+        from fastapi.testclient import TestClient
+        session={'username':'verified-uploader','role':'operator','csrf_token':'csrf'}
+        auth_service=unittest.mock.MagicMock();auth_service.session.return_value=session;auth_service.can_access_case.return_value=True
+        header=base64.b64encode(json.dumps(META).encode()).decode()
+        with patch.object(main,'auth_enabled',return_value=True),patch.object(main,'AuthService',return_value=auth_service),patch.object(main,'uploads',self.manager),patch.object(self.manager,'_prepare'):
+            response=TestClient(main.app).post('/api/cameras/CAM-07/source/prepare',content=b'abcd',
+                headers={'content-type':'application/octet-stream','x-ai26-upload':header,main.CSRF_HEADER:'csrf','X-AI26-Case-ID':'CASE-1','X-AI26-Purpose':'system_test'},
+                cookies={main.SESSION_COOKIE:'session'})
+        self.assertEqual(response.status_code,202,response.text)
+        self.assertEqual(self.manager.active['metadata']['_authenticated_uploader'],'verified-uploader')
+        self.assertEqual(self.manager.active['metadata']['reviewer'],'Local tester')
+        auth_service.audit_sensitive_access.assert_called_once()
+        self.manager._finish(response.json()['job_id'],'cancelled')
 
 if __name__=='__main__':unittest.main()
