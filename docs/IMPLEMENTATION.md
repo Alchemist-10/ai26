@@ -74,10 +74,11 @@ not inherit that limit. Default windows expire at read time even if no data arri
 `processed_at` is the processing completion time. Imports may also carry an
 operator-claimed original recording start and uncertainty; reads and image
 references retain the derived UTC claim as unverified metadata. It does not replace
-replay time or enable physical cross-camera links. Cross-camera replay clocks
-cannot support physical travel-time inference. Those links remain unresolved
-candidates. The claimed offset uses frame index divided by reported FPS and is
-approximate for variable-frame-rate sources. For manual observations with confirmed
+replay time or enable physical cross-camera links. Replay clocks and live
+capture-arrival clocks cannot support physical travel-time inference; those
+links remain unresolved candidates with null speed until synchronized capture
+clocks are available. The claimed offset uses frame index divided by reported
+FPS and is approximate for variable-frame-rate sources. For manual observations with confirmed
 location labels, the baseline uses exact plate equality and a fixed straight-line
 speed gate; coordinate and clock validation are not established by this status;
 accepted links still do not prove identity. Rejected links and mixed routes require

@@ -102,11 +102,11 @@ def build_trajectory(observations):
                 'identity_verified':False}
         # Recorded playback time is not original synchronized capture time.
         uncalibrated = not first['location_confirmed'] or not second['location_confirmed'] or any(
-            e.get('time_basis') == 'replay_clock' for e in (first, second))
+            e.get('time_basis') in ('replay_clock', 'capture_arrival_clock') for e in (first, second))
         if elapsed <= 0:
             rejected.append({**link, 'reason': 'nonpositive elapsed time; transition cannot be established'})
         elif uncalibrated:
-            candidates.append({**link, 'implied_speed_kmh': None, 'reason': 'Location or original capture-time calibration unavailable'})
+            candidates.append({**link, 'implied_speed_kmh': None, 'reason': 'Location or synchronized capture-time calibration unavailable'})
         elif speed > MAX_TRAVEL_SPEED_KMH:
             rejected.append({**link, 'reason': f'impossible travel: {speed:.1f} km/h implied; limit {MAX_TRAVEL_SPEED_KMH} km/h'})
         elif not constraint_matches:

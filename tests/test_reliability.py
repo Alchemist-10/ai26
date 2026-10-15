@@ -119,6 +119,25 @@ class Reliability(unittest.TestCase):
         self.assertEqual(len(result['candidate_links']),1)
         self.assertIsNone(result['candidate_links'][0]['implied_speed_kmh'])
 
+    def test_live_arrival_clock_is_not_physical_cross_camera_travel_time(self):
+        for camera in ('CAM-07','CAM-08'):
+            config=self.repo.camera_configuration(camera)
+            self.repo.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
+                'reviewer':'fixture','reason':'configure deterministic live-clock fixture'},self.now)
+        self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+            'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'fixture window'},self.now)
+        result=events.build_trajectory([
+            self.plate(ts=self.now-120,source_mode='live',time_basis='capture_arrival_clock'),
+            self.plate('CAM-08',self.now,source_mode='live',time_basis='capture_arrival_clock'),
+        ])
+        self.assertEqual(result['accepted_links'],[])
+        self.assertEqual(result['rejected_links'],[])
+        self.assertEqual(len(result['candidate_links']),1)
+        link=result['candidate_links'][0]
+        self.assertIsNone(link['implied_speed_kmh'])
+        self.assertEqual(link['time_bases'],['capture_arrival_clock','capture_arrival_clock'])
+        self.assertIn('synchronized capture-time calibration unavailable',link['reason'])
+
     def test_unconfigured_pair_stays_candidate_and_constraint_window_is_enforced(self):
         first=self.plate(ts=self.now-120)
         second=self.plate('CAM-08',self.now)

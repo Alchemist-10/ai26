@@ -127,7 +127,9 @@ backoff and no URL exposure in health/API responses or capture logs. Inference,
 event storage and browser previews use the same pipeline as recorded input;
 `/api/video/{camera_id}` remains unavailable for live cameras. Live timestamps
 are host arrival times and are labeled `capture_arrival_clock`; no camera/NVR
-clock synchronization is claimed. Use RTSP over a trusted camera network (or
+clock synchronization is claimed. Cross-camera live routes using these arrival
+times remain unresolved candidates with null physical speed until clock offsets
+and buffering delays are calibrated. Use RTSP over a trusted camera network (or
 RTSPS where supported) and rotate credentials at the camera. ONVIF discovery,
 camera clock synchronization, live failover testing on actual hardware and
 credential lifecycle management remain open work. An administrator can use
