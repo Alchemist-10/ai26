@@ -134,9 +134,27 @@ The report records clip hashes, per-interval counters, per-camera timing data,
 and host/commit metadata in
 [`validation/ev09-six-camera-soak-2026-10-14.json`](validation/ev09-six-camera-soak-2026-10-14.json).
 
-This is a bounded local replay, not a sustained deployment soak. It does not
-measure browser dropped frames, cold-start OCR, plate recognition, real camera
-capture, or detector accuracy; CAM-07–09 had no source files.
+## Five-minute six-camera replay soak — 15 October 2026
+
+A second isolated run used the same six bundled clips, a fresh disposable data
+root, vehicle detection enabled, plate recognition disabled, and the same
+2 FPS total sampling budget. Its verified 298-second counter window completed
+555 frames (1.862 FPS), with zero failed attempts and zero health-read failures.
+There was one processing-budget overrun. The three missing cameras stayed
+unavailable and consumed no inference attempts. Health latency was 5.14 ms at
+the median and 9.09 ms at p95; API process CPU was 47.0% median / 82.4% p95,
+with 541 MiB maximum RSS. Hashed source clips, branch settings, exact commit,
+per-sample counters, and machine details are in
+[`validation/ev09-six-camera-soak-2026-10-15-300s.json`](validation/ev09-six-camera-soak-2026-10-15-300s.json).
+
+This longer run supports local replay reliability under the stated conditions;
+it still falls slightly below the configured total sampling rate and therefore
+does not validate a 2 FPS guarantee. It also does not measure browser playback
+drops, production stream behavior, OCR, or accuracy.
+
+Both runs are bounded local replays, not a sustained deployment soak. They do
+not measure browser dropped frames, cold-start OCR, plate recognition, real
+camera capture, or detector accuracy; CAM-07–09 had no source files.
 
 ## Dashboard route chunks — 14 October 2026
 
