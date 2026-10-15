@@ -138,21 +138,41 @@ and host/commit metadata in
 
 A second isolated run used the same six bundled clips, a fresh disposable data
 root, vehicle detection enabled, plate recognition disabled, and the same
-2 FPS total sampling budget. Its verified 298-second counter window completed
-555 frames (1.862 FPS), with zero failed attempts and zero health-read failures.
-There was one processing-budget overrun. The three missing cameras stayed
-unavailable and consumed no inference attempts. Health latency was 5.14 ms at
-the median and 9.09 ms at p95; API process CPU was 47.0% median / 82.4% p95,
-with 541 MiB maximum RSS. Hashed source clips, branch settings, exact commit,
-per-sample counters, and machine details are in
+2 FPS total sampling budget. Its verified counter window completed 555 frames,
+with zero failed attempts and zero health-read failures. There was one
+processing-budget overrun. The three missing cameras stayed unavailable and
+consumed no inference attempts. The profile calculated 1.862 FPS, but a single
+20.75-second sample gap (expected: 2 seconds) coincided with 1.0% API CPU and
+frame ages jumping to about 44 minutes. The cause is unverified, so that
+aggregate rate is not a valid steady-state measurement. Sampled health latency
+was 5.14 ms at the median and 9.09 ms at p95; sampled API process CPU was 47.0%
+median / 82.4% p95, with 541 MiB maximum RSS. Hashed source clips, branch settings, exact commit,
+per-sample counters, anomaly details, and machine data are in
 [`validation/ev09-six-camera-soak-2026-10-15-300s.json`](validation/ev09-six-camera-soak-2026-10-15-300s.json).
 
-This longer run supports local replay reliability under the stated conditions;
-it still falls slightly below the configured total sampling rate and therefore
-does not validate a 2 FPS guarantee. It also does not measure browser playback
-drops, production stream behavior, OCR, or accuracy.
+The run documents the processor's behavior and resource samples but does not
+validate a sustained 2 FPS rate because of the interruption. A clean repeat is
+needed for that comparison. It also does not measure browser playback drops,
+production stream behavior, OCR, or accuracy.
 
-Both runs are bounded local replays, not a sustained deployment soak. They do
+## Two-minute continuous repeat — 15 October 2026
+
+A repeat with the same six hashed clips, branch switches and sampling budget
+completed 232 frames over a verified 118-second window (1.966 FPS). Across 59
+samples, the largest poll interval was 2.008 seconds and maximum observed frame
+age was 2.97 seconds; no clock discontinuity or long sample gap appeared. There
+were zero failed attempts and zero health-read failures, with four attempts
+exceeding the 500 ms per-attempt budget. The three missing sources were not
+scheduled. Health latency was 6.99 ms median / 10.36 ms p95, process CPU was
+72.5% median / 109.5% p95, and maximum RSS was 542 MiB. The hashed inputs,
+per-sample trace, and host/runtime details are in
+[`validation/ev09-six-camera-soak-2026-10-15-120s-repeat.json`](validation/ev09-six-camera-soak-2026-10-15-120s-repeat.json).
+
+This repeat is a cleaner short-window measurement close to the configured
+sampling budget, not a hard-rate guarantee or a sustained deployment test. It
+does not measure browser playback, live RTSP sources, OCR, or accuracy.
+
+These profiles are bounded local replays, not a sustained deployment soak. They do
 not measure browser dropped frames, cold-start OCR, plate recognition, real
 camera capture, or detector accuracy; CAM-07–09 had no source files.
 
