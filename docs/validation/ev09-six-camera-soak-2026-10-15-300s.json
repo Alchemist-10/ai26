@@ -90,11 +90,132 @@
     },
     "unverified_cameras": [],
     "total_completed_frames": 555,
-    "total_completed_fps": null,
+    "total_completed_fps": 1.8624,
     "counter_window_valid": true,
     "health_failures": 0,
-    "steady_state_rate_claim": "invalidated_by_profile_anomaly",
-    "observed_total_completed_fps": 1.8624
+    "observed_total_completed_fps": 1.8624,
+    "profile_quality": {
+      "steady_state_rate_valid": false,
+      "steady_state_rate_invalid_reasons": [
+        {
+          "kind": "long_sample_gap",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "gap_seconds": 20.749,
+          "expected_interval_seconds": 2.0
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-01",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.41,
+          "clock_discrepancy_seconds": 2647.661
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-02",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2665.43,
+          "clock_discrepancy_seconds": 2644.681
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-03",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.41,
+          "clock_discrepancy_seconds": 2647.661
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-04",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.41,
+          "clock_discrepancy_seconds": 2647.661
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-05",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.42,
+          "clock_discrepancy_seconds": 2647.671
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-06",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.42,
+          "clock_discrepancy_seconds": 2647.671
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-03",
+          "from_elapsed_seconds": 206.785,
+          "to_elapsed_seconds": 208.039,
+          "sample_gap_seconds": 1.254,
+          "frame_age_delta_seconds": -2669.72,
+          "clock_discrepancy_seconds": -2670.974
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-04",
+          "from_elapsed_seconds": 206.785,
+          "to_elapsed_seconds": 208.039,
+          "sample_gap_seconds": 1.254,
+          "frame_age_delta_seconds": -2669.75,
+          "clock_discrepancy_seconds": -2671.004
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-05",
+          "from_elapsed_seconds": 206.785,
+          "to_elapsed_seconds": 208.039,
+          "sample_gap_seconds": 1.254,
+          "frame_age_delta_seconds": -2669.79,
+          "clock_discrepancy_seconds": -2671.044
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-01",
+          "from_elapsed_seconds": 208.039,
+          "to_elapsed_seconds": 210.038,
+          "sample_gap_seconds": 1.999,
+          "frame_age_delta_seconds": -2669.06,
+          "clock_discrepancy_seconds": -2671.059
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-02",
+          "from_elapsed_seconds": 208.039,
+          "to_elapsed_seconds": 210.038,
+          "sample_gap_seconds": 1.999,
+          "frame_age_delta_seconds": -2669.23,
+          "clock_discrepancy_seconds": -2671.229
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-06",
+          "from_elapsed_seconds": 208.039,
+          "to_elapsed_seconds": 210.038,
+          "sample_gap_seconds": 1.999,
+          "frame_age_delta_seconds": -2669.0,
+          "clock_discrepancy_seconds": -2670.999
+        }
+      ],
+      "max_sample_gap_seconds": 20.749
+    },
+    "steady_state_total_completed_fps": null
   },
   "health_latency_ms": {
     "samples": 140,
@@ -6854,26 +6975,5 @@
     "CAM-05": "56922cb8df3242034ac62e1c4a474e84ccbb4090b19d8c7a78855c0b21192a86",
     "CAM-06": "48a562a900dab2698a503e04882f4dd1856c8b8ae6f58201db9ef4b3977aa3d7"
   },
-  "recorded_at_utc": "2026-10-15T08:48:04+00:00",
-  "profile_anomalies": [
-    {
-      "elapsed_before_seconds": 186.036,
-      "elapsed_after_seconds": 206.785,
-      "monotonic_gap_seconds": 20.749,
-      "expected_sampling_gap_seconds": 2.0,
-      "api_process_cpu_percent_over_gap": 1.012,
-      "frame_ages_after_gap_seconds": {
-        "CAM-01": 2668.82,
-        "CAM-02": 2668.32,
-        "CAM-03": 2670.79,
-        "CAM-04": 2670.29,
-        "CAM-05": 2669.83,
-        "CAM-06": 2669.31,
-        "CAM-07": null,
-        "CAM-08": null,
-        "CAM-09": null
-      },
-      "interpretation": "The counter window contains a long host/API pause or wall-clock discontinuity. Cause is unverified; do not treat aggregate FPS as a steady-state scheduler benchmark."
-    }
-  ]
+  "recorded_at_utc": "2026-10-15T08:48:04+00:00"
 }

@@ -42,6 +42,9 @@ def read_health(origin, timeout=5):
         if not isinstance(camera,dict) or not isinstance(camera.get('camera_id'),str) or not re.fullmatch(r'CAM-\d{2}',camera['camera_id']):
             raise ValueError('Invalid camera health identity')
         if camera['camera_id'] in seen or type(camera.get('frames')) is not int or camera['frames']<0: raise ValueError('Invalid camera frame counters')
+        age=camera.get('frame_age_seconds')
+        if age is not None and (type(age) not in (int,float) or not math.isfinite(age)):
+            raise ValueError('Invalid camera frame age')
         seen.add(camera['camera_id'])
     return result
 
@@ -65,6 +68,54 @@ def counter_deltas(before, after):
             invalid.append(camera);continue
         deltas[camera]={key:end[key]-start[key] for key in fields}
     return {'per_camera':deltas,'unverified_cameras':invalid,'total_completed_frames':sum(c['frames'] for c in deltas.values())}
+
+
+def assess_profile_quality(samples, interval, health_failures, counter_window_valid):
+    """Flag interruptions or wall-clock jumps that make aggregate FPS misleading."""
+    anomalies=[]
+    previous=None
+    max_sample_gap=0.0
+    for sample in samples:
+        elapsed=sample.get('elapsed_seconds')
+        if not isinstance(elapsed,(int,float)) or not math.isfinite(elapsed):
+            anomalies.append({'kind':'invalid_sample_elapsed'})
+            previous=sample
+            continue
+        if previous is not None:
+            previous_elapsed=previous.get('elapsed_seconds')
+            gap=elapsed-previous_elapsed if isinstance(previous_elapsed,(int,float)) else None
+            if gap is not None and math.isfinite(gap):
+                max_sample_gap=max(max_sample_gap,gap)
+                if gap<=0:
+                    anomalies.append({'kind':'non_monotonic_sample_elapsed','from_elapsed_seconds':previous_elapsed,
+                                      'to_elapsed_seconds':elapsed,'gap_seconds':round(gap,3)})
+                elif gap>max(interval*2.5,interval+1.0):
+                    anomalies.append({'kind':'long_sample_gap','from_elapsed_seconds':previous_elapsed,
+                                      'to_elapsed_seconds':elapsed,'gap_seconds':round(gap,3),
+                                      'expected_interval_seconds':interval})
+                before_ages=previous.get('frame_ages_seconds',{})
+                current_ages=sample.get('frame_ages_seconds',{})
+                if isinstance(before_ages,dict) and isinstance(current_ages,dict):
+                    for camera_id in sorted(set(before_ages)&set(current_ages)):
+                        before_age=before_ages[camera_id];current_age=current_ages[camera_id]
+                        if (isinstance(before_age,(int,float)) and math.isfinite(before_age)
+                                and isinstance(current_age,(int,float)) and math.isfinite(current_age)):
+                            age_delta=current_age-before_age
+                            discrepancy=age_delta-gap
+                            if abs(discrepancy)>max(10.0,interval*5):
+                                anomalies.append({'kind':'frame_age_clock_discontinuity','camera_id':camera_id,
+                                                  'from_elapsed_seconds':previous_elapsed,
+                                                  'to_elapsed_seconds':elapsed,'sample_gap_seconds':round(gap,3),
+                                                  'frame_age_delta_seconds':round(age_delta,3),
+                                                  'clock_discrepancy_seconds':round(discrepancy,3)})
+        previous=sample
+    if health_failures:
+        anomalies.append({'kind':'health_read_failures','count':health_failures})
+    if not counter_window_valid:
+        anomalies.append({'kind':'counter_window_unverified'})
+    return {'steady_state_rate_valid':not anomalies,
+            'steady_state_rate_invalid_reasons':anomalies,
+            'max_sample_gap_seconds':round(max_sample_gap,3) if len(samples)>1 else None}
 
 
 def profile(origin, duration, interval, pid=None):
@@ -98,12 +149,16 @@ def profile(origin, duration, interval, pid=None):
         next_sample+=interval
         while next_sample<=time.monotonic(): next_sample+=interval
     elapsed=last_at-first_at;deltas=counter_deltas(first,last)
+    profile_quality=assess_profile_quality(samples,interval,failures,not deltas['unverified_cameras'])
+    measured_fps=round(deltas['total_completed_frames']/elapsed,4) if elapsed>0 and not deltas['unverified_cameras'] else None
     return {'version':1,'scope':'Read-only local API/process observation under current desktop load; not a controlled accuracy or browser playback benchmark',
             'conditions':{'api':origin,'requested_seconds':duration,'interval_seconds':interval,'successful_counter_window_seconds':round(elapsed,3),
                           'python':platform.python_version(),'platform':platform.platform(),'logical_cpus':os.cpu_count(),'pid':pid,
                           'process_status':process_status,'process_birth_ticks':first_process['identity'] if first_process else None},
-            'sampling':{**deltas,'total_completed_fps':round(deltas['total_completed_frames']/elapsed,4) if elapsed>0 and not deltas['unverified_cameras'] else None,
-                        'counter_window_valid':not deltas['unverified_cameras'],'health_failures':failures},
+            'sampling':{**deltas,'total_completed_fps':measured_fps,
+                        'steady_state_total_completed_fps':measured_fps if profile_quality['steady_state_rate_valid'] else None,
+                        'counter_window_valid':not deltas['unverified_cameras'],'health_failures':failures,
+                        'profile_quality':profile_quality},
             'health_latency_ms':distribution([s['health_latency_ms'] for s in samples if 'health_latency_ms' in s]),
             'cpu_percent':distribution([s['cpu_percent'] for s in samples if 'cpu_percent' in s]),
             'rss_mib':distribution([s['rss_mib'] for s in samples if 'rss_mib' in s]),

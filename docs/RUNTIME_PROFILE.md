@@ -66,19 +66,25 @@ request timeout. A late sampler skips slots rather than sending queued catch-up
 requests. A final response may finish after the requested sampling deadline.
 API failures are counted and subsequent samples may recover. Monotone counters and
 processor_run_id detect API restarts; an unverified counter window receives no
-total FPS claim. Older APIs without the new counters/run ID are unverified too.
+verified counter rate. The profiler also preserves the computed counter rate as a
+diagnostic while suppressing the steady-state rate when health reads fail, a sample
+gap exceeds 2.5 intervals, frame ages show a wall-clock discontinuity, or the
+counter window is unverified. Older APIs without the new counters/run ID are
+unverified too.
 
 The output contains conditions, first/last health, bounded per-tick counters,
-endpoint latency, optional CPU/RSS distributions and counter deltas. It writes
-only its explicit output file and does not create observations or alter sources.
+endpoint latency, optional CPU/RSS distributions, counter deltas, profile-quality
+flags and the reasons a steady-state rate may be suppressed. It writes only its
+explicit output file and does not create observations or alter sources.
 The already-running processor continues its normal database/image writes.
 
 ## Validation limits
 
-Twelve isolated contracts cover scheduler fairness, missing/backoff work, idle
+Thirteen isolated contracts cover scheduler fairness, missing/backoff work, idle
 waits, slow/failing attempts, bounded telemetry, monotonic FPS, local-origin/response
-validation, counter restarts, endpoint outage recovery, PID reuse/procfs parsing
-and late sampling. That profiling milestone recorded 182 passing tests. The later
+validation, counter restarts, endpoint outage recovery, PID reuse/procfs parsing,
+late-sample quality handling and frame-age clock-jump detection. That profiling
+milestone recorded 182 passing tests. The later
 [decoder milestone](DECODE_SAMPLING.md) has the current 190-test suite.
 
 The local before/after measurement uses the six bundled vehicle clips and the same

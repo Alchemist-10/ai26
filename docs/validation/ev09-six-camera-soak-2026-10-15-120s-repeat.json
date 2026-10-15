@@ -93,7 +93,12 @@
     "total_completed_fps": 1.966,
     "counter_window_valid": true,
     "health_failures": 0,
-    "steady_state_rate_claim": "valid_profile_window_no_observed_sampling_gap_or_wall_clock_discontinuity"
+    "profile_quality": {
+      "steady_state_rate_valid": true,
+      "steady_state_rate_invalid_reasons": [],
+      "max_sample_gap_seconds": 2.008
+    },
+    "steady_state_total_completed_fps": 1.966
   },
   "health_latency_ms": {
     "samples": 59,
@@ -3629,6 +3634,5 @@
     "CAM-05": "56922cb8df3242034ac62e1c4a474e84ccbb4090b19d8c7a78855c0b21192a86",
     "CAM-06": "48a562a900dab2698a503e04882f4dd1856c8b8ae6f58201db9ef4b3977aa3d7"
   },
-  "profile_anomalies": [],
   "recorded_at_utc": "2026-10-15T08:56:41+00:00"
 }

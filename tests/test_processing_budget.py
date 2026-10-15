@@ -102,7 +102,8 @@ class RuntimeProfile(unittest.TestCase):
             def __enter__(self):return self
             def __exit__(self,*args):pass
             def read(self,bound):return self.content[:bound]
-        for body in (b'x'*(profiler.MAX_RESPONSE_BYTES+1),json.dumps({'cameras':[self.health()['cameras'][0]]*2}).encode(),json.dumps({'cameras':[{'camera_id':'CAM-01','frames':False}]}).encode()):
+        invalid_age=self.health()['cameras'][0].copy();invalid_age['frame_age_seconds']=float('nan')
+        for body in (b'x'*(profiler.MAX_RESPONSE_BYTES+1),json.dumps({'cameras':[self.health()['cameras'][0]]*2}).encode(),json.dumps({'cameras':[{'camera_id':'CAM-01','frames':False}]}).encode(),json.dumps({'cameras':[invalid_age]}).encode()):
             with patch.object(profiler.urllib.request,'urlopen',return_value=Response(body)):
                 with self.assertRaises(ValueError):profiler.read_health('http://localhost:8001')
     def test_restart_or_missing_counter_marks_window_unverified(self):
@@ -117,6 +118,7 @@ class RuntimeProfile(unittest.TestCase):
             result=profiler.profile('http://localhost:8001',5,1,12)
         self.assertEqual(result['sampling']['health_failures'],1);self.assertEqual(result['sampling']['total_completed_frames'],4)
         self.assertEqual(result['conditions']['process_status'],'lost_or_replaced');self.assertEqual(result['cpu_percent']['samples'],1);self.assertEqual(len(result['samples']),5)
+        self.assertFalse(result['sampling']['profile_quality']['steady_state_rate_valid'])
     def test_procfs_parses_parenthesized_process_name_and_identity(self):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/'12';path.mkdir();values=['0']*22;values[11]='100';values[12]='50';values[19]='999';values[21]='256'
@@ -128,5 +130,33 @@ class RuntimeProfile(unittest.TestCase):
         with patch.object(profiler,'read_health',side_effect=health),patch.object(profiler.time,'monotonic',side_effect=clock.monotonic),patch.object(profiler.time,'sleep',side_effect=clock.sleep):
             result=profiler.profile('http://localhost:8001',8,1)
         self.assertEqual(calls,[0,3,6]);self.assertEqual(len(result['samples']),2)
+        self.assertFalse(result['sampling']['profile_quality']['steady_state_rate_valid'])
+        self.assertEqual(result['sampling']['steady_state_total_completed_fps'],None)
+
+    def test_profile_quality_rejects_wall_clock_jumps_and_accepts_continuous_samples(self):
+        continuous=[
+            {'elapsed_seconds':1.0,'frame_ages_seconds':{'CAM-01':1.0}},
+            {'elapsed_seconds':3.0,'frame_ages_seconds':{'CAM-01':0.5}},
+            {'elapsed_seconds':5.0,'frame_ages_seconds':{'CAM-01':2.5}},
+        ]
+        quality=profiler.assess_profile_quality(continuous,2,0,True)
+        self.assertTrue(quality['steady_state_rate_valid'])
+        self.assertEqual(quality['max_sample_gap_seconds'],2.0)
+
+        interrupted=[
+            {'elapsed_seconds':184.0,'frame_ages_seconds':{'CAM-01':1.4}},
+            {'elapsed_seconds':206.0,'frame_ages_seconds':{'CAM-01':2668.8}},
+        ]
+        quality=profiler.assess_profile_quality(interrupted,2,0,True)
+        self.assertFalse(quality['steady_state_rate_valid'])
+        self.assertEqual({item['kind'] for item in quality['steady_state_rate_invalid_reasons']},
+                         {'long_sample_gap','frame_age_clock_discontinuity'})
+        self.assertEqual(quality['max_sample_gap_seconds'],22.0)
+        backwards=profiler.assess_profile_quality([
+            {'elapsed_seconds':2.0,'frame_ages_seconds':{}},
+            {'elapsed_seconds':1.0,'frame_ages_seconds':{}},
+        ],2,0,True)
+        self.assertFalse(backwards['steady_state_rate_valid'])
+        self.assertEqual(backwards['steady_state_rate_invalid_reasons'][0]['kind'],'non_monotonic_sample_elapsed')
 
 if __name__=='__main__':unittest.main()
