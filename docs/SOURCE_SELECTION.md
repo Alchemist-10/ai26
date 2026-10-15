@@ -58,15 +58,19 @@ pointer publication. A proposal is committed only if the current pointer referen
 its ID or a later committed record links back to it. Publication failure removes
 an uncommitted proposal; interruption after publication retains the record. A
 forced kill/power failure can leave an unlinked proposal. There is no aggregate
-cleanup, full selection-history browser, or independently verifiable audit chain.
+selection-history cleanup, full selection-history browser, or independently
+verifiable audit chain.
 Offline/manual pointer edits may break the selection-record chain.
 
-Original release manifests and footage are unchanged. Source selection creates no
-SQLite observations, configuration revisions or audit rows. **Last browser selection**
+Original release manifests and footage are unchanged by selection. Old, unselected
+managed releases can be pruned with the guarded offline dry-run/apply tool described
+in [SOURCE_IMPORT.md](SOURCE_IMPORT.md); the selected rollback chain is retained.
+Source selection creates no SQLite observations, configuration revisions or audit
+rows. **Last browser selection**
 projects a local name/reason/time claim; it records selection, not activation,
 authenticated identity or verified content. The local prototype API is unauthenticated.
 Capture clocks, location, real plate/OCR accuracy, authenticated administration,
-restart orchestration, RTSP and imported-video retention controls remain pending.
+restart orchestration, RTSP and automatic imported-video retention remain pending.
 
 Hashing adds explicit selection and startup I/O; it is performed in a request worker
 thread, never in source polling or per-frame selection. It does not create another

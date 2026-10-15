@@ -118,6 +118,23 @@ recovery. The CLI is not a database backup/restore or forensic custody system.
 Managed video retention is independent of configurable sampled JPEG retention (seven days by default) and
 the 2 GiB JPEG budget. Avoid manually altering active release files.
 
+Old, unselected prepared releases can be reviewed with the offline cleanup tool.
+It verifies release manifests and media hashes, preserves the selected release's
+complete rollback chain (and the prior running release when a restart is pending),
+and protects recently prepared releases referenced by ready upload receipts. It
+requires the processor, import/selection and upload locks to be free. Start with
+a dry run and inspect every candidate:
+
+```sh
+uv run --frozen --directory backend python prune_source_releases.py --days 30
+```
+
+Only after reviewing the inventory, add `--apply` to remove eligible releases.
+The allowed age is 30–365 days. Invalid or linked releases are retained and
+reported. This tool never removes the active rollback chain, source-selection
+history, upload receipts, configured footage outside the managed source root,
+or model files. Cleanup is operator initiated; no background source deletion runs.
+
 ## Validation
 
 [Source import validation](validation/source-import-validation.json) records two

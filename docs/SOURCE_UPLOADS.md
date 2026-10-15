@@ -75,9 +75,11 @@ preparation automatically.
 - Temporary uploads are removed after success, failure, cancellation or graceful
   shutdown. Normal cancellation targets only the owned process group. Ready
   releases and terminal receipts remain on disk; in-memory receipt cache is
-  bounded to 16. There is **no aggregate managed-video budget or automatic
-  video/receipt cleanup**. Forced kill/power loss may leave unreferenced staging.
-  Review host files while stopped before any manual cleanup.
+  bounded to 16. There is no automatic managed-video or receipt cleanup. The
+  offline `prune_source_releases.py` command can remove only old, verified,
+  unselected release directories after dry-run review; receipt files remain.
+  Forced kill/power loss may leave unreferenced staging. Review host files while
+  stopped before any manual cleanup.
 - No observations, configuration revisions or SQLite audit rows are created by
   preparation/selection. The manifest records the local reviewer/reason and
   conversion identity. Existing observation provenance is unchanged. Prepared
