@@ -102,11 +102,14 @@ class EvidenceSigning(unittest.TestCase):
     def test_cli_generates_keys_and_verifies_exported_manifest(self):
         script = Path(__file__).resolve().parents[1] / "backend" / "report_signing.py"
         with tempfile.TemporaryDirectory() as folder:
-            private, public, report_path = (Path(folder) / name for name in ("private.pem", "public.pem", "report.json"))
+            private, public, other_private, other_public, report_path = (
+                Path(folder) / name for name in ("private.pem", "public.pem", "other-private.pem", "other-public.pem", "report.json")
+            )
             generated = subprocess.run(
                 [sys.executable, str(script), "generate", "--private-key", str(private), "--public-key", str(public)],
                 check=True, capture_output=True, text=True,
             )
+            generate_key_pair(other_private, other_public)
             self.assertIn("public-key SHA-256", generated.stdout)
             report = {"report_id": "EVD-CLI-TEST", "version": 5, "value": 7, "signature": None}
             with patch.dict(os.environ, {"AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE": str(private)}):
@@ -114,7 +117,8 @@ class EvidenceSigning(unittest.TestCase):
             report["package_hash"] = hashlib.sha256(canonical_json(report).encode()).hexdigest()
             report_path.write_text(json.dumps(report))
             verified = subprocess.run(
-                [sys.executable, str(script), "verify", "--report", str(report_path), "--public-key", str(public)],
+                [sys.executable, str(script), "verify", "--report", str(report_path),
+                 "--public-key", str(public), "--public-key", str(other_public)],
                 check=True, capture_output=True, text=True,
             )
             self.assertIn("VALID report=EVD-CLI-TEST", verified.stdout)
