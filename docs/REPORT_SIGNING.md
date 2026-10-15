@@ -46,14 +46,41 @@ uv run --frozen --directory backend python report_signing.py verify \
   --public-key /srv/ai26-trusted-keys/report-signing-public.pem
 ```
 
+### Rotate a signing key without losing old-report verification
+
+Report signatures carry the signing public-key fingerprint. Generate a new pair
+without overwriting the old one, distribute the new public key and its
+fingerprint through the same independent trusted channel, then point
+`AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE` at the new private key and recreate the
+API. Set a distinct `AI26_EVIDENCE_SIGNING_KEY_ID` if operators use human-readable
+key names. New reports use the new key; existing reports remain unchanged.
+
+Verify reports from either period by supplying every public key that remains
+trusted. Repeat `--public-key` for each retained key:
+
+```sh
+uv run --frozen --directory backend python report_signing.py verify \
+  --report EVD-0123456789AB.json \
+  --public-key /srv/ai26-trusted-keys/report-signing-2026.pem \
+  --public-key /srv/ai26-trusted-keys/report-signing-2027.pem
+```
+
+The verifier selects the key whose SHA-256 fingerprint is embedded in the
+signature and rejects a report when no supplied trusted key matches. Keep old
+public keys for as long as reports signed by them must remain verifiable. After
+confirming the new key is signing reports, retire the old private key according
+to local policy. Removing an old public key from the trusted set revokes trust
+for reports signed by it; this prototype does not publish revocation status,
+record key changes in the application audit chain, or distribute trust bundles.
+
 Verification checks the package digest, the public-key fingerprint, and the
 signature over the canonical report payload. A valid signature proves that those
 bytes were signed by the private key corresponding to the trusted public key. It
 does not prove the footage is genuine, OCR is accurate, a vehicle identity is
 correct, the signer is an authenticated investigator, or the evidence was
-continuously held. Maintain trusted public keys across rotation; the current
-prototype does not automate key revocation, rotation, remote trust distribution,
-or externally checkpointed audit history.
+continuously held. Rotation requires an operator to distribute the new public
+key and retain old trust anchors; remote trust distribution and externally
+checkpointed audit history remain separate.
 
 Older report snapshots remain readable and are not retroactively signed. CI and
 isolated tests cover signed/unsigned manifests, tampering, key mismatch, private

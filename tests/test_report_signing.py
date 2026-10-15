@@ -54,8 +54,31 @@ class EvidenceSigning(unittest.TestCase):
             with patch.dict(os.environ, {"AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE": str(first_private)}):
                 report["signature"] = sign_report(report)
             report["package_hash"] = hashlib.sha256(canonical_json(report).encode()).hexdigest()
-            with self.assertRaisesRegex(EvidenceSigningError, "fingerprint does not match"):
+            with self.assertRaisesRegex(EvidenceSigningError, "No trusted public key fingerprint"):
                 verify_report(report, second_public)
+
+    def test_trusted_key_set_preserves_verification_across_rotation(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            old_private, old_public = root / "old.pem", root / "old.pub.pem"
+            new_private, new_public = root / "new.pem", root / "new.pub.pem"
+            generate_key_pair(old_private, old_public)
+            generate_key_pair(new_private, new_public)
+
+            def report_for(private, report_id):
+                report = {"report_id": report_id, "version": 5, "signature": None}
+                with patch.dict(os.environ, {"AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE": str(private)}):
+                    report["signature"] = sign_report(report)
+                report["package_hash"] = hashlib.sha256(canonical_json(report).encode()).hexdigest()
+                return report
+
+            old_report = report_for(old_private, "EVD-OLD")
+            new_report = report_for(new_private, "EVD-NEW")
+            trusted = [old_public, new_public]
+            self.assertEqual(verify_report(old_report, trusted)["status"], "valid")
+            self.assertEqual(verify_report(new_report, trusted)["status"], "valid")
+            with self.assertRaisesRegex(EvidenceSigningError, "No trusted public key"):
+                verify_report(old_report, [new_public])
 
     def test_private_key_permissions_and_key_generation_never_overwrites(self):
         with tempfile.TemporaryDirectory() as folder:

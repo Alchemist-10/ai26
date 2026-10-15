@@ -108,7 +108,7 @@ def generate_key_pair(private_path, public_path):
 
 
 def verify_report(report, trusted_public_key_path):
-    """Verify report digest and Ed25519 signature against an out-of-band key."""
+    """Verify against one trusted PEM path or a set of trusted public-key paths."""
     if not isinstance(report, dict):
         raise EvidenceSigningError("Evidence report must be a JSON object")
     signature = report.get("signature")
@@ -127,15 +127,28 @@ def verify_report(report, trusted_public_key_path):
     packaged = {key: value for key, value in report.items() if key != "package_hash"}
     if sha256(canonical_json(packaged).encode("utf-8")).hexdigest() != package_hash:
         raise EvidenceSigningError("Evidence report package hash does not match")
+    if isinstance(trusted_public_key_path, (str, os.PathLike)):
+        trusted_paths = [trusted_public_key_path]
+    else:
+        trusted_paths = list(trusted_public_key_path)
+    if not trusted_paths:
+        raise EvidenceSigningError("At least one trusted public key is required")
+    trusted_keys = {}
     try:
-        public_key = serialization.load_pem_public_key(Path(trusted_public_key_path).read_bytes())
+        for path in trusted_paths:
+            public_key = serialization.load_pem_public_key(Path(path).read_bytes())
+            if not isinstance(public_key, Ed25519PublicKey):
+                raise EvidenceSigningError("Trusted public key must use Ed25519")
+            fingerprint = hashlib.sha256(_public_raw(public_key)).hexdigest()
+            trusted_keys[fingerprint] = public_key
+    except EvidenceSigningError:
+        raise
     except (OSError, ValueError, TypeError) as exc:
         raise EvidenceSigningError("Trusted public key is unavailable or invalid") from exc
-    if not isinstance(public_key, Ed25519PublicKey):
-        raise EvidenceSigningError("Trusted public key must use Ed25519")
-    fingerprint = hashlib.sha256(_public_raw(public_key)).hexdigest()
-    if reported_fingerprint != fingerprint:
-        raise EvidenceSigningError("Trusted public key fingerprint does not match report signature")
+    fingerprint = reported_fingerprint
+    public_key = trusted_keys.get(fingerprint)
+    if public_key is None:
+        raise EvidenceSigningError("No trusted public key fingerprint matches report signature")
     try:
         if not isinstance(signature.get("signature_base64"), str):
             raise ValueError("signature_base64 is missing")
@@ -155,7 +168,8 @@ def main(argv=None):
     generate.add_argument("--public-key", required=True)
     verify = commands.add_parser("verify", help="verify a signed report against a trusted public key")
     verify.add_argument("--report", required=True)
-    verify.add_argument("--public-key", required=True)
+    verify.add_argument("--public-key", action="append", required=True,
+                        help="trusted Ed25519 public key; repeat during/after rotation to retain old verification")
     args = parser.parse_args(argv)
     try:
         if args.command == "generate":
