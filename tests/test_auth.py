@@ -299,6 +299,27 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.login().status_code, 200)
         self.assertEqual(self.client.get("/api/metrics").status_code, 200)
 
+    def test_onvif_discovery_is_admin_only_and_audited(self):
+        self.create("analyst_one", "analyst")
+        analyst_login=self.login("analyst_one")
+        context={"X-AI26-Case-ID":"CASE-2026-01","X-AI26-Purpose":"system_test"}
+        response=self.client.post("/api/cameras/onvif/discover",json={"timeout_seconds":0.2},headers={
+            **context,CSRF_HEADER:analyst_login.json()["csrf_token"]})
+        self.assertEqual(response.status_code,403)
+
+        self.create()
+        admin_login=self.login()
+        expected={"devices":[],"probe_timeout_seconds":0.2,"elapsed_seconds":0.2}
+        with patch.object(main,"discover_onvif",return_value=expected) as discover:
+            response=self.client.post("/api/cameras/onvif/discover",json={"timeout_seconds":0.2},headers={
+                "X-AI26-Case-ID":"CASE-ADMIN","X-AI26-Purpose":"system_test",
+                CSRF_HEADER:admin_login.json()["csrf_token"]})
+        self.assertEqual(response.status_code,200,response.text)
+        self.assertEqual(response.json(),expected)
+        discover.assert_called_once_with(0.2)
+        audit=self.repo.db.execute("SELECT count(*) FROM audit WHERE action='sensitive_access' AND json_extract(data,'$.route')='/api/cameras/onvif/discover'").fetchone()[0]
+        self.assertEqual(audit,1)
+
     def test_metrics_scraper_token_is_read_only_and_limited_to_metrics_route(self):
         token="a"*64
         token_file=Path(self.folder.name)/"metrics-token"

@@ -130,7 +130,14 @@ are host arrival times and are labeled `capture_arrival_clock`; no camera/NVR
 clock synchronization is claimed. Use RTSP over a trusted camera network (or
 RTSPS where supported) and rotate credentials at the camera. ONVIF discovery,
 camera clock synchronization, live failover testing on actual hardware and
-credential lifecycle management remain open work.
+credential lifecycle management remain open work. An administrator can use
+Camera settings → **Discover ONVIF cameras** to send a bounded two-second
+WS-Discovery probe to the local network. The API returns device service
+addresses and scopes but does not connect to the device, retrieve stream URLs,
+save credentials or change source mappings. Discovery needs host/network support
+for IPv4 multicast on UDP 3702; actual device/NVR interoperability remains to be
+verified. The endpoint is administrator-only when authentication is enabled and
+is recorded in the sensitive-access audit log.
 
 For a local Prometheus instance and starter alert rules, create a token file and
 grant the backend and Prometheus containers read access through a shared host

@@ -42,6 +42,10 @@ class ReviewRequest(BaseModel):
             raise ValueError('An escalation target is only valid for escalated state')
         return self
 
+class OnvifDiscoveryRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    timeout_seconds: float = Field(default=2.0, ge=0.2, le=5.0)
+
 class ZoneRule(BaseModel):
     camera_id: str
     # normalized image coordinates: left, top, right, bottom

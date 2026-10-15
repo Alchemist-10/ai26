@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react"
-import { ApiError, getCameraConfiguration, saveCameraConfiguration, type Camera, type CameraConfiguration } from "@/lib/api"
+import { ApiError, discoverOnvifCameras, getCameraConfiguration, saveCameraConfiguration, type Camera, type CameraConfiguration, type OnvifDiscoveryResult } from "@/lib/api"
 import CameraSources from "@/components/settings/CameraSources"
 
 const control = "w-full min-w-0 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-base text-white disabled:opacity-50"
@@ -16,7 +16,7 @@ function metadataChanged(draft: Draft, config: CameraConfiguration) {
 function errorText(error: unknown) { return error instanceof Error ? error.message : "Camera API unavailable" }
 function savedAt(config: CameraConfiguration) { return config.updated_at ? new Date(config.updated_at * 1000).toLocaleString() : "Repository defaults" }
 
-export default function CameraSettings({ cameras, initialCamera }: { cameras: Camera[]; initialCamera: string }) {
+export default function CameraSettings({ cameras, initialCamera, isAdmin }: { cameras: Camera[]; initialCamera: string; isAdmin: boolean }) {
   const [selected, setSelected] = useState(initialCamera)
   const [config, setConfig] = useState<CameraConfiguration | null>(null)
   const [draft, setDraft] = useState<Draft>(emptyDraft)
@@ -31,6 +31,9 @@ export default function CameraSettings({ cameras, initialCamera }: { cameras: Ca
   const [revision, setRevision] = useState("1")
   const [history, setHistory] = useState<CameraConfiguration | null>(null)
   const [historyError, setHistoryError] = useState("")
+  const [discovering, setDiscovering] = useState(false)
+  const [discovery, setDiscovery] = useState<OnvifDiscoveryResult | null>(null)
+  const [discoveryError, setDiscoveryError] = useState("")
   const changed = config ? metadataChanged(draft, config) : false
   const dirty = changed || draft.reviewer !== "" || draft.reason !== ""
   const camera = cameras.find(item => item.id === selected)
@@ -113,12 +116,36 @@ export default function CameraSettings({ cameras, initialCamera }: { cameras: Ca
     catch (error) { setHistoryError(errorText(error)) }
     finally { setBusy(false) }
   }
+  async function discoverCameras() {
+    setDiscovering(true); setDiscoveryError(""); setDiscovery(null)
+    try { setDiscovery(await discoverOnvifCameras(2)) }
+    catch (error) { setDiscoveryError(errorText(error)) }
+    finally { setDiscovering(false) }
+  }
 
   return (
     <section aria-labelledby="camera-settings-title" className="h-full overflow-y-auto bg-black p-4 text-white sm:p-6">
       <div className="mx-auto max-w-5xl pb-8">
         <h1 id="camera-settings-title" className="text-2xl font-semibold">Camera settings</h1>
         <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Inspect source footage, edit location metadata and review saved revisions. Metadata changes apply to future observations; existing evidence keeps the revision captured with it.</p>
+        {isAdmin && <section aria-labelledby="onvif-discovery-title" className="mt-5 rounded border border-zinc-800 bg-zinc-950 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div><h2 id="onvif-discovery-title" className="font-semibold">Find ONVIF cameras on this network</h2>
+              <p className="mt-1 max-w-[70ch] text-sm text-zinc-300">Sends a two-second discovery probe to the local network. Discovery only lists device endpoints; it does not connect, save credentials or change camera sources.</p></div>
+            <button type="button" className={button} disabled={discovering} onClick={() => void discoverCameras()}>{discovering ? "Searching local network…" : "Discover ONVIF cameras"}</button>
+          </div>
+          {discoveryError && <p role="alert" className="mt-3 text-sm text-red-200">{discoveryError}</p>}
+          {discovery && <div className="mt-3" role="status" aria-live="polite">
+            <p className="text-sm text-zinc-300">Found {discovery.devices.length} device{discovery.devices.length === 1 ? "" : "s"} in {discovery.elapsed_seconds}s.</p>
+            {discovery.devices.length === 0 ? <p className="mt-2 text-sm text-zinc-400">No devices replied. Check that the camera and AI26 host share a network that allows WS-Discovery multicast.</p> :
+              <ul className="mt-2 divide-y divide-zinc-800">{discovery.devices.map((device, index) => <li key={device.endpoint_id ?? `${device.source_address}-${index}`} className="py-3 text-sm">
+                <p className="font-medium">{device.source_address}{device.endpoint_id ? ` · ${device.endpoint_id}` : ""}</p>
+                <ul className="mt-1 grid gap-1 break-all text-xs text-zinc-300">{device.service_addresses.map(address => <li key={address}><code>{address}</code></li>)}</ul>
+                {!!device.scopes.length && <p className="mt-1 break-all text-xs text-zinc-400">{device.scopes.join(" · ")}</p>}
+              </li>)}</ul>}
+            <p className="mt-2 text-xs text-zinc-400">Add a reviewed RTSP URL to the protected host-side source mapping after confirming the device. Do not paste camera credentials into this page.</p>
+          </div>}
+        </section>}
         <div className="mt-6 grid gap-3 border-b border-zinc-800 pb-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <label className="block text-sm font-medium" htmlFor="settings-camera">Camera
             <select id="settings-camera" className={`${control} mt-2`} value={selected} disabled={dirty || busy || loading || sourceBusy} aria-describedby="camera-selection-help" onChange={event => selectCamera(event.target.value)}>

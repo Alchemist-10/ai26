@@ -35,6 +35,16 @@ export interface CameraConfigurationUpdate {
   reviewer: string
   reason: string
 }
+export interface OnvifDiscoveryResult {
+  devices: Array<{
+    endpoint_id: string | null
+    source_address: string
+    service_addresses: string[]
+    scopes: string[]
+  }>
+  probe_timeout_seconds: number
+  elapsed_seconds: number
+}
 export interface CameraPairConstraint {
   from_camera: string
   to_camera: string
@@ -396,6 +406,13 @@ export function getCameraSourceStatus(cameraId: string, signal?: AbortSignal): P
 export function saveCameraConfiguration(cameraId: string, change: CameraConfigurationUpdate): Promise<CameraConfiguration> {
   return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/configuration`, {
     method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(change),
+  })
+}
+
+export function discoverOnvifCameras(timeoutSeconds = 2): Promise<OnvifDiscoveryResult> {
+  return requestJson("/api/cameras/onvif/discover", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ timeout_seconds: timeoutSeconds }),
   })
 }
 

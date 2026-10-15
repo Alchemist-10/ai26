@@ -51,8 +51,9 @@ as the app. See [SOURCE_IMPORT.md](SOURCE_IMPORT.md) and
 While an upload/preparation is active, source refresh and camera selection are
 disabled until a terminal job check. An idle refresh preserves both upload and
 metadata drafts. Browser [selection and retained-parent rollback](SOURCE_SELECTION.md) are now available.
-Host restart is still required for activation. New camera creation and RTSP remain
-pending. Authenticated operator attribution is available when authentication is
+Host restart is still required for activation. New camera creation remains
+pending; RTSP/RTSPS input for existing camera IDs is supported through the
+protected host-side mapping described in deployment docs. Authenticated operator attribution is available when authentication is
 enabled; unauthenticated local mode continues to accept reviewer claims.
 
 ## API contract and bounded work

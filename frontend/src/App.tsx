@@ -141,7 +141,7 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
         {settingsVisited && (
           <div hidden={page !== "settings"} className="h-full">
             <Suspense fallback={<p role="status" className="p-6 text-zinc-300">Loading camera settings…</p>}>
-              <CameraSettings cameras={cameras} initialCamera={focused} />
+              <CameraSettings cameras={cameras} initialCamera={focused} isAdmin={!user || user.role === "admin"} />
             </Suspense>
           </div>
         )}

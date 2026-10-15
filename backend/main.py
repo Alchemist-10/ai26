@@ -33,13 +33,14 @@ from report_signing import EvidenceSigningError
 from artifacts import artifact_bytes
 from maintenance import Maintenance
 from source_status import source_status
+from onvif_discovery import discover_onvif
 from source_uploads import uploads, parse_metadata, UploadBusy
 from starlette.requests import ClientDisconnect
 from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
-from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, CameraPairConstraintUpdate, OnvifDiscoveryRequest
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 from auth_key_lock import api_lifetime_lock, verify_active_mfa_key, verify_active_privacy_key
 
@@ -325,6 +326,13 @@ def list_cameras():
     return [{**c,'source_mode':'live' if processor.source_is_live(c['id']) else 'recorded',
              'source_available':processor.source_available(c['id']),
              'health':health[c['id']]} for c in store.camera_catalog()]
+
+@app.post('/api/cameras/onvif/discover')
+def onvif_discovery(body:OnvifDiscoveryRequest):
+    try:
+        return discover_onvif(body.timeout_seconds)
+    except OSError as exc:
+        raise HTTPException(503,'Local ONVIF discovery is unavailable on this host') from exc
 
 @app.get('/api/cameras/{camera_id}/configuration')
 def camera_configuration(camera_id:str, revision:Annotated[int|None,Query(ge=1)]=None):
