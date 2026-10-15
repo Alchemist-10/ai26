@@ -165,6 +165,9 @@ class Authentication(unittest.TestCase):
         queue_two=other.get("/api/alerts/escalations",headers={k:v for k,v in headers_two.items() if k!=CSRF_HEADER})
         self.assertEqual(queue_two.status_code,200)
         self.assertEqual(queue_two.json()["items"],[])
+        compatibility_view=other.get("/api/alerts?include_escalated=true",headers={k:v for k,v in headers_two.items() if k!=CSRF_HEADER})
+        self.assertEqual(compatibility_view.status_code,200)
+        self.assertNotIn(alert_id,[item["alert_id"] for item in compatibility_view.json()])
         cross_case=other.post(f"/api/alerts/{alert_id}/review",json={
             "state":"acknowledged","reviewer":"Operator Two","note":"Cross-case attempt",
         },headers=headers_two)
