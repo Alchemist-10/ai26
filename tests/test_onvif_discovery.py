@@ -72,6 +72,13 @@ class OnvifDiscoveryTests(unittest.TestCase):
                                   b"http://user:password@192.168.1.20/onvif/device_service")
         self.assertIsNone(parse_probe_match(unsafe, "192.168.1.20"))
 
+    def test_probe_query_tokens_are_not_returned(self):
+        response = RESPONSE.replace(b"http://192.168.1.20/onvif/device_service",
+                                    b"http://192.168.1.20/onvif/device_service?token=private")
+        device = parse_probe_match(response, "192.168.1.20")
+        self.assertEqual(device["service_addresses"], ["http://192.168.1.20/onvif/device_service"])
+        self.assertNotIn("private", str(device))
+
     def test_probe_uses_ttl_one_collects_and_deduplicates_local_devices(self):
         probe_socket = ProbeSocket()
         with patch("onvif_discovery.time.monotonic", side_effect=[1.0, 1.1]):

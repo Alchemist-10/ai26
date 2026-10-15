@@ -6,7 +6,7 @@ import socket
 import time
 import uuid
 import xml.etree.ElementTree as ET
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 
 MULTICAST_ADDRESS = "239.255.255.250"
@@ -52,7 +52,8 @@ def _usable_xaddrs(value: str | None) -> list[str]:
                 continue
         except ValueError:
             continue
-        results.append(candidate)
+        # Probe responses are unauthenticated; never echo URL query tokens into the UI.
+        results.append(urlunsplit(parsed._replace(query="", fragment="")))
         if len(results) == 8:
             break
     return results
