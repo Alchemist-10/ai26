@@ -63,8 +63,8 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(service.user_count(), 1)
                     self.assertIsNotNone(service.login("admin", "Bootstrap-Correct-Horse-42", "testhost")[0])
                     self.assertIsNone(service.login("admin", "Different-Correct-Horse-42", "otherhost")[0])
-                self.assertEqual(repository.schema_version, 12)
-                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 12)
+                self.assertEqual(repository.schema_version, 13)
+                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 13)
             finally:
                 repository.close()
 
@@ -133,6 +133,45 @@ class Authentication(unittest.TestCase):
         self.assertEqual(stored["reviewer"], "admin")
         self.assertTrue(stored["reviewer_authenticated"])
         self.assertEqual(self.repo.verify_audit_chain()["status"], "valid")
+
+    def test_active_escalations_are_bound_to_case_and_other_case_cannot_resolve(self):
+        password="Correct-Horse-Battery-Staple-26"
+        self.auth.create_user("operator_one",password,"operator",case_ids=["CASE-ALPHA"])
+        self.auth.create_user("operator_two",password,"operator",case_ids=["CASE-BRAVO"])
+        alert_id="case-scoped-escalation"
+        self.repo.put_alert({"alert_id":alert_id,"ts":time.time(),"type":"watchlist match","summary":"Local fixture"})
+
+        login_one=self.client.post("/api/auth/login",json={"username":"operator_one","password":password})
+        self.assertEqual(login_one.status_code,200)
+        headers_one={
+            CSRF_HEADER:login_one.json()["csrf_token"],
+            "X-AI26-Case-ID":"CASE-ALPHA","X-AI26-Purpose":"incident_response",
+        }
+        escalated=self.client.post(f"/api/alerts/{alert_id}/review",json={
+            "state":"escalated","reviewer":"Claimed Operator","escalation_target":"Duty desk","note":"Needs follow-up",
+        },headers=headers_one)
+        self.assertEqual(escalated.status_code,200)
+        self.assertEqual(escalated.json()["case_id"],"CASE-ALPHA")
+        queue_one=self.client.get("/api/alerts/escalations",headers={k:v for k,v in headers_one.items() if k!=CSRF_HEADER})
+        self.assertEqual([item["alert_id"] for item in queue_one.json()["items"]],[alert_id])
+
+        other=TestClient(main.app,base_url="https://testserver")
+        login_two=other.post("/api/auth/login",json={"username":"operator_two","password":password})
+        self.assertEqual(login_two.status_code,200)
+        headers_two={
+            CSRF_HEADER:login_two.json()["csrf_token"],
+            "X-AI26-Case-ID":"CASE-BRAVO","X-AI26-Purpose":"incident_response",
+        }
+        queue_two=other.get("/api/alerts/escalations",headers={k:v for k,v in headers_two.items() if k!=CSRF_HEADER})
+        self.assertEqual(queue_two.status_code,200)
+        self.assertEqual(queue_two.json()["items"],[])
+        cross_case=other.post(f"/api/alerts/{alert_id}/review",json={
+            "state":"acknowledged","reviewer":"Operator Two","note":"Cross-case attempt",
+        },headers=headers_two)
+        self.assertEqual(cross_case.status_code,404)
+        self.assertEqual(self.client.get("/api/alerts/escalations",headers={k:v for k,v in headers_one.items() if k!=CSRF_HEADER}).json()["items"][0]["case_id"],"CASE-ALPHA")
+        self.assertEqual(self.repo.verify_audit_chain()["status"],"valid")
+        other.close()
 
     def test_self_service_password_change_checks_current_password_and_revokes_sessions(self):
         self.create()

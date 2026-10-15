@@ -477,20 +477,26 @@ def get_traffic_baselines(days:Annotated[int,Query(ge=7,le=90)]=28):
     except (ValueError,KeyError) as exc: raise HTTPException(422,'Traffic baseline configuration or timezone is invalid') from exc
 
 @app.get('/api/alerts')
-def alerts(since:TimeFilter=None,until:TimeFilter=None,include_escalated:bool=False):
+def alerts(request:Request,since:TimeFilter=None,until:TimeFilter=None,include_escalated:bool=False):
     interval(since,until)
     recent=derive_alerts(since,until)
+    actor=getattr(request.state,'actor',None)
+    scope_case_id=request.state.case_id if actor and actor['role']!='admin' else None
+    if scope_case_id is not None:
+        recent=[alert for alert in recent if alert.get('state')!='escalated' or alert.get('case_id')==scope_case_id]
     if not include_escalated: return redact_analytics_payload(recent)
     known={a['alert_id'] for a in recent}
-    return redact_analytics_payload(recent+[a for a in store.escalated_alerts() if a['alert_id'] not in known])
+    return redact_analytics_payload(recent+[a for a in store.escalated_alerts(scope_case_id=scope_case_id) if a['alert_id'] not in known])
 
 @app.get('/api/alerts/escalations')
-def escalations(limit:Annotated[int,Query(ge=1,le=100)]=50,
+def escalations(request:Request,limit:Annotated[int,Query(ge=1,le=100)]=50,
                 before_ts:Annotated[float|None,Query()]=None,
                 before_id:Annotated[str|None,Query(min_length=1,max_length=200)]=None):
     if (before_ts is None) != (before_id is None) or (before_ts is not None and not math.isfinite(before_ts)):
         raise HTTPException(422,'Both finite before_ts and before_id are required for an escalation cursor')
-    page=store.escalated_alerts_page(limit,(before_ts,before_id) if before_ts is not None else None)
+    actor=getattr(request.state,'actor',None)
+    scope_case_id=(request.state.case_id if actor and actor['role']!='admin' else None)
+    page=store.escalated_alerts_page(limit,(before_ts,before_id) if before_ts is not None else None,scope_case_id)
     return redact_analytics_payload(page)
 
 @app.post('/api/alerts/{alert_id}/review')
@@ -503,7 +509,12 @@ def review(alert_id:str,body:ReviewRequest,request:Request):
     else:
         raise HTTPException(422,'Reviewer name is required in local mode')
     data={**body.model_dump(),'reviewer':reviewer,'reviewer_authenticated':bool(actor),'ts':time.time()}
-    if not store.review_alert(alert_id,data): raise HTTPException(404,'Unknown alert')
+    if actor:
+        data['case_id']=request.state.case_id
+    if not store.review_alert(alert_id,data,
+                              expected_case_id=request.state.case_id if actor else None,
+                              administrator=bool(actor and actor['role']=='admin')):
+        raise HTTPException(404,'Unknown alert')
     return {'alert_id':alert_id,**data}
 
 @app.get('/api/rules')

@@ -37,7 +37,7 @@
 
 `schemas.py` validates finite timestamps/confidence, ordered boxes, query strings
 and rule configuration. Invalid requests return a consistent JSON error envelope.
-SQLite schema version 12 has users, per-case grants, hashed authentication sessions, encrypted TOTP enrollment, one-use recovery-code hashes and TOTP replay counters,
+SQLite schema version 13 has users, per-case grants, hashed authentication sessions, encrypted TOTP enrollment, one-use recovery-code hashes and TOTP replay counters,
 atomic authentication-attempt limits, observations, passages, alerts, reports, settings, hash-chained audit,
 report artifact leases, camera revisions, directed camera-pair travel constraints and immutable
 queried journey-link decisions, plus 90-day live-source traffic buckets. Existing
@@ -48,6 +48,10 @@ and method. New observations retain camera metadata snapshots. Legacy reads
 explicitly use current-catalog fallback. See [persistence contracts](PERSISTENCE.md)
 for API edits, version history and limits. The repository is intended for a
 single local API process, not a distributed ingestion deployment.
+
+Authenticated active alert escalations retain the case used when they were
+created; non-admin users can list and resolve only that case's queue. This does
+not make the underlying alerts or observations row-level case isolated.
 
 Evidence report version 5 can optionally include an Ed25519 signature. Signing
 uses a protected host-mounted private key; an offline verifier checks the report

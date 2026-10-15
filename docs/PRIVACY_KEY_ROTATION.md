@@ -30,7 +30,7 @@ stopped.
        --new-key /absolute/path/to/ai26-privacy-next.key
    ```
 
-   The database must be at schema 12 and its audit chain must verify. The tool
+   The database must be at the current schema version and its audit chain must verify. The tool
    refuses a running API or another offline key operation, writes a protected SQLite
    pre-rotation backup, and appends a hash-chained record with old/new key
    fingerprints. It does not rewrite raw plate values or historical reports.

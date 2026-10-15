@@ -10,6 +10,14 @@ the submitted freeform name is ignored. Without authentication, the local
 reviewer name remains an operator claim and is labeled as such. The prototype
 has no external notification delivery.
 
+Authenticated escalations are scoped to the case selected for the review. A
+non-admin account can see and resolve active escalations only in its current
+case; administrators can inspect and resolve all cases. Legacy active
+escalations created before this scope was added remain unscoped and are visible
+to administrators for resolution. Local unauthenticated mode remains a shared
+queue. This scope applies to active escalation handoffs only; it does not make
+the underlying alerts, observations, or evidence row-level case isolated.
+
 The alert panel loads recent rule alerts and active escalations. The escalation
 queue uses stable timestamp-and-ID cursor pages, so older unresolved handoffs
 remain reachable beyond both the recent-alert window and the first 200 entries.

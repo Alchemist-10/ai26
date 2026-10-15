@@ -22,7 +22,7 @@ class Repository:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version > 12:
+        if version > 13:
             self.db.close()
             raise RuntimeError('Database version is newer than this application')
         with self.db:
@@ -170,9 +170,17 @@ class Repository:
                     PRAGMA user_version=12;
                     COMMIT;
                 ''')
+            if version < 13:
+                self.db.executescript('''
+                    BEGIN IMMEDIATE;
+                    ALTER TABLE alerts ADD COLUMN scope_case_id TEXT;
+                    CREATE INDEX alert_escalation_scope_ts ON alerts(scope_case_id,state,ts DESC,id DESC);
+                    PRAGMA user_version=13;
+                    COMMIT;
+                ''')
         with self.db:
             self.db.execute('CREATE INDEX IF NOT EXISTS audit_subject_action_time ON audit(subject,action,ts)')
-        self.schema_version = 12
+        self.schema_version = 13
         # Seed only missing IDs. Restart never overwrites operator metadata or its history.
         from cameras import CAMERAS
         with self.lock, self.db:
@@ -469,41 +477,57 @@ class Repository:
     def alerts(self, since=0):
         with self.lock:
             rows = self.db.execute('SELECT * FROM alerts WHERE ts>=? ORDER BY ts DESC LIMIT 200', (since,)).fetchall()
-        return [{**json.loads(r['data']), 'state': r['state'], 'review': json.loads(r['review']) if r['review'] else None} for r in rows]
+        return [self._alert_row(row) for row in rows]
 
-    def escalated_alerts(self, limit=200):
-        with self.lock:
-            rows = self.db.execute("SELECT * FROM alerts WHERE state='escalated' ORDER BY ts DESC,id DESC LIMIT ?", (limit,)).fetchall()
-        return [{**json.loads(r['data']), 'state': r['state'], 'review': json.loads(r['review']) if r['review'] else None} for r in rows]
+    @staticmethod
+    def _alert_row(row):
+        alert = {**json.loads(row['data']), 'state': row['state'],
+                 'review': json.loads(row['review']) if row['review'] else None}
+        if row['scope_case_id'] is not None:
+            alert['case_id'] = row['scope_case_id']
+        return alert
 
-    def escalated_alerts_page(self, limit=50, before=None):
+    def escalated_alerts(self, limit=200, scope_case_id=None):
         with self.lock:
-            if before is None:
-                rows = self.db.execute(
-                    "SELECT * FROM alerts WHERE state='escalated' ORDER BY ts DESC,id DESC LIMIT ?",
-                    (limit + 1,),
-                ).fetchall()
+            if scope_case_id is None:
+                rows = self.db.execute("SELECT * FROM alerts WHERE state='escalated' ORDER BY ts DESC,id DESC LIMIT ?", (limit,)).fetchall()
             else:
+                rows = self.db.execute("SELECT * FROM alerts WHERE state='escalated' AND scope_case_id=? ORDER BY ts DESC,id DESC LIMIT ?", (scope_case_id,limit)).fetchall()
+        return [self._alert_row(row) for row in rows]
+
+    def escalated_alerts_page(self, limit=50, before=None, scope_case_id=None):
+        with self.lock:
+            clauses = ["state='escalated'"]
+            args = []
+            if scope_case_id is not None:
+                clauses.append('scope_case_id=?'); args.append(scope_case_id)
+            if before is not None:
                 before_ts, before_id = before
-                rows = self.db.execute(
-                    "SELECT * FROM alerts WHERE state='escalated' AND (ts<? OR (ts=? AND id<?)) "
-                    "ORDER BY ts DESC,id DESC LIMIT ?",
-                    (before_ts, before_ts, before_id, limit + 1),
-                ).fetchall()
+                clauses.append('(ts<? OR (ts=? AND id<?))')
+                args.extend((before_ts, before_ts, before_id))
+            rows = self.db.execute(
+                'SELECT * FROM alerts WHERE ' + ' AND '.join(clauses) +
+                ' ORDER BY ts DESC,id DESC LIMIT ?', [*args, limit + 1],
+            ).fetchall()
         has_more = len(rows) > limit
         selected = rows[:limit]
-        items = [{**json.loads(r['data']), 'state': r['state'], 'review': json.loads(r['review']) if r['review'] else None} for r in selected]
+        items = [self._alert_row(row) for row in selected]
         last = selected[-1] if selected else None
         next_cursor = {'ts': last['ts'], 'id': last['id']} if has_more and last else None
         return {'items': items, 'next_cursor': next_cursor}
 
-    def review_alert(self, alert_id, review):
+    def review_alert(self, alert_id, review, *, expected_case_id=None, administrator=False):
         with self.lock, self.db:
-            old = self.db.execute('SELECT review FROM alerts WHERE id=?', (alert_id,)).fetchone()
+            old = self.db.execute('SELECT state,review,scope_case_id FROM alerts WHERE id=?', (alert_id,)).fetchone()
             if not old: return False
-            history = json.loads(old[0]) if old[0] else []
+            if (expected_case_id is not None and not administrator and old['state']=='escalated'
+                    and old['scope_case_id'] != expected_case_id):
+                return False
+            history = json.loads(old['review']) if old['review'] else []
             history.append(review)
-            self.db.execute('UPDATE alerts SET state=?,review=? WHERE id=?', (review['state'], canonical_json(history), alert_id))
+            scope_case_id = review.get('case_id') if review['state']=='escalated' else None
+            self.db.execute('UPDATE alerts SET state=?,review=?,scope_case_id=? WHERE id=?',
+                            (review['state'], canonical_json(history), scope_case_id, alert_id))
             self._append_audit(review['ts'],'alert_review',alert_id,review)
         return True
 

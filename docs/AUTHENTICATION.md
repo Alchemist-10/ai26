@@ -85,6 +85,12 @@ MFA key is configured.
 Administrators can manage users, case grants, roles, account status, and password
 resets through the protected account-management screen.
 
+Active alert escalations are stored with the case selected when they are
+created. Non-admin users can list and resolve only escalations in that case;
+administrators can review the full queue. This does not provide general
+row-level case isolation for alerts, observations or evidence, and legacy
+unscoped escalations remain administrator-managed.
+
 ## Authenticator MFA
 
 MFA is an optional extension to the auth overlay. Create a separate 32-byte key,
@@ -99,7 +105,7 @@ chmod 0400 /absolute/path/to/ai26-auth-mfa.key
 
 Start auth with MFA support by combining `compose.auth.yaml` and
 `compose.auth-mfa.yaml` and setting `AI26_AUTH_MFA_KEY_FILE`. MFA secrets are
-AES-GCM encrypted in schema 12; the database stores the last accepted TOTP
+AES-GCM encrypted in schema 13; the database stores the last accepted TOTP
 time-step so each authenticator code can be used only once. Counter updates are
 transactional, so simultaneous requests presenting the same code create at most
 one authenticated session. The key file must be protected and backed up securely.

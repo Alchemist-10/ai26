@@ -35,7 +35,7 @@ run while any API process owns the database.
        --recovery-output /absolute/path/to/secure/ai26-recovery-codes.json
    ```
 
-   The database must be at schema 12 and its audit chain must verify. The tool
+   The database must be at the current schema version and its audit chain must verify. The tool
    creates a mode-`0600` SQLite backup, re-encrypts every stored MFA secret,
    reissues recovery codes for enabled factors, revokes all sessions, and appends
    a hash-chained audit record with old/new key fingerprints. It never prints
