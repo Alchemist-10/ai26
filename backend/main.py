@@ -3,6 +3,7 @@ import hashlib
 import html
 import io
 import json
+import math
 import os
 import time
 import zipfile
@@ -482,6 +483,15 @@ def alerts(since:TimeFilter=None,until:TimeFilter=None,include_escalated:bool=Fa
     if not include_escalated: return redact_analytics_payload(recent)
     known={a['alert_id'] for a in recent}
     return redact_analytics_payload(recent+[a for a in store.escalated_alerts() if a['alert_id'] not in known])
+
+@app.get('/api/alerts/escalations')
+def escalations(limit:Annotated[int,Query(ge=1,le=100)]=50,
+                before_ts:Annotated[float|None,Query()]=None,
+                before_id:Annotated[str|None,Query(min_length=1,max_length=200)]=None):
+    if (before_ts is None) != (before_id is None) or (before_ts is not None and not math.isfinite(before_ts)):
+        raise HTTPException(422,'Both finite before_ts and before_id are required for an escalation cursor')
+    page=store.escalated_alerts_page(limit,(before_ts,before_id) if before_ts is not None else None)
+    return redact_analytics_payload(page)
 
 @app.post('/api/alerts/{alert_id}/review')
 def review(alert_id:str,body:ReviewRequest,request:Request):

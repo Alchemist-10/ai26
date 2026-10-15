@@ -476,6 +476,27 @@ class Repository:
             rows = self.db.execute("SELECT * FROM alerts WHERE state='escalated' ORDER BY ts DESC,id DESC LIMIT ?", (limit,)).fetchall()
         return [{**json.loads(r['data']), 'state': r['state'], 'review': json.loads(r['review']) if r['review'] else None} for r in rows]
 
+    def escalated_alerts_page(self, limit=50, before=None):
+        with self.lock:
+            if before is None:
+                rows = self.db.execute(
+                    "SELECT * FROM alerts WHERE state='escalated' ORDER BY ts DESC,id DESC LIMIT ?",
+                    (limit + 1,),
+                ).fetchall()
+            else:
+                before_ts, before_id = before
+                rows = self.db.execute(
+                    "SELECT * FROM alerts WHERE state='escalated' AND (ts<? OR (ts=? AND id<?)) "
+                    "ORDER BY ts DESC,id DESC LIMIT ?",
+                    (before_ts, before_ts, before_id, limit + 1),
+                ).fetchall()
+        has_more = len(rows) > limit
+        selected = rows[:limit]
+        items = [{**json.loads(r['data']), 'state': r['state'], 'review': json.loads(r['review']) if r['review'] else None} for r in selected]
+        last = selected[-1] if selected else None
+        next_cursor = {'ts': last['ts'], 'id': last['id']} if has_more and last else None
+        return {'items': items, 'next_cursor': next_cursor}
+
     def review_alert(self, alert_id, review):
         with self.lock, self.db:
             old = self.db.execute('SELECT review FROM alerts WHERE id=?', (alert_id,)).fetchone()

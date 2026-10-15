@@ -165,6 +165,9 @@ export interface Alert {
   ts: number
 }
 
+export interface EscalationCursor { ts: number; id: string }
+export interface EscalationPage { items: Alert[]; next_cursor: EscalationCursor | null }
+
 export interface Stats {
   vehicle_passages: number
   per_camera_passages: Record<string, number>
@@ -413,6 +416,12 @@ export async function getEvents(params: { camera?: string; plate?: string; limit
 
 export async function getAlerts(signal?: AbortSignal, includeEscalated = false): Promise<Alert[]> {
   return requestJson<Alert[]>(`/api/alerts${includeEscalated ? "?include_escalated=true" : ""}`, { signal })
+}
+
+export async function getEscalations(cursor?: EscalationCursor | null, signal?: AbortSignal): Promise<EscalationPage> {
+  const params = new URLSearchParams({ limit: "50" })
+  if (cursor) { params.set("before_ts", String(cursor.ts)); params.set("before_id", cursor.id) }
+  return requestJson<EscalationPage>(`/api/alerts/escalations?${params}`, { signal })
 }
 
 export async function getStats(signal?: AbortSignal): Promise<Stats> {

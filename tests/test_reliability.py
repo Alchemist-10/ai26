@@ -443,6 +443,34 @@ class Reliability(unittest.TestCase):
         self.assertEqual(resolved.status_code,200)
         self.assertEqual(self.repo.escalated_alerts(),[])
 
+    def test_escalation_queue_cursor_pages_retain_all_active_handoffs(self):
+        with self.repo.lock, self.repo.db:
+            for index in range(205):
+                alert_id=f'queue-{index:03d}'
+                alert={'alert_id':alert_id,'ts':1000.0,'severity':'warning','type':'test',
+                       'summary':alert_id,'detail':'synthetic pagination fixture'}
+                self.repo.db.execute(
+                    "INSERT INTO alerts(id,ts,data,state,review) VALUES(?,?,?,?,?)",
+                    (alert_id,1000.0,canonical_json(alert),'escalated',canonical_json([{
+                        'reviewer':'Fixture','state':'escalated','escalation_target':'Queue','note':'','ts':1000.0
+                    }])),
+                )
+        first=self.client.get('/api/alerts/escalations',params={'limit':100})
+        self.assertEqual(first.status_code,200)
+        result=first.json(); ids=[item['alert_id'] for item in result['items']]
+        self.assertEqual(len(ids),100)
+        while result['next_cursor']:
+            result=self.client.get('/api/alerts/escalations',params={
+                'limit':100,'before_ts':result['next_cursor']['ts'],'before_id':result['next_cursor']['id'],
+            }).json()
+            ids.extend(item['alert_id'] for item in result['items'])
+        self.assertEqual(len(ids),205)
+        self.assertEqual(len(set(ids)),205)
+        self.assertEqual(ids[0],'queue-204')
+        self.assertEqual(ids[-1],'queue-000')
+        invalid=self.client.get('/api/alerts/escalations',params={'before_id':'queue-100'})
+        self.assertEqual(invalid.status_code,422)
+
     def test_rule_configuration_validated_and_persisted(self):
         valid={'watchlist':{'kl 07 ab 1234':'Review this local plate'},'restricted_cameras':['CAM-07'],'dwell_zones':[],
             'watchlist_conditions':{'kl 07 ab 1234':{'minimum_sightings':2,'history_window_seconds':120}},

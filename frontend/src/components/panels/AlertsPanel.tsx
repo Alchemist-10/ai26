@@ -1,6 +1,6 @@
 import { usePolling } from "@/hooks/usePolling"
 import { useEffect, useState } from "react"
-import { getAlerts, getCameras, getRules, reviewAlert, saveRules, type Alert, type Camera, type RuleConfig } from "@/lib/api"
+import { getAlerts, getCameras, getEscalations, getRules, reviewAlert, saveRules, type Alert, type Camera, type EscalationCursor, type RuleConfig } from "@/lib/api"
 import { DEMO_ALERTS } from "@/lib/demo"
 
 const button="rounded border border-zinc-700 px-3 py-2 text-sm hover:bg-zinc-800 disabled:opacity-50"
@@ -103,6 +103,10 @@ function toLocalDateTime(epoch:number){const d=new Date(epoch*1000);return `${d.
 
 export function AlertsPanel() {
   const [alerts,setAlerts]=useState<Alert[]>([])
+  const [escalations,setEscalations]=useState<Alert[]>([])
+  const [escalationPages,setEscalationPages]=useState<Array<EscalationCursor|null>>([null])
+  const [nextEscalationCursor,setNextEscalationCursor]=useState<EscalationCursor|null>(null)
+  const [loadingOlder,setLoadingOlder]=useState(false)
   const [demo,setDemo]=useState(false)
   const [reviewer,setReviewer]=useState("")
   const [note,setNote]=useState("")
@@ -111,20 +115,38 @@ export function AlertsPanel() {
   const [error,setError]=useState<string|null>(null)
   usePolling(async signal => {
     try {
-      const result = await getAlerts(signal,true)
-      if (!signal.aborted) { setAlerts(result); setError(null) }
+      const [recent,...pages] = await Promise.all([getAlerts(signal),...escalationPages.map(cursor=>getEscalations(cursor,signal))])
+      if (!signal.aborted) {
+        setAlerts(recent)
+        const unique = new Map(pages.flatMap(page=>page.items).map(alert=>[alert.alert_id,alert]).filter(([id])=>Boolean(id)) as [string,Alert][])
+        setEscalations([...unique.values()])
+        setNextEscalationCursor(pages.at(-1)?.next_cursor ?? null)
+        setError(null)
+      }
     } catch (e) { if (!signal.aborted) setError(e instanceof Error ? e.message : "Alerts failed") }
   }, 5000, !demo)
+  async function loadOlderEscalations(){
+    if(!nextEscalationCursor||loadingOlder)return
+    setLoadingOlder(true)
+    try{
+      const page=await getEscalations(nextEscalationCursor)
+      setEscalations(current=>[...new Map([...current,...page.items].filter(alert=>alert.alert_id).map(alert=>[alert.alert_id!,alert])).values()])
+      setEscalationPages(current=>[...current,nextEscalationCursor])
+      setNextEscalationCursor(page.next_cursor)
+      setError(null)
+    }catch(e){setError(e instanceof Error?e.message:"Older escalations could not be loaded")}
+    finally{setLoadingOlder(false)}
+  }
   async function review(alert:Alert,state:ReviewState){
     if(!alert.alert_id||busy)return
     if(!reviewer.trim()){setError("Enter your reviewer name before recording a decision");return}
     if(state==="escalated"&&!escalationTarget.trim()){setError("Enter the reviewer or team receiving this escalation");return}
     setBusy(alert.alert_id)
-    try{await reviewAlert(alert.alert_id,state,reviewer,note,state==="escalated"?escalationTarget.trim():undefined);setAlerts(await getAlerts(undefined,true));setError(null)}
+    try{await reviewAlert(alert.alert_id,state,reviewer,note,state==="escalated"?escalationTarget.trim():undefined);setAlerts(await getAlerts());setEscalations(current=>state==="escalated"?current:current.filter(item=>item.alert_id!==alert.alert_id));setError(null)}
     catch(e){setError(e instanceof Error?e.message:"Review could not be saved")}
     finally{setBusy(null)}
   }
-  const queued=demo?[]:alerts.filter(a=>a.state==="escalated")
+  const queued=demo?[]:escalations
   const shown=demo?DEMO_ALERTS:alerts.filter(a=>a.state!=="escalated")
   const renderAlert=(a:Alert,i:number)=>(
     <article key={a.alert_id ?? i} className="rounded border border-zinc-800 p-4">
@@ -153,7 +175,7 @@ export function AlertsPanel() {
     <button className={`${button} self-start`} onClick={()=>setDemo(!demo)}>{demo?"Return to real rule alerts":"Preview synthetic alerts"}</button>
     {demo?<p className="text-sm text-amber-200">Synthetic examples only. Review and escalation actions are unavailable for these fixtures.</p>:<><Rules /><div className="grid gap-3 sm:grid-cols-2"><label className="flex min-w-0 flex-col gap-1 text-sm">Reviewer name (local mode)<input className={field} maxLength={100} value={reviewer} onChange={e=>setReviewer(e.target.value)} /></label><label className="flex min-w-0 flex-col gap-1 text-sm">Escalation recipient<input className={field} maxLength={100} value={escalationTarget} onChange={e=>setEscalationTarget(e.target.value)} placeholder="Reviewer or team" /></label><label className="flex min-w-0 flex-col gap-1 text-sm sm:col-span-2">Review or handoff note<input className={field} maxLength={1000} value={note} onChange={e=>setNote(e.target.value)} /></label></div></>}
     {error && <p role="alert" className="rounded border border-red-400/40 p-3 text-red-200">{error}</p>}
-    {!demo&&<section aria-labelledby="escalations-heading" className="flex flex-col gap-3"><div><h2 id="escalations-heading" className="font-semibold">Escalation queue <span className="text-sm font-normal text-zinc-400">{queued.length}</span></h2><p className="mt-1 text-sm text-zinc-400">Open handoffs remain visible here until a reviewer records the next decision.</p></div>{queued.length===0?<p className="rounded border border-zinc-800 p-4 text-sm text-zinc-400">No active escalations.</p>:queued.map(renderAlert)}</section>}
+    {!demo&&<section aria-labelledby="escalations-heading" className="flex flex-col gap-3"><div><h2 id="escalations-heading" className="font-semibold">Escalation queue <span className="text-sm font-normal text-zinc-400">{queued.length}{nextEscalationCursor?"+":""}</span></h2><p className="mt-1 text-sm text-zinc-400">Open handoffs remain visible here until a reviewer records the next decision.</p></div>{queued.length===0?<p className="rounded border border-zinc-800 p-4 text-sm text-zinc-400">No active escalations.</p>:queued.map(renderAlert)}{nextEscalationCursor&&<button type="button" className={`${button} self-start`} disabled={loadingOlder} onClick={loadOlderEscalations}>{loadingOlder?"Loading…":"Load older handoffs"}</button>}</section>}
     <section aria-labelledby="recent-alerts-heading" className="flex flex-col gap-3"><div><h2 id="recent-alerts-heading" className="font-semibold">{demo?"Synthetic examples":"Recent alerts"}</h2>{!demo&&<p className="mt-1 text-sm text-zinc-400">Recent rule alerts, including unresolved items. Empty results do not prove every camera is processing.</p>}</div>{shown.length===0?<p className="rounded border border-zinc-800 p-4 text-sm text-zinc-400">No recent configured rule alerts.</p>:shown.map(renderAlert)}</section>
   </div></div>
 }

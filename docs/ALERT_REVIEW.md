@@ -10,13 +10,16 @@ the submitted freeform name is ignored. Without authentication, the local
 reviewer name remains an operator claim and is labeled as such. The prototype
 has no external notification delivery.
 
-The alert panel loads recent rule alerts and active escalations. Active escalations
-remain in the queue after they age out of the default recent-alert window. A later
-acknowledgement, review or dismissal resolves the handoff and removes it from the
-active queue while preserving its history.
+The alert panel loads recent rule alerts and active escalations. The escalation
+queue uses stable timestamp-and-ID cursor pages, so older unresolved handoffs
+remain reachable beyond both the recent-alert window and the first 200 entries.
+A later acknowledgement, review or dismissal resolves the handoff and removes it
+from the active queue while preserving its history.
 
-`GET /api/alerts?include_escalated=true` includes active escalations in addition
-to alerts for the requested interval. `POST /api/alerts/{alert_id}/review` accepts
+`GET /api/alerts?include_escalated=true` is a bounded compatibility view.
+`GET /api/alerts/escalations?limit=50` returns one active-queue page; follow its
+`next_cursor` with `before_ts` and `before_id` to continue without gaps, including
+when multiple alerts share a timestamp. `POST /api/alerts/{alert_id}/review` accepts
 `state: "escalated"` only with a non-empty `escalation_target`. Other states reject
 an escalation target. The endpoint records a decision; it does not send a message
 to the recipient.
