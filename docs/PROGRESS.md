@@ -212,7 +212,7 @@ claim OCR accuracy. See `evaluation/README.md`.
 
 ## Validation
 
-- 213 isolated backend tests pass with the frozen Python 3.12 CPU environment.
+- The current branch passes all 326 backend tests with the frozen Python 3.12 CPU environment.
 - Frontend lint passes with two existing shared-component Fast Refresh warnings;
   TypeScript/Vite production build passes.
 - Fresh frozen sync installed CPU torch 2.14.0+cpu and torchvision 0.29.0+cpu.
@@ -233,6 +233,8 @@ claim OCR accuracy. See `evaluation/README.md`.
   Fifteen import contract tests cover failures/replacement/cached bindings.
   No generated footage entered the main app. Source resolution hashes at startup,
   never in API catalog polling or per-frame selection.
+- The database-only backup/restore procedure was also exercised against an isolated
+  temporary API; restore removed a post-backup mutation and the audit chain remained valid.
 - Earlier browser mobile checks at 390×844 verified camera wall, investigation and alerts,
   disabled empty export, and focus trapping/Escape restoration.
 - An earlier isolated synthetic fixture on 5175/8002 exercised browser report creation,
