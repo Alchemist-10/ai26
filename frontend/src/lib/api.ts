@@ -361,8 +361,8 @@ export function createUser(username: string, password: string, role: AuthRole, c
 export function updateUser(username: string, changes: { role?: AuthRole; disabled?: boolean; case_ids?: string[] }): Promise<ManagedUser> {
   return requestJson(`/api/auth/users/${encodeURIComponent(username)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) })
 }
-export function resetUserPassword(username: string, password: string): Promise<{ password_reset: boolean; sessions_revoked: boolean }> {
-  return requestJson(`/api/auth/users/${encodeURIComponent(username)}/password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) })
+export function resetUserPassword(username: string, password: string, reason: string): Promise<{ password_reset: boolean; sessions_revoked: boolean }> {
+  return requestJson(`/api/auth/users/${encodeURIComponent(username)}/password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password, reason }) })
 }
 export function changeOwnPassword(currentPassword: string, newPassword: string): Promise<{ password_changed: boolean; sessions_revoked: boolean }> {
   return requestJson("/api/auth/me/password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }) })

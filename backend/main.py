@@ -255,7 +255,7 @@ def auth_update_user(username:str,body:AuthUserUpdateRequest):
 
 @app.post('/api/auth/users/{username}/password')
 def auth_reset_password(username:str,body:AuthPasswordResetRequest):
-    try: changed=AuthService(store).reset_password(username,body.password)
+    try: changed=AuthService(store).reset_password(username,body.password,body.reason)
     except AuthenticationError as exc: raise HTTPException(422,str(exc)) from exc
     if not changed: raise HTTPException(404,'Unknown user')
     return {'password_reset':True,'sessions_revoked':True}

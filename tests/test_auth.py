@@ -368,7 +368,44 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.auth.case_ids("operator_one"), ["CASE-2026-03"])
         self.assertEqual(operator_client.get("/api/auth/me").status_code, 401)
         self.assertEqual(self.client.patch("/api/auth/users/operator_one", json={"disabled": True}, headers=self.csrf_headers()).status_code, 200)
-        self.assertEqual(self.client.post("/api/auth/users/operator_one/password", json={"password":"New-Operator-Horse-2026"}, headers=self.csrf_headers()).status_code, 200)
+        self.assertEqual(self.client.post("/api/auth/users/operator_one/password", json={
+            "password":"New-Operator-Horse-2026", "reason":"Verified staff account recovery request",
+        }, headers=self.csrf_headers()).status_code, 200)
+
+    def test_admin_helpdesk_password_reset_requires_audited_reason_and_revokes_sessions(self):
+        self.create()
+        self.auth.create_user("operator_one", "Operator-Correct-Horse-2026", "operator")
+        self.assertEqual(self.login().status_code, 200)
+        operator = TestClient(main.app, base_url="https://testserver")
+        self.addCleanup(operator.close)
+        self.assertEqual(operator.post("/api/auth/login", json={
+            "username":"operator_one", "password":"Operator-Correct-Horse-2026",
+        }).status_code, 200)
+
+        missing_reason = self.client.post("/api/auth/users/operator_one/password", json={
+            "password":"Temporary-Helpdesk-Horse-2026",
+        }, headers=self.csrf_headers())
+        self.assertEqual(missing_reason.status_code, 422)
+        response = self.client.post("/api/auth/users/operator_one/password", json={
+            "password":"Temporary-Helpdesk-Horse-2026",
+            "reason":"Identity checked through the approved support process",
+        }, headers=self.csrf_headers())
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(operator.get("/api/auth/me").status_code, 401)
+        self.assertEqual(self.client.post("/api/auth/login", json={
+            "username":"operator_one", "password":"Temporary-Helpdesk-Horse-2026",
+        }).status_code, 200)
+        entry = self.repo.db.execute(
+            "SELECT subject,data FROM audit WHERE action='auth_password_reset' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        self.assertEqual(entry["subject"], "operator_one")
+        details = json.loads(entry["data"])
+        self.assertEqual(details, {
+            "reason":"Identity checked through the approved support process",
+            "sessions_revoked":True, "recovery_method":"administrator_help_desk",
+        })
+        self.assertNotIn("Temporary-Helpdesk-Horse-2026", entry["data"])
+        self.assertEqual(self.repo.verify_audit_chain()["status"], "valid")
 
     def test_login_throttle_and_expired_sessions(self):
         self.create()

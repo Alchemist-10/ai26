@@ -15,6 +15,7 @@ export default function UserAdministration() {
   const [newRole, setNewRole] = useState<AuthRole>("viewer")
   const [newCases, setNewCases] = useState("")
   const [resetPasswords, setResetPasswords] = useState<Record<string, string>>({})
+  const [resetReasons, setResetReasons] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
@@ -61,9 +62,10 @@ export default function UserAdministration() {
   async function savePassword(username: string) {
     setBusy(true); setError(""); setNotice("")
     try {
-      await resetUserPassword(username, resetPasswords[username] ?? "")
+      await resetUserPassword(username, resetPasswords[username] ?? "", resetReasons[username] ?? "")
       setResetPasswords(previous => ({ ...previous, [username]: "" }))
-      setNotice(`Reset ${username}'s password; existing sessions were revoked.`)
+      setResetReasons(previous => ({ ...previous, [username]: "" }))
+      setNotice(`Reset ${username}'s password; the reason was audited and existing sessions were revoked.`)
     } catch (cause) { setError(message(cause)) }
     finally { setBusy(false) }
   }
@@ -101,9 +103,11 @@ export default function UserAdministration() {
         <label className="text-xs text-zinc-300">Assigned case IDs<input value={casesDraft[user.username] ?? ""} onChange={event => setCasesDraft(previous => ({ ...previous, [user.username]: event.target.value }))} placeholder="No cases assigned" className={`${control} mt-1 block w-full`} /></label>
         <label className="flex min-h-10 items-center gap-2 text-sm text-zinc-300"><input type="checkbox" checked={disabledDraft[user.username] ?? user.disabled} onChange={event => setDisabledDraft(previous => ({ ...previous, [user.username]: event.target.checked }))} /> Disabled</label>
         <button type="button" disabled={busy} onClick={() => void saveUser(user)} className={button}>Save access</button>
-        <form onSubmit={event => { event.preventDefault(); void savePassword(user.username) }} className="grid gap-2 sm:grid-cols-[1fr_auto] lg:col-span-5 lg:ml-[calc(20%+0.75rem)]">
-          <label className="text-xs text-zinc-300">Set a new password for {user.username}<input type="password" autoComplete="new-password" minLength={14} maxLength={256} required value={resetPasswords[user.username] ?? ""} onChange={event => setResetPasswords(previous => ({ ...previous, [user.username]: event.target.value }))} className={`${control} mt-1 block w-full`} /></label>
-          <button disabled={busy} className={`${button} self-end`}>Reset password</button>
+        <form onSubmit={event => { event.preventDefault(); void savePassword(user.username) }} className="grid gap-2 sm:grid-cols-2 lg:col-span-5 lg:ml-[calc(20%+0.75rem)]">
+          <label className="text-xs text-zinc-300">Temporary password for {user.username}<input type="password" autoComplete="new-password" minLength={14} maxLength={256} required value={resetPasswords[user.username] ?? ""} onChange={event => setResetPasswords(previous => ({ ...previous, [user.username]: event.target.value }))} className={`${control} mt-1 block w-full`} /></label>
+          <label className="text-xs text-zinc-300">Help-desk reset reason<input required minLength={10} maxLength={500} value={resetReasons[user.username] ?? ""} onChange={event => setResetReasons(previous => ({ ...previous, [user.username]: event.target.value }))} placeholder="Verified request through approved support process" className={`${control} mt-1 block w-full`} /></label>
+          <p className="text-xs text-zinc-500 sm:col-span-2">The reason is retained in the audit log. Do not include passwords, MFA codes, or other secrets.</p>
+          <button disabled={busy} className={`${button} justify-self-start`}>Reset password</button>
         </form>
       </li>)}</ul>}
     </div>

@@ -74,16 +74,21 @@ from the sign-in screen using a current authenticator code or an unused MFA
 recovery code. Recovery revokes all existing sessions, consumes recovery codes
 once, and shares an atomic per-address attempt limit with sign-in. The
 public endpoint returns the same response for unknown, disabled, non-MFA and
-success cases to avoid disclosing account state. Accounts without MFA still need
-an administrator to reset their password; help-desk recovery and external
-identity providers are not implemented.
+success cases to avoid disclosing account state. Accounts without MFA need an
+administrator-assisted reset. The administrator must record a 10–500 character
+reason; the audit entry records that reason, the recovery method and session
+revocation without storing the temporary password. Administrators should
+deliver the temporary password through an approved out-of-band channel and
+require the user to change it after sign-in. This records the operator's reason
+but does not independently verify the user's identity; external identity
+providers and identity-proofing workflows remain unimplemented.
 
 The initial UI supports sign-in, session restoration, case/purpose selection,
 and sign-out. Signed-in users can change their password in Account security.
 The sign-in screen also offers MFA-backed password recovery when the protected
 MFA key is configured.
-Administrators can manage users, case grants, roles, account status, and password
-resets through the protected account-management screen.
+Administrators can manage users, case grants, roles, account status, and
+reason-recorded password resets through the protected account-management screen.
 
 Active alert escalations are stored with the case selected when they are
 created. Non-admin users can list and resolve only escalations in that case;

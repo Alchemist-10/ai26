@@ -194,8 +194,11 @@ class AuthService:
             ).fetchone()
         return {**_user_summary(updated), "case_ids": next_case_ids}
 
-    def reset_password(self, username, password, now=None):
+    def reset_password(self, username, password, reason, now=None):
         username, password = _username(username), _password(password)
+        if not isinstance(reason, str) or not 10 <= len(reason.strip()) <= 500:
+            raise AuthenticationError("A reset reason between 10 and 500 characters is required")
+        reason = reason.strip()
         salt = secrets.token_bytes(16)
         digest = _derive(password.decode("utf-8"), salt)
         now = time.time() if now is None else now
@@ -208,7 +211,9 @@ class AuthService:
                 (salt, digest, PASSWORD_ITERATIONS, now, username),
             )
             self.repository.db.execute("DELETE FROM auth_sessions WHERE username=?", (username,))
-            self.repository._append_audit(now, "auth_password_reset", username, {})
+            self.repository._append_audit(now, "auth_password_reset", username,
+                                          {"reason": reason, "sessions_revoked": True,
+                                           "recovery_method": "administrator_help_desk"})
         return True
 
     def change_password(self, username, current_password, new_password, now=None):

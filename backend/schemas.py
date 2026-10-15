@@ -177,6 +177,7 @@ class AuthUserUpdateRequest(BaseModel):
 class AuthPasswordResetRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     password: StrictStr = Field(min_length=14, max_length=256)
+    reason: StrictStr = Field(min_length=10, max_length=500)
 
 class AuthPasswordChangeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
