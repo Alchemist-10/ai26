@@ -1,6 +1,6 @@
 # Optional privacy display mode
 
-AI26 can pseudonymize valid plate identifiers in analytics responses and pixelate detected people and plate regions in sampled camera views. This mode is opt-in and is intended to reduce exposure in day-to-day dashboards; it is not a guarantee that all personally identifying information has been removed.
+AI26 can pseudonymize valid plate identifiers in analytics responses and pixelate detected person and plate regions in sampled camera views. Person-region pixelation covers the face when it falls inside a detected person box. This mode is opt-in and is intended to reduce exposure in day-to-day dashboards; it is not a guarantee that all personally identifying information has been removed.
 
 ## Enable it
 
@@ -29,4 +29,4 @@ The key must be readable by the backend container user (`10001` in the supplied 
 
 ## Limits
 
-Person and plate masking depends on sampled model detections. Missed, occluded, low-resolution, or out-of-frame subjects may remain visible; the sampling rate also means intermediate video frames are not checked. Unrecognized plate formats are not pseudonymized in analytics text. No labeled field footage has been used to establish a false-negative rate or privacy threshold. Validate detection coverage with representative authorized footage before relying on this mode for a deployment requirement. Do not describe it as face-blurring or complete anonymization: it masks detected person boxes and plate boxes only.
+Person and plate masking depends on sampled model detections. The person mask is a coarse full-box pixelation rather than a separate face-local detector. Missed, occluded, low-resolution, or out-of-frame subjects may remain visible; the sampling rate also means intermediate video frames are not checked. Unrecognized plate formats are not pseudonymized in analytics text. No labeled field footage has been used to establish a false-negative rate or privacy threshold. Validate detection coverage with representative authorized footage before relying on this mode for a deployment requirement. Describe it as best-effort masking of detected person and plate regions, not guaranteed or complete anonymization.

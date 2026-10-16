@@ -2,7 +2,9 @@ import os
 import sys
 import tempfile
 import unittest
+from collections import defaultdict
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
@@ -11,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from fastapi.testclient import TestClient
 import main
 import privacy
+import inference
 
 
 class PrivacyMode(unittest.TestCase):
@@ -70,6 +73,35 @@ class PrivacyMode(unittest.TestCase):
         self.assertFalse(np.array_equal(frame[10:30, 10:30], before[10:30, 10:30]))
         self.assertTrue(np.array_equal(frame[:8], before[:8]))
         self.assertTrue(np.array_equal(frame[:, 40:], before[:, 40:]))
+
+    def test_privacy_vehicle_preview_pixelates_the_detected_person_region(self):
+        class EmptyTracker:
+            def update(self, detections, timestamp=None):
+                return []
+
+        class PersonDetector:
+            names = {0: "person"}
+
+            def predict(self, frame, **kwargs):
+                box = SimpleNamespace(cls=[0], conf=[0.99], xyxy=[[10, 10, 30, 30]])
+                return [SimpleNamespace(boxes=[box])]
+
+        camera = "PRIVACY-TEST"
+        self.addCleanup(inference.reset_camera, camera)
+        frame = np.zeros((48, 48, 3), dtype=np.uint8)
+        frame[8:32, 8:32] = np.arange(24 * 24, dtype=np.uint8).reshape(24, 24, 1)
+        before = frame.copy()
+        trackers = defaultdict(EmptyTracker)
+        trackers[camera] = EmptyTracker()
+        with patch.object(inference, "_vehicle_model", return_value=PersonDetector()), \
+             patch.object(inference, "_vehicle_trackers", trackers), \
+             patch.object(inference, "privacy_enabled", return_value=True):
+            observed, detections = inference.annotate_vehicle_frame(frame, camera)
+
+        self.assertEqual(detections, [])
+        self.assertEqual(inference._person_boxes[camera], [[10, 10, 30, 30]])
+        self.assertFalse(np.array_equal(observed[8:32, 8:32], before[8:32, 8:32]))
+        self.assertTrue(np.array_equal(observed[:6], before[:6]))
 
     def test_api_reports_privacy_and_blocks_raw_playback(self):
         client = TestClient(main.app)
