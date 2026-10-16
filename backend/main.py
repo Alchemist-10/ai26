@@ -34,13 +34,14 @@ from artifacts import artifact_bytes
 from maintenance import Maintenance
 from source_status import source_status
 from onvif_discovery import discover_onvif
+from onvif_profiles import inspect_onvif_profiles, OnvifInspectionError
 from source_uploads import uploads, parse_metadata, UploadBusy
 from starlette.requests import ClientDisconnect
 from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
-from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, AuthMfaResetRequest, AuthCaseCameraScopeUpdate, CameraPairConstraintUpdate, OnvifDiscoveryRequest
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, AuthMfaResetRequest, AuthCaseCameraScopeUpdate, CameraPairConstraintUpdate, OnvifDiscoveryRequest, OnvifProfileRequest
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 from auth_key_lock import api_lifetime_lock, verify_active_mfa_key, verify_active_privacy_key
 
@@ -360,6 +361,14 @@ def onvif_discovery(body:OnvifDiscoveryRequest):
         return discover_onvif(body.timeout_seconds)
     except OSError as exc:
         raise HTTPException(503,'Local ONVIF discovery is unavailable on this host') from exc
+
+@app.post('/api/cameras/onvif/profiles')
+def onvif_profiles(body:OnvifProfileRequest):
+    try:
+        return inspect_onvif_profiles(body.source_address, body.service_address, body.username,
+                                      body.password, body.timeout_seconds)
+    except OnvifInspectionError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 @app.get('/api/cameras/{camera_id}/configuration')
 def camera_configuration(camera_id:str, revision:Annotated[int|None,Query(ge=1)]=None):

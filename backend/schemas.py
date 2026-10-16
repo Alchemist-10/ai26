@@ -46,6 +46,14 @@ class OnvifDiscoveryRequest(BaseModel):
     model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
     timeout_seconds: float = Field(default=2.0, ge=0.2, le=5.0)
 
+class OnvifProfileRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    source_address: StrictStr = Field(min_length=1, max_length=64)
+    service_address: StrictStr = Field(min_length=1, max_length=512)
+    username: StrictStr = Field(min_length=1, max_length=128)
+    password: StrictStr = Field(min_length=1, max_length=256)
+    timeout_seconds: float = Field(default=3.0, ge=0.5, le=5.0)
+
 class ZoneRule(BaseModel):
     camera_id: str
     # normalized image coordinates: left, top, right, bottom

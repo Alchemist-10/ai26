@@ -47,6 +47,19 @@ export interface OnvifDiscoveryResult {
   probe_timeout_seconds: number
   elapsed_seconds: number
 }
+export interface OnvifProfileResult {
+  device_ip: string
+  profile_count: number
+  persisted: false
+  activated: false
+  profiles: Array<{
+    token: string
+    name: string
+    encoding: string | null
+    stream_uri: string | null
+    stream_uri_status: "available" | "unavailable" | "redacted_or_untrusted_uri"
+  }>
+}
 export interface CameraPairConstraint {
   from_camera: string
   to_camera: string
@@ -421,6 +434,12 @@ export function discoverOnvifCameras(timeoutSeconds = 2): Promise<OnvifDiscovery
   return requestJson("/api/cameras/onvif/discover", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ timeout_seconds: timeoutSeconds }),
+  })
+}
+
+export function inspectOnvifProfiles(input: { source_address: string; service_address: string; username: string; password: string; timeout_seconds?: number }): Promise<OnvifProfileResult> {
+  return requestJson("/api/cameras/onvif/profiles", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input),
   })
 }
 

@@ -189,11 +189,22 @@ camera clock synchronization, live failover testing on actual hardware and
 credential lifecycle management remain open work. An administrator can use
 Camera settings → **Discover ONVIF cameras** to send a bounded two-second
 WS-Discovery probe to the local network. The API returns device service
-addresses and scopes but does not connect to the device, retrieve stream URLs,
-save credentials or change source mappings. Discovery needs host/network support
-for IPv4 multicast on UDP 3702; actual device/NVR interoperability remains to be
-verified. The endpoint is administrator-only when authentication is enabled and
-is recorded in the sensitive-access audit log.
+addresses and scopes. The **Read camera profiles** action can then make bounded
+read-only `GetCapabilities`, `GetProfiles` and `GetStreamUri` requests using
+operator-entered ONVIF UsernameToken PasswordDigest credentials. The credentials
+are sent to the AI26 API and then to the discovered camera, are not persisted,
+and are cleared from the form after the request. Redirects and environment
+proxies are disabled, and endpoint and returned stream hosts must match the
+discovered private IPv4 address. Returned URLs with credentials, query strings,
+fragments, public addresses or a different host are withheld. This inspection
+does not activate a stream or change source mappings; a reviewed RTSP/RTSPS URL
+must still be placed in the protected host-side source file. ONVIF digest-auth
+compatibility varies by vendor, so test this flow on each supported camera/NVR
+model before relying on it. Discovery needs host/network support for IPv4
+multicast on UDP 3702; camera interoperability, clock synchronization and live
+failover on hardware remain open work. Both ONVIF endpoints are administrator-only
+when authentication is enabled and are recorded in the sensitive-access audit
+log.
 
 For a local Prometheus instance and starter alert rules, create a token file and
 grant the backend and Prometheus containers read access through a shared host

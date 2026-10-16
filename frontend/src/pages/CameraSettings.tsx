@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react"
-import { ApiError, discoverOnvifCameras, getCameraConfiguration, saveCameraConfiguration, type Camera, type CameraConfiguration, type OnvifDiscoveryResult } from "@/lib/api"
+import { ApiError, discoverOnvifCameras, getCameraConfiguration, inspectOnvifProfiles, saveCameraConfiguration, type Camera, type CameraConfiguration, type OnvifDiscoveryResult, type OnvifProfileResult } from "@/lib/api"
 import CameraSources from "@/components/settings/CameraSources"
 
 const control = "w-full min-w-0 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-base text-white disabled:opacity-50"
@@ -34,6 +34,12 @@ export default function CameraSettings({ cameras, initialCamera, isAdmin }: { ca
   const [discovering, setDiscovering] = useState(false)
   const [discovery, setDiscovery] = useState<OnvifDiscoveryResult | null>(null)
   const [discoveryError, setDiscoveryError] = useState("")
+  const [onvifAddress, setOnvifAddress] = useState("")
+  const [onvifUsername, setOnvifUsername] = useState("")
+  const [onvifPassword, setOnvifPassword] = useState("")
+  const [inspectingProfiles, setInspectingProfiles] = useState(false)
+  const [profileResult, setProfileResult] = useState<OnvifProfileResult | null>(null)
+  const [profileError, setProfileError] = useState("")
   const changed = config ? metadataChanged(draft, config) : false
   const dirty = changed || draft.reviewer !== "" || draft.reason !== ""
   const camera = cameras.find(item => item.id === selected)
@@ -118,9 +124,24 @@ export default function CameraSettings({ cameras, initialCamera, isAdmin }: { ca
   }
   async function discoverCameras() {
     setDiscovering(true); setDiscoveryError(""); setDiscovery(null)
-    try { setDiscovery(await discoverOnvifCameras(2)) }
+    try {
+      const result = await discoverOnvifCameras(2)
+      setDiscovery(result)
+      setOnvifAddress(result.devices.flatMap(device => device.service_addresses.map(service_address => `${device.source_address}\t${service_address}`))[0] ?? "")
+      setProfileResult(null)
+    }
     catch (error) { setDiscoveryError(errorText(error)) }
     finally { setDiscovering(false) }
+  }
+  async function inspectProfiles(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!onvifAddress || !onvifUsername || !onvifPassword || inspectingProfiles) return
+    const [source_address, service_address] = onvifAddress.split("\t")
+    setInspectingProfiles(true); setProfileError(""); setProfileResult(null)
+    try {
+      setProfileResult(await inspectOnvifProfiles({ source_address, service_address, username: onvifUsername, password: onvifPassword, timeout_seconds: 3 }))
+    } catch (error) { setProfileError(errorText(error)) }
+    finally { setOnvifUsername(""); setOnvifPassword(""); setInspectingProfiles(false) }
   }
 
   return (
@@ -131,7 +152,7 @@ export default function CameraSettings({ cameras, initialCamera, isAdmin }: { ca
         {isAdmin && <section aria-labelledby="onvif-discovery-title" className="mt-5 rounded border border-zinc-800 bg-zinc-950 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><h2 id="onvif-discovery-title" className="font-semibold">Find ONVIF cameras on this network</h2>
-              <p className="mt-1 max-w-[70ch] text-sm text-zinc-300">Sends a two-second discovery probe to the local network. Discovery only lists device endpoints; it does not connect, save credentials or change camera sources.</p></div>
+              <p className="mt-1 max-w-[70ch] text-sm text-zinc-300">Sends a two-second discovery probe to the local network. Profile lookup below connects to the selected camera for a read-only profile and stream URI check.</p></div>
             <button type="button" className={button} disabled={discovering} onClick={() => void discoverCameras()}>{discovering ? "Searching local network…" : "Discover ONVIF cameras"}</button>
           </div>
           {discoveryError && <p role="alert" className="mt-3 text-sm text-red-200">{discoveryError}</p>}
@@ -143,7 +164,34 @@ export default function CameraSettings({ cameras, initialCamera, isAdmin }: { ca
                 <ul className="mt-1 grid gap-1 break-all text-xs text-zinc-300">{device.service_addresses.map(address => <li key={address}><code>{address}</code></li>)}</ul>
                 {!!device.scopes.length && <p className="mt-1 break-all text-xs text-zinc-400">{device.scopes.join(" · ")}</p>}
               </li>)}</ul>}
-            <p className="mt-2 text-xs text-zinc-400">Add a reviewed RTSP URL to the protected host-side source mapping after confirming the device. Do not paste camera credentials into this page.</p>
+            {discovery.devices.some(device => device.service_addresses.length > 0) && <form onSubmit={inspectProfiles} className="mt-4 grid gap-3 border-t border-zinc-800 pt-4">
+              <h3 className="font-medium">Inspect media profiles</h3>
+              <label className="block text-sm" htmlFor="onvif-service">Discovered camera service
+                <select id="onvif-service" required className={`${control} mt-1`} value={onvifAddress} onChange={event => { setOnvifAddress(event.target.value); setProfileResult(null); setProfileError("") }}>
+                  {discovery.devices.flatMap(device => device.service_addresses.map(address => <option key={`${device.source_address}\t${address}`} value={`${device.source_address}\t${address}`}>{device.source_address} · {address}</option>))}
+                </select>
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block text-sm" htmlFor="onvif-username">Camera username
+                  <input id="onvif-username" autoComplete="off" required maxLength={128} className={`${control} mt-1`} value={onvifUsername} onChange={event => setOnvifUsername(event.target.value)} />
+                </label>
+                <label className="block text-sm" htmlFor="onvif-password">Camera password
+                  <input id="onvif-password" type="password" autoComplete="new-password" required maxLength={256} className={`${control} mt-1`} value={onvifPassword} onChange={event => setOnvifPassword(event.target.value)} />
+                </label>
+              </div>
+              <p className="text-xs text-zinc-400">Credentials are sent to this AI26 server for a bounded ONVIF request and cleared from the form when it finishes. This lookup does not store credentials, activate streams or change source mappings. Only safe private-address RTSP URLs are shown.</p>
+              <button type="submit" className={button} disabled={inspectingProfiles || !onvifUsername || !onvifPassword}>{inspectingProfiles ? "Checking camera…" : "Read camera profiles"}</button>
+              {profileError && <p role="alert" className="text-sm text-red-200">{profileError}</p>}
+              {profileResult && <div role="status" aria-live="polite" className="rounded border border-zinc-800 p-3 text-sm">
+                <p className="font-medium">{profileResult.profile_count} profile{profileResult.profile_count === 1 ? "" : "s"} returned by {profileResult.device_ip}</p>
+                {profileResult.profiles.length ? <ul className="mt-2 divide-y divide-zinc-800">{profileResult.profiles.map(profile => <li key={profile.token} className="py-2">
+                  <p>{profile.name}{profile.encoding ? ` · ${profile.encoding}` : ""}</p>
+                  {profile.stream_uri ? <code className="mt-1 block break-all text-xs text-teal-200">{profile.stream_uri}</code> : <p className="mt-1 text-xs text-zinc-400">Stream URI {profile.stream_uri_status.replaceAll("_", " ")}</p>}
+                </li>)}</ul> : <p className="mt-2 text-zinc-400">The camera returned no named media profiles.</p>}
+                <p className="mt-2 text-xs text-zinc-400">Result is inspection only; it has not been saved or activated.</p>
+              </div>}
+            </form>}
+            <p className="mt-2 text-xs text-zinc-400">To use a stream, separately review the camera and configure its protected host-side source mapping.</p>
           </div>}
         </section>}
         <div className="mt-6 grid gap-3 border-b border-zinc-800 pb-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
