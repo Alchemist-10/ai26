@@ -73,6 +73,20 @@ and CPU/RSS conditions. It is separate from labeled accuracy evaluation, creates
 no model/processor and writes only the requested output. See
 [Runtime profiling](../docs/RUNTIME_PROFILE.md) for bounds, command and limits.
 
+For an isolated ALPR runtime sample, `benchmark_plate_runtime.py` measures base
+runtime imports, model-session initialization, sampled full-pipeline predictions
+and direct OCR calls on a generated in-memory crop. It records model/source hashes
+and timing distributions, but never stores OCR text, crops or frames. Use a supplied
+authorized clip for field-relevant timing; synthetic OCR calls are runtime checks,
+not recognition or accuracy evidence:
+
+```bash
+uv run --frozen --directory backend python ../evaluation/benchmark_plate_runtime.py \
+  --video static/playback/CAM-01.mp4 \
+  --max-frames 24 --stride-seconds 1 --cpu-threads 2 \
+  --output ../evaluation/results/alpr-runtime.json
+```
+
 For isolated classical image experiments, see
 [Classical enhancement](CLASSICAL_ENHANCEMENT.md). Those derivatives are not
 used in live processing and do not imply an OCR accuracy gain.

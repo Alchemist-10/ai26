@@ -280,6 +280,26 @@ not measure browser interaction or multi-camera inference. The exact PID,
 processor counters and interval samples are in
 [`api-idle-profile-2026-10-16.json`](validation/api-idle-profile-2026-10-16.json).
 
+## Isolated ALPR runtime sample — 16 October 2026
+
+A new bounded evaluator measured the ALPR path in a fresh Python process using
+the existing 960×540, 25 FPS CAM-01 playback proxy, two CPU threads, and 12
+frames sampled at two-second intervals from the clip start. Base runtime imports
+took 2,106 ms; ALPR package imports
+plus model-session initialization took 469 ms with model downloads already
+present in the local cache. Full detector/ALPR predictions had a 55.7 ms median
+and 62.7 ms p95 after the first pass (77.1 ms). No plate was detected in these
+frames, so this video sample did not exercise OCR. A separate in-memory
+generated crop exercised the character recognizer at 7.2 ms median and 8.1 ms
+p95 after its first call (9.2 ms); synthetic OCR timing is not accuracy or
+camera-image evidence. ONNX Runtime emitted lenient graph shape-merge warnings
+during model initialization; the profile did not evaluate their effect on
+detector behavior. The tool records hashes and counts but never writes OCR text,
+image crops or frames. The isolated sample is not a cold-download, live
+six-camera or browser-playback benchmark. Its exact conditions and samples are in
+[`validation/alpr-runtime-cam01-2026-10-16.json`](validation/alpr-runtime-cam01-2026-10-16.json),
+and the repeatable command is in [`../evaluation/README.md`](../evaluation/README.md).
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded
