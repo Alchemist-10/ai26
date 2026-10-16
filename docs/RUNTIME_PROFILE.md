@@ -22,6 +22,10 @@ retry_backoff_checks. Attempts count source/decode/model work; missing/retry che
 are separate. A budget overrun means an attempted step exceeded `1 / sampling_budget_fps`
 seconds. It does not count dropped source frames or browser playback frames.
 `processed_fps` uses monotonic elapsed time so wall-clock changes do not inflate it.
+The public health and camera-catalog endpoints report configured source availability
+independently from processor state: a recorded source can remain available while
+inference is paused, while a missing file stays unavailable. `status` and frame
+counters continue to describe processor activity, not file presence.
 
 `last_attempt` records total milliseconds, completed/unfinished phase timings and
 success. Successful attempts also enter a bounded 64-sample timing window per

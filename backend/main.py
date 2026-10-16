@@ -469,7 +469,10 @@ def audit_integrity():
 
 @app.get('/api/health')
 def health():
-    return {'processing_enabled':os.environ.get('AI26_PROCESSING_ENABLED','1')=='1','cameras':processor.health(),
+    cameras=processor.health()
+    for camera in cameras:
+        camera['source_available']=processor.source_available(camera['camera_id'])
+    return {'processing_enabled':os.environ.get('AI26_PROCESSING_ENABLED','1')=='1','cameras':cameras,
             'inference_branches':inference_branches(),
             'vehicle_model_rollout':vehicle_model_rollout_status(vehicle_model_rollout),
             'database_schema':store.schema_version,'scope':'single API process; run uvicorn with one worker'}

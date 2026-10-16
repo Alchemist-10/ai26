@@ -169,6 +169,14 @@ class Reliability(unittest.TestCase):
         catalog=self.client.get('/api/cameras').json()
         self.assertEqual(sum(c['source_available'] for c in catalog),6)
 
+    def test_health_reports_recorded_sources_while_processing_is_paused(self):
+        health=self.client.get('/api/health').json()
+        self.assertFalse(health['processing_enabled'])
+        availability={camera['camera_id']:camera['source_available'] for camera in health['cameras']}
+        self.assertEqual(sum(availability.values()),6)
+        self.assertEqual([camera for camera,available in availability.items() if not available],
+                         ['CAM-07','CAM-08','CAM-09'])
+
     def test_question_validation(self):
         for body in [{},{'question':None},{'question':123},{'question':True},{'question':' '},{'question':'x'*501}]:
             self.assertEqual(self.client.post('/api/nlquery',json=body).status_code,422)
