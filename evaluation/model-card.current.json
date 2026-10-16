@@ -80,6 +80,10 @@
     "preprocessing_id": "Versioned inference implementation in the bundle descriptor; YOLO 640x640 RGB BCHW float32 [0,1] benchmark input; Fast-ALPR library preprocessing for plate branch.",
     "preprocessing_sha256": "db5df8809bed9bd3f798a9a36c8728cddbaf95288e94938f5c5983b23707fd25"
   },
+  "provenance_bundle": {
+    "path": "evaluation/model-bundle.current.json",
+    "sha256": "18db73ba5e135a0d47383470a6738bb4517dee82000491039043de4d642a1924"
+  },
   "release_decision": {
     "reason": "Documentation card only. No reviewed labeled holdout, license review, or approved deployment thresholds exist; this does not approve production use or model promotion.",
     "reviewed_at": null,

@@ -128,6 +128,13 @@ descriptor ([`model-bundle.current.json`](model-bundle.current.json)) and a
 filled model card ([`model-card.current.json`](model-card.current.json)). The
 card records observed runtime only; training lineage, reviewed labels, accuracy,
 component licensing, and deployment approval remain unresolved.
+Validate the card and its digest-pinned report, bundle, checkpoint, and source files
+from the repository root with:
+
+```bash
+uv run --frozen --directory backend python ../evaluation/validate_model_card.py \
+  ../evaluation/model-card.current.json --root ..
+```
 For read-only scene hints and optional per-plate-box quality candidates, see
 [Heuristic quality routing](QUALITY_ROUTER.md); plate boxes are operator supplied,
 weather-like flags are unverified, and recommendations do not control the live
