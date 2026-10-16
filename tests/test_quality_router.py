@@ -1,8 +1,10 @@
 import hashlib
 import importlib.util
+import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 import cv2
 import numpy as np
@@ -73,6 +75,56 @@ class QualityRouterTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), before)
         with self.assertRaises(ValueError):
             router.inspect(np.zeros((8, 8), dtype=np.uint8))
+
+    def test_optional_detector_boxes_are_clipped_hashed_and_never_store_ocr_text(self):
+        class FakeModel:
+            def predict(self, image):
+                self.shape = image.shape
+                return [SimpleNamespace(
+                    detection=SimpleNamespace(bounding_box=SimpleNamespace(x1=-2, y1=2, x2=12, y2=15)),
+                    ocr=SimpleNamespace(text="SENSITIVE-PLATE-TEXT"),
+                )]
+
+        model = FakeModel()
+        calls = []
+        def load_model(**kwargs):
+            calls.append(kwargs)
+            return model, {"weight_provenance_status": "hashed_loaded_files", "model_files": [
+                {"role": "detector", "sha256": "a" * 64}
+            ]}
+
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp) / "raw.png"
+            self.assertTrue(cv2.imwrite(str(source), np.full((16, 16, 3), 120, dtype=np.uint8)))
+            report = router.run(source, detect_plates=True, model_loader=load_model)
+            region, = report["plate_region_assessments"]
+            self.assertEqual(region["box_xyxy"], [0, 2, 12, 15])
+            self.assertEqual(report["plate_box_source"], "selected_alpr_detector")
+            self.assertEqual(report["plate_model_metadata"]["weight_provenance_status"], "hashed_loaded_files")
+            self.assertEqual(calls, [{"cpu_threads": 2, "device": "cpu"}])
+            self.assertEqual(model.shape, (16, 16, 3))
+            self.assertNotIn("SENSITIVE-PLATE-TEXT", json.dumps(report))
+
+    def test_detector_no_candidate_result_is_explicit_and_keeps_model_provenance(self):
+        class EmptyModel:
+            def predict(self, image): return []
+
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp) / "raw.png"
+            self.assertTrue(cv2.imwrite(str(source), np.zeros((8, 8, 3), dtype=np.uint8)))
+            report = router.run(source, detect_plates=True,
+                                model_loader=lambda **kwargs: (EmptyModel(), {"model_id": "test-detector"}))
+            self.assertEqual(report["plate_region_assessments"], [])
+            self.assertEqual(report["plate_box_source"], "selected_alpr_detector_no_candidates")
+            self.assertEqual(report["plate_model_metadata"], {"model_id": "test-detector"})
+
+    def test_manual_and_automatic_boxes_cannot_be_mixed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp) / "raw.png"
+            self.assertTrue(cv2.imwrite(str(source), np.zeros((8, 8, 3), dtype=np.uint8)))
+            with self.assertRaisesRegex(ValueError, "cannot be combined"):
+                router.run(source, [(0, 0, 4, 4)], detect_plates=True,
+                           model_loader=lambda **kwargs: self.fail("model must not load"))
 
 
 if __name__ == "__main__":

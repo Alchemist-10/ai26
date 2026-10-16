@@ -17,8 +17,20 @@ uv run --frozen --directory backend python evaluation/quality_router.py input.jp
   --output /tmp/input-quality.json
 ```
 
-The report keeps whole-frame scene statistics separate from each supplied plate
-crop. Each crop includes its dimensions, image-statistic flags, and a suggested
+To request boxes from the currently selected hash-snapshotted ALPR detector,
+use `--detect-plates` instead of `--plate-box`. This explicit option can download
+the model assets on first use and stores hashed snapshots in the configured AI26
+model cache. The report includes detector file hashes, records when no candidates
+were returned, and deliberately discards OCR text. Detector boxes are still
+unverified review hints; they do not represent plate-detection accuracy.
+
+```bash
+uv run --frozen --directory backend python ../evaluation/quality_router.py input.jpg \
+  --detect-plates --output /tmp/input-quality.json
+```
+
+The report keeps whole-frame scene statistics separate from each operator- or
+detector-supplied plate crop. Each crop includes its dimensions, image-statistic flags, and a suggested
 OCR preprocessing candidate list that always starts with `raw`. These are
 review-only hints; the tool does not alter pixels, choose a live OCR path, or
 infer weather from a plate crop. Boxes outside the image, empty boxes, and
