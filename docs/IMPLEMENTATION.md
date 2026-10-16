@@ -82,11 +82,10 @@ replay time or enable physical cross-camera links. Replay clocks and live
 capture-arrival clocks cannot support physical travel-time inference; those
 links remain unresolved candidates with null speed until synchronized capture
 clocks are available. The claimed offset uses frame index divided by reported
-FPS and is approximate for variable-frame-rate sources. For manual observations with confirmed
 FPS and is approximate for variable-frame-rate sources. For manual observations
-with confirmed location labels, the baseline uses exact plate equality and a fixed
-straight-line speed gate; coordinate and clock validation are not established by this status;
-accepted links still do not prove identity. Rejected links and mixed routes require
+with confirmed location labels, the baseline uses exact plate equality and a
+fixed straight-line speed gate; coordinates and clocks remain unvalidated, and
+an accepted link does not prove identity. Rejected links and mixed routes require
 review, with null speed for equal/nonpositive timestamps.
 
 ## API
@@ -130,9 +129,10 @@ Watchlist rules are editable local matches; initial entries are labeled examples
 Restricted-camera rules mean a zone sighting, not an unauthorized-access finding.
 Dwell requires one local track inside a configured normalized rectangle over an
 elapsed duration, at least three samples, and bounded inter-sample gaps. Exits and
-gaps reset it. Review is persistent, but reviewer names are local claims without
-authentication or external escalation. Class-only cross-camera re-identification
-and six-frame loitering are removed.
+gaps reset it. Review is persistent; unauthenticated local reviewer names are
+claims, while authenticated reviews use the signed-in account. External
+notification delivery remains unavailable. Class-only cross-camera
+re-identification and six-frame loitering are removed.
 
 Analytics separate raw frame reads, camera-local sampled passages, model confidence
 and available/fresh-processing cameras. Accepted-link flows are computed, not fixed
@@ -179,21 +179,24 @@ fusion gains, calibration, labeled adverse conditions, original recording clocks
 and sustained target-hardware benchmarks remain release gates.
 
 See `PROGRESS.md` for every task from the implementation plan. Core engineering
-improvements do not satisfy missing-footage accuracy gates. Optional restoration,
-learned identity/topology, RTSP integration and production deployment remain
-separate, unimplemented work packages.
+improvements do not satisfy missing-footage accuracy gates. Restoration,
+learned identity/topology, hardware RTSP validation and deployment hardening remain
+separate work packages; their implementation and evidence status is tracked there.
 
 ## Desktop performance
 
 The wall mounts six 320×180 sampled previews and one focused native MP4 player.
 Switch to “Sampled detections” for the shared annotated stream, which shows its
 actual low sampling FPS. Playback has no detection overlay and can be paused or
-seeked independently; it does not seek the shared processor. Media starts after
-the intro is dismissed. Hidden pages stop polling, abort pending reads and pause
-playback; return triggers refresh. Serial polling cannot pile up overlapping
-requests. Analytics/activity share the root camera catalog, and the log requests
-only its most recent 40 rows. The CPU default uses two Torch intra-op threads and
-one FFmpeg decoder thread per capture; `AI26_CPU_THREADS` permits 1–8 Torch threads.
+seeked independently; it does not seek the shared processor. The camera wall
+loads no video. In the default mode the focused player stays idle until an
+operator chooses a view; opt-in privacy mode defaults to sampled detections.
+Viewport-distant tiles do not poll previews. Hidden pages stop polling, abort
+pending reads and pause playback; return triggers refresh. Serial polling cannot
+pile up overlapping requests. Analytics/activity share the root camera catalog,
+and the log requests only its most recent 40 rows. The CPU default uses two Torch
+intra-op threads and one FFmpeg decoder thread per capture; `AI26_CPU_THREADS`
+permits 1–8 Torch threads.
 
 See `PERFORMANCE.md` for measured results and their limits. Sparse sampling remains
 an accuracy limitation; these changes do not claim real-time full-frame inference.
