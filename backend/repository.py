@@ -698,12 +698,15 @@ class Repository:
             })
             return True
 
-    def cleanup(self, cutoff, now):
+    def cleanup(self, cutoff, now, traffic_retention_days=90):
+        if type(traffic_retention_days) is not int or not 7 <= traffic_retention_days <= 365:
+            raise ValueError('traffic_retention_days must be an integer from 7 to 365')
         with self.lock, self.db:
             self.db.execute('DELETE FROM observations WHERE ts<?', (cutoff,))
             self.db.execute('DELETE FROM passages WHERE last<?', (cutoff,))
             self.db.execute('DELETE FROM journey_links WHERE to_ts<?', (cutoff,))
-            self.db.execute('DELETE FROM camera_traffic_buckets WHERE bucket_start_utc<?', (now-90*86400,))
+            self.db.execute('DELETE FROM camera_traffic_buckets WHERE bucket_start_utc<?',
+                            (now-traffic_retention_days*86400,))
             self.db.execute('DELETE FROM artifact_leases WHERE expires<=?', (now,))
             self.db.execute('DELETE FROM reports WHERE expires<=?', (now,))
             self.db.execute('DELETE FROM alerts WHERE ts<?', (cutoff,))

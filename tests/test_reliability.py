@@ -302,17 +302,42 @@ class Reliability(unittest.TestCase):
         fake_repository=Mock()
         fake_repository.lock=nullcontext()
         fake_repository.protected_artifacts.return_value=set()
-        with patch.dict(os.environ,{'AI26_OBSERVATION_RETENTION_DAYS':'30'}), \
+        with patch.dict(os.environ,{'AI26_OBSERVATION_RETENTION_DAYS':'30',
+                                    'AI26_TRAFFIC_RETENTION_DAYS':'60'}), \
              patch('maintenance.cleanup_artifacts') as cleanup_artifacts:
             janitor=Maintenance(fake_repository)
             janitor.run_once(now=self.now)
         self.assertEqual(janitor.retention_days,30)
-        fake_repository.cleanup.assert_called_once_with(self.now-30*86400,self.now)
+        self.assertEqual(janitor.traffic_retention_days,60)
+        fake_repository.cleanup.assert_called_once_with(self.now-30*86400,self.now,60)
         cleanup_artifacts.assert_called_once_with(self.now-30*86400,set())
         for invalid in ('', '6', '366', 'seven'):
             with self.subTest(invalid=invalid), patch.dict(os.environ,{'AI26_OBSERVATION_RETENTION_DAYS':invalid}):
                 with self.assertRaisesRegex(ValueError,'7 to 365'):
                     Maintenance(self.repo)
+        for name,invalid,expected in (
+            ('AI26_TRAFFIC_RETENTION_DAYS','6','7 to 365'),
+            ('AI26_TRAFFIC_RETENTION_DAYS','366','7 to 365'),
+            ('AI26_REPORT_RETENTION_HOURS','0','1 to 720'),
+            ('AI26_REPORT_RETENTION_HOURS','721','1 to 720'),
+        ):
+            with self.subTest(name=name,invalid=invalid), patch.dict(os.environ,{name:invalid}):
+                with self.assertRaisesRegex(ValueError,expected):
+                    Maintenance(self.repo)
+
+    def test_report_retention_hours_are_operator_configurable(self):
+        events.add_events([self.plate()])
+        with patch.dict(os.environ,{'AI26_REPORT_RETENTION_HOURS':'48'}):
+            report=events.evidence_report('KL07AB1234')
+        self.assertAlmostEqual(report['expires_at']-report['generated_at'],48*3600,delta=0.01)
+        self.assertIn('expires after 48 hours',report['retention'])
+
+    def test_unprotected_artifacts_follow_configured_observation_retention(self):
+        ref=artifacts.save_image(np.zeros((30,30,3),dtype=np.uint8),'plate-crop')
+        path=artifacts.ROOT/(ref['sha256']+'.jpg')
+        os.utime(path,(self.now-8*86400,self.now-8*86400))
+        with patch.dict(os.environ,{'AI26_OBSERVATION_RETENTION_DAYS':'30'}):
+            self.assertIsNotNone(artifacts.artifact_bytes(ref['sha256']))
 
     def test_schema_one_migration_backfills_report_leases(self):
         path=Path(self.folder.name)/'legacy.sqlite3'

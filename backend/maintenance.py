@@ -1,9 +1,9 @@
 """Retention runs even when inference is disabled or a source/model fails."""
 import logging
-import os
 import threading
 import time
 from artifacts import cleanup_artifacts
+from retention_policy import settings as retention_settings
 
 log = logging.getLogger(__name__)
 
@@ -11,14 +11,13 @@ log = logging.getLogger(__name__)
 class Maintenance:
     def __init__(self, repository, retention_days=None):
         self.repository = repository
-        if retention_days is None:
-            try:
-                retention_days = int(os.environ.get('AI26_OBSERVATION_RETENTION_DAYS', '7'))
-            except ValueError as error:
-                raise ValueError('AI26_OBSERVATION_RETENTION_DAYS must be an integer from 7 to 365') from error
-        if type(retention_days) is not int or not 7 <= retention_days <= 365:
-            raise ValueError('AI26_OBSERVATION_RETENTION_DAYS must be an integer from 7 to 365')
-        self.retention_days = retention_days
+        configured = retention_settings()
+        if retention_days is not None:
+            if type(retention_days) is not int or not 7 <= retention_days <= 365:
+                raise ValueError('AI26_OBSERVATION_RETENTION_DAYS must be an integer from 7 to 365')
+            configured['observation_days'] = retention_days
+        self.retention_days = configured['observation_days']
+        self.traffic_retention_days = configured['traffic_days']
         self.stop_event = threading.Event()
         self.thread = None
 
@@ -27,7 +26,7 @@ class Maintenance:
         cutoff = now - self.retention_days*86400
         # Report insertion and lease checks share this lock with cleanup.
         with self.repository.lock:
-            self.repository.cleanup(cutoff, now)
+            self.repository.cleanup(cutoff, now, self.traffic_retention_days)
             cleanup_artifacts(cutoff, self.repository.protected_artifacts(now))
 
     def start(self):

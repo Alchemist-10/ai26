@@ -12,6 +12,7 @@ os.environ['AI26_PROCESSING_ENABLED']='0'
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'backend'))
 import events
 from repository import Repository
+from maintenance import Maintenance
 
 
 class TrafficBaselineTests(unittest.TestCase):
@@ -77,6 +78,15 @@ class TrafficBaselineTests(unittest.TestCase):
         self.repo.cleanup(self.now-7*86400,self.now)
         self.assertEqual(self.repo.db.execute('SELECT count(*) FROM camera_traffic_buckets WHERE bucket_start_utc<?',(self.now-90*86400,)).fetchone()[0],0)
         self.assertEqual(self.repo.schema_version,14)
+
+    def test_traffic_retention_is_operator_configurable(self):
+        self.repo.record_traffic_sample('CAM-01',self.now-45*86400)
+        self.repo.record_traffic_sample('CAM-01',self.now-20*86400)
+        with patch.dict(os.environ,{'AI26_TRAFFIC_RETENTION_DAYS':'30'}):
+            Maintenance(self.repo).run_once(now=self.now)
+        rows=self.repo.db.execute('SELECT bucket_start_utc FROM camera_traffic_buckets ORDER BY bucket_start_utc').fetchall()
+        self.assertEqual(len(rows),1)
+        self.assertAlmostEqual(rows[0][0],int((self.now-20*86400)//900)*900)
 
     def test_rejects_bad_day_window_and_timezone(self):
         with self.assertRaises(ValueError): events.traffic_baselines(days=6,now=self.now)

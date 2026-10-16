@@ -17,12 +17,11 @@ from plate_format import normalize_plate
 from repository import Repository, canonical_json
 from report_signing import sign_report
 from schemas import Observation
+from retention_policy import settings as retention_settings
 
 MAX_EVENTS = 5000
 WINDOW_SECONDS = 300
 MAX_TRAVEL_SPEED_KMH = 160
-RETENTION_SECONDS = 7 * 86400
-REPORT_RETENTION_SECONDS = 86400
 LINK_ALGORITHM_VERSION = 'exact-plate-pair-constraints-v3'
 store = Repository(Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data')) / 'ai26.sqlite3')
 DEFAULT_RULES = {'watchlist': {'KL07AB1234': 'Local example watchlist entry; human review required'},
@@ -157,13 +156,15 @@ def _evidence_report(plate, since=None, until=None, case_id=None,camera_ids=None
     for hop in raw_reads:
         for artifact in hop.get('artifacts', []): artifacts[artifact['sha256']] = artifact
     from artifacts import artifact_bytes, summarize_read_images, rank_read_image_candidates
+    retention = retention_settings()
+    report_retention_seconds = retention['report_hours'] * 3600
     for artifact in artifacts.values():
-        if artifact_bytes(artifact['sha256'], now + REPORT_RETENTION_SECONDS) is None:
+        if artifact_bytes(artifact['sha256'], now + report_retention_seconds) is None:
             raise ValueError('A source artifact is missing; choose an available evidence interval')
     report = {'report_id': f'EVD-{uuid.uuid4().hex[:12].upper()}', 'version': 5,
-              'generated_at': now, 'expires_at': now + REPORT_RETENTION_SECONDS,
+              'generated_at': now, 'expires_at': now + report_retention_seconds,
               'case_id': case_id,
-              'retention': 'Report expires after 24 hours; referenced artifacts protected until report expiry; other source artifacts retained for 7 days',
+              'retention': f"Report expires after {retention['report_hours']} hours; referenced image derivatives are protected until report expiry; unleased sampled images are retained for {retention['observation_days']} days",
               'trajectory': trajectory, 'raw_reads': raw_reads, 'raw_read_count':raw_total, 'artifacts': list(artifacts.values()),
               'model_provenance': summarize_read_models(raw_reads),
               'artifact_coverage': summarize_read_images(raw_reads),

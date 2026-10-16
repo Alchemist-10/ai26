@@ -9,6 +9,7 @@ import math
 from collections import defaultdict
 from pathlib import Path
 import cv2
+from retention_policy import settings as retention_settings
 
 ROOT = Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data')) / 'artifacts'
 CAPTURE_POLICY = 'per-read-jpeg-v1'
@@ -241,7 +242,7 @@ def artifact_bytes(digest, protected_until=None):
     try:
         if not path.is_file(): return None
         now = time.time()
-        if now-path.stat().st_mtime >= 7*86400 and (protected_until or 0) <= now: return None
+        if now-path.stat().st_mtime >= retention_settings()['observation_days']*86400 and (protected_until or 0) <= now: return None
         data = path.read_bytes()
     except FileNotFoundError:
         return None
