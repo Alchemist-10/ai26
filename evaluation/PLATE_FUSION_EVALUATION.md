@@ -22,6 +22,11 @@ consensus, coverage and a check that every supported output appeared among that
 track's own OCR reads. The report is written without replacing an existing file
 and includes the input SHA-256.
 
+Schema version 2 also compares any review-only character candidate with the
+fixture's expected plate and reports exact, incorrect and abstained counts plus
+coverage. This is a synthetic behavior check; the candidate never changes the
+`conflicting` identity status or fills `fused_plate`.
+
 The included fixture has two interleaved tracks. The last-read baseline gets one
 of two sequences wrong; per-track consensus supports one correct sequence and
 abstains on the conflicting sequence, with no incorrect output and no identity

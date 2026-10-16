@@ -90,6 +90,7 @@ def evaluate(records: list[dict]) -> dict:
 
     single_correct = single_incorrect = single_unread = 0
     fused_correct = fused_incorrect = fused_abstained = 0
+    candidate_correct = candidate_incorrect = candidate_abstained = 0
     fusion_output_outside_track_reads = 0
     for key, expected in expected_by_track.items():
         single = latest_by_track[key]
@@ -101,13 +102,18 @@ def evaluate(records: list[dict]) -> dict:
         fused_correct += fused == expected
         fused_incorrect += fused is not None and fused != expected
         fused_abstained += fused is None
+        candidate = final.get("character_consensus_candidate")
+        candidate_correct += candidate == expected
+        candidate_incorrect += candidate is not None and candidate != expected
+        candidate_abstained += candidate is None
         if fused is not None and (final.get("identity_status") != "supported" or fused not in reads_by_track[key]):
             fusion_output_outside_track_reads += 1
 
     track_count = len(expected_by_track)
     supported = fused_correct + fused_incorrect
+    candidate_coverage = candidate_correct + candidate_incorrect
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "type": "synthetic_plate_fusion_comparison",
         "scope": "last OCR read versus per-camera/session/track consensus; synthetic sequence evaluation only",
         "sequence_count": track_count,
@@ -125,6 +131,16 @@ def evaluate(records: list[dict]) -> dict:
             "coverage_rate": round(supported / track_count, 6),
             "exact_rate_all_sequences": round(fused_correct / track_count, 6),
             "exact_rate_supported_only": round(fused_correct / supported, 6) if supported else None,
+        },
+        "review_only_character_candidate": {
+            "exact": candidate_correct,
+            "incorrect": candidate_incorrect,
+            "abstained": candidate_abstained,
+            "coverage_rate": round(candidate_coverage / track_count, 6),
+            "exact_rate_all_sequences": round(candidate_correct / track_count, 6),
+            "exact_rate_proposed_only": round(candidate_correct / candidate_coverage, 6) if candidate_coverage else None,
+            "identity_status_overridden": False,
+            "confidence_semantics": "heuristic_weight_share_not_calibrated_probability",
         },
         "identity_isolation": {
             "fused_outputs_outside_own_track_reads": fusion_output_outside_track_reads,

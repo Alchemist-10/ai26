@@ -9,10 +9,10 @@ evaluation = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(evaluation)
 
 
-def row(sample_id, camera, track, frame, expected, prediction, *, session="session-a", association="matched"):
+def row(sample_id, camera, track, frame, expected, prediction, *, session="session-a", association="matched", confidence=.9):
     return {"sample_id": sample_id, "synthetic": True, "camera": camera, "session": session,
             "track_id": track, "frame_index": frame, "expected_plate": expected,
-            "predicted_plate": prediction, "association_status": association, "confidence": .9}
+            "predicted_plate": prediction, "association_status": association, "confidence": confidence}
 
 
 class PlateFusionEvaluationTests(unittest.TestCase):
@@ -34,9 +34,29 @@ class PlateFusionEvaluationTests(unittest.TestCase):
         self.assertEqual(report["per_track_consensus"]["incorrect"], 0)
         self.assertEqual(report["per_track_consensus"]["abstained"], 1)
         self.assertEqual(report["per_track_consensus"]["coverage_rate"], .5)
+        self.assertEqual(report["review_only_character_candidate"], {
+            "exact": 1, "incorrect": 0, "abstained": 1, "coverage_rate": .5,
+            "exact_rate_all_sequences": .5, "exact_rate_proposed_only": 1.0,
+            "identity_status_overridden": False,
+            "confidence_semantics": "heuristic_weight_share_not_calibrated_probability",
+        })
         self.assertTrue(report["identity_isolation"]["passed"])
         self.assertEqual(report["identity_isolation"]["fused_outputs_outside_own_track_reads"], 0)
         self.assertFalse(report["accuracy_claim"])
+
+    def test_reports_wrong_review_candidate_without_promoting_it(self):
+        expected = "KL07AB1234"
+        records = [
+            row("r1", "CAM-01", 1, 1, expected, "KL07AB9234", confidence=.9),
+            row("r2", "CAM-01", 1, 2, expected, "KL07AB9234", confidence=.9),
+            row("r3", "CAM-01", 1, 3, expected, expected, confidence=.1),
+        ]
+        report = evaluation.evaluate(records)
+        self.assertEqual(report["review_only_character_candidate"]["incorrect"], 1)
+        self.assertEqual(report["review_only_character_candidate"]["exact"], 0)
+        self.assertEqual(report["per_track_consensus"]["incorrect"], 0)
+        self.assertEqual(report["per_track_consensus"]["abstained"], 1)
+        self.assertFalse(report["review_only_character_candidate"]["identity_status_overridden"])
 
     def test_ambiguous_association_resets_consensus_and_unread_is_not_a_vote(self):
         records = [
@@ -49,6 +69,7 @@ class PlateFusionEvaluationTests(unittest.TestCase):
         self.assertEqual(report["single_frame_last_read"]["unread"], 1)
         self.assertEqual(report["per_track_consensus"]["abstained"], 1)
         self.assertEqual(report["per_track_consensus"]["exact"], 0)
+        self.assertEqual(report["review_only_character_candidate"]["abstained"], 1)
 
     def test_rejects_mixed_labels_duplicate_ids_unsorted_frames_and_non_synthetic_rows(self):
         valid = row("x1", "CAM-01", 1, 1, "KL07AB1234", "KL07AB1234")
