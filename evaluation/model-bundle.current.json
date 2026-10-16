@@ -76,7 +76,7 @@
     "scope_note": "These references document upstream software/model descriptions. They do not independently verify training data, OCR accuracy on Indian plates, component-weight rights, or AI26 deployment suitability."
   },
   "pipeline_sources": {
-    "backend/fusion.py": "01b7034f752382c7d93b9bb0ff7224501139185c485a76327481991b51f5e1a0",
+    "backend/fusion.py": "0856adb403a339d644f6299ef606f175d2ce5aa46d49e64498effd5adefe790d",
     "backend/inference.py": "db5df8809bed9bd3f798a9a36c8728cddbaf95288e94938f5c5983b23707fd25",
     "backend/model_provenance.py": "a84a21cf35cfac0063c5a92bc348d5c586676ecb15c1119616d29fb6f5277f19",
     "backend/model_rollout.py": "f37375773509c836abe714d0e205b7ae23b08a495135050f1d874dbcbd1131c0",
