@@ -35,10 +35,12 @@ accessible files under `/mnt` on 2026-10-16 found no CAM-07–09 source clips;
 
 The user supplied `multi sample bus-20261015T121500Z-1-001.zip`. It contains
 three MP4 files whose names match the CAM-07–09 catalog expectations above.
-They were fingerprinted and prepared as inactive managed releases in the local,
-Git-ignored `backend/data/sources` directory. The app was left running with
-processing disabled and the prepared sources were not activated. CAM-07 decoded
-as 1,285 frames; CAM-08 decoded as 627 frames despite a stale container count of
+They were fingerprinted and prepared in the local, Git-ignored
+`backend/data/sources` directory, then selected as active managed releases after
+the user's explicit activation request. After restart, the API reports all
+three sources available, and HTTP byte-range playback requests return 206. The
+API's inference processing remains disabled. CAM-07 decoded as 1,285 frames;
+CAM-08 decoded as 627 frames despite a stale container count of
 752; CAM-09 decoded as 540 frames despite a stale container count of 580. The
 importer now compares fully decoded counts for import validation, while its
 read-only check remains metadata-only. These checks confirm valid video decode
