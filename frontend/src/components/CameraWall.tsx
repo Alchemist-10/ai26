@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { memo, useMemo, useState } from "react"
 import { Search, Video, ScanLine } from "lucide-react"
 import type { Camera } from "@/lib/api"
 import { cn } from "@/lib/utils"
@@ -6,7 +6,7 @@ import { CameraThumb } from "@/components/CameraThumb"
 
 type Filter = "all" | "vehicle" | "plate"
 
-export function CameraWall({
+export const CameraWall = memo(function CameraWall({
   cameras,
   focused,
   onFocus,
@@ -147,4 +147,16 @@ export function CameraWall({
       </div>
     </div>
   )
-}
+}, (previous, next) => {
+  if (previous.focused !== next.focused || previous.onFocus !== next.onFocus || previous.cameras.length !== next.cameras.length) return false
+  return previous.cameras.every((camera, index) => {
+    const updated = next.cameras[index]
+    return camera.id === updated.id
+      && camera.kind === updated.kind
+      && camera.location === updated.location
+      && camera.location_confirmed === updated.location_confirmed
+      && camera.source_available === updated.source_available
+      && camera.health.processing_enabled === updated.health.processing_enabled
+      && camera.health.status === updated.health.status
+  })
+})

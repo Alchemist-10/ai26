@@ -5,8 +5,20 @@ import { scopedResourceUrl } from "@/lib/api"
 export const CameraThumb = memo(function CameraThumb({ cameraId, available, processingEnabled, processingStatus, className }: { cameraId: string; available: boolean; processingEnabled: boolean; processingStatus: string; className?: string }) {
   const [image, setImage] = useState("")
   const [failed, setFailed] = useState(false)
+  const [nearViewport, setNearViewport] = useState(() => !("IntersectionObserver" in window))
+  const container = useRef<HTMLDivElement>(null)
   const etag = useRef("")
   const objectUrl = useRef("")
+  useEffect(() => {
+    const element = container.current
+    if (!element) return
+    if (!("IntersectionObserver" in window)) return
+    const observer = new IntersectionObserver(([entry]) => {
+      setNearViewport(Boolean(entry?.isIntersecting))
+    }, { rootMargin: "120px 0px" })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
   usePolling(async signal => {
     try {
       const response = await fetch(scopedResourceUrl(`/api/preview/${cameraId}`), { signal, credentials: "same-origin", headers: etag.current ? { "If-None-Match": etag.current } : {} })
@@ -22,11 +34,11 @@ export const CameraThumb = memo(function CameraThumb({ cameraId, available, proc
       setImage(next); setFailed(false)
       if (previous) URL.revokeObjectURL(previous)
     } catch { if (!signal.aborted) setFailed(true) }
-  }, 3000, available && processingEnabled && ["loading", "processing"].includes(processingStatus))
+  }, 3000, nearViewport && available && processingEnabled && ["loading", "processing"].includes(processingStatus))
   useEffect(() => () => { if (objectUrl.current) URL.revokeObjectURL(objectUrl.current) }, [])
   if (!available || !processingEnabled || !["loading", "processing"].includes(processingStatus) || failed || !image) {
     const message = !available ? "Source missing" : !processingEnabled ? "Processing paused" : processingStatus === "error" ? "Processing error" : failed ? "Preview unavailable" : "Preview preparing"
-    return <div role="img" aria-label={`${cameraId} ${message}`} className="flex h-full items-center justify-center bg-zinc-950 text-xs text-zinc-500">{message}</div>
+    return <div ref={container} role="img" aria-label={`${cameraId} ${message}`} className="flex h-full w-full items-center justify-center bg-zinc-950 text-xs text-zinc-500">{message}</div>
   }
-  return <img src={image} alt={`${cameraId} sampled preview`} className={className} decoding="async" />
+  return <div ref={container} className="h-full w-full"><img src={image} alt={`${cameraId} sampled preview`} className={className} decoding="async" /></div>
 })
