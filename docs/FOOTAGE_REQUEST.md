@@ -17,6 +17,15 @@ describes live and recorded video access as role-based operator access. The
 [Kochi Corporation CSML page](https://kochicorporation.lsgkerala.gov.in/en/cochin-smart-mission-limited/401)
 lists the public CSML contact details.
 
+## Public contact for routing
+
+The Kochi Corporation page lists Cochin Smart Mission Limited (CSML) at 4th
+floor, JLN Metro Station, Kaloor, Kochi 682017; `info@csml.co.in`; and
+`0484-2795700`, and links to the [official CSML website](https://csml.co.in/).
+These are general public contacts, not a verified CCTV-footage desk. Ask them
+to route the request below to the authorized ITMS/CCTV data custodian. No one
+has been contacted as part of this work.
+
 ## Request template
 
 Send this through an authorized project or university channel. No request has
