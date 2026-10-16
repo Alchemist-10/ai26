@@ -1,0 +1,72 @@
+{
+  "generated_at_utc": "2026-10-16T04:20:32Z",
+  "scope": "Paired decode-only comparison at the 75-frame per-camera spacing observed in the six-camera 2 FPS round-robin. No model inference, browser playback, or concurrent six-decoder load.",
+  "conditions": {
+    "sources": "backend/static/playback/CAM-01.mp4 through CAM-06.mp4",
+    "opencv_threads": 1,
+    "reported_fps": 25.0,
+    "target_spacing_frames": 75,
+    "target_count_per_camera_per_round": 8,
+    "rounds": 4,
+    "method_order": "Alternated seek-first and forward-first by round",
+    "timed_region": "OpenCV cursor checks and seek/grab/retrieve/read calls; pixel hashing was outside the timed interval",
+    "targets_per_clip": [1, 76, 151, 226, 301, 376, 451, 526]
+  },
+  "cameras": {
+    "CAM-01": {
+      "source_sha256": "2fa6cffcf7a5edd25bf9a3bc1cddeea59a098c4c81d78ed51d9658f238ed4a0f",
+      "frame_count": 896,
+      "seek": {"samples": 32, "median_ms": 67.932, "p95_ms": 108.9, "max_ms": 111.053},
+      "forward": {"samples": 32, "median_ms": 30.287, "p95_ms": 64.214, "max_ms": 65.044},
+      "pixel_hashes_match": true,
+      "decoder_positions_match": true
+    },
+    "CAM-02": {
+      "source_sha256": "eca71f58121803e972f086e5ca280afbb8aa95380e87545f1483f29a57dc1fd0",
+      "frame_count": 880,
+      "seek": {"samples": 32, "median_ms": 70.475, "p95_ms": 94.7, "max_ms": 95.369},
+      "forward": {"samples": 32, "median_ms": 21.355, "p95_ms": 70.685, "max_ms": 72.39},
+      "pixel_hashes_match": true,
+      "decoder_positions_match": true
+    },
+    "CAM-03": {
+      "source_sha256": "03c7e49e89dc6a552369211c959d821627cb6db0a92c471f2db61f011cd7d33c",
+      "frame_count": 899,
+      "seek": {"samples": 32, "median_ms": 73.005, "p95_ms": 126.202, "max_ms": 128.788},
+      "forward": {"samples": 32, "median_ms": 29.177, "p95_ms": 74.176, "max_ms": 75.051},
+      "pixel_hashes_match": true,
+      "decoder_positions_match": true
+    },
+    "CAM-04": {
+      "source_sha256": "735448fd4b25b1d2d035def69df1714dbc7b71073739ae8691c6dcdd817e41cf",
+      "frame_count": 881,
+      "seek": {"samples": 32, "median_ms": 72.878, "p95_ms": 98.326, "max_ms": 104.511},
+      "forward": {"samples": 32, "median_ms": 20.737, "p95_ms": 69.015, "max_ms": 70.185},
+      "pixel_hashes_match": true,
+      "decoder_positions_match": true
+    },
+    "CAM-05": {
+      "source_sha256": "56922cb8df3242034ac62e1c4a474e84ccbb4090b19d8c7a78855c0b21192a86",
+      "frame_count": 886,
+      "seek": {"samples": 32, "median_ms": 70.343, "p95_ms": 111.987, "max_ms": 116.612},
+      "forward": {"samples": 32, "median_ms": 26.733, "p95_ms": 68.633, "max_ms": 80.737},
+      "pixel_hashes_match": true,
+      "decoder_positions_match": true
+    },
+    "CAM-06": {
+      "source_sha256": "48a562a900dab2698a503e04882f4dd1856c8b8ae6f58201db9ef4b3977aa3d7",
+      "frame_count": 1778,
+      "seek": {"samples": 32, "median_ms": 65.737, "p95_ms": 93.73, "max_ms": 94.028},
+      "forward": {"samples": 32, "median_ms": 20.023, "p95_ms": 64.996, "max_ms": 67.172},
+      "pixel_hashes_match": true,
+      "decoder_positions_match": true
+    }
+  },
+  "all_pixel_hashes_match": true,
+  "all_decoder_positions_match": true,
+  "limitations": [
+    "Sequentially alternated single-decoder runs do not reproduce competing six-camera decoder threads or inference contention.",
+    "Playback proxies do not represent arbitrary imported recordings or original NVR camera clocks.",
+    "This does not establish browser responsiveness, detection/OCR accuracy, or sustained multi-camera throughput."
+  ]
+}

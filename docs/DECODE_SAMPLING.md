@@ -68,6 +68,15 @@ was outside the timed region. Conditions and limits are recorded in
 This isolated decode result does not measure inference, six-camera contention,
 browser responsiveness or playback drops.
 
+To check the gap observed during six-camera round-robin, a second paired run used
+75-frame spacing on every bundled proxy (four rounds, 32 samples per method per
+camera). Forward decode remained faster: camera medians were 20.0–30.3 ms versus
+65.7–73.0 ms for seek/read; p95 ranges were 64.2–74.2 ms versus 93.7–126.2 ms.
+All 192 matched targets had identical pixel hashes and decoder positions. This
+supports retaining the current 128-frame bound for these proxies; it does not
+reproduce concurrent decode plus inference. Per-camera source hashes and timings
+are in [`validation/decode-paired-six-camera-75frame-2026-10-16.json`](validation/decode-paired-six-camera-75frame-2026-10-16.json).
+
 The existing app services were absent when the new startup check began. Both ports
 were closed; the app was restored with processing enabled, all ten previously
 sampled historical observation IDs remained, and six snapshots decoded. This was
