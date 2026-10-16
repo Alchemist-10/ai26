@@ -58,6 +58,16 @@ missing-source cleanup now also checks cursor removal. All 190 backend tests pas
 
 ## Runtime sample and limits
 
+A paired, decode-only CAM-01 proxy comparison alternated method order across six
+rounds, using the same 12 targets spaced 50 frames apart per round. With one
+OpenCV thread, 72 samples per method produced identical raw pixel hashes and
+decoder positions. Repeated seek/read measured 72.0 ms median and 148.3 ms p95;
+verified bounded-forward decode measured 13.3 ms median and 60.8 ms p95. Hashing
+was outside the timed region. Conditions and limits are recorded in
+[`validation/decode-paired-cam01-2026-10-16.json`](validation/decode-paired-cam01-2026-10-16.json).
+This isolated decode result does not measure inference, six-camera contention,
+browser responsiveness or playback drops.
+
 The existing app services were absent when the new startup check began. Both ports
 were closed; the app was restored with processing enabled, all ten previously
 sampled historical observation IDs remained, and six snapshots decoded. This was
