@@ -33,12 +33,12 @@ export const CameraThumb = memo(function CameraThumb({ cameraId, available, proc
       objectUrl.current = next; etag.current = nextEtag
       setImage(next); setFailed(false)
       if (previous) URL.revokeObjectURL(previous)
-    } catch { if (!signal.aborted) setFailed(true) }
+    } catch { if (!signal.aborted && processingStatus !== "loading") setFailed(true) }
   }, 3000, nearViewport && available && processingEnabled && ["loading", "processing"].includes(processingStatus))
   useEffect(() => () => { if (objectUrl.current) URL.revokeObjectURL(objectUrl.current) }, [])
   if (!available || !processingEnabled || !["loading", "processing"].includes(processingStatus) || failed || !image) {
     const message = !available ? "Source missing" : !processingEnabled ? "Processing paused" : processingStatus === "error" ? "Processing error" : failed ? "Preview unavailable" : "Preview preparing"
-    return <div ref={container} role="img" aria-label={`${cameraId} ${message}`} className="flex h-full w-full items-center justify-center bg-zinc-950 text-xs text-zinc-500">{message}</div>
+    return <div ref={container} role="img" aria-label={`${cameraId} ${message}`} className="flex h-full w-full items-center justify-center bg-zinc-950 px-1 text-center text-[0px] leading-none text-zinc-500 lg:text-xs lg:leading-normal">{message}</div>
   }
   return <div ref={container} className="h-full w-full"><img src={image} alt={`${cameraId} sampled preview`} className={className} decoding="async" /></div>
 })

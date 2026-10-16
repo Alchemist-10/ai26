@@ -288,10 +288,15 @@ previously had no loading state during that first-frame wait. It now reports
 that it is waiting for the first sampled frame, changes to a paused message when
 the processor is disabled, and shows the existing error/retry state on failure.
 When processing is disabled, it no longer opens a stream request that cannot
-produce a frame. This improves status feedback and avoids a guaranteed failed
-request; it does not reduce model startup time or prove responsiveness on other
-hardware. The UI build/lint pass; browser interaction under enabled inference and
-the user's target hardware remain unmeasured.
+produce a frame. During initialization it now names model preparation and sets
+the several-second first-frame expectation; the camera-wall thumbnail stays in
+its preparing state when the processor reports loading, instead of calling the
+not-yet-produced preview unavailable. The status was visually checked at
+1280×720 and 390×844 against an isolated synthetic loading API; that verifies
+copy/layout only, not real frame delivery. This improves feedback but does not
+reduce model startup time or prove responsiveness on other hardware. The UI
+build/lint pass; browser interaction under actual enabled inference and the
+user's target hardware remain unmeasured.
 
 ## Isolated ALPR runtime sample — 16 October 2026
 
