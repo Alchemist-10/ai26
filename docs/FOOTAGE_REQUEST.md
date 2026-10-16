@@ -28,8 +28,8 @@ camera source. No CAM-07–09 footage, video archive or new media branch was
 found. Repository media is only a check for files that were committed there; it
 does not establish whether CSML or another authorized custodian has archived
 recordings. A fresh exact-filename scan of the current Codex workspace and
-mounted `/mnt` and `/media` paths on 2026-10-16 also found no CAM-07–09 source
-clips.
+accessible files under `/mnt` on 2026-10-16 found no CAM-07–09 source clips;
+`/media` is not present in this environment.
 
 ## Public contact for routing
 
