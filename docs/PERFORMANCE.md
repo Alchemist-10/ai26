@@ -332,6 +332,25 @@ plate search or an accuracy measurement because plate presence/readability was
 not labeled and the clips may be correlated. Per-frame and model hashes are in
 [`validation/alpr-proxy-largest-vehicle-scan-2026-10-16.json`](validation/alpr-proxy-largest-vehicle-scan-2026-10-16.json).
 
+## Follow-up active-inference route check — 16 October 2026
+
+A separate isolated 20-second run used a temporary API/data root, the production
+preview, six available replay clips, and the configured two-attempts-per-second
+budget. The first CAM-01 attempt took 4.90 seconds, including 4.66 seconds of
+lazy model initialization, and exceeded its interval once. After that initial
+attempt, the valid 19.006-second counter window recorded 38 completed frames
+(1.999 warmed FPS), no failed attempts or health failures, and no additional
+budget overruns. API health latency was 6.45 ms median / 10.23 ms p95; process
+CPU was 63.0% median / 102.1% p95 across 12 logical CPUs, and RSS was 547.4 MiB
+median / 548.8 MiB p95. Three source clips were missing.
+
+During that run, the warmed Analytics route rendered its observation heading
+and camera-health table after one measured 566 ms accessibility click-plus-state
+capture. This is a single automation observation, not click-to-paint, INP, or a
+percentile. It does not measure browser main-thread load, playback drops, mobile
+hardware, or live feeds. Full scope and limits are in
+[`validation/active-inference-ui-followup-2026-10-16.json`](validation/active-inference-ui-followup-2026-10-16.json).
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded
