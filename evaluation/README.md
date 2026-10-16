@@ -123,6 +123,11 @@ target or detection-accuracy claim.
 For paired raw/classical/learned/fusion runs and a model-card starting point, see
 [Ablation evaluation](ABLATION.md). The runner requires the exact same labeled
 test samples and a ready, hashed dataset manifest for all four variants.
+The current configured vehicle and ALPR components have a digest-pinned bundle
+descriptor ([`model-bundle.current.json`](model-bundle.current.json)) and a
+filled model card ([`model-card.current.json`](model-card.current.json)). The
+card records observed runtime only; training lineage, reviewed labels, accuracy,
+component licensing, and deployment approval remain unresolved.
 For read-only scene hints and optional per-plate-box quality candidates, see
 [Heuristic quality routing](QUALITY_ROUTER.md); plate boxes are operator supplied,
 weather-like flags are unverified, and recommendations do not control the live

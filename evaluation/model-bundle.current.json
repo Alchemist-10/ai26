@@ -1,0 +1,67 @@
+{
+  "bundle_id": "ai26-active-vehicle-and-alpr-pipeline",
+  "bundle_version": "fec01059cd3f16e3828dbaab12e8e54cd8b767df",
+  "components": [
+    {
+      "format": "PyTorch checkpoint",
+      "license": "Not verified in this repository",
+      "model_id": "ultralytics-yolov8n",
+      "path": "backend/yolov8n.pt",
+      "role": "vehicle_detector_weights",
+      "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36"
+    },
+    {
+      "format": "ONNX",
+      "license": "Not verified in this repository",
+      "model_id": "yolo-v9-t-384-license-plate-end2end",
+      "role": "plate_detector_weights",
+      "sha256": "888397b96d761c89db40bc9c305838e8652660f5e282c2cadebbe8d2951a77a8",
+      "source_filename": "yolo-v9-t-384-license-plates-end2end.onnx"
+    },
+    {
+      "format": "ONNX",
+      "license": "Not verified in this repository",
+      "model_id": "global-plates-mobile-vit-v2-model",
+      "role": "plate_ocr_weights",
+      "sha256": "e2fe5946c02e73901f73d21b3b7223a0c3e3b02059d4964fbf279b01af38d63c",
+      "source_filename": "global_mobile_vit_v2_ocr.onnx"
+    },
+    {
+      "format": "YAML",
+      "role": "plate_ocr_configuration",
+      "sha256": "202b90f2a1f3a0d486b8f1fbd5cdc2f19f4f4881a094f086b983976ed3108aaf",
+      "source_filename": "global_mobile_vit_v2_ocr_config.yaml"
+    }
+  ],
+  "configured_controls": {
+    "cpu_onnx_inter_op_threads": 1,
+    "cpu_onnx_intra_op_threads": 2,
+    "plate_detector_confidence_threshold": 0.4,
+    "plate_ocr_min_confidence_for_supported_identity": 0.35,
+    "vehicle_classes": [
+      "car",
+      "motorcycle",
+      "bus",
+      "truck"
+    ],
+    "vehicle_confidence_threshold": 0.4
+  },
+  "description": "Digest-pinned descriptor of the currently configured vehicle detector and plate detector/OCR assets; does not assert that the components were trained together.",
+  "pipeline_sources": {
+    "backend/fusion.py": "01b7034f752382c7d93b9bb0ff7224501139185c485a76327481991b51f5e1a0",
+    "backend/inference.py": "db5df8809bed9bd3f798a9a36c8728cddbaf95288e94938f5c5983b23707fd25",
+    "backend/model_provenance.py": "a84a21cf35cfac0063c5a92bc348d5c586676ecb15c1119616d29fb6f5277f19",
+    "backend/model_rollout.py": "f37375773509c836abe714d0e205b7ae23b08a495135050f1d874dbcbd1131c0",
+    "backend/plate_format.py": "8f2508bae81c098eaee7598d4227da698b7973014bbe9b01a4e932ae4369eb90",
+    "backend/tracking.py": "0e1566b5969df0da31ee6073dc61720366c64eda551491eb1861dad23c1ea9f1"
+  },
+  "runtime_versions": {
+    "fast-alpr": "0.4.0",
+    "fast-plate-ocr": "1.1.0",
+    "onnxruntime": "1.30.0",
+    "open-image-models": "0.6.0",
+    "torch": "2.14.0+cpu",
+    "ultralytics": "8.4.155"
+  },
+  "schema_version": 1
+}
