@@ -239,6 +239,38 @@ class Authentication(unittest.TestCase):
             self.assertEqual(denied.status_code,404)
             self.assertEqual(self.repo.alert(alert_id)["state"],"open")
 
+    def test_onvif_profile_lookup_is_admin_only_and_audited_without_credentials(self):
+        self.create()
+        self.login()
+        payload={
+            "source_address":"192.168.1.20",
+            "service_address":"http://192.168.1.20/onvif/device",
+            "username":"camera-user",
+            "password":"private-camera-password",
+            "timeout_seconds":3,
+        }
+        headers={**self.csrf_headers(),"X-AI26-Case-ID":"CASE-2026-01","X-AI26-Purpose":"system_test"}
+        result={"device_ip":"192.168.1.20","profile_count":0,"profiles":[],"persisted":False,"activated":False}
+        with patch.object(main,"inspect_onvif_profiles",return_value=result) as inspect:
+            response=self.client.post("/api/cameras/onvif/profiles",json=payload,headers=headers)
+        self.assertEqual(response.status_code,200,response.text)
+        inspect.assert_called_once_with("192.168.1.20","http://192.168.1.20/onvif/device",
+                                        "camera-user","private-camera-password",3.0)
+        audit=self.repo.db.execute("SELECT action,data FROM audit ORDER BY id DESC LIMIT 1").fetchone()
+        self.assertEqual(audit["action"],"sensitive_access")
+        self.assertNotIn("private-camera-password",audit["data"])
+        self.assertNotIn("camera-user",audit["data"])
+
+        self.client.post("/api/auth/logout",headers=self.csrf_headers())
+        self.auth.create_user("onvif_operator","Correct-Horse-Battery-Staple-26","operator",case_ids=["CASE-2026-01"])
+        operator=self.client.post("/api/auth/login",json={"username":"onvif_operator","password":"Correct-Horse-Battery-Staple-26"})
+        self.assertEqual(operator.status_code,200)
+        operator_headers={**headers,CSRF_HEADER:operator.json()["csrf_token"]}
+        with patch.object(main,"inspect_onvif_profiles") as inspect:
+            denied=self.client.post("/api/cameras/onvif/profiles",json=payload,headers=operator_headers)
+        self.assertEqual(denied.status_code,403)
+        inspect.assert_not_called()
+
     def test_evidence_reports_and_artifacts_are_bound_to_the_selected_case(self):
         password="Correct-Horse-Battery-Staple-26"
         self.auth.create_user("case_alpha",password,"analyst",case_ids=["CASE-ALPHA"])
