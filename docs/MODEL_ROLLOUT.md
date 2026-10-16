@@ -45,6 +45,25 @@ check, not accuracy validation or a canary quality gate. It uses Ultralytics'
 documented [`task` and `names` properties](https://docs.ultralytics.com/reference/models/yolo/model/)
 and [detection result boxes](https://docs.ultralytics.com/tasks/detect/).
 
+## Plate detector and OCR startup check
+
+The plate pipeline now runs a small synthetic check when its exact model files
+are first loaded. It passes a blank 640×640 BGR frame through the plate
+detector and checks that candidate boxes, if any, have finite, ordered
+coordinates. It also passes an in-memory generated crop through the OCR model
+and checks for a string result and finite confidence values in [0, 1]. The
+recognized text is discarded. A failed check prevents the pipeline from being
+cached and the processing attempt fails; a passed check records only the probe
+shapes, result type and candidate/confidence counts in model provenance.
+
+This catches broken result containers, coordinates or OCR-confidence contracts.
+It cannot prove that the detector finds real plates or that OCR is accurate. A
+2026-10-16 local run passed the wrapper checks, but the sampled camera clip
+produced zero detector candidates. ONNX Runtime also emitted lenient graph
+shape-merge warnings; the synthetic contract checks do not establish their
+effect on positive plate detection. The result is recorded in
+[`validation/alpr-runtime-cam01-2026-10-16.json`](validation/alpr-runtime-cam01-2026-10-16.json).
+
 This supports a controlled operator-managed canary and exact rollback target,
 not a measured canary result. Validate the candidate on held-out labeled data
 and monitor detection/plate outcomes before choosing the camera allowlist.

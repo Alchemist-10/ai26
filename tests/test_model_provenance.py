@@ -74,7 +74,8 @@ class ModelFiles(unittest.TestCase):
         config=self.root/'config.yaml';config.write_bytes(b'fixture_config: true')
         session=SimpleNamespace(get_providers=lambda:['CPUExecutionProvider'])
         detector=SimpleNamespace(model=session,predict=lambda _:[])
-        ocr=SimpleNamespace(ocr_model=SimpleNamespace(model=session),predict=lambda _:None)
+        ocr=SimpleNamespace(ocr_model=SimpleNamespace(model=session),
+                             predict=lambda _:SimpleNamespace(text='',confidence=[]))
         create=Mock(return_value=detector);create_ocr=Mock(return_value=ocr)
         combine=Mock(return_value=SimpleNamespace(predict=lambda _:[]))
         detector_download=Mock(return_value=self.source)
@@ -93,6 +94,9 @@ class ModelFiles(unittest.TestCase):
         with patch.dict(sys.modules,modules),patch.object(provenance,'version',return_value='fixture'):
             model,metadata=provenance.load_plate_model(self.root/'models',cpu_threads=2)
         self.assertEqual(metadata['weight_provenance_status'],'hashed_loaded_files')
+        self.assertEqual(metadata['compatibility']['status'],'passed')
+        self.assertEqual(metadata['compatibility']['detector_candidate_count'],0)
+        self.assertEqual(metadata['compatibility']['ocr_probe_shape'],[72,320,3])
         self.assertEqual({r['role'] for r in metadata['model_files']},
                          {'plate_detector_weights','ocr_weights','ocr_configuration'})
         paths=[create.call_args.args[0],create_ocr.call_args.kwargs['model_path'],create_ocr.call_args.kwargs['config_path']]
@@ -112,6 +116,42 @@ class ModelFiles(unittest.TestCase):
         with patch.dict(sys.modules,modules),self.assertRaisesRegex(RuntimeError,'initialization failure'):
             provenance.load_plate_model(self.root/'models')
         self.assertEqual(create_ocr.call_count,0);self.assertEqual(combine.call_count,0)
+
+    def test_preflight_failure_prevents_returning_a_loaded_plate_model(self):
+        modules,create,create_ocr,combine,_,_=self.loader_fixtures()
+        with patch.dict(sys.modules,modules), \
+             patch.object(provenance,'preflight_plate_pipeline',side_effect=RuntimeError('probe failed')), \
+             self.assertRaisesRegex(RuntimeError,'probe failed'):
+            provenance.load_plate_model(self.root/'models')
+        self.assertEqual(create.call_count,1)
+        self.assertEqual(create_ocr.call_count,1)
+        self.assertEqual(combine.call_count,1)
+
+    def test_plate_preflight_rejects_invalid_detector_and_ocr_output(self):
+        detector=SimpleNamespace(predict=lambda _: [SimpleNamespace(bounding_box=SimpleNamespace(
+            x1=4,y1=4,x2=4,y2=12))])
+        ocr=SimpleNamespace(predict=lambda _:SimpleNamespace(text='fixture',confidence=[.5]))
+        with self.assertRaisesRegex(RuntimeError,'invalid box coordinates'):
+            provenance.preflight_plate_pipeline(detector,ocr)
+
+        detector=SimpleNamespace(predict=lambda _: [])
+        ocr=SimpleNamespace(predict=lambda _:SimpleNamespace(text='fixture',confidence=[float('nan')]))
+        with self.assertRaisesRegex(RuntimeError,'invalid confidence'):
+            provenance.preflight_plate_pipeline(detector,ocr)
+
+    def test_plate_preflight_accepts_finite_numpy_box_and_confidence_values(self):
+        import numpy as np
+        detector=SimpleNamespace(predict=lambda _: [SimpleNamespace(bounding_box=SimpleNamespace(
+            x1=np.float32(4),y1=np.float64(5),x2=np.float32(30),y2=np.float64(22)))])
+        ocr=SimpleNamespace(predict=lambda _:SimpleNamespace(text='fixture',confidence=[np.float32(.5)]))
+        result=provenance.preflight_plate_pipeline(detector,ocr)
+        self.assertEqual(result['status'],'passed')
+        self.assertEqual(result['detector_candidate_count'],1)
+        self.assertEqual(result['ocr_confidence_count'],1)
+
+        ocr=SimpleNamespace(predict=lambda _:SimpleNamespace(text='fixture',confidence=[True]))
+        with self.assertRaisesRegex(RuntimeError,'invalid confidence'):
+            provenance.preflight_plate_pipeline(detector,ocr)
 
 
 class InferenceProvenance(unittest.TestCase):

@@ -41,6 +41,22 @@
           "filename": "global_mobile_vit_v2_ocr_config.yaml"
         }
       ],
+      "compatibility": {
+        "status": "passed",
+        "detector_probe_shape": [
+          640,
+          640,
+          3
+        ],
+        "detector_candidate_count": 0,
+        "ocr_probe_shape": [
+          72,
+          320,
+          3
+        ],
+        "ocr_result_type": "OcrResult",
+        "ocr_confidence_count": 9
+      },
       "detector_execution_providers": [
         "CPUExecutionProvider"
       ],
@@ -59,33 +75,33 @@
     "sampled_frames": 12
   },
   "timing": {
-    "base_runtime_import_ms": 2106.355,
-    "alpr_import_and_model_session_initialization_ms": 468.95,
-    "first_prediction_ms": 77.125,
+    "base_runtime_import_ms": 1707.969,
+    "alpr_import_session_and_preflight_ms": 558.565,
+    "first_prediction_ms": 63.828,
     "decode": {
       "samples": 12,
-      "median_ms": 1.425,
-      "p95_ms": 40.098,
-      "max_ms": 40.098
+      "median_ms": 1.759,
+      "p95_ms": 38.122,
+      "max_ms": 38.122
     },
     "prediction_all": {
       "samples": 12,
-      "median_ms": 56.383,
-      "p95_ms": 77.125,
-      "max_ms": 77.125
+      "median_ms": 53.319,
+      "p95_ms": 63.934,
+      "max_ms": 63.934
     },
     "prediction_after_first": {
       "samples": 11,
-      "median_ms": 55.722,
-      "p95_ms": 62.724,
-      "max_ms": 62.724
+      "median_ms": 53.193,
+      "p95_ms": 63.934,
+      "max_ms": 63.934
     },
-    "synthetic_ocr_first_prediction_ms": 9.163,
+    "synthetic_ocr_first_prediction_ms": 6.993,
     "synthetic_ocr_after_first": {
       "samples": 11,
-      "median_ms": 7.212,
-      "p95_ms": 8.135,
-      "max_ms": 8.135
+      "median_ms": 6.95,
+      "p95_ms": 7.462,
+      "max_ms": 7.462
     }
   },
   "aggregate": {
@@ -99,96 +115,96 @@
     {
       "frame_index": 0,
       "source_time_seconds": 0.0,
-      "decode_ms": 40.098,
-      "alpr_predict_ms": 77.125,
+      "decode_ms": 38.122,
+      "alpr_predict_ms": 63.828,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 50,
       "source_time_seconds": 2.0,
-      "decode_ms": 1.747,
-      "alpr_predict_ms": 62.724,
+      "decode_ms": 1.315,
+      "alpr_predict_ms": 60.526,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 100,
       "source_time_seconds": 4.0,
-      "decode_ms": 0.842,
-      "alpr_predict_ms": 58.897,
+      "decode_ms": 2.657,
+      "alpr_predict_ms": 62.868,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 150,
       "source_time_seconds": 6.0,
-      "decode_ms": 4.01,
-      "alpr_predict_ms": 61.985,
+      "decode_ms": 3.41,
+      "alpr_predict_ms": 63.934,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 200,
       "source_time_seconds": 8.0,
-      "decode_ms": 0.916,
-      "alpr_predict_ms": 53.205,
+      "decode_ms": 1.111,
+      "alpr_predict_ms": 51.618,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 250,
       "source_time_seconds": 10.0,
-      "decode_ms": 1.232,
-      "alpr_predict_ms": 51.69,
+      "decode_ms": 1.82,
+      "alpr_predict_ms": 53.193,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 300,
       "source_time_seconds": 12.0,
-      "decode_ms": 0.987,
-      "alpr_predict_ms": 50.404,
+      "decode_ms": 1.697,
+      "alpr_predict_ms": 53.444,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 350,
       "source_time_seconds": 14.0,
-      "decode_ms": 2.045,
-      "alpr_predict_ms": 51.505,
+      "decode_ms": 2.594,
+      "alpr_predict_ms": 55.428,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 400,
       "source_time_seconds": 16.0,
-      "decode_ms": 1.662,
-      "alpr_predict_ms": 55.562,
+      "decode_ms": 1.626,
+      "alpr_predict_ms": 52.261,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 450,
       "source_time_seconds": 18.0,
-      "decode_ms": 1.042,
-      "alpr_predict_ms": 57.044,
+      "decode_ms": 0.775,
+      "alpr_predict_ms": 50.834,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 500,
       "source_time_seconds": 20.0,
-      "decode_ms": 1.161,
-      "alpr_predict_ms": 57.91,
+      "decode_ms": 1.97,
+      "alpr_predict_ms": 49.756,
       "plate_detections": 0,
       "ocr_results": 0
     },
     {
       "frame_index": 550,
       "source_time_seconds": 22.0,
-      "decode_ms": 1.617,
-      "alpr_predict_ms": 55.722,
+      "decode_ms": 1.506,
+      "alpr_predict_ms": 50.39,
       "plate_detections": 0,
       "ocr_results": 0
     }

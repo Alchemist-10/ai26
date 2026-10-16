@@ -145,7 +145,7 @@ def run(video, max_frames, stride_seconds, cpu_threads):
         },
         'timing': {
             'base_runtime_import_ms': round(dependency_import_ms, 3),
-            'alpr_import_and_model_session_initialization_ms': round(model_load_ms, 3),
+            'alpr_import_session_and_preflight_ms': round(model_load_ms, 3),
             'first_prediction_ms': round(first_predict_ms, 3),
             'decode': distribution([sample['decode_ms'] for sample in samples]),
             'prediction_all': distribution([sample['alpr_predict_ms'] for sample in samples]),
@@ -191,7 +191,7 @@ def main():
         parser.exit(1, f'ALPR profile failed: {error}\n')
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
-    print(f"{result['aggregate']['decoded_samples']} frames; ALPR imports/session init={result['timing']['alpr_import_and_model_session_initialization_ms']} ms; output={args.output}")
+    print(f"{result['aggregate']['decoded_samples']} frames; ALPR init/preflight={result['timing']['alpr_import_session_and_preflight_ms']} ms; output={args.output}")
 
 
 if __name__ == '__main__':

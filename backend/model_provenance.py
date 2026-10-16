@@ -1,5 +1,7 @@
 """Bind lazy ALPR initialization to the exact local files it loads, without per-frame IO."""
 import hashlib
+import math
+from numbers import Real
 import os
 from pathlib import Path
 import tempfile
@@ -45,6 +47,54 @@ def verify_model_files(files):
             raise ValueError('Model/config changed during initialization')
 
 
+def preflight_plate_pipeline(detector, ocr):
+    """Exercise both plate-model output contracts before caching a loaded pipeline."""
+    import cv2
+    import numpy as np
+
+    detector_probe=np.zeros((640,640,3),dtype=np.uint8)
+    try:
+        candidates=detector.predict(detector_probe)
+    except Exception as error:
+        raise RuntimeError('Plate detector synthetic preflight failed') from error
+    if not isinstance(candidates,(list,tuple)):
+        raise RuntimeError('Plate detector synthetic preflight returned an invalid result container')
+    for candidate in candidates:
+        bounds=getattr(candidate,'bounding_box',None)
+        coordinates=tuple(getattr(bounds,name,None) for name in ('x1','y1','x2','y2'))
+        if (not all(isinstance(value,Real) and not isinstance(value,bool) and math.isfinite(value) for value in coordinates)
+                or coordinates[2]<=coordinates[0] or coordinates[3]<=coordinates[1]):
+            raise RuntimeError('Plate detector synthetic preflight returned invalid box coordinates')
+
+    crop=np.full((72,320,3),255,dtype=np.uint8)
+    cv2.rectangle(crop,(2,2),(317,69),(0,0,0),2)
+    cv2.putText(crop,'KL 07 AB 1234',(12,48),cv2.FONT_HERSHEY_SIMPLEX,1.05,(0,0,0),2,cv2.LINE_AA)
+    try:
+        result=ocr.predict(crop)
+    except Exception as error:
+        raise RuntimeError('Plate OCR synthetic preflight failed') from error
+    text=getattr(result,'text',None)
+    confidence=getattr(result,'confidence',None)
+    if result is None or not isinstance(text,str):
+        raise RuntimeError('Plate OCR synthetic preflight returned an invalid result')
+    if isinstance(confidence,(list,tuple)):
+        values=confidence
+    elif isinstance(confidence,Real) and not isinstance(confidence,bool):
+        values=(confidence,)
+    else:
+        raise RuntimeError('Plate OCR synthetic preflight returned invalid confidence values')
+    if not all(isinstance(value,Real) and not isinstance(value,bool) and math.isfinite(value) and 0<=value<=1 for value in values):
+        raise RuntimeError('Plate OCR synthetic preflight returned invalid confidence values')
+    return {
+        'status':'passed',
+        'detector_probe_shape':[640,640,3],
+        'detector_candidate_count':len(candidates),
+        'ocr_probe_shape':[72,320,3],
+        'ocr_result_type':type(result).__name__,
+        'ocr_confidence_count':len(values),
+    }
+
+
 def pipeline_components(root):
     # Explicit coverage, rather than implying that one source file covers the whole app.
     names=('inference.py','model_provenance.py','model_rollout.py','tracking.py','fusion.py','plate_format.py','processing.py','artifacts.py','cameras.py','source_catalog.py')
@@ -78,9 +128,11 @@ def load_plate_model(root=None,cpu_threads=2,device='cpu'):
     ocr=DefaultOCR(hub_ocr_model=None,model_path=ocr_path,config_path=config_path,
                    providers=providers,sess_options=options)
     model=ALPR(detector=detector,ocr=ocr)
+    compatibility=preflight_plate_pipeline(detector,ocr)
     verify_model_files(files)
     metadata={'weight_provenance_status':'hashed_loaded_files','detector_model':DETECTOR_MODEL,'ocr_model':OCR_MODEL,
               'model_files':[entry[1] for entry in files],
+              'compatibility':compatibility,
               'detector_execution_providers':detector.model.get_providers(),
               'ocr_execution_providers':ocr.ocr_model.model.get_providers(),
               'onnx_intra_op_threads':cpu_threads,'onnx_inter_op_threads':1,
