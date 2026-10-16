@@ -31,6 +31,23 @@ recordings. A fresh exact-filename scan of the current Codex workspace and
 accessible files under `/mnt` on 2026-10-16 found no CAM-07–09 source clips;
 `/media` is not present in this environment.
 
+## User-supplied candidate archive (2026-10-16)
+
+The user supplied `multi sample bus-20261015T121500Z-1-001.zip`. It contains
+three MP4 files whose names match the CAM-07–09 catalog expectations above.
+They were fingerprinted and prepared as inactive managed releases in the local,
+Git-ignored `backend/data/sources` directory. The app was left running with
+processing disabled and the prepared sources were not activated. CAM-07 decoded
+as 1,285 frames; CAM-08 decoded as 627 frames despite a stale container count of
+752; CAM-09 decoded as 540 frames despite a stale container count of 580. The
+importer now compares fully decoded counts for import validation, while its
+read-only check remains metadata-only. These checks confirm valid video decode
+and filename mapping only: the requested junction views, readable plates,
+source authorization, export provenance, recording times/timezone, retention
+terms and camera-clock offsets have not been independently verified. No plate
+values or frame images are recorded here. See `docs/SOURCE_IMPORT.md` for the
+managed-import workflow.
+
 ## Public contact for routing
 
 The Kochi Corporation page lists Cochin Smart Mission Limited (CSML) at 4th
@@ -102,6 +119,6 @@ Before putting a received clip into AI26:
   area is not an equivalent fixed-camera ITMS source and must not be relabeled as
   CAM-07, CAM-08 or CAM-09.
 
-Until an authorized sample passes this intake, the three camera sources and
-real-plate evaluation remain unavailable; synthetic fixtures do not close that
-gate.
+Until the supplied candidates pass source authorization and content review, keep
+them inactive. Real-plate evaluation remains unverified until readable plates
+are manually labeled and reviewed; synthetic fixtures do not close that gate.

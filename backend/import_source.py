@@ -27,9 +27,12 @@ def ffmpeg_version():
     return result.stdout.splitlines()[0]
 
 
-def probe(path):
-    result = subprocess.run(['ffprobe','-v','error','-select_streams','v:0','-show_streams','-show_format','-of','json',str(path)],
-                            capture_output=True, text=True, timeout=30, check=True)
+def probe(path, count_frames=False, timeout=30):
+    command=['ffprobe','-v','error','-select_streams','v:0']
+    if count_frames: command.append('-count_frames')
+    command.extend(['-show_streams','-show_format','-of','json',str(path)])
+    result = subprocess.run(command,
+                            capture_output=True, text=True, timeout=timeout, check=True)
     payload = json.loads(result.stdout)
     streams = payload.get('streams', [])
     if not streams: raise ValueError('Input has no video stream')
@@ -42,8 +45,9 @@ def probe(path):
         raise ValueError('Video duration/frame rate/dimensions are unavailable') from error
     if not math.isfinite(rate) or not 0 < rate <= 240 or not math.isfinite(duration) or not 0 < duration <= 86400 or not 2 <= width <= 16384 or not 2 <= height <= 16384:
         raise ValueError('Unsupported video duration/frame rate/dimensions')
+    frame_value=video.get('nb_read_frames') if count_frames else video.get('nb_frames')
     return {'codec':video.get('codec_name'), 'pixel_format':video.get('pix_fmt'), 'width':width, 'height':height,
-            'fps':rate, 'duration_seconds':duration, 'frame_count':int(video['nb_frames']) if str(video.get('nb_frames','')).isdigit() else None}
+            'fps':rate, 'duration_seconds':duration, 'frame_count':int(frame_value) if str(frame_value or '').isdigit() else None}
 
 
 def transcode(source, destination, timeout, max_bytes):
@@ -132,12 +136,14 @@ def import_source(camera, source, reviewer=None, reason=None, *, replace=False, 
             if (before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns)!=(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns) or copied!=before.st_size:
                 raise ValueError('Input changed during copying; retry with a stable file')
             # Validate the staged bytes actually used for conversion, not just the input path.
-            original_video=probe(original)
+            # Container nb_frames can be stale. Compare frames actually decoded
+            # from both files so valid inputs are not rejected for bad headers.
+            original_video=probe(original,count_frames=True,timeout=timeout)
             tool_version=ffmpeg_version()
             print('Preparing and validating browser playback; existing selection is unchanged…' if prepare else 'Preparing and validating browser playback; inference remains stopped…',file=sys.stderr,flush=True)
             transcode(original,playback,timeout,max_bytes)
             if not playback.is_file() or not 0 < playback.stat().st_size < max_bytes: raise ValueError('Playback conversion hit its size limit or produced no video')
-            playback_video=probe(playback)
+            playback_video=probe(playback,count_frames=True,timeout=timeout)
             if playback_video['codec']!='h264' or playback_video['pixel_format']!='yuv420p': raise ValueError('Playback is not browser-compatible H.264/yuv420p')
             if abs(playback_video['duration_seconds']-original_video['duration_seconds'])>max(.25,2/original_video['fps']):
                 raise ValueError('Playback duration differs from the source; conversion may be truncated')

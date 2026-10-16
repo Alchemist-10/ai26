@@ -45,6 +45,32 @@ class PlateMatchingTests(unittest.TestCase):
         self.assertEqual(permissive["false_positive_candidate_rate_on_negative_pairs"], .5)
         self.assertAlmostEqual(permissive["false_candidate_fraction_among_candidates"], 1 / 3)
         self.assertFalse(result["identity_linking_enabled"])
+        self.assertEqual(result["uncertainty"]["method"], "two-sided_wilson_score_interval")
+        false_rate_interval = permissive["false_positive_candidate_rate_on_negative_pairs_wilson_interval"]
+        self.assertLessEqual(false_rate_interval["lower"], .5)
+        self.assertGreaterEqual(false_rate_interval["upper"], .5)
+        strict_false_fraction = strict["false_candidate_fraction_among_candidates_wilson_interval"]
+        self.assertEqual(strict_false_fraction["lower"], 0)
+        self.assertGreater(strict_false_fraction["upper"], 0)
+
+    def test_zero_false_candidates_still_reports_upper_uncertainty_bound(self):
+        records = [
+            {"left_plate": "KL07AB1234", "right_plate": "KL07AB1234", "same_vehicle": True},
+            {"left_plate": "KL07AB1234", "right_plate": "TN22ZZ0007", "same_vehicle": False},
+        ]
+        result = evaluate_labeled_pairs(records, [.99])
+        metrics = result["threshold_results"][0]
+        interval = metrics["false_positive_candidate_rate_on_negative_pairs_wilson_interval"]
+        self.assertEqual(metrics["false_candidate_count"], 0)
+        self.assertEqual(interval["lower"], 0)
+        self.assertGreater(interval["upper"], 0)
+
+    def test_confidence_level_must_be_open_unit_interval(self):
+        pair = {"left_plate": "KL07AB1234", "right_plate": "KL07AB1234", "same_vehicle": True}
+        records = [pair, {**pair, "right_plate": "TN22ZZ0007", "same_vehicle": False}]
+        for invalid in (0, 1, True, float("nan")):
+            with self.subTest(confidence_level=invalid), self.assertRaises(ValueError):
+                evaluate_labeled_pairs(records, [.9], confidence_level=invalid)
 
     def test_evaluation_requires_positive_and_negative_labels(self):
         with self.assertRaises(ValueError):

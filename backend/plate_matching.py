@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable
+from statistics import NormalDist
 
 from plate_format import normalize_plate
 
@@ -28,6 +29,19 @@ def _confidence(value: float | None, field: str) -> float | None:
             or not math.isfinite(value) or not 0 <= value <= 1):
         raise ValueError(f"{field} must be a finite number in [0, 1]")
     return float(value)
+
+
+def _wilson_interval(successes: int, trials: int, confidence_level: float) -> dict | None:
+    """Return a two-sided Wilson score interval for a binomial proportion."""
+    if trials == 0:
+        return None
+    z = NormalDist().inv_cdf((1 + confidence_level) / 2)
+    proportion = successes / trials
+    z2 = z * z
+    denominator = 1 + z2 / trials
+    center = (proportion + z2 / (2 * trials)) / denominator
+    margin = z * math.sqrt((proportion * (1 - proportion) + z2 / (4 * trials)) / trials) / denominator
+    return {"lower": max(0.0, center - margin), "upper": min(1.0, center + margin)}
 
 
 def compare_plates(
@@ -79,8 +93,14 @@ def compare_plates(
     }
 
 
-def evaluate_labeled_pairs(records: Iterable[dict], thresholds: Iterable[float]) -> dict:
+def evaluate_labeled_pairs(
+    records: Iterable[dict], thresholds: Iterable[float], *, confidence_level: float = 0.95
+) -> dict:
     """Measure candidate false-link rates on explicitly labeled independent pairs."""
+    if (not isinstance(confidence_level, (int, float)) or isinstance(confidence_level, bool)
+            or not math.isfinite(confidence_level) or not 0 < confidence_level < 1):
+        raise ValueError("confidence_level must be a finite number in (0, 1)")
+    confidence_level = float(confidence_level)
     rows = list(records)
     if not rows:
         raise ValueError("at least one labeled pair is required")
@@ -122,8 +142,20 @@ def evaluate_labeled_pairs(records: Iterable[dict], thresholds: Iterable[float])
             "false_candidate_fraction_among_candidates": fp / sum(selected) if any(selected) else None,
             "false_positive_candidate_rate_on_negative_pairs": fp / negatives,
             "recall_on_positive_pairs": tp / positives,
+            "false_candidate_fraction_among_candidates_wilson_interval": _wilson_interval(
+                fp, sum(selected), confidence_level),
+            "false_positive_candidate_rate_on_negative_pairs_wilson_interval": _wilson_interval(
+                fp, negatives, confidence_level),
+            "recall_on_positive_pairs_wilson_interval": _wilson_interval(
+                tp, positives, confidence_level),
             "measurement_scope": "labeled_pairs_only_not_live_accuracy",
             "scores_are_probabilities": False,
         })
     return {"schema_version": 1, "type": "review_only_plate_similarity_evaluation",
-            "identity_linking_enabled": False, "threshold_results": output}
+            "identity_linking_enabled": False,
+            "uncertainty": {
+                "method": "two-sided_wilson_score_interval",
+                "confidence_level": confidence_level,
+                "assumption": "Binomial intervals require independent labeled pairs; they do not correct for split leakage or correlated frames.",
+            },
+            "threshold_results": output}

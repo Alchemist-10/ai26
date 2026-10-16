@@ -22,6 +22,13 @@ caller-provided threshold sweep. Example record shape:
 }
 ```
 
+Each threshold also includes two-sided 95% Wilson score intervals for the false
+candidate fraction, false-positive rate on negative pairs, and recall. The
+confidence level can be supplied to `evaluate_labeled_pairs()`. These intervals
+show sampling uncertainty only and assume independent labeled pairs; they do not
+account for correlated frames, split leakage or label errors. They are not
+probability calibration and do not enable identity linking.
+
 Evaluation requires both positive and negative labels and format-valid plates.
 Split pairs by vehicle and recording session before threshold selection; never
 use adjacent frames as independent pairs. The included regression tests use

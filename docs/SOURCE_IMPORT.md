@@ -76,8 +76,11 @@ probes the staged original actually used by conversion.
 Playback is silent H.264/yuv420p MP4, limited to 1280 px width with even dimensions,
 CRF 23 / fast preset, one decode/encode/filter thread, and a fast-start index. The
 original bytes remain unchanged. Conversion stops on decode/encode errors and is
-bounded by time/output size. Probe checks require matching duration within the
-stated tolerance and matching frame counts when the original reports a count.
+bounded by time/output size. The read-only `--check` reports container metadata
+without decoding the full clip. Import fully decodes the copied original and
+playback derivative to count frames, then requires matching decoded frame counts
+and durations within the stated tolerance. This avoids trusting stale container
+`nb_frames` values while still rejecting a derivative that lost decoded frames.
 Rate/duration probes are metadata checks; they do not independently establish
 original capture time. Sampled source offsets prefer the decoder-reported frame
 position in milliseconds and fall back to frame-index ÷ reported FPS; each

@@ -154,7 +154,7 @@ class SourceImport(unittest.TestCase):
 
     def test_proxy_codec_duration_count_and_size_failures_not_published(self):
         for change in ({'codec':'hevc'},{'pixel_format':'yuv444p'},{'duration_seconds':.1},{'frame_count':9}):
-            self.probe.side_effect=lambda path:dict(VIDEO,**change) if path.name=='playback.mp4' else dict(VIDEO)
+            self.probe.side_effect=lambda path,**kwargs:dict(VIDEO,**change) if path.name=='playback.mp4' else dict(VIDEO)
             with self.assertRaises(ValueError):self.run_import()
         self.probe.side_effect=None
         self.transcode.side_effect=lambda source,dest,*args:dest.write_bytes(b'x'*1024)
@@ -194,6 +194,15 @@ class SourceImport(unittest.TestCase):
                         {'streams':[{'avg_frame_rate':'10/1','width':320,'height':240,'duration':'NaN'}]}):
             with patch.object(subprocess,'run',return_value=subprocess.CompletedProcess([],0,json.dumps(payload),'')):
                 with self.assertRaises(ValueError):REAL_PROBE(self.input)
+
+    def test_probe_uses_decoded_frame_count_when_requested(self):
+        payload={'streams':[{'avg_frame_rate':'25/1','width':1920,'height':1080,'duration':'25.2',
+                             'nb_frames':'752','nb_read_frames':'627'}],
+                 'format':{'duration':'25.2'}}
+        with patch.object(subprocess,'run',return_value=subprocess.CompletedProcess([],0,json.dumps(payload),'')) as run:
+            metadata=REAL_PROBE(self.input,count_frames=True)
+        self.assertEqual(metadata['frame_count'],627)
+        self.assertIn('-count_frames',run.call_args.args[0])
 
 
 if __name__=='__main__':unittest.main()
