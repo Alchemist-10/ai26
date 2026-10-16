@@ -90,11 +90,12 @@ MFA key is configured.
 Administrators can manage users, case grants, roles, account status, and
 reason-recorded password resets through the protected account-management screen.
 The same screen assigns cameras to each case. Non-admin camera catalogs,
-footage routes, observations, statistics, traffic baselines, route links,
-trajectories, evidence reports, and alert queries are filtered to those camera
-assignments; alert reviews also check the alert's camera before allowing a
-mutation, and legacy alerts without a camera are administrator-only. A camera
-omitted from the case is denied. New case grants have no
+footage routes, upload-preparation status/cancellation, observations, statistics,
+traffic baselines, route links, trajectories, evidence reports, and alert queries
+are filtered to those camera assignments. Opaque source-preparation job IDs do
+not grant cross-camera access. Alert reviews also check the alert's camera before
+allowing a mutation, and legacy alerts without a camera are administrator-only.
+A camera omitted from the case is denied. New case grants have no
 camera access until an administrator assigns cameras. Rule reads omit global
 plate identities and filter camera-specific zones; global rule editing is
 administrator-only.

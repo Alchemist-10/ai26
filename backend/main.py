@@ -400,10 +400,19 @@ async def prepare_camera_source(camera_id:str,request:Request):
     except TimeoutError as error: raise HTTPException(408,'Upload timed out') from error
     except (ValueError,OSError) as error: raise HTTPException(422,str(error)) from error
 
-@app.get('/api/source-preparations/{job_id}')
-def source_preparation(job_id:str):
-    try: return uploads.get(job_id)
+def get_source_preparation_for_request(job_id:str,request:Request):
+    try: result=uploads.get(job_id)
     except KeyError as error: raise HTTPException(404,'Preparation unavailable') from error
+    actor=getattr(request.state,'actor',None)
+    camera_ids=getattr(request.state,'camera_ids',None)
+    if actor and actor['role']!='admin' and (camera_ids is None or result.get('camera_id') not in camera_ids):
+        # Opaque job IDs do not grant access to preparations from another case.
+        raise HTTPException(404,'Preparation unavailable')
+    return result
+
+@app.get('/api/source-preparations/{job_id}')
+def source_preparation(job_id:str,request:Request):
+    return get_source_preparation_for_request(job_id,request)
 
 @app.post('/api/cameras/{camera_id}/source/selection')
 def select_camera_source(camera_id:str,body:SourceSelectionRequest,request:Request):
@@ -421,7 +430,8 @@ def select_camera_source(camera_id:str,body:SourceSelectionRequest,request:Reque
     return {**result,'source':source_status(camera_id)}
 
 @app.post('/api/source-preparations/{job_id}/cancel')
-def cancel_source_preparation(job_id:str):
+def cancel_source_preparation(job_id:str,request:Request):
+    get_source_preparation_for_request(job_id,request)
     try: return uploads.cancel(job_id)
     except KeyError as error: raise HTTPException(404,'Preparation unavailable') from error
 

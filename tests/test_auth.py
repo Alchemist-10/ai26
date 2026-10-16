@@ -275,6 +275,44 @@ class Authentication(unittest.TestCase):
         self.assertEqual(denied.status_code,403)
         inspect.assert_not_called()
 
+    def test_source_preparation_status_and_cancel_require_case_camera_assignment(self):
+        password="Correct-Horse-Battery-Staple-26"
+        self.auth.create_user("source_scoped_operator",password,"operator",case_ids=["CASE-SOURCE-ONE"])
+        self.repo.update_case_camera_scope("CASE-SOURCE-ONE",["CAM-07"],"test",time.time())
+
+        class Uploads:
+            jobs={
+                "a"*32:{"job_id":"a"*32,"camera_id":"CAM-07","status":"preparing"},
+                "b"*32:{"job_id":"b"*32,"camera_id":"CAM-08","status":"preparing"},
+            }
+            cancelled=[]
+            def get(self,job):
+                if job not in self.jobs: raise KeyError(job)
+                return self.jobs[job]
+            def cancel(self,job):
+                self.cancelled.append(job)
+                return self.jobs[job]
+
+        uploads=Uploads()
+        login=self.client.post("/api/auth/login",json={"username":"source_scoped_operator","password":password})
+        self.assertEqual(login.status_code,200)
+        headers={
+            CSRF_HEADER:login.json()["csrf_token"],
+            "X-AI26-Case-ID":"CASE-SOURCE-ONE","X-AI26-Purpose":"investigation",
+        }
+        with patch.object(main,"uploads",uploads):
+            allowed=self.client.get("/api/source-preparations/"+"a"*32,headers=headers)
+            hidden=self.client.get("/api/source-preparations/"+"b"*32,headers=headers)
+            self.assertEqual(allowed.status_code,200)
+            self.assertEqual(allowed.json()["camera_id"],"CAM-07")
+            self.assertEqual(hidden.status_code,404)
+            denied_cancel=self.client.post("/api/source-preparations/"+"b"*32+"/cancel",headers=headers)
+            self.assertEqual(denied_cancel.status_code,404)
+            self.assertEqual(uploads.cancelled,[])
+            allowed_cancel=self.client.post("/api/source-preparations/"+"a"*32+"/cancel",headers=headers)
+            self.assertEqual(allowed_cancel.status_code,200)
+            self.assertEqual(uploads.cancelled,["a"*32])
+
     def test_evidence_reports_and_artifacts_are_bound_to_the_selected_case(self):
         password="Correct-Horse-Battery-Staple-26"
         self.auth.create_user("case_alpha",password,"analyst",case_ids=["CASE-ALPHA"])
