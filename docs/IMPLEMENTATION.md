@@ -97,7 +97,8 @@ review, with null speed for equal/nonpositive timestamps.
 | GET / POST | `/api/auth/me`, `/api/auth/logout` | Current identity and session termination |
 | POST | `/api/auth/me/password` | Change the signed-in user's password after current-password verification; revokes all sessions |
 | GET / POST / PATCH | `/api/auth/users` | Administrator account management; password reset is a nested POST |
-| GET | `/api/cameras`, `/api/health` | Persisted catalog, availability and actual processor health |
+| GET | `/healthz` | Minimal public liveness response |
+| GET | `/api/cameras`, `/api/health` | Persisted catalog, availability and actual processor health; detailed global health requires admin when authentication is enabled |
 | GET | `/api/metrics` | Prometheus 0.0.4 text metrics for bounded processor health and inference timings; administrator session or route-limited bearer token when authentication is enabled |
 | GET / PUT | `/api/cameras/{camera}/configuration` | Current/historical metadata or audited revision update with stale-edit protection |
 | GET | `/api/journey-links` | Stored queried decision history; plate/arrival-time filters and bounded limit |

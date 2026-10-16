@@ -74,7 +74,7 @@ SENSITIVE_PREFIXES=('/api/cameras','/api/camera-pair-constraints','/api/source-p
 
 
 def required_role(method, path):
-    if path == '/api/health': return None
+    if path == '/api/health': return 'admin'
     if path == '/api/metrics': return 'admin'
     if path in {'/api/auth/status','/api/auth/login','/api/auth/password-recovery'}: return None
     if path == '/api/auth/me/password': return 'authenticated'
@@ -123,7 +123,7 @@ async def authentication_and_case_scope(request, call_next):
     if not request.url.path.startswith('/api/') or request.method == 'OPTIONS' or not auth_enabled():
         return await call_next(request)
     path=request.url.path
-    if path in {'/api/health','/api/auth/status','/api/auth/login','/api/auth/password-recovery','/api/privacy/status'}:
+    if path in {'/api/auth/status','/api/auth/login','/api/auth/password-recovery','/api/privacy/status'}:
         return await call_next(request)
     if valid_metrics_bearer(request):
         return await call_next(request)
@@ -466,6 +466,11 @@ def journey_links(request:Request,plate:str|None=None,since:TimeFilter=None,unti
 @app.get('/api/audit/integrity')
 def audit_integrity():
     return store.verify_audit_chain()
+
+@app.get('/healthz')
+def healthz():
+    """Minimal liveness response for local/container health checks."""
+    return {'status':'ok'}
 
 @app.get('/api/health')
 def health():

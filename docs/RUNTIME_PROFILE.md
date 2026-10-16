@@ -58,6 +58,14 @@ uv run --frozen --directory backend python ../evaluation/profile_runtime.py \
   --duration 120 --output ../evaluation/results/runtime.json
 ```
 
+When authentication is enabled, `/api/health` requires an administrator
+session. For a local authorized profile, place only the session cookie in a
+user-readable protected file as `ai26_session=<value>` and pass
+`--cookie-file /absolute/path/to/admin-cookie`. The profiler reads it for
+requests and never writes the cookie value to its output. `/healthz` is public
+but intentionally contains no per-camera counters and cannot be used for a
+processor profile.
+
 Optionally pass `--pid API_PROCESS_PID` on Linux for process CPU/RSS. Use the actual
 uvicorn PID, not the launcher/npm PID. The profiler reads procfs and never signals,
 starts or stops processes. Birth ticks detect process exit/PID reuse; later CPU

@@ -126,7 +126,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now ai26.service
 sudo systemctl status ai26.service
 sudo journalctl -u ai26.service -n 100 --no-pager
-curl -fsS http://127.0.0.1:8001/api/health
+curl -fsS http://127.0.0.1:8001/healthz
 curl -fsS http://127.0.0.1:5174/ -o /dev/null
 ```
 
@@ -137,8 +137,12 @@ camera settings, activate them and verify health with:
 
 ```sh
 sudo systemctl restart ai26.service
-curl -fsS http://127.0.0.1:8001/api/health
+curl -fsS http://127.0.0.1:8001/healthz
 ```
+
+`/healthz` is a minimal liveness response. Detailed per-camera state at
+`/api/health` requires an administrator session whenever authentication is
+enabled; use the authenticated dashboard or a protected local profile cookie.
 
 Use `sudo systemctl stop ai26.service` for planned maintenance and
 `sudo journalctl -fu ai26.service` to follow startup/recovery logs. The template

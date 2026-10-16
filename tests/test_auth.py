@@ -511,20 +511,26 @@ class Authentication(unittest.TestCase):
         with patch.dict(os.environ,{"AI26_METRICS_TOKEN_FILE":str(token_file)}):
             self.assertEqual(self.client.get("/api/metrics",headers={"Authorization":"Bearer too-short"}).status_code,401)
 
-    def test_viewer_cannot_query_or_mutate_but_health_stays_public(self):
+    def test_camera_health_requires_admin_while_minimal_liveness_stays_public(self):
         self.create("viewer_one", "viewer")
         self.assertEqual(self.login("viewer_one").status_code, 200)
-        health = self.client.get("/api/health")
-        self.assertEqual(health.status_code, 200)
-        self.assertEqual(health.json()["inference_branches"],
-                         {"vehicle_detection_enabled": True, "plate_recognition_enabled": True})
-        self.assertEqual(health.json()["vehicle_model_rollout"]["mode"], "stable_only")
+        self.assertEqual(self.client.get("/healthz").json(), {"status":"ok"})
+        self.assertEqual(self.client.get("/api/health").status_code, 403)
         self.repo.update_case_camera_scope("CASE-55",["CAM-07"],"test",time.time())
         self.assertEqual(self.client.get("/api/cameras",headers={"X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"investigation"}).status_code, 200)
         self.assertEqual(self.client.get("/api/events", headers={"X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"system_test"}).status_code, 403)
         self.assertEqual(self.client.get("/api/camera-pair-constraints").status_code, 403)
         self.assertEqual(self.client.get("/api/traffic/baselines",headers={
             "X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"system_test"}).status_code,403)
+        self.client.cookies.clear()
+        self.assertEqual(self.client.get("/api/health").status_code, 401)
+        self.create()
+        self.assertEqual(self.login().status_code, 200)
+        health = self.client.get("/api/health")
+        self.assertEqual(health.status_code, 200)
+        self.assertEqual(health.json()["inference_branches"],
+                         {"vehicle_detection_enabled": True, "plate_recognition_enabled": True})
+        self.assertEqual(health.json()["vehicle_model_rollout"]["mode"], "stable_only")
 
     def test_user_management_and_last_admin_protection(self):
         self.create()

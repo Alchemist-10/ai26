@@ -106,8 +106,10 @@ npm ci
 npm run dev
 ```
 
-API catalog: http://127.0.0.1:8001/api/cameras; processing health:
-http://127.0.0.1:8001/api/health; interactive docs: http://127.0.0.1:8001/docs.
+API catalog: http://127.0.0.1:8001/api/cameras; detailed processing health:
+http://127.0.0.1:8001/api/health (administrator session when auth is enabled);
+public liveness: http://127.0.0.1:8001/healthz; interactive docs:
+http://127.0.0.1:8001/docs.
 Vite dev and local preview proxy `/api` to the configured backend. Networked
 deployment uses the Nginx same-origin proxy described in [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 Model/capture failures appear in health and retry after 10 seconds.

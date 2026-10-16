@@ -26,8 +26,9 @@ vehicle classes and preprocessing. The API refuses incomplete settings,
 unknown camera IDs, unreadable files, or a digest mismatch. Model initialization
 stays lazy, so unused branches do not load either checkpoint.
 
-`GET /api/health` exposes path-free rollout status, loaded digests and the
-checkpoint compatibility result. Each vehicle event also carries
+Administrator-only `GET /api/health` (when authentication is enabled) exposes
+path-free rollout status, loaded digests and the checkpoint compatibility
+result. `/healthz` remains a minimal liveness endpoint. Each vehicle event also carries
 `model_profile`, `checkpoint_sha256`, and a `model_id` used as its persisted
 `model_version`. No runtime traffic split,
 automatic promotion, accuracy gate, or UI-based hot swap is performed. To

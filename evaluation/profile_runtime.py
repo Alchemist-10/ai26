@@ -24,14 +24,22 @@ def api_origin(value):
     return value.rstrip('/')
 
 
+def load_admin_cookie(path):
+    value=Path(path).read_text(encoding='utf-8').strip()
+    if not re.fullmatch(r'ai26_session=[A-Za-z0-9_-]{32,128}',value):
+        raise ValueError('cookie file must contain only an ai26_session=<value> cookie')
+    return value
+
+
 def distribution(values):
     ordered=sorted(values)
     return {'samples':len(ordered),'median':round(statistics.median(ordered),3),
             'p95':round(ordered[math.ceil(len(ordered)*.95)-1],3),'max':round(ordered[-1],3)} if ordered else None
 
 
-def read_health(origin, timeout=5):
-    with urllib.request.urlopen(origin+'/api/health',timeout=timeout) as response:
+def read_health(origin, timeout=5, cookie_header=None):
+    request=urllib.request.Request(origin+'/api/health',headers={'Cookie':cookie_header} if cookie_header else {})
+    with urllib.request.urlopen(request,timeout=timeout) as response:
         body=response.read(MAX_RESPONSE_BYTES+1)
     if len(body)>MAX_RESPONSE_BYTES: raise ValueError('Health response exceeded byte bound')
     result=json.loads(body)
@@ -118,8 +126,10 @@ def assess_profile_quality(samples, interval, health_failures, counter_window_va
             'max_sample_gap_seconds':round(max_sample_gap,3) if len(samples)>1 else None}
 
 
-def profile(origin, duration, interval, pid=None):
-    started=time.monotonic();first=read_health(origin);first_at=time.monotonic();last=first;last_at=first_at
+def profile(origin, duration, interval, pid=None, cookie_header=None):
+    def get_health():
+        return read_health(origin,cookie_header=cookie_header) if cookie_header else read_health(origin)
+    started=time.monotonic();first=get_health();first_at=time.monotonic();last=first;last_at=first_at
     first_process=process_stats(pid) if pid is not None else None
     previous_process=first_process;previous_process_at=first_at;process_status='sampled' if first_process else 'not_requested'
     samples=[];failures=0;next_sample=first_at+interval
@@ -127,7 +137,7 @@ def profile(origin, duration, interval, pid=None):
         time.sleep(max(0,next_sample-time.monotonic()))
         began=time.monotonic()
         try:
-            health=read_health(origin);last=health;last_at=time.monotonic()
+            health=get_health();last=health;last_at=time.monotonic()
             sample={'elapsed_seconds':round(last_at-started,3),'health_latency_ms':round((last_at-began)*1000,3),
                     'frames':{c['camera_id']:c['frames'] for c in health['cameras']},
                     'statuses':{c['camera_id']:c.get('status') for c in health['cameras']},
@@ -152,7 +162,7 @@ def profile(origin, duration, interval, pid=None):
     profile_quality=assess_profile_quality(samples,interval,failures,not deltas['unverified_cameras'])
     measured_fps=round(deltas['total_completed_frames']/elapsed,4) if elapsed>0 and not deltas['unverified_cameras'] else None
     return {'version':1,'scope':'Read-only local API/process observation under current desktop load; not a controlled accuracy or browser playback benchmark',
-            'conditions':{'api':origin,'requested_seconds':duration,'interval_seconds':interval,'successful_counter_window_seconds':round(elapsed,3),
+            'conditions':{'api':origin,'authenticated_request':bool(cookie_header),'requested_seconds':duration,'interval_seconds':interval,'successful_counter_window_seconds':round(elapsed,3),
                           'python':platform.python_version(),'platform':platform.platform(),'logical_cpus':os.cpu_count(),'pid':pid,
                           'process_status':process_status,'process_birth_ticks':first_process['identity'] if first_process else None},
             'sampling':{**deltas,'total_completed_fps':measured_fps,
@@ -176,12 +186,18 @@ def main():
     parser.add_argument('--duration',type=float,default=60)
     parser.add_argument('--interval',type=float,default=1)
     parser.add_argument('--pid',type=int,help='Optional Linux API process PID for CPU/RSS; never signals it')
+    parser.add_argument('--cookie-file',type=Path,help='Optional protected file containing the admin ai26_session cookie; its value is never recorded')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
     if not math.isfinite(args.duration) or not 5<=args.duration<=600: parser.error('duration must be 5–600 seconds')
     if not math.isfinite(args.interval) or not .25<=args.interval<=5 or args.interval>=args.duration: parser.error('interval must be .25–5 seconds and below duration')
     if args.pid is not None and (args.pid<1 or platform.system()!='Linux'): parser.error('pid requires a positive Linux process ID')
-    try:result=profile(args.api,args.duration,args.interval,args.pid)
+    cookie_header=None
+    if args.cookie_file:
+        try:cookie_header=load_admin_cookie(args.cookie_file)
+        except OSError as error:parser.error(f'cannot read cookie file: {error}')
+        except ValueError as error:parser.error(str(error))
+    try:result=profile(args.api,args.duration,args.interval,args.pid,cookie_header)
     except (OSError,ValueError,IndexError) as error:parser.exit(1,f'Profile could not start: {error}\n')
     args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
     print(f"{len(result['samples'])} samples; completed FPS={result['sampling']['total_completed_fps']}; output={args.output}")

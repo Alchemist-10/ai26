@@ -106,6 +106,24 @@ class RuntimeProfile(unittest.TestCase):
         for body in (b'x'*(profiler.MAX_RESPONSE_BYTES+1),json.dumps({'cameras':[self.health()['cameras'][0]]*2}).encode(),json.dumps({'cameras':[{'camera_id':'CAM-01','frames':False}]}).encode(),json.dumps({'cameras':[invalid_age]}).encode()):
             with patch.object(profiler.urllib.request,'urlopen',return_value=Response(body)):
                 with self.assertRaises(ValueError):profiler.read_health('http://localhost:8001')
+    def test_admin_cookie_is_sent_only_as_a_request_header(self):
+        body=json.dumps(self.health()).encode()
+        class Response:
+            def __enter__(self):return self
+            def __exit__(self,*args):pass
+            def read(self,bound):return body
+        with patch.object(profiler.urllib.request,'urlopen',return_value=Response()) as request:
+            profiler.read_health('http://localhost:8001',cookie_header='ai26_session=private-test-value')
+        sent=request.call_args.args[0]
+        self.assertEqual(sent.get_header('Cookie'),'ai26_session=private-test-value')
+        self.assertNotIn('private-test-value',sent.full_url)
+    def test_admin_cookie_file_is_bounded_and_rejects_header_injection(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'cookie';valid='ai26_session='+'x'*43;path.write_text(valid+'\n')
+            self.assertEqual(profiler.load_admin_cookie(path),valid)
+            for value in ('session=wrong','ai26_session=\nX-Injected: true','ai26_session=abc; other=def','ai26_session='+'x'*5000):
+                path.write_text(value)
+                with self.assertRaises(ValueError):profiler.load_admin_cookie(path)
     def test_restart_or_missing_counter_marks_window_unverified(self):
         first=self.health(100);last=self.health(200,'new')
         self.assertEqual(profiler.counter_deltas(first,last)['unverified_cameras'],['CAM-01'])

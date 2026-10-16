@@ -25,7 +25,7 @@ docker compose restart backend
 deadline=$((SECONDS + 90))
 while (( SECONDS < deadline )); do
   if docker compose exec -T backend python -c \
-    'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8001/api/health", timeout=3)' \
+    'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8001/healthz", timeout=3)' \
     >/dev/null 2>&1; then
     echo "AI26 backend health check passed. Refresh source status in Camera settings."
     exit 0

@@ -35,7 +35,7 @@ retention period (seven days by default, configurable from 7 to 365), preserving
 active report leases. Frame processing and health polling do not scan the directory for
 each read. The processor has no best-image reference cache to grow with track IDs.
 
-`/api/health` and camera catalog health expose `artifact_storage` (used/limit bytes),
+Administrator `/api/health` and camera catalog health expose `artifact_storage` (used/limit bytes),
 `artifact_capture_ms` and the latest processed frame's image attempts/failures,
 incomplete reads and storage-budget failures. These are latest-frame measurements,
 not cumulative counters. Inference can remain `processing` while image writes

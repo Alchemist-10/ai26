@@ -42,6 +42,10 @@ limits are stored in SQLite. Passwords use PBKDF2-HMAC-SHA256 with 600,000
 iterations; session tokens are random, stored only as hashes, expire after eight
 hours, and are revoked on password, role, or disabled-state changes. Login
 failures are limited by client address to ten attempts per 15 minutes.
+When authentication is enabled, the detailed `/api/health` endpoint requires
+an administrator session because it contains global per-camera availability,
+error and processing counters. `/healthz` stays public for a minimal liveness
+check and returns no camera or model details.
 
 The cookie is `HttpOnly`, `SameSite=Strict`, scoped to `/api`, and marked Secure
 when `AI26_AUTH_COOKIE_SECURE=1`. Mutating API requests require the per-session
