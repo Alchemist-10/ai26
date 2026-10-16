@@ -561,6 +561,12 @@ def review(alert_id:str,body:ReviewRequest,request:Request):
     actor=getattr(request.state,'actor',None)
     if actor:
         reviewer=actor['username']
+        if actor['role']!='admin':
+            alert=store.alert(alert_id)
+            camera_ids=getattr(request.state,'camera_ids',None)
+            # Legacy alerts without a camera cannot be safely assigned to a case.
+            if alert is None or camera_ids is None or alert.get('camera_id') not in camera_ids:
+                raise HTTPException(404,'Unknown alert')
     elif body.reviewer and body.reviewer.strip():
         reviewer=body.reviewer.strip()
     else:

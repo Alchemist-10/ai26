@@ -92,7 +92,9 @@ reason-recorded password resets through the protected account-management screen.
 The same screen assigns cameras to each case. Non-admin camera catalogs,
 footage routes, observations, statistics, traffic baselines, route links,
 trajectories, evidence reports, and alert queries are filtered to those camera
-assignments; a camera omitted from the case is denied. New case grants have no
+assignments; alert reviews also check the alert's camera before allowing a
+mutation, and legacy alerts without a camera are administrator-only. A camera
+omitted from the case is denied. New case grants have no
 camera access until an administrator assigns cameras. Rule reads omit global
 plate identities and filter camera-specific zones; global rule editing is
 administrator-only.

@@ -211,6 +211,34 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.repo.verify_audit_chain()["status"],"valid")
         other.close()
 
+    def test_alert_reviews_require_case_camera_scope_and_hide_legacy_alerts(self):
+        password="Correct-Horse-Battery-Staple-26"
+        self.auth.create_user("camera_scoped_operator",password,"operator",case_ids=["CASE-CAMERA-ONE"])
+        self.repo.update_case_camera_scope("CASE-CAMERA-ONE",["CAM-07"],"test",time.time())
+        for alert_id, payload in [
+            ("camera-visible", {"camera_id":"CAM-07"}),
+            ("camera-hidden", {"camera_id":"CAM-08"}),
+            ("camera-legacy", {}),
+        ]:
+            self.repo.put_alert({"alert_id":alert_id,"ts":time.time(),"type":"watchlist match",**payload})
+        login=self.client.post("/api/auth/login",json={"username":"camera_scoped_operator","password":password})
+        self.assertEqual(login.status_code,200)
+        headers={
+            CSRF_HEADER:login.json()["csrf_token"],
+            "X-AI26-Case-ID":"CASE-CAMERA-ONE","X-AI26-Purpose":"incident_response",
+        }
+        allowed=self.client.post("/api/alerts/camera-visible/review",json={
+            "state":"acknowledged","reviewer":"ignored","note":"Within assigned camera",
+        },headers=headers)
+        self.assertEqual(allowed.status_code,200)
+        self.assertEqual(allowed.json()["reviewer"],"camera_scoped_operator")
+        for alert_id in ("camera-hidden","camera-legacy"):
+            denied=self.client.post(f"/api/alerts/{alert_id}/review",json={
+                "state":"acknowledged","reviewer":"ignored","note":"Out of scope",
+            },headers=headers)
+            self.assertEqual(denied.status_code,404)
+            self.assertEqual(self.repo.alert(alert_id)["state"],"open")
+
     def test_evidence_reports_and_artifacts_are_bound_to_the_selected_case(self):
         password="Correct-Horse-Battery-Staple-26"
         self.auth.create_user("case_alpha",password,"analyst",case_ids=["CASE-ALPHA"])

@@ -564,6 +564,12 @@ class Repository:
             rows = self.db.execute('SELECT * FROM alerts WHERE ts>=?'+clause+' ORDER BY ts DESC LIMIT 200', args).fetchall()
         return [self._alert_row(row) for row in rows]
 
+    def alert(self, alert_id):
+        """Load one alert by ID so mutation routes can enforce its camera scope."""
+        with self.lock:
+            row = self.db.execute('SELECT * FROM alerts WHERE id=?', (alert_id,)).fetchone()
+        return self._alert_row(row) if row else None
+
     @staticmethod
     def _alert_row(row):
         alert = {**json.loads(row['data']), 'state': row['state'],
