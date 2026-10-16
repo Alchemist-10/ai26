@@ -27,7 +27,9 @@ Godseye branches also contain `frontend/public/sakshi-intro.mp4`, which is not a
 camera source. No CAM-07–09 footage, video archive or new media branch was
 found. Repository media is only a check for files that were committed there; it
 does not establish whether CSML or another authorized custodian has archived
-recordings.
+recordings. A fresh exact-filename scan of the current Codex workspace and
+mounted `/mnt` and `/media` paths on 2026-10-16 also found no CAM-07–09 source
+clips.
 
 ## Public contact for routing
 
