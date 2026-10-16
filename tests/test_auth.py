@@ -679,7 +679,8 @@ class Authentication(unittest.TestCase):
                 setup = owner.post("/api/auth/mfa/setup", headers=headers)
                 self.assertEqual(setup.status_code, 200)
                 secret = setup.json()["secret"]
-                confirmation = owner.post("/api/auth/mfa/enable", json={"code": mfa_tools.code_at(secret)}, headers=headers)
+                confirmation_code = mfa_tools.code_at(secret)
+                confirmation = owner.post("/api/auth/mfa/enable", json={"code": confirmation_code}, headers=headers)
                 self.assertEqual(confirmation.status_code, 200)
                 recovery = confirmation.json()["recovery_codes"][0]
                 self.assertEqual(len(confirmation.json()["recovery_codes"]), 10)
@@ -691,7 +692,7 @@ class Authentication(unittest.TestCase):
                 no_factor = TestClient(main.app, base_url="https://testserver")
                 self.assertEqual(no_factor.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26"}).json()["error"]["message"], "MFA_CODE_REQUIRED")
                 totp_login = TestClient(main.app, base_url="https://testserver")
-                replayed = totp_login.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":mfa_tools.code_at(secret)})
+                replayed = totp_login.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":confirmation_code})
                 self.assertEqual(replayed.status_code, 401)
                 accepted = totp_login.post("/api/auth/login", json={"username":"admin","password":"Correct-Horse-Battery-Staple-26","mfa_code":confirmation.json()["recovery_codes"][0]})
                 self.assertEqual(accepted.status_code, 200)

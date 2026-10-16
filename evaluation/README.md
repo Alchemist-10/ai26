@@ -113,6 +113,10 @@ For review-only plate-string similarity and false-candidate threshold sweeps on
 explicitly labeled pairs, see [Plate matching](PLATE_MATCHING.md). It never
 merges identities and does not produce a real-data measurement without supplied
 labeled pairs.
+For a synthetic last-frame versus per-track OCR consensus comparison with
+identity-isolation checks, see [Plate-fusion evaluation](PLATE_FUSION_EVALUATION.md).
+It is a correctness fixture only; real fusion evaluation requires authorized
+held-out sequences and plate labels.
 For optional detector export, INT8 calibration, CPU timing and output-agreement
 checks, see [Edge benchmark](EDGE_BENCHMARK.md). It does not make a deployment-
 target or detection-accuracy claim.

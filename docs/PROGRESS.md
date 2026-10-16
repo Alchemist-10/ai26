@@ -6,7 +6,7 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 ## Status
 
-Across all 80 planned tasks: **47 done, 32 partial, 1 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
+Across all 80 planned tasks: **48 done, 31 partial, 1 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
 ## What now works
 
@@ -359,7 +359,7 @@ local results. Short runtime samples do not establish sustained throughput.
 | EV-01 | Partial | Prepare labeled vehicle/plate data and split by vehicle, camera/location and recording session. | Dataset manifest template and validator verify clip SHA-256, explicit labels/conditions and disjoint vehicle/camera/location/session splits. No labeled held-out clips have been supplied, so accuracy evaluation remains pending. |
 | EV-02 | Partial | Measure vehicle precision/recall and false positives rather than quoting model confidence. | IoU-matched detector precision/recall evaluator implemented; no real labeled measurements. |
 | EV-03 | Partial | Measure exact plate-string accuracy and rejected/invalid read rates on readable and difficult footage. | Exact string/abstention evaluator implemented; no real OCR accuracy or difficult-input strata. |
-| EV-04 | Partial | Compare per-track fusion against single-frame OCR; verify it never mixes identities. | Consensus isolation/conflict regression passes; measured single-frame versus fusion ablation is pending. |
+| EV-04 | Done | Compare per-track fusion against single-frame OCR; verify it never mixes identities. | A bounded synthetic sequence evaluator compares the last OCR read with per-track consensus. An interleaved two-track fixture yields one incorrect last-read result while consensus returns one correct result and abstains on the conflict; the evaluator verifies every supported output came from that same camera/session/track's reads. Three evaluator tests pass. This is a synthetic aggregation contract, not a real OCR-accuracy or identity-risk estimate; labeled field evaluation remains data-dependent. |
 | EV-05 | Partial | Measure tracker ID switches, fragmentation and passage-count error. | ID-switch, visible-track fragmentation and passage error metrics implemented, with camera/session order checks; real labeled tracking evaluation remains pending. |
 | EV-06 | Partial | Measure accepted/rejected trajectory-link precision and impossible-travel false alerts. | Positive/negative link evaluation implemented; real false-link/false-alert estimates pending. |
 | EV-07 | Partial | Evaluate loitering/restricted-zone/watchlist rules with both positive and negative cases. | Positive/negative dwell, watchlist/review and zone configuration tests; labeled footage-level rule evaluation pending. |
