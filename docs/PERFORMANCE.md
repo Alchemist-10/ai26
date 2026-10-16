@@ -280,6 +280,19 @@ not measure browser interaction or multi-camera inference. The exact PID,
 processor counters and interval samples are in
 [`api-idle-profile-2026-10-16.json`](validation/api-idle-profile-2026-10-16.json).
 
+## Focused sampled-detection startup feedback — 16 October 2026
+
+The six-camera inference profile recorded a 4,567 ms first successful attempt
+for CAM-01, including cold model startup. The focused sampled-detections panel
+previously had no loading state during that first-frame wait. It now reports
+that it is waiting for the first sampled frame, changes to a paused message when
+the processor is disabled, and shows the existing error/retry state on failure.
+When processing is disabled, it no longer opens a stream request that cannot
+produce a frame. This improves status feedback and avoids a guaranteed failed
+request; it does not reduce model startup time or prove responsiveness on other
+hardware. The UI build/lint pass; browser interaction under enabled inference and
+the user's target hardware remain unmeasured.
+
 ## Isolated ALPR runtime sample — 16 October 2026
 
 A new bounded evaluator measured the ALPR path in a fresh Python process using
