@@ -1,0 +1,1281 @@
+{
+  "version": 1,
+  "scope": "Read-only local API/process observation under current desktop load; not a controlled accuracy or browser playback benchmark",
+  "conditions": {
+    "api": "http://127.0.0.1:8001",
+    "requested_seconds": 10.0,
+    "interval_seconds": 1.0,
+    "successful_counter_window_seconds": 9.006,
+    "python": "3.12.14",
+    "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+    "logical_cpus": 12,
+    "pid": 77545,
+    "process_status": "sampled",
+    "process_birth_ticks": 7097476
+  },
+  "sampling": {
+    "per_camera": {
+      "CAM-01": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-02": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-03": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-04": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-05": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-06": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-07": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-08": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-09": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      }
+    },
+    "unverified_cameras": [],
+    "total_completed_frames": 0,
+    "total_completed_fps": 0.0,
+    "steady_state_total_completed_fps": 0.0,
+    "counter_window_valid": true,
+    "health_failures": 0,
+    "profile_quality": {
+      "steady_state_rate_valid": true,
+      "steady_state_rate_invalid_reasons": [],
+      "max_sample_gap_seconds": 1.0
+    }
+  },
+  "health_latency_ms": {
+    "samples": 9,
+    "median": 5.869,
+    "p95": 6.112,
+    "max": 6.112
+  },
+  "cpu_percent": {
+    "samples": 9,
+    "median": 1.0,
+    "p95": 3.0,
+    "max": 3.0
+  },
+  "rss_mib": {
+    "samples": 9,
+    "median": 104.246,
+    "p95": 104.496,
+    "max": 104.496
+  },
+  "first_health": {
+    "processing_enabled": false,
+    "cameras": [
+      {
+        "camera_id": "CAM-01",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-02",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-03",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-04",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-05",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-06",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-07",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-08",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-09",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      }
+    ],
+    "inference_branches": {
+      "vehicle_detection_enabled": true,
+      "plate_recognition_enabled": true
+    },
+    "vehicle_model_rollout": {
+      "mode": "stable_only",
+      "stable": {
+        "checkpoint": "yolov8n.pt",
+        "expected_sha256": null,
+        "sha256": null,
+        "loaded": false,
+        "compatibility": null
+      },
+      "rollback": "remove the canary environment settings and restart the API"
+    },
+    "database_schema": 14,
+    "scope": "single API process; run uvicorn with one worker"
+  },
+  "last_health": {
+    "processing_enabled": false,
+    "cameras": [
+      {
+        "camera_id": "CAM-01",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-02",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-03",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-04",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-05",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-06",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-07",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-08",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-09",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "3b993f5160e441b6ae5836858b50702b",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 254353106,
+          "limit_bytes": 2147483648
+        }
+      }
+    ],
+    "inference_branches": {
+      "vehicle_detection_enabled": true,
+      "plate_recognition_enabled": true
+    },
+    "vehicle_model_rollout": {
+      "mode": "stable_only",
+      "stable": {
+        "checkpoint": "yolov8n.pt",
+        "expected_sha256": null,
+        "sha256": null,
+        "loaded": false,
+        "compatibility": null
+      },
+      "rollback": "remove the canary environment settings and restart the API"
+    },
+    "database_schema": 14,
+    "scope": "single API process; run uvicorn with one worker"
+  },
+  "samples": [
+    {
+      "elapsed_seconds": 1.031,
+      "health_latency_ms": 6.112,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 0.0,
+      "rss_mib": 104.246
+    },
+    {
+      "elapsed_seconds": 2.031,
+      "health_latency_ms": 5.434,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 1.001,
+      "rss_mib": 104.246
+    },
+    {
+      "elapsed_seconds": 3.031,
+      "health_latency_ms": 5.718,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 1.0,
+      "rss_mib": 104.246
+    },
+    {
+      "elapsed_seconds": 4.031,
+      "health_latency_ms": 5.892,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 0.0,
+      "rss_mib": 104.246
+    },
+    {
+      "elapsed_seconds": 5.031,
+      "health_latency_ms": 5.869,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 1.0,
+      "rss_mib": 104.246
+    },
+    {
+      "elapsed_seconds": 6.031,
+      "health_latency_ms": 5.964,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 3.0,
+      "rss_mib": 104.496
+    },
+    {
+      "elapsed_seconds": 7.031,
+      "health_latency_ms": 5.725,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 1.0,
+      "rss_mib": 104.496
+    },
+    {
+      "elapsed_seconds": 8.031,
+      "health_latency_ms": 5.604,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 1.0,
+      "rss_mib": 104.496
+    },
+    {
+      "elapsed_seconds": 9.031,
+      "health_latency_ms": 5.929,
+      "frames": {
+        "CAM-01": 0,
+        "CAM-02": 0,
+        "CAM-03": 0,
+        "CAM-04": 0,
+        "CAM-05": 0,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "idle",
+        "CAM-02": "idle",
+        "CAM-03": "idle",
+        "CAM-04": "idle",
+        "CAM-05": "idle",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": null,
+        "CAM-02": null,
+        "CAM-03": null,
+        "CAM-04": null,
+        "CAM-05": null,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 0.0,
+      "rss_mib": 104.496
+    }
+  ],
+  "limitations": [
+    "Timing windows contain at most 64 successful attempts per camera; failures have separate counters and last-attempt timing.",
+    "First-success timing is per camera and can include source/model initialization; it is not a controlled cold-start benchmark.",
+    "Budget overruns mean a processing attempt exceeded its scheduled interval; they are not source frames or browser playback drops.",
+    "Sparse replay sampling intentionally skips source frames. VFR/capture drops, INP/LCP/CLS and real plate accuracy are unmeasured.",
+    "CPU percent uses process CPU seconds and can exceed 100%; memory is RSS, not peak resident usage. API restart can invalidate counters."
+  ]
+}

@@ -269,6 +269,17 @@ inference-enabled CPU measurement. It did not show a frontend main-thread stall;
 inference-enabled backend load remains to be measured on the user's target
 hardware.
 
+## Reloaded preview API idle sample — 16 October 2026
+
+After restarting the local API so it loaded the current routes, a 10-second
+read-only profile sampled nine one-second health intervals with processing still
+disabled. Health latency was 5.87 ms median / 6.11 ms p95; process CPU was 1%
+median / 3% p95, and RSS was 104.5 MiB maximum. There were no health failures
+and no inference attempts, so this confirms only the idle API baseline. It does
+not measure browser interaction or multi-camera inference. The exact PID,
+processor counters and interval samples are in
+[`api-idle-profile-2026-10-16.json`](validation/api-idle-profile-2026-10-16.json).
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded
