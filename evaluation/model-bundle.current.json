@@ -47,6 +47,34 @@
     "vehicle_confidence_threshold": 0.4
   },
   "description": "Digest-pinned descriptor of the currently configured vehicle detector and plate detector/OCR assets; does not assert that the components were trained together.",
+  "external_references": {
+    "package_code_licenses": [
+      {
+        "license": "MIT",
+        "package": "fast-alpr",
+        "url": "https://github.com/ankandrew/fast-alpr/blob/master/LICENSE"
+      },
+      {
+        "license": "MIT",
+        "package": "fast-plate-ocr",
+        "url": "https://github.com/ankandrew/fast-plate-ocr/blob/master/LICENSE"
+      },
+      {
+        "license": "MIT",
+        "package": "open-image-models",
+        "url": "https://github.com/ankandrew/open-image-models/blob/main/LICENSE"
+      }
+    ],
+    "plate_detector_model_documentation": {
+      "observation": "The provider maps the selected detector name to its release asset and default confidence threshold; the license in the software repository does not establish separate weight terms.",
+      "url": "https://github.com/ankandrew/open-image-models/blob/main/open_image_models/detection/core/hub.py"
+    },
+    "plate_ocr_model_documentation": {
+      "observation": "The provider labels global-plates-mobile-vit-v2-model as a legacy inference model and describes it as covering 65+ countries with 85k+ plates. The page links vendor-reported result files; these were not used as AI26 evaluation evidence.",
+      "url": "https://github.com/ankandrew/fast-plate-ocr/blob/master/docs/inference/model_zoo.md"
+    },
+    "scope_note": "These references document upstream software/model descriptions. They do not independently verify training data, OCR accuracy on Indian plates, component-weight rights, or AI26 deployment suitability."
+  },
   "pipeline_sources": {
     "backend/fusion.py": "01b7034f752382c7d93b9bb0ff7224501139185c485a76327481991b51f5e1a0",
     "backend/inference.py": "db5df8809bed9bd3f798a9a36c8728cddbaf95288e94938f5c5983b23707fd25",

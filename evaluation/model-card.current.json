@@ -6,13 +6,14 @@
       "Training data lineage and geographic/camera coverage are unknown for all bundled weights.",
       "CAM-07 through CAM-09 footage is unavailable; the current sample set has no labeled plate-positive examples.",
       "No reviewed train/validation/test manifest, plate labels, vehicle labels, or independent annotation audit is available.",
-      "License and redistribution terms for the component weights are unverified."
+      "License and redistribution terms for the component weights are unverified.",
+      "The OCR provider marks this exact MobileViT-v2 checkpoint as a legacy inference model; upstream scope is global, but Indian-plate performance is unmeasured by AI26."
     ],
     "labeling_method": "No reviewed labels supplied.",
     "manifest_path": "evaluation/dataset-manifest.json (template only; no ready labeled manifest)",
     "manifest_sha256": "",
     "test_split_summary": "No held-out labeled test set supplied. Runtime sample: 12 frames at 2-second strides from CAM-01, not accuracy-evaluable.",
-    "train_split_summary": "Unknown; upstream training data and split are not documented in this workspace.",
+    "train_split_summary": "For the selected OCR model, upstream documentation describes a global model trained on 85k+ plates from 65+ countries. This is a provider statement, not independently verified here; exact source manifest, split membership, and lineage remain unknown. Vehicle and plate-detector training manifests are not present in this workspace.",
     "validation_split_summary": "Unknown; no verified model validation split supplied.",
     "vehicle_camera_location_session_separation": "Not established for model training or validation; runtime clips are not a held-out labeled test set."
   },
@@ -34,7 +35,8 @@
       "No field accuracy, recall, precision, exact-plate match, false-read, or calibration measurement is available.",
       "The companion edge benchmark measures agreement and latency on unlabeled local clips only; it is not target-device validation or accuracy evaluation.",
       "Runtime sample does not measure six-camera shared scheduling, full capture-to-display latency, or field conditions.",
-      "Hashed weights establish byte identity, not trusted authorship, training lineage, annotation quality, or model correctness."
+      "Hashed weights establish byte identity, not trusted authorship, training lineage, annotation quality, or model correctness.",
+      "Upstream model-reported coverage/benchmarks are not AI26 measurements and do not establish accuracy on the bundled footage or Indian plates."
     ],
     "metrics": {
       "accuracy_measured": false,
@@ -73,7 +75,7 @@
       "plate_detection": 0.4,
       "vehicle_detection": 0.4
     },
-    "configuration_sha256": "bb19526e57c7e8889ce7d3108db6118d31f17d54f9ed1700e4df77418a84c06e",
+    "configuration_sha256": "18db73ba5e135a0d47383470a6738bb4517dee82000491039043de4d642a1924",
     "postprocessing": "Vehicle class filter and confidence threshold; plate detection and OCR; plate-format normalization; OCR confidence and format checks; per-camera association and review-only per-track consensus. Exact code digests are in the bundle descriptor.",
     "preprocessing_id": "Versioned inference implementation in the bundle descriptor; YOLO 640x640 RGB BCHW float32 [0,1] benchmark input; Fast-ALPR library preprocessing for plate branch.",
     "preprocessing_sha256": "db5df8809bed9bd3f798a9a36c8728cddbaf95288e94938f5c5983b23707fd25"
@@ -88,14 +90,15 @@
     "Exact asset and pipeline hashes are recorded in the bundle descriptor.",
     "Plate results below 0.35 OCR confidence, with unsupported format, or ambiguous association are not treated as supported identities.",
     "Synthetic/model smoke tests are explicitly separated from real accuracy evidence.",
-    "Use human review before consequential decisions; disable/rollback controls exist, but no model promotion gate has passed on held-out labels."
+    "Use human review before consequential decisions; disable/rollback controls exist, but no model promotion gate has passed on held-out labels.",
+    "Software-package license declarations are separated from model-weight rights; do not redistribute or deploy the weights until their specific terms are established."
   ],
   "schema_version": 1,
   "task": "Detect vehicles and license plates in sampled camera frames, recognize candidate plate text, normalize text against supported Indian registration formats, and expose track-associated observations for review.",
   "weights": {
     "format": "Composite: PyTorch vehicle checkpoint, ONNX plate detector/OCR, YAML OCR configuration",
-    "license": "Component licenses have not been verified; resolve before redistribution or production deployment.",
+    "license": "The inference-library code repositories declare MIT; weight-specific terms for all bundled model files are not explicitly verified. See evaluation/model-bundle.current.json external_references.",
     "path_or_registry_id": "evaluation/model-bundle.current.json (composite bundle descriptor; not a single checkpoint)",
-    "sha256": "bb19526e57c7e8889ce7d3108db6118d31f17d54f9ed1700e4df77418a84c06e"
+    "sha256": "18db73ba5e135a0d47383470a6738bb4517dee82000491039043de4d642a1924"
   }
 }
