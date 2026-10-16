@@ -34,15 +34,42 @@ class QualityRouterTests(unittest.TestCase):
         self.assertNotIn("dark_channel", report["enhancement_candidates"])
         self.assertEqual(report["weather_assessment"], "undetermined")
 
+    def test_plate_box_gets_independent_review_only_quality_hints(self):
+        image = np.full((100, 100, 3), 128, dtype=np.uint8)
+        image[20:60, 30:80] = 24
+        original = image.copy()
+        report = router.inspect(image, [(30, 20, 80, 60)])
+        region, = report["plate_region_assessments"]
+        self.assertEqual(report["features"]["mean_luminance"], 107.2)
+        self.assertGreater(report["features"]["mean_luminance"], 70)
+        self.assertEqual(region["box_xyxy"], [30, 20, 80, 60])
+        self.assertEqual((region["width"], region["height"]), (50, 40))
+        self.assertLess(region["features"]["mean_luminance"], 70)
+        self.assertIn("gamma", region["suggested_ocr_preprocessing"])
+        self.assertEqual(region["suggested_ocr_preprocessing"][0], "raw")
+        self.assertEqual(region["routing_status"], "review_only_no_live_route")
+        self.assertFalse(region["weather_is_assessed"])
+        self.assertTrue(report["raw_reference_retained"])
+        self.assertTrue(np.array_equal(image, original))
+
+    def test_plate_boxes_reject_invalid_or_out_of_bounds_coordinates(self):
+        image = np.zeros((16, 16, 3), dtype=np.uint8)
+        for box in ((0, 0, 0, 8), (-1, 0, 4, 4), (0, 0, 17, 4), (1, 1, 4.5, 5)):
+            with self.subTest(box=box), self.assertRaises(ValueError):
+                router.inspect(image, [box])
+        with self.assertRaises(router.argparse.ArgumentTypeError):
+            router.parse_plate_box("1,2,3")
+
     def test_file_report_is_hashed_read_only_and_reports_invalid_data(self):
         with tempfile.TemporaryDirectory() as temp:
             source = Path(temp) / "raw.png"
             image = np.zeros((16, 16, 3), dtype=np.uint8)
             self.assertTrue(cv2.imwrite(str(source), image))
             before = hashlib.sha256(source.read_bytes()).hexdigest()
-            report = router.run(source)
+            report = router.run(source, [(0, 0, 8, 8)])
             self.assertEqual(report["source"]["sha256"], before)
             self.assertEqual(report["source"]["status"], "read_only_raw_reference")
+            self.assertEqual(len(report["plate_region_assessments"]), 1)
             self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), before)
         with self.assertRaises(ValueError):
             router.inspect(np.zeros((8, 8), dtype=np.uint8))

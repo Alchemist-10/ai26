@@ -12,7 +12,8 @@ import cv2
 import numpy as np
 
 
-def inspect(image: np.ndarray) -> dict:
+def _image_metrics(image: np.ndarray, *, include_weather: bool) -> dict:
+    """Return descriptive, uncalibrated image hints for one BGR region."""
     if not isinstance(image, np.ndarray) or image.dtype != np.uint8 or image.ndim != 3 or image.shape[2] != 3:
         raise ValueError("image must be a uint8 BGR image with three channels")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -44,21 +45,64 @@ def inspect(image: np.ndarray) -> dict:
     if nonzero.size == 3 and float(nonzero.max() / nonzero.min()) > 1.5:
         flags.append("color_cast_possible")
         suggestions.append("gray_world")
-    haze_like = features["luminance_stddev"] < 45 and features["mean_saturation"] < 65
+    haze_like = include_weather and features["luminance_stddev"] < 45 and features["mean_saturation"] < 65
     if haze_like:
         flags.append("haze_or_fog_like_low_contrast")
         suggestions.append("dark_channel")
+    return {"features": features, "flags": flags, "enhancement_candidates": list(dict.fromkeys(suggestions)),
+            "haze_like": haze_like}
+
+
+def _validate_plate_boxes(plate_boxes, width: int, height: int) -> list[tuple[int, int, int, int]]:
+    if plate_boxes is None:
+        return []
+    if not isinstance(plate_boxes, (list, tuple)) or len(plate_boxes) > 100:
+        raise ValueError("plate_boxes must be a list of at most 100 xyxy boxes")
+    result = []
+    for index, box in enumerate(plate_boxes):
+        if not isinstance(box, (list, tuple)) or len(box) != 4 or any(type(value) is not int for value in box):
+            raise ValueError(f"plate box {index} must contain four integer xyxy coordinates")
+        x1, y1, x2, y2 = box
+        if x1 < 0 or y1 < 0 or x2 > width or y2 > height or x2 <= x1 or y2 <= y1:
+            raise ValueError(f"plate box {index} must be a nonempty region inside the image bounds")
+        result.append((x1, y1, x2, y2))
+    return result
+
+
+def inspect(image: np.ndarray, plate_boxes=None) -> dict:
+    if not isinstance(image, np.ndarray) or image.dtype != np.uint8 or image.ndim != 3 or image.shape[2] != 3:
+        raise ValueError("image must be a uint8 BGR image with three channels")
+    height, width = image.shape[:2]
+    whole = _image_metrics(image, include_weather=True)
+    regions = []
+    for index, (x1, y1, x2, y2) in enumerate(_validate_plate_boxes(plate_boxes, width, height)):
+        crop = image[y1:y2, x1:x2]
+        assessment = _image_metrics(crop, include_weather=False)
+        regions.append({
+            "region_index": index,
+            "box_xyxy": [x1, y1, x2, y2],
+            "width": x2 - x1,
+            "height": y2 - y1,
+            "features": assessment["features"],
+            "flags": assessment["flags"],
+            "suggested_ocr_preprocessing": assessment["enhancement_candidates"],
+            "routing_status": "review_only_no_live_route",
+            "weather_is_assessed": False,
+            "accuracy_claim": False,
+        })
     return {
         "schema_version": 1,
         "type": "heuristic_image_condition_report",
-        "features": features,
-        "flags": flags,
-        "weather_assessment": "possible_haze_or_fog_like_appearance" if haze_like else "undetermined",
+        "image_dimensions": {"width": width, "height": height},
+        "features": whole["features"],
+        "flags": whole["flags"],
+        "weather_assessment": "possible_haze_or_fog_like_appearance" if whole["haze_like"] else "undetermined",
         "weather_is_verified": False,
-        "enhancement_candidates": list(dict.fromkeys(suggestions)),
+        "enhancement_candidates": whole["enhancement_candidates"],
+        "plate_region_assessments": regions,
         "raw_reference_retained": True,
         "accuracy_claim": False,
-        "limitations": "Fixed image-statistic thresholds are not a trained quality or weather classifier; conditions and OCR performance require labeled validation.",
+        "limitations": "Fixed image-statistic thresholds are not a trained quality or weather classifier; plate boxes are operator-supplied, recommendations are review-only, and conditions/OCR performance require labeled validation.",
     }
 
 
@@ -70,13 +114,23 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def run(path: Path) -> dict:
+def parse_plate_box(value: str) -> tuple[int, int, int, int]:
+    try:
+        fields = value.split(",")
+        if len(fields) != 4 or any(not field.strip() for field in fields):
+            raise ValueError
+        return tuple(int(field.strip()) for field in fields)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("plate boxes use integer x1,y1,x2,y2 coordinates") from exc
+
+
+def run(path: Path, plate_boxes=None) -> dict:
     path = path.resolve(strict=True)
     digest = _sha256(path)
     image = cv2.imread(str(path), cv2.IMREAD_COLOR)
     if image is None:
         raise ValueError(f"cannot decode image: {path}")
-    report = inspect(image)
+    report = inspect(image, plate_boxes=plate_boxes)
     report["source"] = {"path": path.name, "sha256": digest, "status": "read_only_raw_reference"}
     if _sha256(path) != digest:
         raise RuntimeError("source image changed during inspection")
@@ -86,10 +140,12 @@ def run(path: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("image", type=Path)
+    parser.add_argument("--plate-box", action="append", type=parse_plate_box, default=[], metavar="X1,Y1,X2,Y2",
+                        help="optional operator-supplied plate crop; may be repeated")
     parser.add_argument("--output", type=Path, required=True, help="new JSON report path; existing file is never replaced")
     args = parser.parse_args()
     try:
-        report = run(args.image)
+        report = run(args.image, plate_boxes=args.plate_box)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         payload = (json.dumps(report, indent=2, sort_keys=True) + "\n").encode()
         fd, temp_name = tempfile.mkstemp(dir=args.output.parent, prefix=f".{args.output.name}.")

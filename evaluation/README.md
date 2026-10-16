@@ -119,9 +119,10 @@ target or detection-accuracy claim.
 For paired raw/classical/learned/fusion runs and a model-card starting point, see
 [Ablation evaluation](ABLATION.md). The runner requires the exact same labeled
 test samples and a ready, hashed dataset manifest for all four variants.
-For read-only condition hints and enhancement candidates, see
-[Heuristic quality routing](QUALITY_ROUTER.md); its weather-like flags are
-unverified and do not control the live pipeline.
+For read-only scene hints and optional per-plate-box quality candidates, see
+[Heuristic quality routing](QUALITY_ROUTER.md); plate boxes are operator supplied,
+weather-like flags are unverified, and recommendations do not control the live
+pipeline.
 For supervised plate-crop readability training with camera/session/source-clip
 held-out splits, see [Plate-crop quality classifier](PLATE_QUALITY_CLASSIFIER.md).
 The workspace has no reviewed quality labels, so only synthetic trainer tests
