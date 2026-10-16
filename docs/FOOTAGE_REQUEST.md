@@ -17,6 +17,18 @@ describes live and recorded video access as role-based operator access. The
 [Kochi Corporation CSML page](https://kochicorporation.lsgkerala.gov.in/en/cochin-smart-mission-limited/401)
 lists the public CSML contact details.
 
+## Latest repository check
+
+On 2026-10-16, the current upstream `moneytosms/ai26` main commit
+(`d41500d5e9d79ecd0a7c14461fd3322de5944bbd`) and all three current
+`moneytosms/godseye` branches were checked again. AI26 main and each Godseye
+branch contain only `CAM-01.mp4` through `CAM-06.mp4` as camera playback; the
+Godseye branches also contain `frontend/public/sakshi-intro.mp4`, which is not a
+camera source. No CAM-07–09 footage, video archive or new media branch was
+found. Repository media is only a check for files that were committed there; it
+does not establish whether CSML or another authorized custodian has archived
+recordings.
+
 ## Public contact for routing
 
 The Kochi Corporation page lists Cochin Smart Mission Limited (CSML) at 4th
