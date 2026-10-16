@@ -40,6 +40,10 @@ Each line has a unique sample_id and optional expected_plate/predicted_plate,
 expected_boxes/predicted_boxes (class label, bbox; optional ground-truth identity
 and predicted track_id), expected_link/predicted_link and expected_rule/predicted_rule
 Booleans, and independently counted expected_passages/predicted_passages.
+For real records, add the test `clip_id` and exact `model_sha256`; the evaluator
+requires the model digest to match `--model-sha256` and binds the report to the
+manifest bytes, prediction-record bytes, and exact sample-ID set. Synthetic
+fixtures must not be mixed into a real evaluation run.
 Tracking labels require nonblank `camera` and recording `session` strings, plus
 one ground-truth identity per box (each identity occurs once per frame). Include
 nonnegative integer `frame_index` on every frame in an evaluated sequence, including
@@ -64,6 +68,9 @@ positive/negative pair selection, hardware and inference settings with results.
 The runner does not verify split independence or replace manual labeling. Add
 held-out conditions and balanced rule/link negative cases
 before making reliability claims. No detector/OCR benchmark target is claimed met.
+For a fail-closed, operator-thresholded stable-versus-canary acceptance check,
+see [Held-out model promotion gate](PROMOTION_GATE.md). It requires real paired
+reports and never changes the active model automatically.
 
 ## Runtime observation
 

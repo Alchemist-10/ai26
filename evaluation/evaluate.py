@@ -1,7 +1,9 @@
 """Evaluate explicit labeled JSONL records. Synthetic fixtures never establish model accuracy."""
 import argparse
+import hashlib
 import json
 import importlib.util
+import re
 from pathlib import Path
 try:
     from .dataset_manifest import ManifestError, validate_manifest
@@ -34,6 +36,8 @@ def evaluate(records):
     passages_expected=passages_predicted=0
     for r in records:
         sample=r['sample_id']
+        if not isinstance(sample,str) or not sample.strip():
+            raise ValueError('sample_id must be non-empty text')
         if sample in seen: raise ValueError(f'Duplicate sample ID: {sample}')
         seen.add(sample)
         if 'expected_plate' in r:
@@ -119,10 +123,21 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--records',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--manifest',type=Path,help='validated dataset manifest; required for non-synthetic records')
+    parser.add_argument('--model-sha256',help='exact detector/OCR bundle SHA-256; required for non-synthetic records')
     args=parser.parse_args();records=[json.loads(line) for line in args.records.read_text().splitlines() if line.strip()]
     real_records=[record for record in records if not record.get('synthetic',False)]
+    if real_records and len(real_records)!=len(records):
+        parser.error('synthetic and real records cannot be mixed in one evaluation report')
     if real_records and args.manifest is None:
         parser.error('non-synthetic evaluation requires --manifest so test split and source clip can be checked')
+    if real_records and (not isinstance(args.model_sha256,str) or not re.fullmatch(r'[0-9a-f]{64}',args.model_sha256)):
+        parser.error('non-synthetic evaluation requires --model-sha256 with a lowercase SHA-256 digest')
+    if not real_records and args.model_sha256 is not None:
+        parser.error('--model-sha256 is only valid for non-synthetic records')
+    if real_records:
+        for record in real_records:
+            if record.get('model_sha256') != args.model_sha256:
+                parser.error(f"record {record.get('sample_id')!r} model_sha256 does not match --model-sha256")
     if args.manifest is not None:
         try:
             manifest_report=validate_manifest(args.manifest)
@@ -141,6 +156,16 @@ if __name__=='__main__':
                 parser.error(f'record {record.get("sample_id", index)!r} uses a non-test clip')
             if record.get('camera') != clip['camera_id'] or record.get('session') != clip['session_id']:
                 parser.error(f'record {record.get("sample_id", index)!r} camera/session do not match its clip')
-    result=evaluate(records);args.output.parent.mkdir(parents=True,exist_ok=True)
+    result=evaluate(records)
+    result['provenance']={
+        'schema_version':1,
+        'model_sha256':args.model_sha256,
+        'manifest_sha256':hashlib.sha256(args.manifest.read_bytes()).hexdigest() if real_records else None,
+        'records_sha256':hashlib.sha256(args.records.read_bytes()).hexdigest(),
+        'sample_ids_sha256':hashlib.sha256('\n'.join(sorted(record['sample_id'] for record in records)).encode()).hexdigest(),
+        'test_split_only':bool(real_records),
+        'record_count':len(records),
+    }
+    args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(result,indent=2)+'\n')
     print(f'{len(records)} records evaluated; synthetic={result["synthetic"]}; output={args.output}')

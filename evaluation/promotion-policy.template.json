@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "minimum_test_frames": null,
+  "minimum_labeled_boxes": null,
+  "minimum_labeled_plates": null,
+  "minimum_detection_precision": null,
+  "minimum_detection_recall": null,
+  "minimum_plate_exact_match_rate": null,
+  "maximum_false_positives_per_100_objects": null,
+  "maximum_false_reads_per_100_plates": null,
+  "maximum_detection_precision_drop": null,
+  "maximum_detection_recall_drop": null,
+  "maximum_plate_exact_match_drop": null,
+  "maximum_false_positive_rate_increase": null,
+  "maximum_false_read_rate_increase": null
+}
