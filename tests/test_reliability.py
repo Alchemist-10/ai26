@@ -38,6 +38,7 @@ class Reliability(unittest.TestCase):
         self.repo=Repository(self.path)
         for module in (events,main,processing):
             p=patch.object(module,'store',self.repo);p.start();self.addCleanup(p.stop)
+        p=patch.object(processing.cameras,'MANAGED_SOURCES',{});p.start();self.addCleanup(p.stop)
         p=patch.object(artifacts,'ROOT',Path(self.folder.name)/'artifacts');p.start();self.addCleanup(p.stop)
         self.addCleanup(lambda:self.repo.close())
         self.client=TestClient(main.app)
@@ -607,6 +608,14 @@ class Reliability(unittest.TestCase):
         self.assertTrue(p.jpeg('CAM-01')[1].startswith(b'\xff\xd8'))
         preview=processing.cv2.imdecode(np.frombuffer(p.preview('CAM-01')[1],np.uint8),processing.cv2.IMREAD_COLOR)
         self.assertEqual(preview.shape[1],320)
+
+    def test_managed_replay_uses_decoded_frame_count_not_stale_container_count(self):
+        capture=SimpleNamespace(get=lambda key:25 if key==processing.cv2.CAP_PROP_FPS else 752)
+        managed={'CAM-08':{'manifest':{'original':{'video':{'fps':25,'frame_count':627}}}}}
+        with patch.dict(processing.cameras.MANAGED_SOURCES,managed):
+            self.assertEqual(processing.recorded_video_geometry('CAM-08',capture),(25.0,627))
+        with patch.dict(processing.cameras.MANAGED_SOURCES,{},clear=True):
+            self.assertEqual(processing.recorded_video_geometry('CAM-08',capture),(25,752))
 
     def test_aggregates_do_not_truncate_at_raw_api_limit(self):
         events.add_events([self.vehicle(self.now-i*.1,frame_id=i) for i in range(6)])

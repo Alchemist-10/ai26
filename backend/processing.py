@@ -39,6 +39,22 @@ def model_version_for_detection(detection):
         return model_id
     return 'yolov8n.pt' if detection.get('kind')=='vehicle' else 'fast-alpr:global-plates-mobile-vit-v2'
 
+def recorded_video_geometry(camera_id, capture):
+    """Prefer importer-verified decoded counts over stale container frame counts."""
+    fps=capture.get(cv2.CAP_PROP_FPS)
+    frames=capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    video=(cameras.MANAGED_SOURCES.get(camera_id,{}).get('manifest',{})
+           .get('original',{}).get('video',{}))
+    try:
+        manifest_fps=float(video['fps'])
+        manifest_frames=int(video['frame_count'])
+        if (math.isfinite(manifest_fps) and manifest_fps>0 and manifest_frames>0
+                and not isinstance(video['frame_count'],bool)):
+            return manifest_fps,manifest_frames
+    except (KeyError,TypeError,ValueError):
+        pass
+    return fps,frames
+
 def validate_branch_configuration():
     from privacy import enabled as privacy_enabled
     if privacy_enabled() and not VEHICLE_DETECTION_ENABLED:
@@ -260,13 +276,13 @@ class Processor:
                 self.capture_generation[camera_id] = generation
                 reopened = generation > 1
             cap=self.captures[camera_id]
-            fps=cap.get(cv2.CAP_PROP_FPS); frames=cap.get(cv2.CAP_PROP_FRAME_COUNT)
+            fps,frames=recorded_video_geometry(camera_id,cap)
             if not math.isfinite(fps) or fps<=0 or not math.isfinite(frames) or frames<=0: raise RuntimeError('Invalid source duration/frame rate')
             duration=frames/fps
             offset=(now-self.started)+int(camera_id.rsplit('-',1)[-1])*4.5
             epoch=int(offset//duration)
             position=offset % duration
-            frame_id=int(position*fps)
+            frame_id=min(int(position*fps),int(frames)-1)
             session=f'{self.run_id}:{camera_id}:{epoch}:capture-{self.capture_generation[camera_id]}'
             if self.epochs.get(camera_id)!=epoch or reopened:
                 # Reset all local identities/fusion when replay crosses its source boundary.

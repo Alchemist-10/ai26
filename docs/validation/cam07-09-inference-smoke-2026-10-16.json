@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-16",
+  "scope": "Local bounded inference smoke test on the user-supplied CAM-07–09 recordings; no accuracy or human-review claim.",
+  "conditions": {
+    "processing_enabled": true,
+    "vehicle_detection_enabled": true,
+    "plate_recognition_enabled": true,
+    "shared_sampling_budget_fps": 2.0,
+    "available_cameras": 9,
+    "managed_source_frames": {
+      "CAM-07": 1285,
+      "CAM-08": 627,
+      "CAM-09": 540
+    }
+  },
+  "runtime_sample": {
+    "duration_seconds": 19.003,
+    "completed_frames": 37,
+    "completed_fps": 1.9996,
+    "camera_counters_verified": true,
+    "health_request_failures": 0,
+    "health_latency_ms": {
+      "median": 3.476,
+      "p95": 65.641
+    },
+    "process_cpu_percent_across_12_logical_cpus": {
+      "median": 59.003,
+      "p95": 202.464
+    },
+    "process_rss_mib": {
+      "median": 743.777,
+      "p95": 770.461
+    },
+    "steady_state_rate_validated": false,
+    "steady_state_note": "The profiler suppressed a steady-state rate because one camera's reported frame age had a discontinuity; completed counter delta is still reported."
+  },
+  "run_observation_scope": "Processor-run totals at the post-profile health/database snapshot; each target camera had completed 13 frames.",
+  "run_observations": {
+    "CAM-07": {
+      "processed_frames": 13,
+      "attempt_failures": 0,
+      "plate_candidates": 0,
+      "format_valid_unreviewed_reads": 0
+    },
+    "CAM-08": {
+      "processed_frames": 13,
+      "attempt_failures": 0,
+      "plate_candidates": 2,
+      "format_valid_unreviewed_reads": 0,
+      "invalid_or_low_confidence_candidates": 2
+    },
+    "CAM-09": {
+      "processed_frames": 13,
+      "attempt_failures": 0,
+      "plate_candidates": 9,
+      "format_valid_unreviewed_reads": 2,
+      "invalid_or_low_confidence_candidates": 7
+    }
+  },
+  "limitations": [
+    "The source content and camera/junction mapping have not been independently reviewed.",
+    "Format-valid OCR candidates are unreviewed and may be incorrect; no plate strings are included in this artifact.",
+    "Sampling is sparse and short; these results do not establish precision, recall, exact-read accuracy, sustained throughput, or browser interaction latency.",
+    "Replay sampling uses decoder/frame positions and does not verify original recording timestamps or synchronized camera clocks."
+  ]
+}

@@ -46,7 +46,7 @@ importer now compares fully decoded counts for import validation, while its
 read-only check remains metadata-only. These checks confirm valid video decode
 and filename mapping only: the requested junction views, readable plates,
 source authorization, export provenance, recording times/timezone, retention
-terms and camera-clock offsets have not been independently verified. No plate
+terms and camera-clock offsets have not been independently verified. The smoke run produced two format-valid, unreviewed OCR candidates on CAM-09, but none on CAM-07 and only invalid/low-confidence candidates on CAM-08; this is not an accuracy result. No plate
 values or frame images are recorded here. See `docs/SOURCE_IMPORT.md` for the
 managed-import workflow.
 

@@ -81,6 +81,8 @@ without decoding the full clip. Import fully decodes the copied original and
 playback derivative to count frames, then requires matching decoded frame counts
 and durations within the stated tolerance. This avoids trusting stale container
 `nb_frames` values while still rejecting a derivative that lost decoded frames.
+For managed replay, the scheduler uses this verified decoded frame count instead
+of OpenCV's potentially stale container count when calculating seek positions.
 Rate/duration probes are metadata checks; they do not independently establish
 original capture time. Sampled source offsets prefer the decoder-reported frame
 position in milliseconds and fall back to frame-index ÷ reported FPS; each
