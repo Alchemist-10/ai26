@@ -41,6 +41,24 @@ class AlprVisibleVehicleReportTests(unittest.TestCase):
         self.assertEqual(report["aggregate"]["plate_ocr_calls"], 0)
         self.assertTrue(any("same vehicle" in limitation for limitation in report["limitations"]))
 
+    def test_proxy_scan_hashes_all_six_clips_and_records_no_accuracy_claim(self):
+        report_path = ROOT / "docs/validation/alpr-proxy-largest-vehicle-scan-2026-10-16.json"
+        report = json.loads(report_path.read_text())
+        bundle = json.loads((ROOT / "evaluation/model-bundle.current.json").read_text())
+        self.assertEqual(report["sampling"]["sampled_frames"], 252)
+        self.assertEqual(report["sampling"]["selected_frames"], 6)
+        self.assertEqual({sample["camera"] for sample in report["samples"]},
+                         {f"CAM-{index:02}" for index in range(1, 7)})
+        for sample in report["samples"]:
+            self.assertEqual(sha256(ROOT / sample["clip_path"]), sample["clip_sha256"])
+            self.assertEqual(sample["plate_detection_count"], 0)
+            self.assertEqual(sample["ocr_result_count"], 0)
+        self.assertEqual(report["models"]["vehicle_detector_sha256"],
+                         bundle["components"][0]["sha256"])
+        self.assertEqual(report["models"]["pipeline_source_sha256"], bundle["pipeline_sources"])
+        self.assertFalse(report["aggregate"]["accuracy_measured"])
+        self.assertFalse(report["aggregate"]["false_negatives_measured"])
+
 
 if __name__ == "__main__":
     unittest.main()

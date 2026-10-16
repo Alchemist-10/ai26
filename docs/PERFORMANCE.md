@@ -323,6 +323,15 @@ and may show the same vehicle; this cannot be counted as a detector miss or an
 accuracy result. Exact source/frame/model hashes are in
 [`validation/alpr-visible-vehicle-frame-check-2026-10-16.json`](validation/alpr-visible-vehicle-frame-check-2026-10-16.json).
 
+A broader discovery scan sampled 252 frames at one-second strides across all six
+available proxies with the vehicle detector, then ran ALPR on the largest
+vehicle-box frame from each clip. The plate detector returned zero candidates in
+all six selected frames, so OCR was not called. This model-guided search helps
+identify footage that may be useful for manual review; it is not an exhaustive
+plate search or an accuracy measurement because plate presence/readability was
+not labeled and the clips may be correlated. Per-frame and model hashes are in
+[`validation/alpr-proxy-largest-vehicle-scan-2026-10-16.json`](validation/alpr-proxy-largest-vehicle-scan-2026-10-16.json).
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded
