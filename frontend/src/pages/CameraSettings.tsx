@@ -184,6 +184,16 @@ export default function CameraSettings({ cameras, initialCamera, isAdmin }: { ca
               {profileError && <p role="alert" className="text-sm text-red-200">{profileError}</p>}
               {profileResult && <div role="status" aria-live="polite" className="rounded border border-zinc-800 p-3 text-sm">
                 <p className="font-medium">{profileResult.profile_count} profile{profileResult.profile_count === 1 ? "" : "s"} returned by {profileResult.device_ip}</p>
+                <div className="mt-2 rounded bg-zinc-900 p-2 text-xs text-zinc-300">
+                  <p className="font-medium text-white">Read-only camera clock check</p>
+                  {profileResult.clock.status === "estimated" && profileResult.clock.estimated_host_offset_seconds !== null ? <>
+                    <p className="mt-1">Camera time: {profileResult.clock.camera_utc} · {profileResult.clock.date_time_type ?? "time source unreported"}</p>
+                    <p>Estimated camera offset from AI26 host: {profileResult.clock.estimated_host_offset_seconds >= 0 ? "+" : ""}{profileResult.clock.estimated_host_offset_seconds}s ±{profileResult.clock.uncertainty_seconds}s.</p>
+                    <p>Uncertainty includes one-second camera timestamp resolution and half the request round trip; AI26 host clock accuracy is not assessed.</p>
+                  </> : <p className="mt-1">The device did not provide a usable UTC clock value. Clock synchronization remains unverified.</p>}
+                  {profileResult.clock.daylight_savings !== null && <p>Device daylight-saving setting: {profileResult.clock.daylight_savings ? "on" : "off"}.</p>}
+                  <p>No camera time was changed. This estimate is diagnostic, not clock calibration.</p>
+                </div>
                 {profileResult.profiles.length ? <ul className="mt-2 divide-y divide-zinc-800">{profileResult.profiles.map(profile => <li key={profile.token} className="py-2">
                   <p>{profile.name}{profile.encoding ? ` · ${profile.encoding}` : ""}</p>
                   {profile.stream_uri ? <code className="mt-1 block break-all text-xs text-teal-200">{profile.stream_uri}</code> : <p className="mt-1 text-xs text-zinc-400">Stream URI {profile.stream_uri_status.replaceAll("_", " ")}</p>}

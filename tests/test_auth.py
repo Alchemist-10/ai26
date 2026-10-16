@@ -250,10 +250,14 @@ class Authentication(unittest.TestCase):
             "timeout_seconds":3,
         }
         headers={**self.csrf_headers(),"X-AI26-Case-ID":"CASE-2026-01","X-AI26-Purpose":"system_test"}
-        result={"device_ip":"192.168.1.20","profile_count":0,"profiles":[],"persisted":False,"activated":False}
+        result={"device_ip":"192.168.1.20","clock":{"status":"unavailable","camera_utc":None,
+                "estimated_host_offset_seconds":None,"uncertainty_seconds":None,"date_time_type":None,
+                "daylight_savings":None,"network_round_trip_seconds":None,"host_clock_accuracy":"not_assessed"},
+                "profile_count":0,"profiles":[],"persisted":False,"activated":False}
         with patch.object(main,"inspect_onvif_profiles",return_value=result) as inspect:
             response=self.client.post("/api/cameras/onvif/profiles",json=payload,headers=headers)
         self.assertEqual(response.status_code,200,response.text)
+        self.assertEqual(response.json()["clock"]["status"],"unavailable")
         inspect.assert_called_once_with("192.168.1.20","http://192.168.1.20/onvif/device",
                                         "camera-user","private-camera-password",3.0)
         audit=self.repo.db.execute("SELECT action,data FROM audit ORDER BY id DESC LIMIT 1").fetchone()

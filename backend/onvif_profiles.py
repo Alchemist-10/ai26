@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import base64
+from datetime import datetime, timezone
 import hashlib
 import ipaddress
 import os
@@ -110,6 +111,45 @@ def _text(element: ET.Element, local_name: str) -> str | None:
     return None
 
 
+def _child(element: ET.Element, local_name: str) -> ET.Element | None:
+    return next((node for node in element.iter() if node is not element
+                 and node.tag.rsplit("}", 1)[-1] == local_name), None)
+
+
+def _clock_report(root: ET.Element, wall_started: float, monotonic_started: float,
+                  monotonic_finished: float) -> dict:
+    date_time_type = _text(root, "DateTimeType")
+    daylight_value = _text(root, "DaylightSavings") or _text(root, "DayLightSavings")
+    daylight_savings = (daylight_value.lower() in {"true", "1"}) if daylight_value else None
+    utc_node = _child(root, "UTCDateTime")
+    round_trip = max(0.0, monotonic_finished - monotonic_started)
+    common = {"date_time_type": date_time_type, "daylight_savings": daylight_savings,
+              "network_round_trip_seconds": round(round_trip, 3),
+              "host_clock_accuracy": "not_assessed"}
+    if utc_node is None:
+        return {"status": "unavailable", "camera_utc": None,
+                "estimated_host_offset_seconds": None, "uncertainty_seconds": None, **common}
+    date_node = _child(utc_node, "Date")
+    time_node = _child(utc_node, "Time")
+    if date_node is None or time_node is None:
+        return {"status": "unavailable", "camera_utc": None,
+                "estimated_host_offset_seconds": None, "uncertainty_seconds": None, **common}
+    try:
+        parts = [int(_text(date_node, name)) for name in ("Year", "Month", "Day")]
+        parts.extend(int(_text(time_node, name)) for name in ("Hour", "Minute", "Second"))
+        camera_time = datetime(*parts, tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        return {"status": "unavailable", "camera_utc": None,
+                "estimated_host_offset_seconds": None, "uncertainty_seconds": None, **common}
+    # The ONVIF date-time fields have one-second resolution. RTT/2 is only the
+    # network timing contribution; the host's own UTC accuracy is not known here.
+    host_midpoint = datetime.fromtimestamp(wall_started + round_trip / 2, tz=timezone.utc)
+    return {"status": "estimated", "camera_utc": camera_time.isoformat(),
+            "host_time_at_midpoint_utc": host_midpoint.isoformat(),
+            "estimated_host_offset_seconds": round((camera_time - host_midpoint).total_seconds(), 3),
+            "uncertainty_seconds": round(round_trip / 2 + 1.0, 3), **common}
+
+
 def _profiles(root: ET.Element) -> list[tuple[str, str, str | None]]:
     profiles = []
     for element in root.iter():
@@ -160,6 +200,21 @@ def inspect_onvif_profiles(source_address: str, service_address: str, username: 
         media_endpoint, media_ip = _device_endpoint(source_ip, media_address)
         if media_ip != source_ip:
             raise OnvifInspectionError("The Media service address does not match the discovered camera.")
+        clock = {"status": "unavailable", "camera_utc": None,
+                 "estimated_host_offset_seconds": None, "uncertainty_seconds": None,
+                 "date_time_type": None, "daylight_savings": None,
+                 "network_round_trip_seconds": None, "host_clock_accuracy": "not_assessed"}
+        try:
+            wall_started = time.time()
+            monotonic_started = time.monotonic()
+            clock_root = _post(session, endpoint, "GetSystemDateAndTime", DEVICE, username, password,
+                               timeout_seconds=timeout_seconds)
+            monotonic_finished = time.monotonic()
+            clock = _clock_report(clock_root, wall_started, monotonic_started, monotonic_finished)
+        except OnvifInspectionError:
+            # Some cameras omit or fail this optional diagnostic. Profile lookup
+            # remains useful, and no device clock mutation is attempted.
+            pass
         profile_root = _post(session, media_endpoint, "GetProfiles", MEDIA, username, password,
                              timeout_seconds=timeout_seconds)
         profiles = []
@@ -170,7 +225,7 @@ def inspect_onvif_profiles(source_address: str, service_address: str, username: 
             safe_uri, uri_status = _safe_stream_uri(uri, source_ip)
             profiles.append({"token": token, "name": name, "encoding": encoding,
                              "stream_uri": safe_uri, "stream_uri_status": uri_status})
-        return {"device_ip": source_ip, "profiles": profiles,
+        return {"device_ip": source_ip, "clock": clock, "profiles": profiles,
                 "profile_count": len(profiles), "persisted": False, "activated": False}
     finally:
         session.close()

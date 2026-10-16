@@ -49,6 +49,17 @@ export interface OnvifDiscoveryResult {
 }
 export interface OnvifProfileResult {
   device_ip: string
+  clock: {
+    status: "estimated" | "unavailable"
+    camera_utc: string | null
+    host_time_at_midpoint_utc?: string
+    estimated_host_offset_seconds: number | null
+    uncertainty_seconds: number | null
+    network_round_trip_seconds: number | null
+    date_time_type: string | null
+    daylight_savings: boolean | null
+    host_clock_accuracy: "not_assessed"
+  }
   profile_count: number
   persisted: false
   activated: false

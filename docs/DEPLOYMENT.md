@@ -196,8 +196,15 @@ are sent to the AI26 API and then to the discovered camera, are not persisted,
 and are cleared from the form after the request. Redirects and environment
 proxies are disabled, and endpoint and returned stream hosts must match the
 discovered private IPv4 address. Returned URLs with credentials, query strings,
-fragments, public addresses or a different host are withheld. This inspection
-does not activate a stream or change source mappings; a reviewed RTSP/RTSPS URL
+fragments, public addresses or a different host are withheld. The action also
+performs a read-only `GetSystemDateAndTime` request and displays a camera-to-host
+clock offset estimate with network and one-second timestamp-resolution
+uncertainty; it does not set the camera clock. The ONVIF Core specification
+defines this operation as read-only and returns UTC date/time, daylight-saving,
+and time-source information ([official specification](https://www.onvif.org/specs/core/ONVIF-Core-Spec-v2412.pdf)).
+The estimate is relative to the AI26 host clock, whose own UTC accuracy is not
+assessed, so it is diagnostic and not a calibration claim. This inspection does
+not activate a stream or change source mappings; a reviewed RTSP/RTSPS URL
 must still be placed in the protected host-side source file. ONVIF digest-auth
 compatibility varies by vendor, so test this flow on each supported camera/NVR
 model before relying on it. Discovery needs host/network support for IPv4
