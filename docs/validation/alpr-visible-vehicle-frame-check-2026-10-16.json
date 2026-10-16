@@ -1,0 +1,109 @@
+{
+  "aggregate": {
+    "accuracy_measured": false,
+    "false_negatives_measured": false,
+    "frames": 2,
+    "identity_linked_across_cameras": false,
+    "plate_detector_candidates": 0,
+    "plate_ocr_calls": 0,
+    "vehicle_model_car_observations": 2
+  },
+  "conditions": {
+    "fast_alpr_version": "0.4.0",
+    "fast_plate_ocr_version": "1.1.0",
+    "onnxruntime_version": "1.30.0",
+    "open_image_models_version": "0.6.0",
+    "plate_detector_model": "yolo-v9-t-384-license-plate-end2end",
+    "plate_detector_threshold": 0.4,
+    "runtime": "CPUExecutionProvider; two ONNX intra-op threads; one inter-op thread",
+    "vehicle_detector_model": "backend/yolov8n.pt",
+    "vehicle_detector_sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+    "vehicle_detector_threshold": 0.4
+  },
+  "generated_at_utc": "2026-10-16T05:22:19Z",
+  "limitations": [
+    "Frames were selected for observation, not sampled from a pre-registered held-out set.",
+    "There are no independently reviewed plate bounding boxes or readable/unreadable labels.",
+    "The vehicle observations are model predictions and are not ground-truth labels.",
+    "The two clips may depict the same vehicle and do not establish independent samples.",
+    "CAM-07 through CAM-09 readable plate footage remains unavailable.",
+    "The ONNX OCR session initialized, but OCR was not called because the detector produced no plate candidates; no OCR text or images are stored in this report."
+  ],
+  "model_files": [
+    {
+      "filename": "yolo-v9-t-384-license-plates-end2end.onnx",
+      "role": "plate_detector_weights",
+      "sha256": "888397b96d761c89db40bc9c305838e8652660f5e282c2cadebbe8d2951a77a8",
+      "size": 7771218
+    },
+    {
+      "filename": "global_mobile_vit_v2_ocr.onnx",
+      "role": "ocr_weights",
+      "sha256": "e2fe5946c02e73901f73d21b3b7223a0c3e3b02059d4964fbf279b01af38d63c",
+      "size": 4991602
+    },
+    {
+      "filename": "global_mobile_vit_v2_ocr_config.yaml",
+      "role": "ocr_configuration",
+      "sha256": "202b90f2a1f3a0d486b8f1fbd5cdc2f19f4f4881a094f086b983976ed3108aaf",
+      "size": 507
+    }
+  ],
+  "pipeline_source_sha256": {
+    "backend/fusion.py": "01b7034f752382c7d93b9bb0ff7224501139185c485a76327481991b51f5e1a0",
+    "backend/inference.py": "db5df8809bed9bd3f798a9a36c8728cddbaf95288e94938f5c5983b23707fd25",
+    "backend/model_provenance.py": "a84a21cf35cfac0063c5a92bc348d5c586676ecb15c1119616d29fb6f5277f19",
+    "backend/model_rollout.py": "f37375773509c836abe714d0e205b7ae23b08a495135050f1d874dbcbd1131c0",
+    "backend/plate_format.py": "8f2508bae81c098eaee7598d4227da698b7973014bbe9b01a4e932ae4369eb90",
+    "backend/tracking.py": "0e1566b5969df0da31ee6073dc61720366c64eda551491eb1861dad23c1ea9f1"
+  },
+  "samples": [
+    {
+      "camera": "CAM-02",
+      "clip_path": "backend/static/playback/CAM-02.mp4",
+      "clip_sha256": "eca71f58121803e972f086e5ca280afbb8aa95380e87545f1483f29a57dc1fd0",
+      "frame_index": 250,
+      "frame_png_sha256": "e8e5bbb61fbc95c9335696ba5d41ed31a369a9b08c2408d54c674bc512420ece",
+      "model_provenance_status": "hashed_loaded_files",
+      "plate_detector_candidates": 0,
+      "plate_ocr_calls": 0,
+      "source_time_seconds": 10.0,
+      "vehicle_model_observation": {
+        "bbox_xyxy": [
+          407.2,
+          271.1,
+          521.7,
+          362.0
+        ],
+        "class": "car",
+        "confidence": 0.871
+      },
+      "visual_review": "A white car is clearly visible; the plate area is too small in this frame for a reliable readable/unreadable label."
+    },
+    {
+      "camera": "CAM-04",
+      "clip_path": "backend/static/playback/CAM-04.mp4",
+      "clip_sha256": "735448fd4b25b1d2d035def69df1714dbc7b71073739ae8691c6dcdd817e41cf",
+      "frame_index": 220,
+      "frame_png_sha256": "f96e7eab970ca8364e721cfc1b2ebe1f67adb482e99234050a13d10b38cdf9a5",
+      "model_provenance_status": "hashed_loaded_files",
+      "plate_detector_candidates": 0,
+      "plate_ocr_calls": 0,
+      "source_time_seconds": 8.8,
+      "vehicle_model_observation": {
+        "bbox_xyxy": [
+          601.4,
+          327.2,
+          703.7,
+          401.1
+        ],
+        "class": "car",
+        "confidence": 0.844
+      },
+      "visual_review": "A white car is clearly visible; the plate area is too small in this frame for a reliable readable/unreadable label."
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Two manually selected frames from available playback proxies where a vehicle is visually present. The plate detector returned no candidates; no ground-truth plate box/readability labels exist, so this is an execution observation and not a false-negative or accuracy measurement.",
+  "type": "alpr_observation_on_visible_vehicle_frames_not_accuracy_evaluation"
+}

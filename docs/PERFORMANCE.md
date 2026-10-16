@@ -315,6 +315,14 @@ browser-playback benchmark. Its exact conditions and samples are in
 [`validation/alpr-runtime-cam01-2026-10-16.json`](validation/alpr-runtime-cam01-2026-10-16.json),
 and the repeatable command is in [`../evaluation/README.md`](../evaluation/README.md).
 
+As a separate observation, the same selected ALPR weights were run on two
+manually selected frames from CAM-02 and CAM-04 where the vehicle detector
+returned a car. The plate detector returned zero candidates on both frames, so
+OCR ran zero times. The frames have no reviewed plate box or readability labels
+and may show the same vehicle; this cannot be counted as a detector miss or an
+accuracy result. Exact source/frame/model hashes are in
+[`validation/alpr-visible-vehicle-frame-check-2026-10-16.json`](validation/alpr-visible-vehicle-frame-check-2026-10-16.json).
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded
