@@ -26,6 +26,15 @@ These are general public contacts, not a verified CCTV-footage desk. Ask them
 to route the request below to the authorized ITMS/CCTV data custodian. No one
 has been contacted as part of this work.
 
+Kerala's [e-Application portal](https://eoffice.kerala.gov.in/Eapplication/)
+offers general government applications and an RTI entry point. It is a possible
+formal routing option if CSML directs the requester there; the portal is not a
+footage download service, and its current recipient list and applicable
+disclosure rules must be checked before filing. The [Kerala LSGD Smart City
+description](https://lsgd.kerala.gov.in/en/about-the-department/aligned-institutions/smart-city-mission/)
+describes live and recorded CCTV access as role-based operator access, so a
+public clip or unrestricted stream should not be assumed to exist.
+
 ## Request template
 
 Send this through an authorized project or university channel. No request has
