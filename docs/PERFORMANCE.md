@@ -328,3 +328,28 @@ See [DECODE_SAMPLING.md](DECODE_SAMPLING.md) and its validation for actual
 measurement conditions. These comparisons do not establish OCR accuracy or
 full-frame-rate throughput. Main-service concurrency was not sampled during the
 preliminary comparison and is not claimed.
+
+
+## Isolated active-inference profile — 16 October 2026
+
+A fresh API process with its own temporary database ran the six available bundled
+clips at a configured two attempts per second. Three plate sources were missing
+and correctly did no decode or inference work. Across a valid 19.0-second counter
+window, the six working sources completed 31 frames (1.63 FPS); one attempt
+exceeded its 500 ms sampling interval. The first CAM-01 attempt spent 4.42 s in
+inference while lazily initializing the model. Subsequent per-camera attempts
+showed roughly 82–99 ms inference and 50–115 ms decode medians, with some source
+open/replay setup outliers. This confirms a multi-second first sampled-frame wait
+and explains the loading feedback now shown by the UI; it does not indicate a
+slow navigation or interaction by itself.
+
+During this sample, backend RSS was 548.9 MiB median (550.8 MiB p95), CPU was
+62.1% median and 468.4% p95 across 12 logical CPUs, and health reads were 7.1 ms
+median / 37.7 ms p95 across 19 requests. The high CPU percentile is a brief
+sample and can include other desktop load. The isolated run used no camera media
+for CAM-07–09 and measured no OCR accuracy. Its API timing does not include
+click-to-paint, INP, video decode drops, or physical mobile behavior. A separate
+15 October warmed-inference browser check measured 145–182 ms accessibility
+action calls; that remains the only browser interaction sample under active
+inference. Full counters and phase timings are in
+[`validation/active-inference-profile-2026-10-16.json`](validation/active-inference-profile-2026-10-16.json).
