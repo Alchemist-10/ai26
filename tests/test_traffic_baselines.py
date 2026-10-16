@@ -76,7 +76,7 @@ class TrafficBaselineTests(unittest.TestCase):
         self.repo.record_traffic_sample('CAM-01',old)
         self.repo.cleanup(self.now-7*86400,self.now)
         self.assertEqual(self.repo.db.execute('SELECT count(*) FROM camera_traffic_buckets WHERE bucket_start_utc<?',(self.now-90*86400,)).fetchone()[0],0)
-        self.assertEqual(self.repo.schema_version,13)
+        self.assertEqual(self.repo.schema_version,14)
 
     def test_rejects_bad_day_window_and_timezone(self):
         with self.assertRaises(ValueError): events.traffic_baselines(days=6,now=self.now)

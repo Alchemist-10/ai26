@@ -8,6 +8,8 @@ export interface Camera {
   source_available: boolean
   health: CameraHealth
 }
+export interface CaseCameraScope { case_id: string; camera_ids: string[] }
+export interface CaseCameraScopesResponse { cameras: { id: string; name: string }[]; scopes: CaseCameraScope[] }
 export interface PrivacyStatus {
   enabled: boolean
   plate_identifiers: "raw" | "keyed_pseudonyms"
@@ -355,6 +357,12 @@ export async function logout(): Promise<void> {
 export function getUsers(signal?: AbortSignal): Promise<ManagedUser[]> {
   return requestJson("/api/auth/users", { signal })
 }
+export function getCaseCameraScopes(signal?: AbortSignal): Promise<CaseCameraScopesResponse> {
+  return requestJson("/api/auth/case-camera-scopes", { signal })
+}
+export function saveCaseCameraScope(caseId: string, cameraIds: string[]): Promise<CaseCameraScope> {
+  return requestJson("/api/auth/case-camera-scopes", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ case_id: caseId, camera_ids: cameraIds }) })
+}
 export function createUser(username: string, password: string, role: AuthRole, caseIds: string[]): Promise<ManagedUser> {
   return requestJson("/api/auth/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role, case_ids: caseIds }) })
 }
@@ -371,7 +379,7 @@ export function changeOwnPassword(currentPassword: string, newPassword: string):
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const requestUrl = input instanceof Request ? input.url : String(input)
   const path = new URL(requestUrl, window.location.href)
-  const scoped = path.pathname.startsWith("/api/") && ["/api/cameras/", "/api/source-preparations/", "/api/journey-links", "/api/traffic/", "/api/stream/", "/api/video/", "/api/snapshot/", "/api/preview/", "/api/events", "/api/stats", "/api/flows", "/api/alerts", "/api/rules", "/api/nlquery", "/api/trajectory/", "/api/evidence/", "/api/reports/", "/api/artifacts/"].some(prefix => path.pathname.startsWith(prefix))
+  const scoped = path.pathname.startsWith("/api/") && ["/api/cameras", "/api/camera-pair-constraints", "/api/source-preparations/", "/api/journey-links", "/api/traffic/", "/api/stream/", "/api/video/", "/api/snapshot/", "/api/preview/", "/api/events", "/api/stats", "/api/flows", "/api/alerts", "/api/rules", "/api/nlquery", "/api/trajectory/", "/api/evidence/", "/api/reports/", "/api/artifacts/"].some(prefix => path.pathname.startsWith(prefix))
   const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined))
   if (scoped) {
     headers.set("X-AI26-Case-ID", securityContext.caseId)

@@ -152,7 +152,7 @@ class SourceSelection(unittest.TestCase):
         first=self.release(1,select=True);second=self.release(2,first['release'])
         session={'username':'real-operator','role':'operator','csrf_token':'csrf'}
         auth_service=MagicMock();auth_service.session.return_value=session;auth_service.can_access_case.return_value=True
-        with patch.object(main,'auth_enabled',return_value=True),patch.object(main,'AuthService',return_value=auth_service):
+        with patch.object(main,'auth_enabled',return_value=True),patch.object(main,'AuthService',return_value=auth_service),patch.object(main.store,'case_camera_ids',return_value=['CAM-07']):
             response=self.client.post('/api/cameras/CAM-07/source/selection',json=self.body(second),
                 cookies={main.SESSION_COOKIE:'session'},headers={main.CSRF_HEADER:'csrf','X-AI26-Case-ID':'CASE-1','X-AI26-Purpose':'system_test'})
         self.assertEqual(response.status_code,200,response.text)

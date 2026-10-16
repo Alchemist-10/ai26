@@ -53,10 +53,11 @@ def _add_events(detections):
     return store.ingest(validated)
 
 
-def get_events(camera_id=None, plate=None, since=None, until=None, kind=None, limit=None):
+def get_events(camera_id=None, plate=None, since=None, until=None, kind=None, limit=None,camera_ids=None):
     normalized = str(normalize_plate(plate)['plate_norm']) if plate else None
     return store.observations(camera_id, normalized, time.time()-WINDOW_SECONDS if since is None else since,
-                              time.time() if until is None else until, kind, limit or MAX_EVENTS)
+                              time.time() if until is None else until, kind, limit or MAX_EVENTS,
+                              camera_ids=camera_ids)
 
 
 def _distance_km(first, second):
@@ -126,30 +127,31 @@ def build_trajectory(observations):
             'observations': hops, 'accepted_links': accepted, 'rejected_links': rejected, 'candidate_links': candidates}
 
 
-def get_trajectory(plate, since=None, until=None):
+def get_trajectory(plate, since=None, until=None,camera_ids=None):
     normalized = str(normalize_plate(plate)['plate_norm'])
     start = time.time()-WINDOW_SECONDS if since is None else since
     end = time.time() if until is None else until
     with store.lock:
-        result = build_trajectory(store.supported_passage_reads(normalized, start, end))
+        result = build_trajectory(store.supported_passage_reads(normalized, start, end,camera_ids=camera_ids))
         result = store.put_journey_links(normalized,result)
     result['plate'] = normalized
     result['interval'] = {'since': start, 'until': time.time() if until is None else until}
     return result
 
 
-def evidence_report(plate, since=None, until=None, case_id=None):
+def evidence_report(plate, since=None, until=None, case_id=None,camera_ids=None):
     # Prevent maintenance from removing a source between selecting it and leasing it.
     with store.lock:
-        return _evidence_report(plate, since, until, case_id)
+        return _evidence_report(plate, since, until, case_id,camera_ids)
 
 
-def _evidence_report(plate, since=None, until=None, case_id=None):
-    trajectory = get_trajectory(plate, since, until)
+def _evidence_report(plate, since=None, until=None, case_id=None,camera_ids=None):
+    trajectory = get_trajectory(plate, since, until,camera_ids=camera_ids)
     if not trajectory['observations']: raise ValueError('No supported plate observations for this interval')
     now = time.time()
     passages = [h['passage_id'] for h in trajectory['observations']]
-    raw_reads, raw_total = store.reads_for_passages(passages, trajectory['interval']['since'], trajectory['interval']['until'])
+    raw_reads, raw_total = store.reads_for_passages(passages, trajectory['interval']['since'],
+                                                     trajectory['interval']['until'],camera_ids=camera_ids)
     if raw_total > 5000: raise ValueError('Report exceeds 5000 raw reads; choose a shorter interval')
     artifacts = {}
     for hop in raw_reads:
@@ -201,19 +203,20 @@ def _alert(rule, subject, event, severity, summary, detail, support=None):
     identity = [rule, subject, event.get('session_id', 'manual'), event['camera_id']]
     alert = {'alert_id': hashlib.sha256(canonical_json(identity).encode()).hexdigest()[:24], 'rule_version': 1,
              'type': rule, 'severity': severity, 'summary': summary, 'detail': detail, 'ts': event['ts'],
+             'camera_id':event['camera_id'],
              'supporting_event_ids': support or [event.get('event_id')], 'source_mode': event.get('source_mode', 'manual')}
     store.put_alert(alert)
 
 
-def derive_alerts(since=None, until=None):
+def derive_alerts(since=None, until=None,camera_ids=None):
     start = time.time()-WINDOW_SECONDS if since is None else since
-    snapshot = get_events(since=start, until=until)
+    snapshot = get_events(since=start, until=until,camera_ids=camera_ids)
     rules = store.setting('rules', DEFAULT_RULES)
-    supported = {p['passage_id'] for p in store.passages(start,until) if p['kind']=='plate' and not p.get('identity_conflict')}
+    supported = {p['passage_id'] for p in store.passages(start,until,camera_ids=camera_ids) if p['kind']=='plate' and not p.get('identity_conflict')}
     conditions=rules.get('watchlist_conditions',{})
     max_history=max((float(condition.get('history_window_seconds',0)) for condition in conditions.values()),default=0)
-    history_snapshot=get_events(since=start-max_history,until=until) if max_history else snapshot
-    history_supported={p['passage_id'] for p in store.passages(start-max_history,until)
+    history_snapshot=get_events(since=start-max_history,until=until,camera_ids=camera_ids) if max_history else snapshot
+    history_supported={p['passage_id'] for p in store.passages(start-max_history,until,camera_ids=camera_ids)
                        if p['kind']=='plate' and not p.get('identity_conflict')} if max_history else supported
     plate_history={}
     for event in history_snapshot:
@@ -247,12 +250,13 @@ def derive_alerts(since=None, until=None):
             else:
                 _alert('zone sighting', plate, event, 'warning', f'{plate} observed at {event["camera_id"]}', 'No matching local permit record; this is not a legal violation determination')
     for plate in {e.get('plate_norm') for e in snapshot if e['kind']=='plate' and e.get('plate_norm')}:
-        route = get_trajectory(plate, start, until)
+        route = get_trajectory(plate, start, until,camera_ids=camera_ids)
         for link in route['rejected_links']:
             event = {'camera_id': link['to_camera_id'], 'ts': link['to_ts']}
             _alert('route review', [plate, link['from_ts'], link['to_ts']], event, 'warning', f'{plate}: camera transition requires review', link['reason'])
     # Dwell means one tracked subject remains in an explicitly configured zone for elapsed time.
     for rule in rules.get('dwell_zones', []):
+        if camera_ids is not None and rule['camera_id'] not in camera_ids: continue
         by_track = {}
         for e in snapshot:
             if e['kind']!='vehicle' or e['camera_id']!=rule['camera_id'] or e.get('track_id') is None: continue
@@ -271,30 +275,31 @@ def derive_alerts(since=None, until=None):
                     _alert('zone dwell', list(identity)+[sequence[0]['ts']], e, 'warning', f'Track {e["track_id"]} remained in the configured zone',
                            f'{e["ts"]-sequence[0]["ts"]:.1f}s observed dwell at {e["camera_id"]}; identity is camera-local', [r.get('event_id') for r in sequence])
                     break
-    return [a for a in store.alerts(start) if until is None or a['ts']<=until]
+    alerts=store.alerts(start,camera_ids=camera_ids)
+    return [a for a in alerts if until is None or a['ts']<=until]
 
 
-def stats(since=None, until=None):
+def stats(since=None, until=None,camera_ids=None):
     now = time.time()
     start = now-WINDOW_SECONDS if since is None else since
     end = now if until is None else until
     # Aggregate across all rows, not the paginated raw-read API limit.
-    return {**store.statistics(start,end,now), 'interval':{'since':start,'until':end},
+    return {**store.statistics(start,end,now,camera_ids=camera_ids), 'interval':{'since':start,'until':end},
             'metric':'camera-local tracked passages, not globally unique vehicles', 'coverage':'sampled recorded inputs'}
 
 
-def flows(since=None, until=None):
+def flows(since=None, until=None,camera_ids=None):
     start = time.time()-WINDOW_SECONDS if since is None else since
-    passages=store.passages(start,until)
+    passages=store.passages(start,until,camera_ids=camera_ids)
     plates={p.get('plate_norm') for p in passages if p['kind']=='plate' and p.get('identity_status','supported')=='supported' and not p.get('identity_conflict')}
     counts=Counter()
     for plate in plates:
-        for link in get_trajectory(plate,start,until)['accepted_links']:
+        for link in get_trajectory(plate,start,until,camera_ids=camera_ids)['accepted_links']:
             counts[(link['from_camera_id'],link['to_camera_id'])]+=1
     return [{'from':a,'to':b,'count':n} for (a,b),n in counts.items()]
 
 
-def traffic_baselines(days=28, now=None, timezone_name=None):
+def traffic_baselines(days=28, now=None, timezone_name=None,camera_ids=None):
     """Compare the latest completed live source-hour with covered weekday/hour history."""
     if type(days) is not int or not 7 <= days <= 90:
         raise ValueError('days must be an integer from 7 to 90')
@@ -303,9 +308,10 @@ def traffic_baselines(days=28, now=None, timezone_name=None):
     zone=ZoneInfo(timezone_name)
     start=int((now-days*86400)//900)*900
     end=int(now)+1
-    rows=store.camera_hourly_traffic(start,end)
+    rows=store.camera_hourly_traffic(start,end,camera_ids=camera_ids)
     # Aggregate repeated local hours (for example a DST fall-back) per local day.
-    per_camera={camera['id']:{} for camera in store.camera_catalog()}
+    per_camera={camera['id']:{} for camera in store.camera_catalog()
+                if camera_ids is None or camera['id'] in camera_ids}
     for row in rows:
         hour_start=datetime.fromtimestamp(row['bucket_start_utc'],timezone.utc).astimezone(zone)
         key=(hour_start.date(),hour_start.weekday(),hour_start.hour)

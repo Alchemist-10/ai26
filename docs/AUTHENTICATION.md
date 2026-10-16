@@ -89,12 +89,19 @@ The sign-in screen also offers MFA-backed password recovery when the protected
 MFA key is configured.
 Administrators can manage users, case grants, roles, account status, and
 reason-recorded password resets through the protected account-management screen.
+The same screen assigns cameras to each case. Non-admin camera catalogs,
+footage routes, observations, statistics, traffic baselines, route links,
+trajectories, evidence reports, and alert queries are filtered to those camera
+assignments; a camera omitted from the case is denied. New case grants have no
+camera access until an administrator assigns cameras. Rule reads omit global
+plate identities and filter camera-specific zones; global rule editing is
+administrator-only.
 
 Active alert escalations are stored with the case selected when they are
 created. Non-admin users can list and resolve only escalations in that case;
-administrators can review the full queue. This does not provide general
-row-level case isolation for alerts, observations or evidence, and legacy
-unscoped escalations remain administrator-managed.
+administrators can review the full queue. Legacy alerts without camera IDs and
+unscoped escalations remain administrator-managed. The auth overlay remains
+optional, and external identity proofing is not implemented.
 
 ## Authenticator MFA
 
@@ -110,7 +117,7 @@ chmod 0400 /absolute/path/to/ai26-auth-mfa.key
 
 Start auth with MFA support by combining `compose.auth.yaml` and
 `compose.auth-mfa.yaml` and setting `AI26_AUTH_MFA_KEY_FILE`. MFA secrets are
-AES-GCM encrypted in schema 13; the database stores the last accepted TOTP
+AES-GCM encrypted in schema 14; the database stores the last accepted TOTP
 time-step so each authenticator code can be used only once. Counter updates are
 transactional, so simultaneous requests presenting the same code create at most
 one authenticated session. The key file must be protected and backed up securely.

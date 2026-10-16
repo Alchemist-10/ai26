@@ -180,8 +180,8 @@ class Persistence(unittest.TestCase):
         db=sqlite3.connect(self.path)
         db.executescript('DROP TABLE camera_catalog; DROP TABLE journey_links; DROP INDEX alert_escalation_scope_ts; ALTER TABLE alerts DROP COLUMN scope_case_id; ALTER TABLE audit DROP COLUMN record_hash; ALTER TABLE audit DROP COLUMN previous_hash; ALTER TABLE user_mfa DROP COLUMN last_used_counter; PRAGMA user_version=2;');db.close()
         self.repo=Repository(self.path)
-        self.assertEqual(self.repo.schema_version,13)
-        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],13)
+        self.assertEqual(self.repo.schema_version,14)
+        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],14)
         self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         self.assertEqual(len(self.repo.observations()),2)
         self.assertEqual(self.repo.report(report['report_id'],self.now+1),report)
@@ -192,7 +192,7 @@ class Persistence(unittest.TestCase):
 
     def test_future_schema_refused(self):
         path=Path(self.folder.name)/'future.sqlite3';db=sqlite3.connect(path)
-        db.execute('PRAGMA user_version=14');db.close()
+        db.execute('PRAGMA user_version=15');db.close()
         with self.assertRaisesRegex(RuntimeError,'newer'):
             Repository(path)
 
@@ -205,7 +205,7 @@ class Persistence(unittest.TestCase):
         db.executescript("DROP INDEX alert_escalation_scope_ts; ALTER TABLE alerts DROP COLUMN scope_case_id; ALTER TABLE user_mfa DROP COLUMN last_used_counter; PRAGMA user_version=11;")
         db.close()
         self.repo=Repository(self.path)
-        self.assertEqual(self.repo.schema_version,13)
+        self.assertEqual(self.repo.schema_version,14)
         migrated=self.repo.db.execute("SELECT secret_ciphertext,enabled,recovery_hashes,last_used_counter FROM user_mfa WHERE username='fixture'").fetchone()
         self.assertEqual(bytes(migrated["secret_ciphertext"]),b"encrypted")
         self.assertEqual(migrated["enabled"],1)
@@ -225,8 +225,8 @@ class Persistence(unittest.TestCase):
         migrated=Repository(self.path)
         try:
             row=migrated.db.execute("SELECT state,review,scope_case_id FROM alerts WHERE id='legacy-case-queue'").fetchone()
-            self.assertEqual(migrated.schema_version,13)
-            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],13)
+            self.assertEqual(migrated.schema_version,14)
+            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],14)
             self.assertEqual(row['state'],'escalated')
             self.assertIsNone(row['scope_case_id'])
             self.assertEqual(json.loads(row['review'])[-1]['escalation_target'],'Duty desk')

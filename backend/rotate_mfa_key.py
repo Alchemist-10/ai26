@@ -15,7 +15,7 @@ from auth_key_lock import exclusive_rotation_lock
 from key_maintenance import append_audit, backup_database, read_protected_key, verified_audit_head
 
 
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 14
 
 
 def write_recovery_file(path, value):

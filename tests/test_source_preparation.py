@@ -233,7 +233,7 @@ class Preparation(unittest.TestCase):
         session={'username':'verified-uploader','role':'operator','csrf_token':'csrf'}
         auth_service=unittest.mock.MagicMock();auth_service.session.return_value=session;auth_service.can_access_case.return_value=True
         header=base64.b64encode(json.dumps(META).encode()).decode()
-        with patch.object(main,'auth_enabled',return_value=True),patch.object(main,'AuthService',return_value=auth_service),patch.object(main,'uploads',self.manager),patch.object(self.manager,'_prepare'):
+        with patch.object(main,'auth_enabled',return_value=True),patch.object(main,'AuthService',return_value=auth_service),patch.object(main.store,'case_camera_ids',return_value=['CAM-07']),patch.object(main,'uploads',self.manager),patch.object(self.manager,'_prepare'):
             response=TestClient(main.app).post('/api/cameras/CAM-07/source/prepare',content=b'abcd',
                 headers={'content-type':'application/octet-stream','x-ai26-upload':header,main.CSRF_HEADER:'csrf','X-AI26-Case-ID':'CASE-1','X-AI26-Purpose':'system_test'},
                 cookies={main.SESSION_COOKIE:'session'})

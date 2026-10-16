@@ -1,13 +1,13 @@
 # Camera revisions and journey decision persistence
 
-Schema version 13 stores users, per-case grants, hashed authentication sessions, atomic authentication-attempt windows, encrypted TOTP enrollment, one-use recovery-code hashes and the last accepted TOTP counter,
+Schema version 14 stores users, per-case grants, case-to-camera access grants, hashed authentication sessions, atomic authentication-attempt windows, encrypted TOTP enrollment, one-use recovery-code hashes and the last accepted TOTP counter,
 the nine-camera catalog, and immutable queried link decisions alongside existing
 directed camera-pair travel constraints, sessions, immutable reads, camera-local passages, alerts, rules, reports and
 hash-chained audit records, and 90-day camera/quarter-hour aggregate buckets for live-source processed samples and unique vehicle passages. Supported legacy versions migrate automatically; future schema
 versions fail explicitly. Startup seeds missing catalog IDs without replacing
 operator edits. Recording paths and detector kinds remain deployment configuration.
 
-Schema version 13 adds a nullable case scope to active alert escalations. New
+Schema version 13 adds a nullable case scope to active alert escalations. Schema version 14 adds explicit camera assignments per case for scoped analytics and footage access. New
 authenticated escalations inherit the reviewer's selected case, and non-admin
 users can list or resolve only escalations scoped to that case. Existing
 unscoped local escalations are preserved; administrators can inspect and resolve

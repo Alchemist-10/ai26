@@ -22,7 +22,7 @@ class Repository:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version > 13:
+        if version > 14:
             self.db.close()
             raise RuntimeError('Database version is newer than this application')
         with self.db:
@@ -178,9 +178,23 @@ class Repository:
                     PRAGMA user_version=13;
                     COMMIT;
                 ''')
+            if version < 14:
+                self.db.executescript('''
+                    BEGIN IMMEDIATE;
+                    CREATE TABLE IF NOT EXISTS case_camera_access(
+                        case_id TEXT NOT NULL,
+                        camera_id TEXT NOT NULL,
+                        updated_at REAL NOT NULL,
+                        updated_by TEXT NOT NULL,
+                        PRIMARY KEY(case_id,camera_id)
+                    );
+                    CREATE INDEX IF NOT EXISTS case_camera_lookup ON case_camera_access(case_id,camera_id);
+                    PRAGMA user_version=14;
+                    COMMIT;
+                ''')
         with self.db:
             self.db.execute('CREATE INDEX IF NOT EXISTS audit_subject_action_time ON audit(subject,action,ts)')
-        self.schema_version = 13
+        self.schema_version = 14
         # Seed only missing IDs. Restart never overwrites operator metadata or its history.
         from cameras import CAMERAS
         with self.lock, self.db:
@@ -196,6 +210,32 @@ class Repository:
             rows = self.db.execute('''SELECT data FROM camera_catalog c WHERE revision=(
                 SELECT max(revision) FROM camera_catalog WHERE camera=c.camera) ORDER BY camera''').fetchall()
         return [json.loads(r[0]) for r in rows]
+
+    def case_camera_ids(self, case_id):
+        with self.lock:
+            rows=self.db.execute('SELECT camera_id FROM case_camera_access WHERE case_id=? ORDER BY camera_id',
+                                 (case_id,)).fetchall()
+        return [row[0] for row in rows]
+
+    def case_camera_scopes(self):
+        with self.lock:
+            cases=self.db.execute('''SELECT case_id FROM user_case_access
+                UNION SELECT case_id FROM case_camera_access ORDER BY case_id''').fetchall()
+            rows=self.db.execute('SELECT case_id,camera_id FROM case_camera_access ORDER BY case_id,camera_id').fetchall()
+        by_case={row['case_id']:[] for row in cases}
+        for row in rows: by_case[row['case_id']].append(row['camera_id'])
+        return [{'case_id':case_id,'camera_ids':by_case[case_id]} for case_id in by_case]
+
+    def update_case_camera_scope(self, case_id, camera_ids, actor, now):
+        camera_ids=sorted(set(camera_ids))
+        with self.lock, self.db:
+            self.db.execute('BEGIN IMMEDIATE')
+            self.db.execute('DELETE FROM case_camera_access WHERE case_id=?',(case_id,))
+            self.db.executemany('INSERT INTO case_camera_access(case_id,camera_id,updated_at,updated_by) VALUES(?,?,?,?)',
+                                [(case_id,camera_id,now,actor) for camera_id in camera_ids])
+            self._append_audit(now,'case_camera_scope_updated',case_id,
+                               {'case_id':case_id,'camera_ids':camera_ids,'updated_by':actor})
+        return {'case_id':case_id,'camera_ids':camera_ids}
 
     def camera_configuration(self, camera, revision=None):
         with self.lock:
@@ -294,9 +334,15 @@ class Repository:
                     result[key].append(decision)
         return {**trajectory, **result}
 
-    def journey_links(self, plate=None, since=0, until=None, limit=5000):
+    def journey_links(self, plate=None, since=0, until=None, limit=5000, camera_ids=None):
         clauses = ['to_ts>=?', 'to_ts<=?']; args = [since,time.time() if until is None else until]
         if plate is not None: clauses.append('plate=?'); args.append(plate)
+        if camera_ids is not None:
+            if not camera_ids: return []
+            placeholders=','.join('?' for _ in camera_ids)
+            clauses.extend((f"json_extract(data,'$.from_camera_id') IN ({placeholders})",
+                            f"json_extract(data,'$.to_camera_id') IN ({placeholders})"))
+            args.extend(camera_ids); args.extend(camera_ids)
         with self.lock:
             rows = self.db.execute('SELECT data FROM journey_links WHERE '+' AND '.join(clauses)+
                                    ' ORDER BY to_ts DESC,id DESC LIMIT ?', [*args,limit]).fetchall()
@@ -375,18 +421,26 @@ class Repository:
                 VALUES(?,?,1) ON CONFLICT(camera,bucket_start_utc) DO UPDATE
                 SET processed_samples=processed_samples+1''',(camera,bucket))
 
-    def camera_hourly_traffic(self, since, until):
+    def camera_hourly_traffic(self, since, until, camera_ids=None):
+        camera_clause=''; args=[since,until]
+        if camera_ids is not None:
+            if not camera_ids: return []
+            camera_clause=' AND camera IN ('+','.join('?' for _ in camera_ids)+')'
+            args.extend(camera_ids)
         with self.lock:
             rows=self.db.execute('''SELECT camera,bucket_start_utc,processed_samples,vehicle_passages
-                FROM camera_traffic_buckets WHERE bucket_start_utc>=? AND bucket_start_utc<?
-                ORDER BY camera,bucket_start_utc''',(since,until)).fetchall()
+                FROM camera_traffic_buckets WHERE bucket_start_utc>=? AND bucket_start_utc<?'''+camera_clause+
+                ' ORDER BY camera,bucket_start_utc',args).fetchall()
         return [dict(row) for row in rows]
 
-    def observations(self, camera=None, plate=None, since=None, until=None, kind=None, limit=5000):
+    def observations(self, camera=None, plate=None, since=None, until=None, kind=None, limit=5000,camera_ids=None):
         clauses, args = [], []
         for col, value in [('camera', camera), ('plate', plate), ('kind', kind)]:
             if value is not None:
                 clauses.append(f'{col}=?'); args.append(value)
+        if camera_ids is not None:
+            if not camera_ids: return []
+            clauses.append('camera IN ('+','.join('?' for _ in camera_ids)+')'); args.extend(camera_ids)
         for op, value in [('>=', since), ('<=', until)]:
             if value is not None:
                 clauses.append(f'ts{op}?'); args.append(value)
@@ -395,61 +449,86 @@ class Repository:
             rows = self.db.execute('SELECT data FROM observations' + where + ' ORDER BY ts DESC, id DESC LIMIT ?', [*args, limit]).fetchall()
         return [json.loads(row[0]) for row in reversed(rows)]
 
-    def passages(self, since=None, until=None, plate=None):
+    def passages(self, since=None, until=None, plate=None,camera_ids=None):
         clauses, args = [], []
         if since is not None: clauses.append('last>=?'); args.append(since)
         if until is not None: clauses.append('first<=?'); args.append(until)
         if plate is not None: clauses.append('plate=?'); args.append(plate)
+        if camera_ids is not None:
+            if not camera_ids: return []
+            clauses.append('camera IN ('+','.join('?' for _ in camera_ids)+')'); args.extend(camera_ids)
         where = ' WHERE ' + ' AND '.join(clauses) if clauses else ''
         with self.lock:
             rows = self.db.execute('SELECT data FROM passages' + where + ' ORDER BY first, id', args).fetchall()
         return [json.loads(row[0]) for row in rows]
 
-    def supported_passage_reads(self, plate, since, until):
+    def supported_passage_reads(self, plate, since, until,camera_ids=None):
         # Earliest supported read within this interval; conflicting passages are excluded.
-        with self.lock:
-            rows = self.db.execute("""
+        scope=''
+        args=[plate,plate,since,until]
+        if camera_ids is not None:
+            if not camera_ids: return []
+            scope=' AND o.camera IN ('+','.join('?' for _ in camera_ids)+')'
+            args.extend(camera_ids)
+        query = """
                 SELECT data FROM (
                     SELECT o.data, ROW_NUMBER() OVER (PARTITION BY o.passage ORDER BY o.ts,o.id) AS position
                     FROM observations o JOIN passages p ON o.passage=p.id
-                    WHERE p.plate=? AND o.plate=? AND o.ts>=? AND o.ts<=?
+                    WHERE p.plate=? AND o.plate=? AND o.ts>=? AND o.ts<=?""" + scope + """
                 ) WHERE position=1
-            """, (plate,plate,since,until)).fetchall()
+            """
+        with self.lock:
+            rows = self.db.execute(query, args).fetchall()
         return [json.loads(r[0]) for r in rows]
 
-    def statistics(self, since, until, now):
+    def statistics(self, since, until, now,camera_ids=None):
+        camera_clause=''; scope_args=[]
+        if camera_ids is not None:
+            if not camera_ids:
+                return {'total_events':0,'avg_confidence':0,'events_last_minute':0,'per_camera':{},
+                        'per_camera_passages':{},'vehicle_passages':0,'busiest_camera':None}
+            camera_clause=' AND camera IN ('+','.join('?' for _ in camera_ids)+')'; scope_args=list(camera_ids)
         with self.lock:
-            total = self.db.execute("SELECT count(*),avg(json_extract(data,'$.confidence')) FROM observations WHERE ts>=? AND ts<=?", (since,until)).fetchone()
-            per_camera = dict(self.db.execute('SELECT camera,count(*) FROM observations WHERE ts>=? AND ts<=? GROUP BY camera',(since,until)).fetchall())
-            last_minute = self.db.execute('SELECT count(*) FROM observations WHERE ts>=? AND ts<=?', (max(since,now-60),min(until,now))).fetchone()[0]
-            vehicles = dict(self.db.execute("SELECT camera,count(DISTINCT passage) FROM observations WHERE kind='vehicle' AND ts>=? AND ts<=? GROUP BY camera", (since,until)).fetchall())
+            total = self.db.execute("SELECT count(*),avg(json_extract(data,'$.confidence')) FROM observations WHERE ts>=? AND ts<=?"+camera_clause, [since,until,*scope_args]).fetchone()
+            per_camera = dict(self.db.execute('SELECT camera,count(*) FROM observations WHERE ts>=? AND ts<=?'+camera_clause+' GROUP BY camera',[since,until,*scope_args]).fetchall())
+            last_minute = self.db.execute('SELECT count(*) FROM observations WHERE ts>=? AND ts<=?'+camera_clause, [max(since,now-60),min(until,now),*scope_args]).fetchone()[0]
+            vehicles = dict(self.db.execute("SELECT camera,count(DISTINCT passage) FROM observations WHERE kind='vehicle' AND ts>=? AND ts<=?"+camera_clause+" GROUP BY camera", [since,until,*scope_args]).fetchall())
         return {'total_events':total[0], 'avg_confidence':round(total[1] or 0,3), 'events_last_minute':last_minute,
                 'per_camera':per_camera, 'per_camera_passages':vehicles, 'vehicle_passages':sum(vehicles.values()),
                 'busiest_camera':max(vehicles,key=vehicles.get) if vehicles else None}
 
-    def reads_for_passages(self, ids, since, until):
+    def reads_for_passages(self, ids, since, until,camera_ids=None):
         if not ids: return [],0
         placeholders=','.join('?' for _ in ids)
         where=f'passage IN ({placeholders}) AND ts>=? AND ts<=?'
         args=[*ids,since,until]
+        if camera_ids is not None:
+            if not camera_ids: return [],0
+            where+=' AND camera IN ('+','.join('?' for _ in camera_ids)+')'; args.extend(camera_ids)
         with self.lock:
             count=self.db.execute('SELECT count(*) FROM observations WHERE '+where,args).fetchone()[0]
             rows=self.db.execute('SELECT data FROM observations WHERE '+where+' ORDER BY ts,id LIMIT 5000',args).fetchall()
         return [json.loads(r[0]) for r in rows],count
 
-    def query_plates(self, camera, plate, since, until):
+    def query_plates(self, camera, plate, since, until,camera_ids=None):
         clauses = ['o.ts>=?', 'o.ts<=?', 'p.plate=o.plate']
         args = [since,until]
         if camera: clauses.append('o.camera=?'); args.append(camera)
         if plate: clauses.append('o.plate=?'); args.append(plate)
+        if camera_ids is not None:
+            if not camera_ids: return []
+            clauses.append('o.camera IN ('+','.join('?' for _ in camera_ids)+')'); args.extend(camera_ids)
         with self.lock:
             rows = self.db.execute('SELECT DISTINCT o.plate,o.camera FROM observations o JOIN passages p ON p.id=o.passage WHERE ' + ' AND '.join(clauses),args).fetchall()
         return rows
 
-    def query_vehicle_count(self, camera, label, since, until):
+    def query_vehicle_count(self, camera, label, since, until,camera_ids=None):
         clauses = ["kind='vehicle'", 'ts>=?', 'ts<=?', "json_extract(data,'$.label')=?"]
         args = [since,until,label]
         if camera: clauses.append('camera=?'); args.append(camera)
+        if camera_ids is not None:
+            if not camera_ids: return 0
+            clauses.append('camera IN ('+','.join('?' for _ in camera_ids)+')'); args.extend(camera_ids)
         with self.lock:
             return self.db.execute('SELECT count(DISTINCT passage) FROM observations WHERE '+' AND '.join(clauses),args).fetchone()[0]
 
@@ -474,9 +553,15 @@ class Repository:
             self.db.execute('INSERT OR IGNORE INTO alerts(id,ts,data) VALUES(?,?,?)',
                             (alert['alert_id'], alert['ts'], canonical_json(alert)))
 
-    def alerts(self, since=0):
+    def alerts(self, since=0, camera_ids=None):
+        clause=''
+        args=[since]
+        if camera_ids is not None:
+            if not camera_ids: return []
+            clause=' AND json_extract(data,\'$.camera_id\') IN ('+','.join('?' for _ in camera_ids)+')'
+            args.extend(camera_ids)
         with self.lock:
-            rows = self.db.execute('SELECT * FROM alerts WHERE ts>=? ORDER BY ts DESC LIMIT 200', (since,)).fetchall()
+            rows = self.db.execute('SELECT * FROM alerts WHERE ts>=?'+clause+' ORDER BY ts DESC LIMIT 200', args).fetchall()
         return [self._alert_row(row) for row in rows]
 
     @staticmethod
@@ -495,12 +580,16 @@ class Repository:
                 rows = self.db.execute("SELECT * FROM alerts WHERE state='escalated' AND scope_case_id=? ORDER BY ts DESC,id DESC LIMIT ?", (scope_case_id,limit)).fetchall()
         return [self._alert_row(row) for row in rows]
 
-    def escalated_alerts_page(self, limit=50, before=None, scope_case_id=None):
+    def escalated_alerts_page(self, limit=50, before=None, scope_case_id=None,camera_ids=None):
         with self.lock:
             clauses = ["state='escalated'"]
             args = []
             if scope_case_id is not None:
                 clauses.append('scope_case_id=?'); args.append(scope_case_id)
+            if camera_ids is not None:
+                if not camera_ids: return {'items':[],'next_cursor':None}
+                clauses.append('json_extract(data,\'$.camera_id\') IN ('+','.join('?' for _ in camera_ids)+')')
+                args.extend(camera_ids)
             if before is not None:
                 before_ts, before_id = before
                 clauses.append('(ts<? OR (ts=? AND id<?))')

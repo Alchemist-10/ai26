@@ -40,7 +40,7 @@ from source_selection import select_for_restart, SelectionConflict
 from import_source import ImportBusy
 from auth import AuthService, AuthenticationError, auth_enabled, cookie_secure, SESSION_COOKIE, CSRF_HEADER
 from auth import CASE_PATTERN, PURPOSES
-from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, AuthMfaResetRequest, CameraPairConstraintUpdate, OnvifDiscoveryRequest
+from schemas import AuthLoginRequest, AuthUserCreateRequest, AuthUserUpdateRequest, AuthPasswordResetRequest, AuthPasswordChangeRequest, AuthPasswordRecoveryRequest, AuthMfaCodeRequest, AuthMfaDisableRequest, AuthMfaResetRequest, AuthCaseCameraScopeUpdate, CameraPairConstraintUpdate, OnvifDiscoveryRequest
 from privacy import enabled as privacy_enabled, redact_analytics_payload, status as privacy_status, validate_configuration
 from auth_key_lock import api_lifetime_lock, verify_active_mfa_key, verify_active_privacy_key
 
@@ -67,7 +67,7 @@ frontend_port=os.environ.get('AI26_FRONTEND_PORT','5174')
 app=FastAPI(title='AI26 observation API',lifespan=lifespan)
 app.add_middleware(CORSMiddleware,allow_origins=[f'http://localhost:{frontend_port}',f'http://127.0.0.1:{frontend_port}'],allow_methods=['*'],allow_headers=['*'])
 
-SENSITIVE_PREFIXES=('/api/cameras/','/api/source-preparations/','/api/journey-links','/api/traffic/','/api/stream/','/api/video/',
+SENSITIVE_PREFIXES=('/api/cameras','/api/camera-pair-constraints','/api/source-preparations/','/api/journey-links','/api/traffic/','/api/stream/','/api/video/',
                     '/api/snapshot/','/api/preview/','/api/events','/api/stats','/api/flows','/api/alerts',
                     '/api/rules','/api/nlquery','/api/trajectory/','/api/evidence/','/api/reports/','/api/artifacts/')
 
@@ -90,7 +90,7 @@ def required_role(method, path):
     if path == '/api/audit/integrity': return 'admin'
     if path.startswith('/api/traffic/') and method == 'GET': return 'analyst'
     if path.startswith('/api/alerts/') and path.endswith('/review'): return 'operator'
-    if path == '/api/rules' and method == 'PUT': return 'operator'
+    if path == '/api/rules' and method == 'PUT': return 'admin'
     if path.startswith('/api/evidence/') and method == 'POST': return 'analyst'
     if path == '/api/nlquery' and method == 'POST': return 'analyst'
     if path.startswith(('/api/events','/api/stats','/api/flows','/api/alerts','/api/rules','/api/nlquery',
@@ -152,6 +152,15 @@ async def authentication_and_case_scope(request, call_next):
             return JSONResponse(status_code=403,content={'error':{'code':403,'message':'Your account is not assigned to this case'}})
         request.state.case_id=case_id
         request.state.purpose=purpose
+        camera_ids=None if session['role']=='admin' else store.case_camera_ids(case_id)
+        request.state.camera_ids=camera_ids
+        if camera_ids is not None:
+            camera_route=next((prefix for prefix in ('/api/cameras/','/api/stream/','/api/video/','/api/snapshot/','/api/preview/')
+                               if path.startswith(prefix)),None)
+            if camera_route:
+                camera_id=path[len(camera_route):].split('/',1)[0]
+                if camera_id != 'onvif' and camera_id not in camera_ids:
+                    return JSONResponse(status_code=403,content={'error':{'code':403,'message':'This case is not assigned to the requested camera'}})
         service.audit_sensitive_access(session,case_id,purpose,request.method,path)
     return await call_next(request)
 
@@ -321,13 +330,29 @@ def interval(since,until):
 
 
 @app.get('/api/cameras')
-def list_cameras():
+def list_cameras(request:Request):
     processing_enabled=os.environ.get('AI26_PROCESSING_ENABLED','1')=='1'
     health={s['camera_id']:{**s,'processing_enabled':processing_enabled,
                             'inference_branches':inference_branches()} for s in processor.health()}
+    camera_ids=getattr(request.state,'camera_ids',None)
     return [{**c,'source_mode':'live' if processor.source_is_live(c['id']) else 'recorded',
              'source_available':processor.source_available(c['id']),
-             'health':health[c['id']]} for c in store.camera_catalog()]
+             'health':health[c['id']]} for c in store.camera_catalog()
+            if camera_ids is None or c['id'] in camera_ids]
+
+@app.get('/api/auth/case-camera-scopes')
+def list_case_camera_scopes():
+    cameras=[{'id':camera['id'],'name':camera.get('name',camera['id'])} for camera in store.camera_catalog()]
+    return {'cameras':cameras,'scopes':store.case_camera_scopes()}
+
+@app.put('/api/auth/case-camera-scopes')
+def update_case_camera_scope(body:AuthCaseCameraScopeUpdate,request:Request):
+    known={camera['id'] for camera in store.camera_catalog()}
+    if any(camera_id not in known for camera_id in body.camera_ids):
+        raise HTTPException(422,'Camera scope contains an unknown camera ID')
+    actor=getattr(request.state,'actor',None)
+    result=store.update_case_camera_scope(body.case_id,body.camera_ids,actor['username'],time.time())
+    return result
 
 @app.post('/api/cameras/onvif/discover')
 def onvif_discovery(body:OnvifDiscoveryRequest):
@@ -398,20 +423,26 @@ def update_camera_configuration(camera_id:str, body:CameraConfigurationUpdate):
     except ValueError as exc: raise HTTPException(409,str(exc)) from exc
 
 @app.get('/api/camera-pair-constraints')
-def list_camera_pair_constraints():
-    return store.camera_pair_constraints()
+def list_camera_pair_constraints(request:Request):
+    camera_ids=getattr(request.state,'camera_ids',None)
+    rows=store.camera_pair_constraints()
+    return rows if camera_ids is None else [row for row in rows if row['from_camera'] in camera_ids and row['to_camera'] in camera_ids]
 
 @app.put('/api/camera-pair-constraints')
-def update_camera_pair_constraint(body:CameraPairConstraintUpdate):
+def update_camera_pair_constraint(body:CameraPairConstraintUpdate,request:Request):
+    camera_ids=getattr(request.state,'camera_ids',None)
+    if camera_ids is not None and (body.from_camera_id not in camera_ids or body.to_camera_id not in camera_ids):
+        raise HTTPException(403,'Both cameras must be assigned to this case')
     try: return store.put_camera_pair_constraint(body.model_dump(),time.time())
     except ValueError as exc: raise HTTPException(409,str(exc)) from exc
 
 @app.get('/api/journey-links')
-def journey_links(plate:str|None=None,since:TimeFilter=None,until:TimeFilter=None,
+def journey_links(request:Request,plate:str|None=None,since:TimeFilter=None,until:TimeFilter=None,
                   limit:Annotated[int,Query(ge=1,le=5000)]=5000):
     interval(since,until)
     if plate: plate=check_plate(plate)
-    return redact_analytics_payload(store.journey_links(plate,0 if since is None else since,until,limit))
+    return redact_analytics_payload(store.journey_links(plate,0 if since is None else since,until,limit,
+                                                          camera_ids=getattr(request.state,'camera_ids',None)))
 
 @app.get('/api/audit/integrity')
 def audit_integrity():
@@ -467,36 +498,42 @@ def preview(camera_id:str,request:Request):
     return Response(content=latest[1],media_type='image/jpeg',headers=headers)
 
 @app.get('/api/events')
-def events(camera:str|None=None,plate:str|None=None,since:TimeFilter=None,until:TimeFilter=None,limit:Annotated[int,Query(ge=1,le=5000)]=5000):
+def events(request:Request,camera:str|None=None,plate:str|None=None,since:TimeFilter=None,until:TimeFilter=None,limit:Annotated[int,Query(ge=1,le=5000)]=5000):
     interval(since,until)
     if camera: check_camera(camera)
     if plate: plate=check_plate(plate)
-    return redact_analytics_payload(get_events(camera,plate,since,until,limit=limit))
+    camera_ids=getattr(request.state,'camera_ids',None)
+    if camera_ids is not None and camera is not None and camera not in camera_ids:
+        raise HTTPException(403,'This case is not assigned to the requested camera')
+    return redact_analytics_payload(get_events(camera,plate,since,until,limit=limit,camera_ids=camera_ids))
 
 @app.get('/api/stats')
-def get_stats(since:TimeFilter=None,until:TimeFilter=None):
-    interval(since,until); return stats(since,until)
+def get_stats(request:Request,since:TimeFilter=None,until:TimeFilter=None):
+    interval(since,until); return stats(since,until,camera_ids=getattr(request.state,'camera_ids',None))
 
 @app.get('/api/flows')
-def get_flows(since:TimeFilter=None,until:TimeFilter=None):
-    interval(since,until); return flows(since,until)
+def get_flows(request:Request,since:TimeFilter=None,until:TimeFilter=None):
+    interval(since,until); return flows(since,until,camera_ids=getattr(request.state,'camera_ids',None))
 
 @app.get('/api/traffic/baselines')
-def get_traffic_baselines(days:Annotated[int,Query(ge=7,le=90)]=28):
-    try: return traffic_baselines(days)
+def get_traffic_baselines(request:Request,days:Annotated[int,Query(ge=7,le=90)]=28):
+    try: return traffic_baselines(days,camera_ids=getattr(request.state,'camera_ids',None))
     except (ValueError,KeyError) as exc: raise HTTPException(422,'Traffic baseline configuration or timezone is invalid') from exc
 
 @app.get('/api/alerts')
 def alerts(request:Request,since:TimeFilter=None,until:TimeFilter=None,include_escalated:bool=False):
     interval(since,until)
-    recent=derive_alerts(since,until)
+    camera_ids=getattr(request.state,'camera_ids',None)
+    recent=derive_alerts(since,until,camera_ids=camera_ids)
     actor=getattr(request.state,'actor',None)
     scope_case_id=request.state.case_id if actor and actor['role']!='admin' else None
     if scope_case_id is not None:
         recent=[alert for alert in recent if alert.get('state')!='escalated' or alert.get('case_id')==scope_case_id]
     if not include_escalated: return redact_analytics_payload(recent)
     known={a['alert_id'] for a in recent}
-    return redact_analytics_payload(recent+[a for a in store.escalated_alerts(scope_case_id=scope_case_id) if a['alert_id'] not in known])
+    scoped_escalations=store.escalated_alerts(scope_case_id=scope_case_id)
+    if camera_ids is not None: scoped_escalations=[a for a in scoped_escalations if a.get('camera_id') in camera_ids]
+    return redact_analytics_payload(recent+[a for a in scoped_escalations if a['alert_id'] not in known])
 
 @app.get('/api/alerts/escalations')
 def escalations(request:Request,limit:Annotated[int,Query(ge=1,le=100)]=50,
@@ -506,7 +543,8 @@ def escalations(request:Request,limit:Annotated[int,Query(ge=1,le=100)]=50,
         raise HTTPException(422,'Both finite before_ts and before_id are required for an escalation cursor')
     actor=getattr(request.state,'actor',None)
     scope_case_id=(request.state.case_id if actor and actor['role']!='admin' else None)
-    page=store.escalated_alerts_page(limit,(before_ts,before_id) if before_ts is not None else None,scope_case_id)
+    camera_ids=getattr(request.state,'camera_ids',None)
+    page=store.escalated_alerts_page(limit,(before_ts,before_id) if before_ts is not None else None,scope_case_id,camera_ids)
     return redact_analytics_payload(page)
 
 @app.post('/api/alerts/{alert_id}/review')
@@ -528,12 +566,23 @@ def review(alert_id:str,body:ReviewRequest,request:Request):
     return {'alert_id':alert_id,**data}
 
 @app.get('/api/rules')
-def get_rules():
+def get_rules(request:Request):
     from events import DEFAULT_RULES
     configured=store.setting('rules',DEFAULT_RULES)
-    return {**DEFAULT_RULES,**configured,
+    result={**DEFAULT_RULES,**configured,
             'watchlist_conditions':configured.get('watchlist_conditions',{}),
             'zone_permits':configured.get('zone_permits',[])}
+    camera_ids=getattr(request.state,'camera_ids',None)
+    if camera_ids is not None:
+        # The current rule store is global; keep camera-bound controls scoped and
+        # do not expose unrelated plate identities or permits to case members.
+        result['watchlist']={}
+        result['watchlist_conditions']={}
+        result['restricted_cameras']=[camera for camera in result['restricted_cameras'] if camera in camera_ids]
+        result['dwell_zones']=[zone for zone in result['dwell_zones'] if zone['camera_id'] in camera_ids]
+        result['zone_permits']=[{**permit,'camera_ids':[camera for camera in permit['camera_ids'] if camera in camera_ids]}
+                                for permit in result['zone_permits'] if any(camera in camera_ids for camera in permit['camera_ids'])]
+    return result
 
 @app.put('/api/rules')
 def update_rules(body:RuleConfig):
@@ -563,18 +612,18 @@ def update_rules(body:RuleConfig):
     store.update_rules(config,time.time()); return config
 
 @app.post('/api/nlquery')
-def nlquery(body:QueryRequest): return redact_analytics_payload(nl_answer(body.question))
+def nlquery(body:QueryRequest,request:Request): return redact_analytics_payload(nl_answer(body.question,camera_ids=getattr(request.state,'camera_ids',None)))
 
 @app.get('/api/trajectory/{plate}')
-def trajectory(plate:str,since:TimeFilter=None,until:TimeFilter=None):
-    interval(since,until); return redact_analytics_payload(get_trajectory(check_plate(plate),since,until))
+def trajectory(plate:str,request:Request,since:TimeFilter=None,until:TimeFilter=None):
+    interval(since,until); return redact_analytics_payload(get_trajectory(check_plate(plate),since,until,camera_ids=getattr(request.state,'camera_ids',None)))
 
 @app.post('/api/evidence/{plate}')
 def evidence(plate:str,request:Request,since:TimeFilter=None,until:TimeFilter=None):
     interval(since,until); plate=check_plate(plate)
     actor=getattr(request.state,'actor',None)
     case_id=request.state.case_id if actor else None
-    try: return evidence_report(plate,since,until,case_id=case_id)
+    try: return evidence_report(plate,since,until,case_id=case_id,camera_ids=getattr(request.state,'camera_ids',None))
     except EvidenceSigningError as exc: raise HTTPException(503,'Evidence signing is configured but the signing key is unavailable or invalid') from exc
     except ValueError as exc: raise HTTPException(409,str(exc)) from exc
 

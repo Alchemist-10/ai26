@@ -12,7 +12,7 @@ import time
 from auth_key_lock import exclusive_key_maintenance_lock
 from key_maintenance import append_audit, backup_database, read_protected_key, verified_audit_head
 
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 14
 ACTION = 'privacy_key_rotated'
 
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react"
-import { ApiError, createUser, getUsers, resetUserMfa, resetUserPassword, updateUser, type AuthRole, type ManagedUser } from "@/lib/api"
+import { ApiError, createUser, getCaseCameraScopes, getUsers, resetUserMfa, resetUserPassword, saveCaseCameraScope, updateUser, type AuthRole, type CaseCameraScopesResponse, type ManagedUser } from "@/lib/api"
 
 const roles: AuthRole[] = ["admin", "operator", "analyst", "viewer"]
 const control = "min-h-10 rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white"
@@ -17,6 +17,9 @@ export default function UserAdministration() {
   const [resetPasswords, setResetPasswords] = useState<Record<string, string>>({})
   const [resetReasons, setResetReasons] = useState<Record<string, string>>({})
   const [mfaResetReasons, setMfaResetReasons] = useState<Record<string, string>>({})
+  const [cameraScopes, setCameraScopes] = useState<CaseCameraScopesResponse | null>(null)
+  const [selectedScopeCase, setSelectedScopeCase] = useState("")
+  const [cameraScopeDraft, setCameraScopeDraft] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
@@ -30,6 +33,15 @@ export default function UserAdministration() {
     setCasesDraft(Object.fromEntries(result.map(user => [user.username, user.case_ids.join(", ")])))
   }
 
+  async function refreshCameraScopes(signal?: AbortSignal) {
+    const result = await getCaseCameraScopes(signal)
+    if (signal?.aborted) return
+    setCameraScopes(result)
+    const caseId = selectedScopeCase || result.scopes[0]?.case_id || ""
+    setSelectedScopeCase(caseId)
+    setCameraScopeDraft(result.scopes.find(scope => scope.case_id === caseId)?.camera_ids ?? [])
+  }
+
   function showLoadError(cause: unknown) {
     setError(message(cause))
   }
@@ -39,6 +51,13 @@ export default function UserAdministration() {
     // Async request failures must reach the visible recovery message.
     // oxlint-disable-next-line react/set-state-in-effect
     void refresh(controller.signal).catch(cause => { if (!controller.signal.aborted) showLoadError(cause) })
+    void getCaseCameraScopes(controller.signal).then(result => {
+      if (controller.signal.aborted) return
+      setCameraScopes(result)
+      const caseId = result.scopes[0]?.case_id ?? ""
+      setSelectedScopeCase(caseId)
+      setCameraScopeDraft(result.scopes.find(scope => scope.case_id === caseId)?.camera_ids ?? [])
+    }).catch(cause => { if (!controller.signal.aborted) showLoadError(cause) })
     return () => controller.abort()
   }, [])
 
@@ -46,7 +65,7 @@ export default function UserAdministration() {
     event.preventDefault(); setBusy(true); setError(""); setNotice("")
     try {
       await createUser(username, newPassword, newRole, parseCaseIds(newCases))
-      setUsername(""); setNewPassword(""); setNewCases(""); setNotice(`Created ${username.trim()}.`); await refresh()
+      setUsername(""); setNewPassword(""); setNewCases(""); setNotice(`Created ${username.trim()}.`); await refresh(); await refreshCameraScopes()
     } catch (cause) { setError(message(cause)) }
     finally { setBusy(false) }
   }
@@ -55,7 +74,7 @@ export default function UserAdministration() {
     setBusy(true); setError(""); setNotice("")
     try {
       await updateUser(user.username, { role: rolesDraft[user.username], disabled: disabledDraft[user.username], case_ids: parseCaseIds(casesDraft[user.username] ?? "") })
-      setNotice(`Updated ${user.username}. Active sessions are revoked when role, case access, or account status changes.`); await refresh()
+      setNotice(`Updated ${user.username}. Active sessions are revoked when role, case access, or account status changes.`); await refresh(); await refreshCameraScopes()
     } catch (cause) { setError(message(cause)) }
     finally { setBusy(false) }
   }
@@ -83,12 +102,37 @@ export default function UserAdministration() {
     finally { setBusy(false) }
   }
 
+  async function saveCameraScope() {
+    if (!selectedScopeCase) return
+    setBusy(true); setError(""); setNotice("")
+    try {
+      await saveCaseCameraScope(selectedScopeCase, cameraScopeDraft)
+      setNotice(`Updated camera access for ${selectedScopeCase}.`)
+      await refreshCameraScopes()
+    } catch (cause) { setError(message(cause)) }
+    finally { setBusy(false) }
+  }
+
   return <section className="h-full overflow-y-auto bg-background px-4 py-6 text-foreground sm:px-6">
     <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-semibold text-white">User administration</h1>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">Create accounts, assign access roles, suspend accounts, or reset passwords. Password changes and role or status changes revoke existing sessions.</p>
       {error && <p role="alert" className="mt-4 rounded border border-red-400/30 bg-red-950/40 px-3 py-2 text-sm text-red-100">{error}</p>}
       {notice && <p role="status" className="mt-4 rounded border border-teal-400/30 bg-teal-950/30 px-3 py-2 text-sm text-teal-100">{notice}</p>}
+
+      <section className="mt-6 border-y border-zinc-800 py-5">
+        <h2 className="text-base font-medium text-white">Case camera access</h2>
+        <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-400">Non-admin users can only view analytics and footage from cameras assigned to their selected case. New cases have no camera access until assigned here.</p>
+        {cameraScopes?.scopes.length ? <>
+          <label className="mt-3 block max-w-sm text-xs text-zinc-300">Case<select value={selectedScopeCase} onChange={event => {
+            const caseId = event.target.value
+            setSelectedScopeCase(caseId)
+            setCameraScopeDraft(cameraScopes.scopes.find(scope => scope.case_id === caseId)?.camera_ids ?? [])
+          }} className={`${control} mt-1 block w-full`}>{cameraScopes.scopes.map(scope => <option key={scope.case_id} value={scope.case_id}>{scope.case_id}</option>)}</select></label>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{cameraScopes.cameras.map(camera => <label key={camera.id} className="flex min-h-10 items-center gap-2 rounded border border-zinc-800 px-3 text-sm text-zinc-200"><input type="checkbox" checked={cameraScopeDraft.includes(camera.id)} onChange={event => setCameraScopeDraft(previous => event.target.checked ? [...previous, camera.id] : previous.filter(id => id !== camera.id))} />{camera.id} · {camera.name}</label>)}</div>
+          <button type="button" disabled={busy} onClick={() => void saveCameraScope()} className={`${button} mt-3`}>Save camera access</button>
+        </> : <p className="mt-3 text-sm text-zinc-400">Create a case assignment on an account first; assigned cases will appear here.</p>}
+      </section>
 
       <form onSubmit={submitCreate} className="mt-6 border-y border-zinc-800 py-5">
         <h2 className="text-base font-medium text-white">Create account</h2>
@@ -102,7 +146,7 @@ export default function UserAdministration() {
         <p className="mt-2 text-xs text-zinc-400">Use at least 14 characters. Non-admin accounts need at least one assigned case to read scoped data. Separate case IDs with commas.</p>
       </form>
 
-      <div className="mt-6 flex items-center justify-between gap-3"><h2 className="text-base font-medium text-white">Accounts <span className="font-normal text-zinc-400">({users.length})</span></h2><button type="button" disabled={busy} onClick={() => { setError(""); void refresh().catch(cause => setError(message(cause))) }} className={button}>Refresh</button></div>
+      <div className="mt-6 flex items-center justify-between gap-3"><h2 className="text-base font-medium text-white">Accounts <span className="font-normal text-zinc-400">({users.length})</span></h2><button type="button" disabled={busy} onClick={() => { setError(""); void Promise.all([refresh(),refreshCameraScopes()]).catch(cause => setError(message(cause))) }} className={button}>Refresh</button></div>
       {users.length === 0 ? <p className="mt-4 text-sm text-zinc-400">No accounts were returned.</p> : <ul className="mt-3 divide-y divide-zinc-800 border-y border-zinc-800">{users.map(user => <li key={user.username} className="grid gap-3 py-4 lg:grid-cols-[minmax(130px,1fr)_150px_1.2fr_140px_auto] lg:items-end">
         <div><p className="font-medium text-white">{user.username}</p><p className="mt-1 text-xs text-zinc-400">Created {new Date(user.created_at * 1000).toLocaleDateString()} · {user.disabled ? "Disabled" : "Active"} · MFA {user.mfa_enabled ? "enabled" : "off"}</p>{user.mfa_enabled && <form onSubmit={event => { event.preventDefault(); void resetMfa(user.username) }} className="mt-2 grid gap-2">
           <label className="text-xs text-zinc-300">MFA reset reason<input required minLength={10} maxLength={500} value={mfaResetReasons[user.username] ?? ""} onChange={event => setMfaResetReasons(previous => ({ ...previous, [user.username]: event.target.value }))} placeholder="Verified request through approved support process" className={`${control} mt-1 block w-full`} /></label>

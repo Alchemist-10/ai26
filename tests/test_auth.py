@@ -63,8 +63,8 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(service.user_count(), 1)
                     self.assertIsNotNone(service.login("admin", "Bootstrap-Correct-Horse-42", "testhost")[0])
                     self.assertIsNone(service.login("admin", "Different-Correct-Horse-42", "otherhost")[0])
-                self.assertEqual(repository.schema_version, 13)
-                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 13)
+                self.assertEqual(repository.schema_version, 14)
+                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 14)
             finally:
                 repository.close()
 
@@ -87,7 +87,7 @@ class Authentication(unittest.TestCase):
         csrf = response.json()["csrf_token"]
         self.assertEqual(self.client.get("/api/auth/me").json()["csrf_token"], csrf)
 
-        self.assertEqual(self.client.get("/api/cameras").status_code, 200)
+        self.assertEqual(self.client.get("/api/cameras",headers={"X-AI26-Case-ID":"CASE-2026-01","X-AI26-Purpose":"investigation"}).status_code, 200)
         missing_scope = self.client.get("/api/events")
         self.assertEqual(missing_scope.status_code, 422)
         headers = {"X-AI26-Case-ID": "CASE-2026-01", "X-AI26-Purpose": "investigation"}
@@ -103,11 +103,11 @@ class Authentication(unittest.TestCase):
         self.assertIn("CASE-2026-01", row["data"])
         self.assertIn("investigation", row["data"])
         self.client.get("/api/events", headers=headers)
-        coalesced = self.repo.db.execute("SELECT count(*) FROM audit WHERE action='sensitive_access'").fetchone()[0]
+        coalesced = self.repo.db.execute("SELECT count(*) FROM audit WHERE action='sensitive_access' AND json_extract(data,'$.route')='/api/events'").fetchone()[0]
         self.assertEqual(coalesced, 1)
         alternate = {**headers, "X-AI26-Purpose": "traffic_analysis"}
         self.client.get("/api/events", headers=alternate)
-        self.assertEqual(self.repo.db.execute("SELECT count(*) FROM audit WHERE action='sensitive_access'").fetchone()[0], 2)
+        self.assertEqual(self.repo.db.execute("SELECT count(*) FROM audit WHERE action='sensitive_access' AND json_extract(data,'$.route')='/api/events'").fetchone()[0], 2)
         self.assertEqual(self.client.get("/api/traffic/baselines?days=28").status_code, 422)
         baselines=self.client.get("/api/traffic/baselines?days=28",headers=headers)
         self.assertEqual(baselines.status_code,200)
@@ -117,6 +117,39 @@ class Authentication(unittest.TestCase):
         self.assertEqual(self.client.post("/api/auth/logout").status_code, 403)
         self.assertEqual(self.client.post("/api/auth/logout", headers={CSRF_HEADER: csrf}).status_code, 200)
         self.assertEqual(self.client.get("/api/auth/me").status_code, 401)
+
+    def test_case_camera_assignments_filter_camera_and_observation_access(self):
+        password="Correct-Horse-Battery-Staple-26"
+        self.auth.create_user("scoped_admin",password,"admin")
+        self.auth.create_user("scoped_analyst",password,"analyst",case_ids=["CASE-SCOPE"])
+        admin_login=self.client.post("/api/auth/login",json={"username":"scoped_admin","password":password})
+        self.assertEqual(admin_login.status_code,200)
+        saved=self.client.put("/api/auth/case-camera-scopes",json={"case_id":"CASE-SCOPE","camera_ids":["CAM-07"]},headers={CSRF_HEADER:admin_login.json()["csrf_token"]})
+        self.assertEqual(saved.status_code,200,saved.text)
+        self.assertEqual(saved.json(),{"case_id":"CASE-SCOPE","camera_ids":["CAM-07"]})
+
+        events.add_events([
+            {"camera_id":"CAM-07","kind":"plate","plate":"KL07AB1234","plate_norm":"KL07AB1234","confidence":.9,"bbox":[0,0,20,20],"ts":time.time()},
+            {"camera_id":"CAM-08","kind":"plate","plate":"KL07CD1234","plate_norm":"KL07CD1234","confidence":.9,"bbox":[0,0,20,20],"ts":time.time()},
+        ])
+        analyst_login=self.client.post("/api/auth/login",json={"username":"scoped_analyst","password":password})
+        self.assertEqual(analyst_login.status_code,200)
+        context={"X-AI26-Case-ID":"CASE-SCOPE","X-AI26-Purpose":"investigation"}
+        catalog=self.client.get("/api/cameras",headers=context)
+        self.assertEqual(catalog.status_code,200)
+        self.assertEqual([camera["id"] for camera in catalog.json()], ["CAM-07"])
+        observations=self.client.get("/api/events",headers=context)
+        self.assertEqual(observations.status_code,200)
+        self.assertEqual({row["camera_id"] for row in observations.json()}, {"CAM-07"})
+        stats=self.client.get("/api/stats",headers=context)
+        self.assertEqual(set(stats.json()["per_camera"]),{"CAM-07"})
+        self.assertEqual({row["camera_id"] for row in self.client.get("/api/traffic/baselines",headers=context).json()["cameras"]},{"CAM-07"})
+        self.assertEqual(self.client.post("/api/nlquery",json={"question":"show plates at CAM-08"},headers={**context,CSRF_HEADER:analyst_login.json()["csrf_token"]}).json()["status"],"invalid")
+        rules=self.client.get("/api/rules",headers=context).json()
+        self.assertEqual(rules["watchlist"],{})
+        self.assertTrue(all(camera=="CAM-07" for camera in rules["restricted_cameras"]))
+        self.assertEqual(self.client.get("/api/events?camera=CAM-08",headers=context).status_code,403)
+        self.assertEqual(self.client.get("/api/preview/CAM-08",headers=context).status_code,403)
 
     def test_authenticated_alert_review_uses_session_identity(self):
         self.create()
@@ -138,8 +171,10 @@ class Authentication(unittest.TestCase):
         password="Correct-Horse-Battery-Staple-26"
         self.auth.create_user("operator_one",password,"operator",case_ids=["CASE-ALPHA"])
         self.auth.create_user("operator_two",password,"operator",case_ids=["CASE-BRAVO"])
+        self.repo.update_case_camera_scope("CASE-ALPHA",["CAM-07"],"test",time.time())
+        self.repo.update_case_camera_scope("CASE-BRAVO",["CAM-08"],"test",time.time())
         alert_id="case-scoped-escalation"
-        self.repo.put_alert({"alert_id":alert_id,"ts":time.time(),"type":"watchlist match","summary":"Local fixture"})
+        self.repo.put_alert({"alert_id":alert_id,"ts":time.time(),"camera_id":"CAM-07","type":"watchlist match","summary":"Local fixture"})
 
         login_one=self.client.post("/api/auth/login",json={"username":"operator_one","password":password})
         self.assertEqual(login_one.status_code,200)
@@ -180,6 +215,8 @@ class Authentication(unittest.TestCase):
         password="Correct-Horse-Battery-Staple-26"
         self.auth.create_user("case_alpha",password,"analyst",case_ids=["CASE-ALPHA"])
         self.auth.create_user("case_bravo",password,"analyst",case_ids=["CASE-BRAVO"])
+        self.repo.update_case_camera_scope("CASE-ALPHA",["CAM-07"],"test",time.time())
+        self.repo.update_case_camera_scope("CASE-BRAVO",["CAM-08"],"test",time.time())
         alpha=TestClient(main.app,base_url="https://testserver")
         bravo=TestClient(main.app,base_url="https://testserver")
         login_alpha=alpha.post("/api/auth/login",json={"username":"case_alpha","password":password}).json()
@@ -200,7 +237,7 @@ class Authentication(unittest.TestCase):
         with patch.object(main,"evidence_report",return_value={"case_id":"CASE-ALPHA"}) as create_report:
             generated=alpha.post("/api/evidence/KL07AB1234",headers=headers_alpha)
             self.assertEqual(generated.status_code,200)
-            create_report.assert_called_once_with("KL07AB1234",None,None,case_id="CASE-ALPHA")
+            create_report.assert_called_once_with("KL07AB1234",None,None,case_id="CASE-ALPHA",camera_ids=["CAM-07"])
         route=f"/api/reports/{report['report_id']}"
         with patch.object(main,"artifact_bytes",return_value=b"case-specific artifact") as read_artifact:
             for suffix in ("", "/package", "/print"):
@@ -380,7 +417,8 @@ class Authentication(unittest.TestCase):
         self.assertEqual(health.json()["inference_branches"],
                          {"vehicle_detection_enabled": True, "plate_recognition_enabled": True})
         self.assertEqual(health.json()["vehicle_model_rollout"]["mode"], "stable_only")
-        self.assertEqual(self.client.get("/api/cameras").status_code, 200)
+        self.repo.update_case_camera_scope("CASE-55",["CAM-07"],"test",time.time())
+        self.assertEqual(self.client.get("/api/cameras",headers={"X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"investigation"}).status_code, 200)
         self.assertEqual(self.client.get("/api/events", headers={"X-AI26-Case-ID":"CASE-55","X-AI26-Purpose":"system_test"}).status_code, 403)
         self.assertEqual(self.client.get("/api/camera-pair-constraints").status_code, 403)
         self.assertEqual(self.client.get("/api/traffic/baselines",headers={

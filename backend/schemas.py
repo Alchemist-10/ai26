@@ -178,6 +178,24 @@ class AuthUserUpdateRequest(BaseModel):
             raise ValueError('Set role, disabled, or case_ids')
         return self
 
+class AuthCaseCameraScopeUpdate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    case_id: StrictStr = Field(min_length=3, max_length=64)
+    camera_ids: list[StrictStr] = Field(max_length=16)
+
+    @field_validator('case_id')
+    @classmethod
+    def valid_case_id(cls, value):
+        from auth import CASE_PATTERN
+        if not CASE_PATTERN.fullmatch(value): raise ValueError('Invalid case ID')
+        return value
+
+    @field_validator('camera_ids')
+    @classmethod
+    def unique_camera_ids(cls, values):
+        if len(set(values))!=len(values): raise ValueError('Camera IDs must be unique')
+        return values
+
 class AuthPasswordResetRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     password: StrictStr = Field(min_length=14, max_length=256)
