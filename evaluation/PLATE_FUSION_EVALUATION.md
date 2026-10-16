@@ -28,3 +28,9 @@ abstains on the conflicting sequence, with no incorrect output and no identity
 crossing. This illustrates the coverage/error tradeoff only. It does not measure
 OCR quality, confidence calibration, real identity risk or field performance.
 Real-data analysis still requires authorized held-out clips and labels.
+
+When reads conflict, the runtime also includes per-character vote diagnostics:
+the winning character, its weighted share, its margin over the runner-up, and an
+abstention reason. These shares are heuristic summaries of the supplied OCR
+confidence weights, not calibrated probabilities. A character suggestion stays
+review-only; the identity remains `conflicting` and `fused_plate` stays null.

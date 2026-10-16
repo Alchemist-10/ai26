@@ -79,16 +79,22 @@ class Association(unittest.TestCase):
         self.assertEqual(result['identity_status'],'conflicting')
         self.assertIsNone(result['fused_plate'])
         self.assertEqual(result['character_consensus_candidate'],'TN22ZZ0007')
+        diagnostics=result['character_consensus_diagnostics']
+        self.assertEqual(diagnostics['reason'],None)
+        self.assertEqual(diagnostics['confidence_semantics'],'heuristic_weight_share_not_calibrated_probability')
+        self.assertEqual(diagnostics['positions'][-1]['winner_weight_share'],0.75)
 
     def test_character_vote_abstains_on_tie_and_length_mismatch(self):
         tied=PlateConsensus()
         for plate in ('TN22ZZ0007','TN22ZZ0001','TN22ZZ0002'):
             result=tied.read('CAM-07',1,plate)
         self.assertIsNone(result['character_consensus_candidate'])
+        self.assertEqual(result['character_consensus_diagnostics']['reason'],'weak_character_vote')
         lengths=PlateConsensus()
         for plate in ('TN22ZZ0007','TN22ZZ0007','TN22ZZ000'):
             result=lengths.read('CAM-07',1,plate)
         self.assertIsNone(result['character_consensus_candidate'])
+        self.assertEqual(result['character_consensus_diagnostics']['reason'],'plate_length_mismatch')
 
     def test_shape_change_and_class_change_do_not_reuse_track(self):
         t=CentroidTracker()
