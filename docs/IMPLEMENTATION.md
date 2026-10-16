@@ -50,8 +50,12 @@ for API edits, version history and limits. The repository is intended for a
 single local API process, not a distributed ingestion deployment.
 
 Authenticated active alert escalations retain the case used when they were
-created; non-admin users can list and resolve only that case's queue. This does
-not make the underlying alerts or observations row-level case isolated.
+created; non-admin users can list and resolve only that case's queue. Admins
+assign cameras to cases, and scoped analytics, alert, route, evidence and footage
+requests are limited to those cameras. This is a coarse camera boundary:
+observations are not individually assigned to cases, so separate cases sharing
+a camera can see the same observations. Legacy alerts without camera IDs remain
+admin-visible, and global rule editing is administrator-only.
 
 Evidence report version 5 can optionally include an Ed25519 signature. Signing
 uses a protected host-mounted private key; an offline verifier checks the report

@@ -134,7 +134,11 @@ export function CameraWall({
               </button>
             )
           })}
-          {filtered.length === 0 && (
+          {cameras.length === 0 ? (
+            <div role="status" className="col-span-full py-12 text-center text-xs text-zinc-400 font-sans">
+              No cameras are assigned to this case. An administrator can assign cameras in User administration.
+            </div>
+          ) : filtered.length === 0 && (
             <div className="col-span-full py-12 text-center text-xs text-zinc-500 font-sans">
               No cameras match your search or filter.
             </div>

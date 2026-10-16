@@ -255,6 +255,20 @@ inference on this host; it does not explain lag on lower-powered hardware or
 network conditions. Full scope and limits are in
 [`validation/live-ui-responsiveness-2026-10-15.json`](validation/live-ui-responsiveness-2026-10-15.json).
 
+## Cache-disabled idle-browser sample — 16 October 2026
+
+A headless Chromium run against the production preview used fresh tabs at
+1280×800 and 390×844, with browser cache disabled and backend processing paused.
+Both loaded eight resources and transferred about 116 KB. Desktop FCP/LCP were
+204/424 ms and mobile FCP/LCP were 220/420 ms. Neither run reported a main-thread
+long task; the navigation button reached the next double animation frame in
+24 ms and 28 ms respectively. CLS was 0.0012 on desktop and 0 on mobile after
+excluding shifts following recent user input. This is one local idle sample,
+not INP, a throttled-network test, a physical-device result, or an
+inference-enabled CPU measurement. It did not show a frontend main-thread stall;
+inference-enabled backend load remains to be measured on the user's target
+hardware.
+
 ## Bounded forward decode — 12 October 2026
 
 A decode-only comparison of 24 target indices per bundled clip found bounded

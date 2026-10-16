@@ -1,4 +1,4 @@
-# AI26 implementation progress — 15 October 2026
+# AI26 implementation progress — 16 October 2026
 
 This records the current reliability, tracking, persistence and performance implementation. Accuracy release gates remain open.
 The original audit/plan remain the baseline. AI26 alone was changed; the Godseye
@@ -18,8 +18,7 @@ revisioned camera metadata, settings editor with draft/conflict recovery and que
 
 ## Persistence update
 
-Schema 13 stores user/session records, per-case grants, encrypted TOTP enrollment with replay counters, recovery-code hashes, active escalation case scope, audit context, camera metadata revisions, directed camera-pair travel constraints, immutable queried journey
-link decisions, locally hash-chained audit records, and 90-day camera traffic buckets. The read-only verifier detects changed rows; an operator-run Ed25519 tool signs and checks audit-head checkpoints that must be retained off-host. New observations preserve configuration snapshots; legacy metadata fallback is explicit. Source routes remain fixed, calibration remains unverified, and stored decisions are historical conclusions rather than verified identity. Case scope currently applies to active escalation queues, not general row-level evidence access.
+Schema 14 stores user/session records, per-case grants and camera assignments, encrypted TOTP enrollment with replay counters, recovery-code hashes, active escalation case scope, audit context, camera metadata revisions, directed camera-pair travel constraints, immutable queried journey-link decisions, locally hash-chained audit records, and 90-day camera traffic buckets. Non-admin analytics and footage requests are filtered to case-assigned cameras. This is a coarse camera boundary: observations are not individually assigned to cases, so cases sharing a camera can see that camera's observations. The read-only verifier detects changed rows; an operator-run Ed25519 tool signs and checks audit-head checkpoints that must be retained off-host. New observations preserve configuration snapshots; legacy metadata fallback is explicit. Source routes remain fixed, calibration remains unverified, and stored decisions are historical conclusions rather than verified identity.
 See `docs/PERSISTENCE.md` and `AI26_PERSISTENCE_VALIDATION.json` in the delivery.
 
 ## Authentication and access-scope update

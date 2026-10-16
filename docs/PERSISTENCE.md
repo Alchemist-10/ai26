@@ -11,8 +11,11 @@ Schema version 13 adds a nullable case scope to active alert escalations. Schema
 authenticated escalations inherit the reviewer's selected case, and non-admin
 users can list or resolve only escalations scoped to that case. Existing
 unscoped local escalations are preserved; administrators can inspect and resolve
-them. This is a queue/review boundary, not row-level case isolation for alerts,
-observations or other evidence.
+them. Schema version 14 adds administrator-managed camera assignments per case;
+scoped analytics and footage queries enforce those assignments, while direct
+requests for unassigned cameras are denied. This is a camera-level boundary,
+not per-observation case ownership: cases sharing a camera can access the same
+camera's observations. Legacy alerts without camera IDs remain admin-visible.
 
 Directed camera-pair constraints store inclusive minimum/maximum travel windows,
 connected/disconnected state, reviewer, reason and update time. Saving requires
