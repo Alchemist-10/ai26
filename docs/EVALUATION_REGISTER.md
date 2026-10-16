@@ -1,0 +1,26 @@
+# AI26 experiment and validation register
+
+This index records the sample size, environment, observed failures and limits for
+the current local evidence set. Counts are not interchangeable across tests.
+Synthetic fixtures establish contracts only; unlabeled recordings and model
+agreement do not establish detection, OCR, tracking or identity accuracy.
+
+| Evidence | Sample and conditions | Observed result or failure case | What it does not establish |
+| --- | --- | --- | --- |
+| [Per-track OCR comparison](../evaluation/PLATE_FUSION_EVALUATION.md) | 7 synthetic observations, 2 interleaved tracks; no model run. | Last-read baseline: 1 exact, 1 incorrect. Consensus: 1 exact, 0 incorrect, 1 abstention; no supported output came from another track. | Real OCR improvement, confidence calibration, or field identity risk. |
+| Traffic baselines ([tests](../tests/test_traffic_baselines.py)) | Synthetic live-hour fixtures with passage totals 3, 7 and 5; six 5-minute coverage samples per hour. | The latest total and two-hour matching weekday/hour median are both 5; replay-only and incomplete-hour inputs return unknown rather than zero. | Real count accuracy, calibrated density, occupancy or speed. |
+| Tracking ([validation JSON](validation/tracking-validation.json)) | Five named synthetic association scenarios; separate 20-run timing samples for 64 detections; Python 3.12.14 on the local 12-logical-CPU Linux host. | Fixtures cover assignment, crossing, occlusion, elapsed expiry and ambiguous matches; timing is not a tracking-accuracy result. | Field ID-switch, fragmentation or passage-count rates. |
+| [ALPR runtime](validation/alpr-runtime-cam01-2026-10-16.json) | 12 sampled 960×540 CAM-01 frames at 2-second strides; CPUExecutionProvider, two ONNX threads, cached models. | Zero detector candidates in the sample; initialization plus synthetic preflight took 559 ms; shape-merge warnings were observed. Zero candidates cannot be called false negatives because no plate labels exist for these frames. | Positive plate detection, OCR accuracy, cold downloads or live multi-camera ALPR quality. |
+| [Edge comparison](validation/edge-benchmark-local-host-2026-10-14.json) | 60 unlabeled frames from CAM-01–06 on a 12th Gen Intel i5-12450H, CPU ONNX Runtime. | INT8 matched 15 of 16 FP32 detections at the configured threshold; one output differed. This is model agreement, not correctness against ground truth. | Target-device readiness, accuracy, or model promotion. |
+| [Active inference profile](validation/active-inference-profile-2026-10-16.json) | 31 completed frames in a 19.0-second counter window; 6 available replay clips, 3 missing clips; 12 logical CPUs; isolated API/data root. | 1.63 FPS against a 2 FPS budget, one budget overrun, no failed attempts; CAM-01 first inference took 4.42 s. CPU reached 468.4% p95 and RSS was 548.9 MiB median. | A browser interaction metric, stream-frame-drop rate, real-time capture performance or behavior on other hardware. |
+| [Warmed browser under inference](validation/live-ui-responsiveness-2026-10-15.json) | 10.1-second local run; 10 health reads, 6 available clips, four accessibility action calls at 1280×720. | API health p50/p95 8.3/25.0 ms; actions acknowledged in 145–182 ms; no inference attempts failed. | INP, click-to-paint, low-end device, throttled network or six-stream playback drops. |
+| [Cache-disabled browser load](PERFORMANCE.md#cache-disabled-idle-browser-sample--16-october-2026) | One desktop and one mobile Chromium tab, cache disabled, inference paused. | FCP/LCP 204/424 ms desktop and 220/420 ms mobile; no main-thread long task in either sample. | Active-inference UI responsiveness or field-device Core Web Vitals. |
+| [Six-camera replay soak](validation/ev09-six-camera-soak-2026-10-15-120s-repeat.json) | 120 seconds, 232 frames over 118.0 seconds of valid counters, six replay inputs, three unavailable inputs; local 12-logical-CPU Linux host. | 1.966 FPS, zero failed attempts, four budget overruns, zero health failures. | Live RTSP recovery, sustained production uptime or real-world source frame loss. |
+| [Longer replay profile](validation/ev09-six-camera-soak-2026-10-15-300s.json) | Requested 300-second local six-camera profile. | The profiler detected clock/frame-age discontinuities and suppressed the steady-state rate; it remains a diagnostic run, not a valid throughput result. | A trustworthy 5-minute FPS or reliability guarantee. |
+| [Decoder comparison](validation/decode-paired-six-camera-75frame-2026-10-16.json) | 32 paired frames per method on each of six proxies (192 pairs), 75-frame target gaps. | Decoded pixel hashes and decoder positions matched for all pairs; forward decode medians were lower on the sampled host. | Six concurrent inference decoders, FPS, or OCR quality. |
+
+The [performance report](PERFORMANCE.md) and linked validation JSON files contain
+the detailed conditions and raw measurements. No available report is a held-out
+accuracy evaluation. CAM-07–09 footage, verified timestamps and locations, manual
+labels, and target hardware are not present; corresponding release gates remain
+open in [the implementation checklist](PROGRESS.md).
