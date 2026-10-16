@@ -36,8 +36,8 @@ grants gate non-admin access; the service has no shared case registry. MFA is
 available through a separate protected-key overlay. MFA-enrolled users can recover
 passwords using their authenticator or an unused recovery code; no-MFA accounts still
 depend on an administrator, and external identity remains pending.
-The isolated full backend suite passes 322 tests, including a simultaneous TOTP
-replay regression; frontend TypeScript build and lint
+The isolated full backend suite passes 361 tests, including simultaneous TOTP
+replay protection and case-camera-scoped alert-review regressions; frontend TypeScript build and lint
 pass with the repository's two existing Fast Refresh warnings. See
 `docs/AUTHENTICATION.md`.
 
