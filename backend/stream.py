@@ -35,7 +35,19 @@ def _annotate(frame, kind: str, camera_id: str):
     return frame, plate_detections + vehicle_detections
 
 
-def mjpeg_generator(camera_id: str, start_at: float | None = None, anchor_at: float | None = None):
+import asyncio
+from typing import Callable
+from fastapi import Request
+
+
+async def mjpeg_generator(
+    camera_id: str,
+    start_at: float | None = None,
+    anchor_at: float | None = None,
+    request: Request | None = None,
+    stream_id: int | None = None,
+    get_active_stream_id: Callable[[], int] | None = None,
+):
     """Continuous full-inference stream for the focused camera."""
     cam = CAMERAS_BY_ID[camera_id]
     cap = cv2.VideoCapture(str(camera_source(camera_id)))
@@ -46,7 +58,11 @@ def mjpeg_generator(camera_id: str, start_at: float | None = None, anchor_at: fl
 
     try:
         while True:
-            _seek_to_live_phase(cap, camera_id, start_at, anchor_at)
+            if stream_id is not None and get_active_stream_id and get_active_stream_id() != stream_id:
+                break
+            if request is not None and await request.is_disconnected():
+                break
+
             ok, frame = cap.read()
             if not ok:
                 _seek_to_live_phase(cap, camera_id)
@@ -62,7 +78,7 @@ def mjpeg_generator(camera_id: str, start_at: float | None = None, anchor_at: fl
                 b"--frame\r\n"
                 b"Content-Type: image/jpeg\r\n\r\n" + buf.tobytes() + b"\r\n"
             )
-            time.sleep(0.02)
+            await asyncio.sleep(0.01)
     finally:
         cap.release()
 

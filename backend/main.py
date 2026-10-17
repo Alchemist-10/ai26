@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 
@@ -18,6 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+_active_stream_id = 0
+
 
 @app.get("/api/cameras")
 def list_cameras():
@@ -25,14 +27,25 @@ def list_cameras():
 
 
 @app.get("/api/stream/{camera_id}")
-def stream(camera_id: str, start: float | None = None, anchor: float | None = None):
+async def stream(request: Request, camera_id: str, start: float | None = None, anchor: float | None = None):
     """Continuous full-inference feed — only ever requested for the one focused/main camera."""
+    global _active_stream_id
+    _active_stream_id += 1
+    my_stream_id = _active_stream_id
+
     if camera_id not in CAMERAS_BY_ID:
         return {"error": "unknown camera"}
     if not camera_source(camera_id).is_file():
         return Response(status_code=404)
     return StreamingResponse(
-        mjpeg_generator(camera_id, start, anchor),
+        mjpeg_generator(
+            camera_id,
+            start,
+            anchor,
+            request=request,
+            stream_id=my_stream_id,
+            get_active_stream_id=lambda: _active_stream_id,
+        ),
         media_type="multipart/x-mixed-replace; boundary=frame",
     )
 

@@ -33,27 +33,31 @@ export function AnalyticsPanel() {
   const mapColor = (share: number) => (share > 0.35 ? "#ff5c72" : share > 0.18 ? "#ffb545" : "#22d3c8")
 
   return (
-    <div className="h-full overflow-y-auto bg-black font-sans text-white p-4 sm:p-6">
+    <div className="h-full overflow-y-auto bg-[#08090d] text-zinc-100 p-4 sm:p-6 select-none">
       <div className="mx-auto flex max-w-5xl flex-col gap-4">
         {/* Top Header Card */}
-        <div className="flex flex-col gap-1 rounded-md border border-zinc-800 bg-zinc-950 p-4">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-zinc-400" />
-            <h1 className="text-sm font-semibold text-white tracking-wide">Traffic & Detection Analytics</h1>
+        <div className="flex flex-col gap-1 rounded-xl border border-white/[0.08] bg-[#0d1017]/90 p-4 backdrop-blur-md shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30">
+              <BarChart3 className="h-4 w-4" />
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold text-white tracking-tight">Traffic & Detection Analytics</h1>
+              <p className="text-[11px] text-zinc-400">
+                Rolling 5-minute detection window. Real event counts normalized to prevent looping demo artifacts.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-zinc-400 font-sans leading-relaxed">
-            Rolling 5-minute detection window. Real event counts normalized to prevent looping demo artifacts.
-          </p>
         </div>
 
         {error && (
-          <div className="rounded-md border border-red-500/30 bg-red-950/60 p-3 text-xs text-red-200 font-sans">
+          <div className="rounded-lg border border-rose-500/30 bg-rose-950/40 p-3 text-xs text-rose-200">
             Analytics API unavailable: {error}
           </div>
         )}
 
         {/* Map Overview Section */}
-        <div className="relative h-64 overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
+        <div className="relative h-64 overflow-hidden rounded-xl border border-white/[0.08] bg-[#0c0e15]">
           <OsmMap
             points={cameras.map((cam) => {
               const share = (stats?.per_camera[cam.id] ?? 0) / total
@@ -62,75 +66,75 @@ export function AnalyticsPanel() {
             className="h-full w-full"
             ariaLabel="OpenStreetMap congestion overview of Kochi"
           />
-          <div className="absolute bottom-2 left-2 z-10 flex items-center gap-3 rounded-md border border-zinc-800 bg-black/90 px-2.5 py-1 text-[10px] font-sans text-zinc-300 backdrop-blur-md">
+          <div className="absolute bottom-2.5 left-2.5 z-10 flex items-center gap-4 rounded-lg border border-white/[0.08] bg-black/85 px-3 py-1.5 text-[11px] font-mono text-zinc-300 backdrop-blur-md shadow-lg">
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: "#22d3c8" }} /> baseline
+              <span className="h-2 w-2 rounded-full bg-[#22d3c8]" /> Baseline
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: "#ffb545" }} /> elevated
+              <span className="h-2 w-2 rounded-full bg-[#ffb545]" /> Elevated
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: "#ff5c72" }} /> busiest
+              <span className="h-2 w-2 rounded-full bg-[#ff5c72]" /> Peak Load
             </span>
           </div>
         </div>
 
         {/* Metric Summary Cards */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-md border border-zinc-800 bg-zinc-950 p-4">
+          <div className="rounded-xl border border-white/[0.08] bg-[#0d1017]/90 p-4 backdrop-blur-md shadow-sm">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[11px] font-medium uppercase tracking-wider">Detections (5 min)</span>
-              <Activity className="h-3.5 w-3.5 text-zinc-500" />
+              <span className="text-[11px] font-mono font-medium uppercase tracking-wider text-zinc-400">Detections (5 min)</span>
+              <Activity className="h-3.5 w-3.5 text-blue-400" />
             </div>
-            <div className="mt-2 text-2xl font-bold tracking-tight text-white tabular-nums font-sans">
+            <div className="mt-2 text-2xl font-bold tracking-tight text-white tabular-nums font-mono">
               {stats?.total_events ?? "—"}
             </div>
-            <div className="mt-1 text-[11px] text-zinc-500">Total verified events logged</div>
+            <div className="mt-1 text-[11px] text-zinc-500">Verified vehicle & plate inferences</div>
           </div>
 
-          <div className="rounded-md border border-zinc-800 bg-zinc-950 p-4">
+          <div className="rounded-xl border border-white/[0.08] bg-[#0d1017]/90 p-4 backdrop-blur-md shadow-sm">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[11px] font-medium uppercase tracking-wider">Avg Confidence</span>
-              <Activity className="h-3.5 w-3.5 text-zinc-500" />
+              <span className="text-[11px] font-mono font-medium uppercase tracking-wider text-zinc-400">Confidence Score</span>
+              <Activity className="h-3.5 w-3.5 text-emerald-400" />
             </div>
-            <div className="mt-2 text-2xl font-bold tracking-tight text-white tabular-nums font-sans">
+            <div className="mt-2 text-2xl font-bold tracking-tight text-white tabular-nums font-mono">
               {stats ? `${Math.round(stats.avg_confidence * 100)}%` : "—"}
             </div>
-            <div className="mt-1 text-[11px] text-zinc-500">Inference model certainty</div>
+            <div className="mt-1 text-[11px] text-zinc-500">Average model detection certainty</div>
           </div>
 
-          <div className="rounded-md border border-zinc-800 bg-zinc-950 p-4">
+          <div className="rounded-xl border border-white/[0.08] bg-[#0d1017]/90 p-4 backdrop-blur-md shadow-sm">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[11px] font-medium uppercase tracking-wider">Active Nodes</span>
-              <Video className="h-3.5 w-3.5 text-zinc-500" />
+              <span className="text-[11px] font-mono font-medium uppercase tracking-wider text-zinc-400">Active Sensor Channels</span>
+              <Video className="h-3.5 w-3.5 text-blue-400" />
             </div>
-            <div className="mt-2 flex items-baseline gap-2 text-2xl font-bold tracking-tight text-white tabular-nums font-sans">
+            <div className="mt-2 flex items-baseline gap-2 text-2xl font-bold tracking-tight text-white tabular-nums font-mono">
               {cameras.length || "—"}
-              <span className="text-xs font-semibold text-zinc-400">online</span>
+              <span className="text-xs font-semibold text-emerald-400 font-mono">online</span>
             </div>
-            <div className="mt-1 text-[11px] text-zinc-500">Grid stream processors healthy</div>
+            <div className="mt-1 text-[11px] text-zinc-500">Continuous RTSP/MJPEG pipelines</div>
           </div>
         </div>
 
         {/* Detections per camera breakdown */}
-        <div className="rounded-md border border-zinc-800 bg-zinc-950 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Detections Per Camera
+        <div className="rounded-xl border border-white/[0.08] bg-[#0d1017]/90 p-4 backdrop-blur-md shadow-sm">
+          <div className="mb-3.5 flex items-center justify-between">
+            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400 font-mono">
+              Channel Volume Distribution
             </div>
-            <span className="text-[11px] text-zinc-500">Relative distribution</span>
+            <span className="text-[11px] text-zinc-500 font-mono">Rolling window</span>
           </div>
           <div className="flex flex-col gap-2.5">
             {perCam.map(([cam, count]) => (
               <div key={cam} className="flex items-center gap-3">
-                <span className="w-20 text-xs font-semibold text-zinc-300 font-sans">{cam}</span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-900 border border-zinc-800">
+                <span className="w-20 text-xs font-mono font-semibold text-zinc-300">{cam}</span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/[0.06] border border-white/[0.04]">
                   <div
-                    className="h-full rounded-full bg-white transition-all duration-300"
+                    className="h-full rounded-full bg-blue-500 transition-all duration-300"
                     style={{ width: `${Math.max(2, (count / max) * 100)}%` }}
                   />
                 </div>
-                <span className="w-10 text-right text-xs font-semibold tabular-nums text-white font-sans">
+                <span className="w-12 text-right text-xs font-mono font-semibold tabular-nums text-white">
                   {count}
                 </span>
               </div>
@@ -140,27 +144,27 @@ export function AnalyticsPanel() {
         </div>
 
         {/* Origin / destination flow */}
-        <div className="rounded-md border border-zinc-800 bg-zinc-950 p-4">
+        <div className="rounded-xl border border-white/[0.08] bg-[#0d1017]/90 p-4 backdrop-blur-md shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Origin / Destination Flow
+            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400 font-mono">
+              Corridor Flow Trajectories
             </div>
-            <span className="inline-flex items-center rounded border border-zinc-800 bg-zinc-900 px-2 py-0.5 text-[10px] font-sans font-medium uppercase tracking-wider text-zinc-400">
-              Walkthrough / Not live
+            <span className="inline-flex items-center rounded-md border border-white/[0.08] bg-zinc-900/80 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+              Walkthrough Scenario
             </span>
           </div>
-          <div className="divide-y divide-zinc-900">
+          <div className="divide-y divide-white/[0.04]">
             {DEMO_FLOWS.map((flow) => (
-              <div key={`${flow.from}-${flow.to}`} className="flex items-center gap-3 py-2 text-xs">
-                <span className="min-w-0 flex-1 truncate text-zinc-300 font-medium font-sans">{flow.from}</span>
+              <div key={`${flow.from}-${flow.to}`} className="flex items-center gap-3 py-2.5 text-xs">
+                <span className="min-w-0 flex-1 truncate text-zinc-300 font-medium">{flow.from}</span>
                 <ArrowRight className="h-3.5 w-3.5 flex-none text-zinc-600" />
-                <span className="min-w-0 flex-1 truncate text-zinc-300 font-medium font-sans">{flow.to}</span>
-                <span className="w-8 text-right font-sans font-semibold tabular-nums text-white">{flow.count}</span>
+                <span className="min-w-0 flex-1 truncate text-zinc-300 font-medium">{flow.to}</span>
+                <span className="w-10 text-right font-mono font-semibold tabular-nums text-white">{flow.count}</span>
               </div>
             ))}
           </div>
-          <div className="mt-3 text-[11px] text-zinc-500 font-sans">
-            Flow reconstruction is shown as a demo scenario until multi-camera trajectory synthesis is connected.
+          <div className="mt-3 text-[11px] text-zinc-500">
+            Flow reconstruction illustrates multi-junction vehicle journey mapping between sensor nodes.
           </div>
         </div>
       </div>

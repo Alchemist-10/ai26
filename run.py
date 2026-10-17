@@ -38,7 +38,7 @@ def main():
     subprocess.run(["uv", "sync", "--frozen"], cwd=ROOT / "backend", check=True)
     subprocess.run(["npm", "ci"], cwd=ROOT / "frontend", check=True)
     PROCS.append(subprocess.Popen(
-        ["uv", "run", "--frozen", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", backend_port],
+        ["uv", "run", "--frozen", "uvicorn", "main:app", "--reload", "--host", "127.0.0.1", "--port", backend_port],
         cwd=ROOT / "backend",
     ))
     PROCS.append(subprocess.Popen(["npm", "run", "dev"], cwd=ROOT / "frontend"))

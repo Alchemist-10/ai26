@@ -50,26 +50,26 @@ export function NLQueryChat() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-3 font-sans text-white">
+    <div className="flex h-full flex-col gap-3 text-zinc-100 select-none">
       {/* Messages area */}
       <div className="flex-1 space-y-3 overflow-y-auto pr-1">
         {msgs.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             <div
-              className={`max-w-[85%] rounded-lg px-4 py-2.5 text-xs leading-relaxed ${
+              className={`max-w-[85%] rounded-xl px-4 py-3 text-xs leading-relaxed ${
                 m.role === "user"
-                  ? "bg-white text-black font-semibold shadow-sm"
-                  : "border border-zinc-800 bg-zinc-900/80 text-zinc-200"
+                  ? "bg-blue-600 text-white font-medium shadow-md shadow-blue-500/20"
+                  : "border border-white/[0.08] bg-[#11141e]/90 text-zinc-200 backdrop-blur-md"
               }`}
             >
               <div className="whitespace-pre-wrap">{m.text}</div>
               {m.sql && (
-                <div className="mt-2 overflow-x-auto rounded border border-zinc-800 bg-black/60 p-2 text-[11px] text-zinc-400 font-sans">
-                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                <div className="mt-2.5 overflow-x-auto rounded-lg border border-white/[0.08] bg-black/60 p-2.5 text-[11px] font-mono text-zinc-300">
+                  <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-blue-400">
                     <Database className="h-3 w-3" />
-                    <span>Generated SQL Query</span>
+                    <span>Deterministic SQL</span>
                   </div>
-                  <div className="text-zinc-300 font-sans">{m.sql}</div>
+                  <div className="text-zinc-300 font-mono text-[11px] leading-normal">{m.sql}</div>
                 </div>
               )}
             </div>
@@ -77,8 +77,8 @@ export function NLQueryChat() {
         ))}
         {busy && (
           <div className="flex justify-start">
-            <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/80 px-4 py-2.5 text-xs text-zinc-400 font-sans">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-400" />
+            <div className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-[#11141e]/90 px-4 py-3 text-xs text-zinc-400">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400" />
               <span>Querying grid index...</span>
             </div>
           </div>
@@ -87,13 +87,13 @@ export function NLQueryChat() {
       </div>
 
       {/* Preset Queries and Info */}
-      <div className="flex flex-col gap-2 pt-2 border-t border-zinc-900">
+      <div className="flex flex-col gap-2 pt-2.5 border-t border-white/[0.06]">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded border border-zinc-800 bg-zinc-900/80 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-zinc-400">
-            <Terminal className="h-3 w-3" />
-            Deterministic Query Engine / Not LLM
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-zinc-900/80 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+            <Terminal className="h-3 w-3 text-blue-400" />
+            Deterministic SQL Engine
           </span>
-          <span className="text-[11px] text-zinc-500">Quick inquiries:</span>
+          <span className="text-[11px] text-zinc-500 font-mono">Suggested Inquiries:</span>
         </div>
 
         <div className="flex flex-wrap gap-1.5">
@@ -103,7 +103,7 @@ export function NLQueryChat() {
               type="button"
               onClick={() => send(p)}
               disabled={busy}
-              className="cursor-pointer rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-400 font-sans transition-colors hover:border-zinc-600 hover:bg-zinc-850 hover:text-white disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-white/[0.08] bg-zinc-900/60 px-3 py-1 text-xs text-zinc-400 transition-colors hover:border-blue-500/40 hover:bg-zinc-800/80 hover:text-white disabled:opacity-50"
             >
               {p}
             </button>
@@ -112,23 +112,23 @@ export function NLQueryChat() {
       </div>
 
       {/* Input bar */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-1">
         <input
           id="nl-query-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder="Ask the grid (e.g., plates, junctions, congestion)..."
+          placeholder="Ask about license plates, camera channels, or corridor congestion..."
           disabled={busy}
-          className="flex-1 rounded-md border border-zinc-800 bg-zinc-900/70 px-3.5 py-2.5 text-xs font-sans text-white placeholder:text-zinc-600 outline-none transition-colors focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500"
+          className="flex-1 rounded-xl border border-white/[0.08] bg-zinc-900/90 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-500 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         />
         <button
           type="button"
           onClick={() => send(input)}
           disabled={busy || !input.trim()}
-          className="cursor-pointer inline-flex items-center gap-1.5 rounded-md bg-white px-4 py-2.5 text-xs font-semibold text-black transition-colors hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm font-sans"
+          className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-2.5 text-xs font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20"
         >
-          <span>Ask</span>
+          <span>Query</span>
           <CornerDownLeft className="h-3.5 w-3.5" />
         </button>
       </div>
