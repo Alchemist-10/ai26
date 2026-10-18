@@ -491,10 +491,10 @@ def prometheus_metrics():
     return Response(body,media_type='text/plain; version=0.0.4; charset=utf-8')
 
 @app.get('/api/stream/{camera_id}')
-def stream(camera_id:str,start:float|None=None,anchor:float|None=None):
+async def stream(request:Request,camera_id:str,start:float|None=None,anchor:float|None=None):
     check_camera(camera_id)
     if not processor.source_is_live(camera_id) and not camera_source(camera_id).is_file(): raise HTTPException(404,'Camera source is unavailable')
-    return StreamingResponse(mjpeg_generator(camera_id),media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(mjpeg_generator(camera_id,request=request),media_type='multipart/x-mixed-replace; boundary=frame')
 
 @app.get('/api/video/{camera_id}')
 def video(camera_id:str):

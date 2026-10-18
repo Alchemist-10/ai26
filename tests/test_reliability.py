@@ -620,6 +620,18 @@ class Reliability(unittest.TestCase):
                 await feed.aclose()
             asyncio.run(asyncio.wait_for(cancel_idle(),.5))
 
+    def test_stream_stops_when_viewer_disconnects(self):
+        p=processing.Processor(cameras=[{'id':'CAM-01','kind':'vehicle'}])
+        p.latest['CAM-01']=(self.now,b'jpeg')
+        class DisconnectedRequest:
+            async def is_disconnected(self): return True
+        with patch.object(stream,'processor',p):
+            async def consume():
+                feed=stream.mjpeg_generator('CAM-01',request=DisconnectedRequest())
+                with self.assertRaises(StopAsyncIteration): await anext(feed)
+                await feed.aclose()
+            asyncio.run(consume())
+
     def test_report_creation_rejects_missing_source_artifact(self):
         events.add_events([self.plate(artifacts=[{'sha256':'a'*64,'role':'plate-crop','size':30}])])
         response=self.client.post('/api/evidence/KL07AB1234')
