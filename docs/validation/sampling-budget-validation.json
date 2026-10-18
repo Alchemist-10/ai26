@@ -1,0 +1,595 @@
+{
+  "generated_at_utc": "2026-10-11T13:19:45.174363+00:00",
+  "scope": "Six bundled vehicle clips on the same desktop; uncontrolled background load and replay positions. No plate/identity accuracy or long-duration guarantee.",
+  "backend_tests": 182,
+  "new_contracts": 12,
+  "sampling_budget_fps": 2,
+  "before": {
+    "scope": "30-second read-only sample of existing main process; uncontrolled desktop load, not frame-aligned before/after experiment",
+    "duration_seconds": 30.188221972002793,
+    "completed_frames": {
+      "CAM-01": 7,
+      "CAM-02": 6,
+      "CAM-03": 6,
+      "CAM-04": 6,
+      "CAM-05": 6,
+      "CAM-06": 6,
+      "CAM-07": 0,
+      "CAM-08": 0,
+      "CAM-09": 0
+    },
+    "total_completed_fps": 1.225643565040518,
+    "health_request_median_ms": 5.071583000244573,
+    "sampling_budget_fps": 2.0,
+    "catalog": 9,
+    "available": 6
+  },
+  "after": {
+    "version": 1,
+    "scope": "Read-only local API/process observation under current desktop load; not a controlled accuracy or browser playback benchmark",
+    "conditions": {
+      "api": "http://127.0.0.1:8001",
+      "requested_seconds": 120.0,
+      "interval_seconds": 1,
+      "successful_counter_window_seconds": 119.011,
+      "python": "3.12.14",
+      "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+      "logical_cpus": 12,
+      "pid": 109865,
+      "process_status": "sampled",
+      "process_birth_ticks": 3058869
+    },
+    "sampling": {
+      "per_camera": {
+        "CAM-01": {
+          "frames": 36,
+          "attempts": 36,
+          "failed_attempts": 0,
+          "budget_overruns": 6,
+          "missing_source_checks": 0,
+          "retry_backoff_checks": 0
+        },
+        "CAM-02": {
+          "frames": 36,
+          "attempts": 36,
+          "failed_attempts": 0,
+          "budget_overruns": 13,
+          "missing_source_checks": 0,
+          "retry_backoff_checks": 0
+        },
+        "CAM-03": {
+          "frames": 36,
+          "attempts": 36,
+          "failed_attempts": 0,
+          "budget_overruns": 15,
+          "missing_source_checks": 0,
+          "retry_backoff_checks": 0
+        },
+        "CAM-04": {
+          "frames": 36,
+          "attempts": 36,
+          "failed_attempts": 0,
+          "budget_overruns": 12,
+          "missing_source_checks": 0,
+          "retry_backoff_checks": 0
+        },
+        "CAM-05": {
+          "frames": 36,
+          "attempts": 36,
+          "failed_attempts": 0,
+          "budget_overruns": 16,
+          "missing_source_checks": 0,
+          "retry_backoff_checks": 0
+        },
+        "CAM-06": {
+          "frames": 36,
+          "attempts": 36,
+          "failed_attempts": 0,
+          "budget_overruns": 12,
+          "missing_source_checks": 0,
+          "retry_backoff_checks": 0
+        },
+        "CAM-07": {
+          "frames": 0,
+          "attempts": 0,
+          "failed_attempts": 0,
+          "budget_overruns": 0,
+          "missing_source_checks": 36,
+          "retry_backoff_checks": 0
+        },
+        "CAM-08": {
+          "frames": 0,
+          "attempts": 0,
+          "failed_attempts": 0,
+          "budget_overruns": 0,
+          "missing_source_checks": 36,
+          "retry_backoff_checks": 0
+        },
+        "CAM-09": {
+          "frames": 0,
+          "attempts": 0,
+          "failed_attempts": 0,
+          "budget_overruns": 0,
+          "missing_source_checks": 36,
+          "retry_backoff_checks": 0
+        }
+      },
+      "unverified_cameras": [],
+      "total_completed_frames": 216,
+      "total_completed_fps": 1.815,
+      "counter_window_valid": true,
+      "health_failures": 0
+    },
+    "health_latency_ms": {
+      "samples": 119,
+      "median": 9.093,
+      "p95": 13.954,
+      "max": 25.477
+    },
+    "cpu_percent": {
+      "samples": 119,
+      "median": 124.295,
+      "p95": 147.664,
+      "max": 167.017
+    },
+    "rss_mib": {
+      "samples": 119,
+      "median": 526.102,
+      "p95": 534.406,
+      "max": 534.723
+    },
+    "limitations": [
+      "Timing windows contain at most 64 successful attempts per camera; failures have separate counters and last-attempt timing.",
+      "First-success timing is per camera and can include source/model initialization; it is not a controlled cold-start benchmark.",
+      "Budget overruns mean a processing attempt exceeded its scheduled interval; they are not source frames or browser playback drops.",
+      "Sparse replay sampling intentionally skips source frames. VFR/capture drops, INP/LCP/CLS and real plate accuracy are unmeasured.",
+      "CPU percent uses process CPU seconds and can exceed 100%; memory is RSS, not peak resident usage. API restart can invalidate counters."
+    ]
+  },
+  "observed_completed_fps_increase_percent": 48.1,
+  "camera_timings": {
+    "CAM-01": {
+      "window_capacity": 64,
+      "successful_samples": 64,
+      "first_success": {
+        "total_ms": 7299.626,
+        "phases_ms": {
+          "source": 59.346,
+          "decode": 300.051,
+          "inference": 6920.841,
+          "artifacts": 0.074,
+          "persistence": 1.776,
+          "jpeg": 17.528
+        }
+      },
+      "total": {
+        "p50_ms": 391.8,
+        "p95_ms": 608.469,
+        "max_ms": 737.881
+      },
+      "phases": {
+        "source": {
+          "p50_ms": 0.173,
+          "p95_ms": 3.722,
+          "max_ms": 14.42
+        },
+        "decode": {
+          "p50_ms": 214.584,
+          "p95_ms": 456.62,
+          "max_ms": 553.091
+        },
+        "inference": {
+          "p50_ms": 146.725,
+          "p95_ms": 204.815,
+          "max_ms": 227.222
+        },
+        "artifacts": {
+          "p50_ms": 0.025,
+          "p95_ms": 0.044,
+          "max_ms": 21.959
+        },
+        "persistence": {
+          "p50_ms": 0.278,
+          "p95_ms": 0.394,
+          "max_ms": 23.708
+        },
+        "jpeg": {
+          "p50_ms": 8.877,
+          "p95_ms": 13.565,
+          "max_ms": 15.308
+        }
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    },
+    "CAM-02": {
+      "window_capacity": 64,
+      "successful_samples": 64,
+      "first_success": {
+        "total_ms": 509.395,
+        "phases_ms": {
+          "source": 69.596,
+          "decode": 272.708,
+          "inference": 157.893,
+          "artifacts": 0.014,
+          "persistence": 0.208,
+          "jpeg": 8.97
+        }
+      },
+      "total": {
+        "p50_ms": 428.275,
+        "p95_ms": 660.613,
+        "max_ms": 767.688
+      },
+      "phases": {
+        "source": {
+          "p50_ms": 0.359,
+          "p95_ms": 13.53,
+          "max_ms": 14.09
+        },
+        "decode": {
+          "p50_ms": 225.555,
+          "p95_ms": 451.105,
+          "max_ms": 561.826
+        },
+        "inference": {
+          "p50_ms": 150.645,
+          "p95_ms": 231.244,
+          "max_ms": 318.357
+        },
+        "artifacts": {
+          "p50_ms": 0.028,
+          "p95_ms": 24.512,
+          "max_ms": 26.939
+        },
+        "persistence": {
+          "p50_ms": 0.292,
+          "p95_ms": 33.422,
+          "max_ms": 44.24
+        },
+        "jpeg": {
+          "p50_ms": 9.771,
+          "p95_ms": 17.567,
+          "max_ms": 23.456
+        }
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    },
+    "CAM-03": {
+      "window_capacity": 64,
+      "successful_samples": 64,
+      "first_success": {
+        "total_ms": 311.106,
+        "phases_ms": {
+          "source": 57.059,
+          "decode": 130.849,
+          "inference": 115.477,
+          "artifacts": 0.012,
+          "persistence": 0.219,
+          "jpeg": 7.486
+        }
+      },
+      "total": {
+        "p50_ms": 465.965,
+        "p95_ms": 859.257,
+        "max_ms": 957.708
+      },
+      "phases": {
+        "source": {
+          "p50_ms": 0.388,
+          "p95_ms": 13.847,
+          "max_ms": 15.57
+        },
+        "decode": {
+          "p50_ms": 273.667,
+          "p95_ms": 623.539,
+          "max_ms": 796.101
+        },
+        "inference": {
+          "p50_ms": 153.952,
+          "p95_ms": 277.952,
+          "max_ms": 326.449
+        },
+        "artifacts": {
+          "p50_ms": 0.029,
+          "p95_ms": 22.48,
+          "max_ms": 28.182
+        },
+        "persistence": {
+          "p50_ms": 0.296,
+          "p95_ms": 34.065,
+          "max_ms": 80.3
+        },
+        "jpeg": {
+          "p50_ms": 10.253,
+          "p95_ms": 16.339,
+          "max_ms": 20.5
+        }
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    },
+    "CAM-04": {
+      "window_capacity": 64,
+      "successful_samples": 64,
+      "first_success": {
+        "total_ms": 504.075,
+        "phases_ms": {
+          "source": 68.002,
+          "decode": 299.404,
+          "inference": 128.318,
+          "artifacts": 0.017,
+          "persistence": 0.228,
+          "jpeg": 8.101
+        }
+      },
+      "total": {
+        "p50_ms": 414.667,
+        "p95_ms": 684.423,
+        "max_ms": 928.629
+      },
+      "phases": {
+        "source": {
+          "p50_ms": 0.387,
+          "p95_ms": 13.844,
+          "max_ms": 14.343
+        },
+        "decode": {
+          "p50_ms": 233.07,
+          "p95_ms": 460.582,
+          "max_ms": 510.59
+        },
+        "inference": {
+          "p50_ms": 152.82,
+          "p95_ms": 232.781,
+          "max_ms": 431.888
+        },
+        "artifacts": {
+          "p50_ms": 0.032,
+          "p95_ms": 22.875,
+          "max_ms": 31.402
+        },
+        "persistence": {
+          "p50_ms": 0.32,
+          "p95_ms": 37.453,
+          "max_ms": 57.109
+        },
+        "jpeg": {
+          "p50_ms": 9.979,
+          "p95_ms": 15.249,
+          "max_ms": 21.876
+        }
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    },
+    "CAM-05": {
+      "window_capacity": 64,
+      "successful_samples": 64,
+      "first_success": {
+        "total_ms": 435.683,
+        "phases_ms": {
+          "source": 65.382,
+          "decode": 124.987,
+          "inference": 194.49,
+          "artifacts": 19.343,
+          "persistence": 23.832,
+          "jpeg": 7.644
+        }
+      },
+      "total": {
+        "p50_ms": 454.234,
+        "p95_ms": 859.094,
+        "max_ms": 1105.129
+      },
+      "phases": {
+        "source": {
+          "p50_ms": 0.393,
+          "p95_ms": 13.396,
+          "max_ms": 16.12
+        },
+        "decode": {
+          "p50_ms": 251.532,
+          "p95_ms": 532.337,
+          "max_ms": 581.281
+        },
+        "inference": {
+          "p50_ms": 156.882,
+          "p95_ms": 287.194,
+          "max_ms": 444.842
+        },
+        "artifacts": {
+          "p50_ms": 21.021,
+          "p95_ms": 26.408,
+          "max_ms": 31.223
+        },
+        "persistence": {
+          "p50_ms": 24.68,
+          "p95_ms": 48.318,
+          "max_ms": 290.78
+        },
+        "jpeg": {
+          "p50_ms": 10.173,
+          "p95_ms": 16.626,
+          "max_ms": 23.182
+        }
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    },
+    "CAM-06": {
+      "window_capacity": 64,
+      "successful_samples": 64,
+      "first_success": {
+        "total_ms": 491.431,
+        "phases_ms": {
+          "source": 48.024,
+          "decode": 272.918,
+          "inference": 161.168,
+          "artifacts": 0.02,
+          "persistence": 0.241,
+          "jpeg": 9.054
+        }
+      },
+      "total": {
+        "p50_ms": 429.037,
+        "p95_ms": 669.425,
+        "max_ms": 867.334
+      },
+      "phases": {
+        "source": {
+          "p50_ms": 0.359,
+          "p95_ms": 0.568,
+          "max_ms": 14.735
+        },
+        "decode": {
+          "p50_ms": 241.849,
+          "p95_ms": 484.93,
+          "max_ms": 635.186
+        },
+        "inference": {
+          "p50_ms": 152.74,
+          "p95_ms": 212.5,
+          "max_ms": 300.26
+        },
+        "artifacts": {
+          "p50_ms": 0.025,
+          "p95_ms": 22.217,
+          "max_ms": 25.777
+        },
+        "persistence": {
+          "p50_ms": 0.249,
+          "p95_ms": 24.162,
+          "max_ms": 36.185
+        },
+        "jpeg": {
+          "p50_ms": 8.73,
+          "p95_ms": 12.812,
+          "max_ms": 13.996
+        }
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    },
+    "CAM-07": {
+      "window_capacity": 64,
+      "successful_samples": 0,
+      "first_success": null,
+      "total": null,
+      "phases": {
+        "source": null,
+        "decode": null,
+        "inference": null,
+        "artifacts": null,
+        "persistence": null,
+        "jpeg": null
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    },
+    "CAM-08": {
+      "window_capacity": 64,
+      "successful_samples": 0,
+      "first_success": null,
+      "total": null,
+      "phases": {
+        "source": null,
+        "decode": null,
+        "inference": null,
+        "artifacts": null,
+        "persistence": null,
+        "jpeg": null
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    },
+    "CAM-09": {
+      "window_capacity": 64,
+      "successful_samples": 0,
+      "first_success": null,
+      "total": null,
+      "phases": {
+        "source": null,
+        "decode": null,
+        "inference": null,
+        "artifacts": null,
+        "persistence": null,
+        "jpeg": null
+      },
+      "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+    }
+  },
+  "main_browser": {
+    "documentWidth": 798,
+    "height": 812,
+    "previews": [
+      {
+        "alt": "CAM-01 sampled preview",
+        "complete": true,
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-02 sampled preview",
+        "complete": true,
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-03 sampled preview",
+        "complete": true,
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-04 sampled preview",
+        "complete": true,
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-05 sampled preview",
+        "complete": true,
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-06 sampled preview",
+        "complete": true,
+        "height": 180,
+        "width": 320
+      }
+    ],
+    "videos": [
+      {
+        "currentTime": 14.888498,
+        "ended": false,
+        "paused": false,
+        "qualityCounterAvailable": false,
+        "readyState": 4
+      }
+    ],
+    "visibility": "visible",
+    "width": 798
+  },
+  "playback_frame_drops": "Unmeasured: the browser read-only scope did not expose getVideoPlaybackQuality counters.",
+  "restart_persistence": {
+    "retained_sample_ids": 10,
+    "sample_ids_checked": 10,
+    "count_after_restart": 23271
+  },
+  "decoded_snapshots": 6,
+  "new_main_reads_checked": 10,
+  "current_pipeline_components_sha256": {
+    "artifacts.py": "d0bb25a1a135686966f28277f0a9fc8340f0fa63fc788ebede4397d54322e2b6",
+    "cameras.py": "c8dafff5c335b610bec503fb6a2cfe3c35c2c3ecc11a057308c247498a8a50e3",
+    "fusion.py": "c78d5424f3776e6d8370ff67e6032405294fb7c83a2903dc67f49d4dc803ed00",
+    "inference.py": "c054b048514e7e5903c8aa5a32ef10fecea4fc7a197524bb7f25c0d79f837559",
+    "model_provenance.py": "364da960de82c2b5de1e2e14103985a2d6be30c178c4c8508ad4c5227ef1ef8e",
+    "plate_format.py": "8f2508bae81c098eaee7598d4227da698b7973014bbe9b01a4e932ae4369eb90",
+    "processing.py": "c3dc4e42fae9b5d3c96e0735587df1531ac109cf64479e8258cc3c26fa2baed7",
+    "source_catalog.py": "e2f385f448b9b6c87e3b953d58a71324efd012144243db9a6eaa19291398ca17",
+    "tracking.py": "0e1566b5969df0da31ee6073dc61720366c64eda551491eb1861dad23c1ea9f1"
+  },
+  "godseye_unchanged": true,
+  "process_measurement_correction": "First profile accidentally sampled uv launcher wrapper CPU/RSS. That run is excluded here; final profile targets verified Python uvicorn process.",
+  "limits": [
+    "30-second before vs requested 120-second after; uncontrolled load, not same replay frames.",
+    "First-success timing includes shared initialization only where it occurred, not independent cold runs.",
+    "Budget overruns count slow sampled attempts, not capture or playback frame drops.",
+    "More completed work may increase CPU/storage usage; UI INP/LCP/CLS and low-end devices remain unmeasured."
+  ]
+}

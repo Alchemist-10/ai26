@@ -1,0 +1,91 @@
+{
+  "scope": "Synthetic isolated color clips; processing disabled; no accuracy or real-footage claim",
+  "initial_browser_upload_job": "18748d9390144c1e9ab09c7009205f23",
+  "first_release": "dac2687eb77c40768b555c977b03f93c",
+  "original_bytes_preserved": true,
+  "playback_codec": "h264",
+  "playback_pixel_format": "yuv420p",
+  "prepare_did_not_select": true,
+  "selection_rejected_processor_ownership": true,
+  "offline_selection_and_restart_activated_both_roles": true,
+  "receipt_recovered_after_api_restart": true,
+  "backend_tests": 157,
+  "second_browser_job": "53c6ca42523d4a1a9a437bcb91790318",
+  "second_prepared_release": "0284a2faa449499a8330527f006ab862",
+  "replacement_kept_running_and_selected_original": true,
+  "invalid_video_failed_and_retry_succeeded": true,
+  "real_worker_cancellation_and_private_stage_cleanup": true,
+  "fixture_database_counts": {
+    "observations": 0,
+    "audit": 0,
+    "camera_catalog": 9
+  },
+  "idle_seconds": 6,
+  "additional_preparation_or_source_requests": 0,
+  "browser_source_refresh_preserved_upload_draft": true,
+  "browser_502_retry_recovered": true,
+  "browser_reload_restored_job_id": true,
+  "visual_review": "ship at source upload extension scope",
+  "viewport_validation": {
+    "desktop": [
+      1280,
+      720
+    ],
+    "mobile_requested": [
+      390,
+      844
+    ],
+    "mobile_capture": [
+      390,
+      843
+    ],
+    "user": [
+      786,
+      758
+    ],
+    "horizontal_overflow": false,
+    "text_fields_px": 16,
+    "videos": 0
+  },
+  "frontend_build": {
+    "settings_raw_kb": 30.04,
+    "settings_gzip_kb": 8.01,
+    "main_raw_kb": 313.36,
+    "main_gzip_kb": 96.41,
+    "lint_warnings": "Two existing Fast Refresh warnings"
+  },
+  "new_backend_contracts": 17,
+  "fixture_services_stopped": true,
+  "fixture_storage_removed": true,
+  "screenshots": [
+    "AI26_UPLOAD_DESKTOP_READY.png",
+    "AI26_UPLOAD_DESKTOP_COMMAND.png",
+    "AI26_UPLOAD_DESKTOP_FAILED.png",
+    "AI26_UPLOAD_MOBILE_FORM.png",
+    "AI26_UPLOAD_MOBILE_READY.png",
+    "AI26_UPLOAD_MOBILE_FAILED.png",
+    "AI26_UPLOAD_USER_786.png"
+  ],
+  "generated_at_utc": "2026-10-11T08:18:24Z",
+  "main_catalog_unchanged": true,
+  "new_main_reads_checked": 10,
+  "current_pipeline_component_count": 9,
+  "current_pipeline_components_sha256": {
+    "inference.py": "c054b048514e7e5903c8aa5a32ef10fecea4fc7a197524bb7f25c0d79f837559",
+    "model_provenance.py": "364da960de82c2b5de1e2e14103985a2d6be30c178c4c8508ad4c5227ef1ef8e",
+    "tracking.py": "0e1566b5969df0da31ee6073dc61720366c64eda551491eb1861dad23c1ea9f1",
+    "fusion.py": "c78d5424f3776e6d8370ff67e6032405294fb7c83a2903dc67f49d4dc803ed00",
+    "plate_format.py": "8f2508bae81c098eaee7598d4227da698b7973014bbe9b01a4e932ae4369eb90",
+    "processing.py": "0aeb8fdb06909a16ce34f8206a78a53b614cc44bb869f262521aaad8a32019bd",
+    "artifacts.py": "d0bb25a1a135686966f28277f0a9fc8340f0fa63fc788ebede4397d54322e2b6",
+    "cameras.py": "c8dafff5c335b610bec503fb6a2cfe3c35c2c3ecc11a057308c247498a8a50e3",
+    "source_catalog.py": "e2f385f448b9b6c87e3b953d58a71324efd012144243db9a6eaa19291398ca17"
+  },
+  "main_stored_plate_reads": 0,
+  "restart_persistence": {
+    "retained_sample_ids": 10,
+    "sample_ids_checked": 10,
+    "count_after_restart": 20533
+  },
+  "main_decoded_snapshots": 6
+}

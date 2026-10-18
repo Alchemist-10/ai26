@@ -1,0 +1,11 @@
+[Unit]
+Description=Create and sign an AI26 audit-chain checkpoint
+After=docker.service remote-fs.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/ai26
+EnvironmentFile=/etc/ai26/audit-checkpoint.env
+ExecStart=/opt/ai26/scripts/checkpoint-audit.sh
+TimeoutStartSec=5min

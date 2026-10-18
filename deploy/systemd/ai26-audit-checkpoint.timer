@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily signed AI26 audit checkpoint
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+RandomizedDelaySec=10m
+Persistent=true
+Unit=ai26-audit-checkpoint.service
+
+[Install]
+WantedBy=timers.target

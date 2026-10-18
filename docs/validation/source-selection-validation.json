@@ -1,0 +1,113 @@
+{
+  "scope": "Generated color clips in disposable processing-disabled API; no detection/accuracy or sustained-latency measurement",
+  "backend_tests": 170,
+  "new_contracts": 13,
+  "concurrent_return_to_same_release_changed_token": true,
+  "browser_selected_ready_release": true,
+  "browser_stale_409_preserved_entries_and_refresh_retry_succeeded": true,
+  "pending_selection_kept_original_and_playback_cached": true,
+  "second_release": "3f2d618b6eba4ab380e3dbb59ebd01a7",
+  "first_release": "c61496b0e25e46cc878140944438fc5a",
+  "restart_activated_releases": [
+    "3f2d618b6eba4ab380e3dbb59ebd01a7",
+    "c61496b0e25e46cc878140944438fc5a"
+  ],
+  "rollback_stale_token_fixture": true,
+  "browser_rollback_selected_retained_parent": true,
+  "pending_rollback_kept_both_running_roles": true,
+  "committed_selection_records": 6,
+  "fixture_database_counts": {
+    "observations": 0,
+    "audit": 0,
+    "camera_catalog": 9
+  },
+  "old_release_files_retained": true,
+  "host_restart_required": true,
+  "prepared_blue_bytes_preserved": true,
+  "idle_source_requests": {
+    "seconds": 6,
+    "added_requests": 0,
+    "scope": "Source selection/preparation/status endpoints in disposable Settings tab; excludes other catalog/health calls"
+  },
+  "fixture_services_stopped": true,
+  "fixture_data_removed": true,
+  "fixture_tab_closed": true,
+  "viewport_reset": true,
+  "viewport_metrics": [
+    {
+      "documentWidth": 1280,
+      "height": 720,
+      "textInputs": [],
+      "videoCount": 0,
+      "width": 1280
+    },
+    {
+      "documentWidth": 390,
+      "height": 844,
+      "textInputs": [],
+      "videoCount": 0,
+      "width": 390
+    },
+    {
+      "documentWidth": 1014,
+      "height": 758,
+      "textInputs": [],
+      "videoCount": 0,
+      "width": 1014
+    }
+  ],
+  "main_catalog_unchanged": true,
+  "main_managed_selection_unchanged": true,
+  "main_sources": {
+    "available": 6,
+    "catalog": 9,
+    "missing_plate_inputs": [
+      "CAM-07",
+      "CAM-08",
+      "CAM-09"
+    ]
+  },
+  "main_source_selection_route_registered": true,
+  "frontend_lint": {
+    "errors": 0,
+    "existing_fast_refresh_warnings": 2
+  },
+  "frontend_build": {
+    "settings_raw_kb": 36.18,
+    "settings_gzip_kb": 9.21,
+    "main_raw_kb": 313.57,
+    "main_gzip_kb": 96.45
+  },
+  "visual_review": {
+    "disposition": "ship",
+    "scope": "Source selection/retained-parent rollback addition",
+    "material_ui_fixes": 0,
+    "reviewer_retry": "First agent failed at usage limit; fresh retry reviewed all seven captures",
+    "detector_findings": [],
+    "capture_dimensions": {
+      "desktop": "1280x720",
+      "mobile_metrics": "390x844",
+      "mobile_saved": "390x843",
+      "user": "1014x758"
+    }
+  },
+  "viewport_measurement_limit": "Viewport measurements check document width and video absence; textInputs query matched no explicitly typed inputs. 16px fields confirmed from scoped source and review captures.",
+  "workflow_limitations": [
+    "No real plate/OCR/identity accuracy",
+    "No sustained latency measurement",
+    "Selection remains inactive until host restart",
+    "Local reviewer/reason are unauthenticated claims"
+  ],
+  "main_browser_check": {
+    "after_clean_restart": true,
+    "camera": "CAM-07",
+    "status": "Source file missing",
+    "upload_form_loaded": true,
+    "width": 798,
+    "height": 812,
+    "document_width": 798,
+    "video_count": 0,
+    "computed_text_input_px": 16
+  },
+  "design_record_updated": true
+}

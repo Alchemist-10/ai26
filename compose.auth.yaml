@@ -1,0 +1,9 @@
+services:
+  backend:
+    environment:
+      AI26_AUTH_ENABLED: "1"
+      AI26_AUTH_COOKIE_SECURE: ${AI26_AUTH_COOKIE_SECURE:-0}
+      AI26_ADMIN_USERNAME: ${AI26_ADMIN_USERNAME:-admin}
+      AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE: /run/secrets/ai26-admin-bootstrap-password
+    volumes:
+      - ${AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE:?Set AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE to a protected password file}:/run/secrets/ai26-admin-bootstrap-password:ro

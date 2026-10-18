@@ -1,0 +1,206 @@
+"""Read-only source inspection. No video hashes, decoders, SQL or live activation."""
+import json
+import math
+import re
+import time
+from pathlib import Path
+
+import cameras
+from source_catalog import SOURCE_ROOT, MAX_MANIFEST_BYTES, load_source
+from source_selection import selection_token, same_release_manifest
+from source_clock import validate_recording_clock
+
+HISTORY_LIMIT = 10
+SELECTION_HISTORY_LIMIT = 20
+MAX_SELECTION_RECORD_BYTES = 16 * 1024
+
+
+def text(value, limit=1000):
+    return value[:limit] if isinstance(value, str) else None
+
+
+def number(value):
+    try:
+        return value if type(value) in (int, float) and math.isfinite(value) and value >= 0 else None
+    except OverflowError:
+        return None
+
+
+def release_summary(manifest):
+    """Project local metadata rather than exposing arbitrary manifest fields/paths."""
+    result = {key: text(manifest.get(key)) for key in ('release', 'reviewer', 'reason', 'time_basis', 'previous_release')}
+    result['uploader_authenticated'] = manifest.get('uploader_authenticated') is True
+    result['authenticated_uploader'] = text(manifest.get('authenticated_uploader'), 100) if result['uploader_authenticated'] else None
+    result['imported_at'] = number(manifest.get('imported_at'))
+    provenance = manifest.get('source_provenance')
+    if not isinstance(provenance, dict): provenance = {}
+    status = provenance.get('status')
+    if status not in {'operator_claimed', 'not_provided'}: status = 'not_provided'
+    result['source_provenance'] = {
+        'status': status,
+        'verified': False,
+        'archive_creator': text(provenance.get('archive_creator'), 200),
+        'export_system': text(provenance.get('export_system'), 200),
+        'external_camera_id': text(provenance.get('external_camera_id'), 100),
+        'recording_timezone': text(provenance.get('recording_timezone'), 64) or 'unknown',
+        'authorization_basis': text(provenance.get('authorization_basis'), 500),
+        'retention_note': text(provenance.get('retention_note'), 500),
+    }
+    clock = validate_recording_clock(manifest.get('recording_clock'))
+    result['recording_clock'] = ({'start_utc': clock['start_utc'],
+                                  'uncertainty_seconds': clock['uncertainty_seconds'],
+                                  'provenance': clock['provenance'],
+                                  'status': clock['status']} if clock else None)
+    for role in ('original', 'playback'):
+        info = manifest.get(role, {})
+        video = info.get('video', {}) if isinstance(info, dict) else {}
+        if not isinstance(video, dict): video = {}
+        result[role] = {
+            'bytes': number(info.get('bytes')) if isinstance(info, dict) else None,
+            'sha256': text(info.get('sha256'), 64) if isinstance(info, dict) else None,
+            'video': {key: number(video.get(key)) for key in ('width', 'height', 'fps', 'duration_seconds', 'frame_count')},
+        }
+    return result
+
+
+def file_summary(path, expected_bytes=None):
+    path = Path(path)
+    try:
+        size = path.stat().st_size if path.is_file() else None
+    except OSError:
+        size = None
+    return {'filename': path.name, 'available': size is not None, 'bytes': size,
+            'size_matches_import': None if expected_bytes is None else size == expected_bytes}
+
+
+def recent_releases(camera_id, selected, root):
+    """Follow at most ten parent manifests; do not scan the source directory."""
+    releases, seen, error = [], set(), None
+    manifest = selected['manifest'] if selected else None
+    base = (Path(root).resolve() / camera_id / 'releases').resolve()
+    if not base.is_relative_to(Path(root).resolve()):
+        return {'releases': [], 'more': False, 'error': 'Import history directory is outside the managed source root.'}
+    while manifest and len(releases) < HISTORY_LIMIT:
+        release = manifest.get('release')
+        if not isinstance(release, str) or not re.fullmatch(r'[0-9a-f]{32}', release) or release in seen:
+            error = 'Import history contains an invalid or repeated release.'; break
+        seen.add(release); releases.append(release_summary(manifest))
+        previous = manifest.get('previous_release')
+        if previous is None: manifest = None; break
+        if not isinstance(previous, str) or not re.fullmatch(r'[0-9a-f]{32}', previous):
+            error = 'An earlier import reference is invalid.'; manifest = None; break
+        if len(releases) == HISTORY_LIMIT: break
+        path = (base / previous / 'manifest.json').resolve()
+        try:
+            if not path.is_relative_to(base): raise ValueError('Outside source root')
+            with path.open('rb') as stream:
+                raw = stream.read(MAX_MANIFEST_BYTES + 1)
+            if len(raw) > MAX_MANIFEST_BYTES: raise ValueError('Manifest too large')
+            manifest = json.loads(raw)
+            if not isinstance(manifest, dict) or manifest.get('camera_id') != camera_id or manifest.get('release') != previous or type(manifest.get('version')) is not int or manifest['version'] != 1:
+                raise ValueError('Wrong release identity')
+        except (OSError, ValueError, TypeError):
+            error = 'An earlier import manifest is unavailable or invalid.'; manifest = None
+    return {'releases': releases, 'more': bool(manifest and manifest.get('previous_release')) and not error,
+            'error': error}
+
+
+def selection_history(camera_id, selected, root):
+    """Project the bounded linked selection journal without scanning directories."""
+    entries, seen, error = [], set(), None
+    manifest = selected['manifest'] if selected else None
+    marker = manifest.get('source_selection') if isinstance(manifest, dict) else None
+    if not isinstance(marker, dict):
+        return {'entries': entries, 'more': False, 'error': None}
+    try:
+        root = Path(root).resolve()
+        folder = root / camera_id / 'selection_history'
+        folder = folder.resolve()
+        if not folder.is_relative_to(root):
+            raise ValueError('Selection history directory is outside the managed source root.')
+    except (OSError, ValueError, RuntimeError):
+        return {'entries': entries, 'more': False, 'error': 'Selection history directory is unavailable or unsafe.'}
+    expected = marker.get('id')
+    if not isinstance(expected, str) or not re.fullmatch(r'[a-f0-9]{32}', expected):
+        return {'entries': entries, 'more': False, 'error': 'Selection history contains an invalid record reference.'}
+    while expected is not None and len(entries) < SELECTION_HISTORY_LIMIT:
+        if not isinstance(expected, str) or not re.fullmatch(r'[a-f0-9]{32}', expected) or expected in seen:
+            error = 'Selection history contains an invalid or repeated record reference.'
+            break
+        seen.add(expected)
+        path = folder / f'{expected}.json'
+        try:
+            resolved = path.resolve()
+            if not resolved.is_relative_to(folder):
+                raise ValueError('Outside selection history directory')
+            with resolved.open('rb') as stream:
+                raw = stream.read(MAX_SELECTION_RECORD_BYTES + 1)
+            if len(raw) > MAX_SELECTION_RECORD_BYTES:
+                raise ValueError('Selection record too large')
+            record = json.loads(raw)
+            if (not isinstance(record, dict) or record.get('id') != expected or
+                    record.get('camera_id') != camera_id or type(record.get('version')) is not int or
+                    record.get('version') != 1 or record.get('intent') not in {'select', 'rollback'}):
+                raise ValueError('Wrong selection record identity')
+            if not entries and record != marker:
+                raise ValueError('Selected marker does not match its journal record')
+            prior = record.get('previous_selection')
+            if prior is not None and (not isinstance(prior, str) or not re.fullmatch(r'[a-f0-9]{32}', prior)):
+                raise ValueError('Invalid previous selection reference')
+            authenticated = record.get('reviewer_authenticated') is True
+            entries.append({
+                'id': expected,
+                'intent': record['intent'],
+                'reviewer': text(record.get('reviewer'), 100),
+                'reason': text(record.get('reason'), 1000),
+                'reviewer_authenticated': authenticated,
+                'authenticated_user': text(record.get('authenticated_user'), 100) if authenticated else None,
+                'from_release': text(record.get('from_release'), 32),
+                'to_release': text(record.get('to_release'), 32),
+                'selected_at': number(record.get('selected_at')),
+            })
+            expected = prior
+        except (OSError, ValueError, TypeError, RuntimeError, json.JSONDecodeError):
+            error = 'A linked selection record is unavailable or invalid.'
+            break
+    return {'entries': entries, 'more': expected is not None and not error, 'error': error}
+
+
+def source_status(camera_id, root=SOURCE_ROOT):
+    if camera_id not in cameras.CAMERAS_BY_ID: raise ValueError('Unknown camera')
+    binding = cameras.MANAGED_SOURCES.get(camera_id)
+    inference = cameras.camera_source(camera_id)
+    playback = cameras.camera_playback_source(camera_id)
+    configured = Path(cameras.CAMERAS_BY_ID[camera_id]['path'])
+    kind = 'managed' if binding else 'configured_original' if inference == configured and inference.is_file() else 'bundled_proxy' if inference.is_file() else 'missing'
+    active_manifest = binding['manifest'] if binding else None
+    active = {'kind': kind, 'release': release_summary(active_manifest) if active_manifest else None,
+              'inference': file_summary(inference, active_manifest['original']['bytes'] if binding else None),
+              'playback': file_summary(playback, active_manifest['playback']['bytes'] if binding else None)}
+    try:
+        pointer = Path(root) / camera_id / 'active.json'
+        if pointer.exists() and pointer.stat().st_size > MAX_MANIFEST_BYTES: raise ValueError('Manifest too large')
+        selected = load_source(camera_id, root, verify=False)
+        active_id = active_manifest['release'] if binding else None
+        selected_id = selected['manifest']['release'] if selected else None
+        # Same release with edited manifest fields is also a pending change.
+        status = 'current' if active_id == selected_id and (not binding or same_release_manifest(active_manifest,selected['manifest'])) else 'restart_required'
+        marker=selected['manifest'].get('source_selection') if selected else None
+        if not isinstance(marker,dict): marker=None
+        claim={key:text(marker.get(key)) for key in ('id','intent','reviewer','reason','from_release','to_release')} if marker else None
+        if claim:
+            claim['reviewer_authenticated']=marker.get('reviewer_authenticated') is True
+            claim['authenticated_user']=text(marker.get('authenticated_user')) if marker.get('reviewer_authenticated') is True else None
+        if claim: claim['selected_at']=number(marker.get('selected_at'))
+        selection = {'status': status, 'release': release_summary(selected['manifest']) if selected else None,
+                     'error': None,'token':selection_token(selected),'last_action':claim,
+                     'history': selection_history(camera_id, selected, root)}
+        history = recent_releases(camera_id, selected, root)
+    except (OSError, ValueError):
+        selection = {'status': 'invalid', 'release': None,'token':None,'last_action':None,
+                     'history': {'entries': [], 'more': False, 'error': 'Selection history could not be loaded.'},
+                     'error': 'The selected import is missing or invalid. Restore a retained manifest while the app is stopped before restarting.'}
+        history = {'releases': [], 'more': False, 'error': 'History could not be loaded from the selected import.'}
+    return {'camera_id': camera_id, 'checked_at': time.time(), 'time_basis': 'replay_clock',
+            'active': active, 'selection': selection, 'history': history,
+            'verification': 'File presence and size checked now. Imported hashes were verified at API startup; pending selections and history have not been rehashed.'}

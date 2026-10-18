@@ -1,0 +1,32 @@
+services:
+  backend:
+    environment:
+      AI26_METRICS_TOKEN_FILE: /run/secrets/ai26-metrics-token
+    group_add:
+      - "${AI26_METRICS_FILE_GID:?Set AI26_METRICS_FILE_GID to the token file's group ID}"
+    volumes:
+      - ${AI26_METRICS_TOKEN_FILE:?Set AI26_METRICS_TOKEN_FILE to the protected token file}:/run/secrets/ai26-metrics-token:ro
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    profiles: ["monitoring"]
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    group_add:
+      - "${AI26_METRICS_FILE_GID:?Set AI26_METRICS_FILE_GID to the token file's group ID}"
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${AI26_MONITORING_HOST:-127.0.0.1}:${AI26_PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/ai26-alerts.yml:/etc/prometheus/ai26-alerts.yml:ro
+      - ${AI26_METRICS_TOKEN_FILE:?Set AI26_METRICS_TOKEN_FILE to the protected token file}:/run/secrets/ai26-metrics-token:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:

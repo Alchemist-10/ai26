@@ -1,0 +1,69 @@
+{
+  "generated_at_utc": "2026-10-09T06:46:45Z",
+  "backend_tests_passed": 82,
+  "new_persistence_tests": 13,
+  "database_schema": 3,
+  "camera_catalog_size": 9,
+  "metadata_snapshots_checked": 20,
+  "six_available_sources_active": true,
+  "sampled_processor_states": {
+    "CAM-01": "processing",
+    "CAM-02": "processing",
+    "CAM-03": "processing",
+    "CAM-04": "processing",
+    "CAM-05": "processing",
+    "CAM-06": "processing",
+    "CAM-07": "unavailable",
+    "CAM-08": "unavailable",
+    "CAM-09": "unavailable"
+  },
+  "three_missing_sources_explicit": true,
+  "stored_live_plate_reads": 0,
+  "queried_link_rows": 0,
+  "unknown_plate_status": "not_found",
+  "read_only_api_timing": {
+    "/api/cameras": {
+      "samples": 20,
+      "median_ms": 3.033,
+      "max_ms": 3.769
+    },
+    "/api/journey-links": {
+      "samples": 20,
+      "median_ms": 1.747,
+      "max_ms": 2.659
+    },
+    "/api/trajectory/KA01AA1234": {
+      "samples": 20,
+      "median_ms": 1.345,
+      "max_ms": 1.665
+    }
+  },
+  "isolated_test_coverage": [
+    "schema 1/2 to 3 migrations and future-schema refusal",
+    "seed idempotency and catalog history across restart",
+    "stale edit rollback across connections",
+    "strict metadata validation including nonfinite numbers and prohibited source edits",
+    "current catalog and bounded named-query consistency",
+    "observation snapshot and retry immutability",
+    "accepted/rejected/candidate decisions with supporting event IDs",
+    "stable link IDs across polling and restart",
+    "new metadata/algorithm versions retain prior decisions",
+    "legacy fallback explicitly marked",
+    "immutable report after metadata change",
+    "link interval filters and cleanup preserving report snapshot"
+  ],
+  "limits": [
+    "Local unauthenticated reviewer claims; no external coordinate or clock verification.",
+    "Link history materializes queried routes; not an exhaustive graph of every camera passage.",
+    "Legacy observations use labeled current-catalog fallback; original metadata cannot be reconstructed.",
+    "Short localhost timings are not browser latency, Core Web Vitals or sustained throughput.",
+    "No CAM-07\u201309 footage is available, so live OCR/link accuracy is not measured."
+  ],
+  "restart_persistence": {
+    "retained_sample_ids": 10,
+    "sample_ids_checked": 10,
+    "count_after_restart": 4302
+  },
+  "restart_decoded_snapshots": 6,
+  "launcher_clean_shutdown": true
+}

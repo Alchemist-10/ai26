@@ -19,6 +19,7 @@ export interface MapLine {
   color: string
   width?: number
   opacity?: number
+  dashed?: boolean
 }
 
 const CENTER = { lat: 9.9736, lon: 76.3005 }
@@ -104,6 +105,7 @@ export function OsmMap({
               fill="none"
               stroke={line.color}
               strokeWidth={line.width ?? 7}
+              strokeDasharray={line.dashed ? "8 6" : undefined}
               strokeLinecap="round"
               strokeLinejoin="round"
               opacity={line.opacity ?? 0.85}

@@ -1,0 +1,6979 @@
+{
+  "version": 1,
+  "scope": "Read-only local API/process observation under current desktop load; not a controlled accuracy or browser playback benchmark",
+  "conditions": {
+    "api": "http://127.0.0.1:8002",
+    "requested_seconds": 300.0,
+    "interval_seconds": 2.0,
+    "successful_counter_window_seconds": 298.008,
+    "python": "3.12.14",
+    "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+    "logical_cpus": 12,
+    "pid": 17401,
+    "process_status": "sampled",
+    "process_birth_ticks": 136267
+  },
+  "sampling": {
+    "per_camera": {
+      "CAM-01": {
+        "frames": 92,
+        "attempts": 92,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-02": {
+        "frames": 93,
+        "attempts": 93,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-03": {
+        "frames": 93,
+        "attempts": 93,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-04": {
+        "frames": 93,
+        "attempts": 93,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-05": {
+        "frames": 92,
+        "attempts": 92,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-06": {
+        "frames": 92,
+        "attempts": 92,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-07": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 92,
+        "retry_backoff_checks": 0
+      },
+      "CAM-08": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 92,
+        "retry_backoff_checks": 0
+      },
+      "CAM-09": {
+        "frames": 0,
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 92,
+        "retry_backoff_checks": 0
+      }
+    },
+    "unverified_cameras": [],
+    "total_completed_frames": 555,
+    "total_completed_fps": 1.8624,
+    "counter_window_valid": true,
+    "health_failures": 0,
+    "observed_total_completed_fps": 1.8624,
+    "profile_quality": {
+      "steady_state_rate_valid": false,
+      "steady_state_rate_invalid_reasons": [
+        {
+          "kind": "long_sample_gap",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "gap_seconds": 20.749,
+          "expected_interval_seconds": 2.0
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-01",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.41,
+          "clock_discrepancy_seconds": 2647.661
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-02",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2665.43,
+          "clock_discrepancy_seconds": 2644.681
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-03",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.41,
+          "clock_discrepancy_seconds": 2647.661
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-04",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.41,
+          "clock_discrepancy_seconds": 2647.661
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-05",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.42,
+          "clock_discrepancy_seconds": 2647.671
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-06",
+          "from_elapsed_seconds": 186.036,
+          "to_elapsed_seconds": 206.785,
+          "sample_gap_seconds": 20.749,
+          "frame_age_delta_seconds": 2668.42,
+          "clock_discrepancy_seconds": 2647.671
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-03",
+          "from_elapsed_seconds": 206.785,
+          "to_elapsed_seconds": 208.039,
+          "sample_gap_seconds": 1.254,
+          "frame_age_delta_seconds": -2669.72,
+          "clock_discrepancy_seconds": -2670.974
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-04",
+          "from_elapsed_seconds": 206.785,
+          "to_elapsed_seconds": 208.039,
+          "sample_gap_seconds": 1.254,
+          "frame_age_delta_seconds": -2669.75,
+          "clock_discrepancy_seconds": -2671.004
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-05",
+          "from_elapsed_seconds": 206.785,
+          "to_elapsed_seconds": 208.039,
+          "sample_gap_seconds": 1.254,
+          "frame_age_delta_seconds": -2669.79,
+          "clock_discrepancy_seconds": -2671.044
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-01",
+          "from_elapsed_seconds": 208.039,
+          "to_elapsed_seconds": 210.038,
+          "sample_gap_seconds": 1.999,
+          "frame_age_delta_seconds": -2669.06,
+          "clock_discrepancy_seconds": -2671.059
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-02",
+          "from_elapsed_seconds": 208.039,
+          "to_elapsed_seconds": 210.038,
+          "sample_gap_seconds": 1.999,
+          "frame_age_delta_seconds": -2669.23,
+          "clock_discrepancy_seconds": -2671.229
+        },
+        {
+          "kind": "frame_age_clock_discontinuity",
+          "camera_id": "CAM-06",
+          "from_elapsed_seconds": 208.039,
+          "to_elapsed_seconds": 210.038,
+          "sample_gap_seconds": 1.999,
+          "frame_age_delta_seconds": -2669.0,
+          "clock_discrepancy_seconds": -2670.999
+        }
+      ],
+      "max_sample_gap_seconds": 20.749
+    },
+    "steady_state_total_completed_fps": null
+  },
+  "health_latency_ms": {
+    "samples": 140,
+    "median": 5.143,
+    "p95": 9.085,
+    "max": 35.977
+  },
+  "cpu_percent": {
+    "samples": 140,
+    "median": 46.996,
+    "p95": 82.447,
+    "max": 105.611
+  },
+  "rss_mib": {
+    "samples": 140,
+    "median": 532.481,
+    "p95": 540.363,
+    "max": 541.141
+  },
+  "first_health": {
+    "processing_enabled": true,
+    "cameras": [
+      {
+        "camera_id": "CAM-01",
+        "status": "processing",
+        "frames": 1,
+        "last_frame_at": 1792051139.023277,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 1,
+        "failed_attempts": 0,
+        "budget_overruns": 1,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "seek",
+        "decode_grabbed_frames": 1,
+        "decode_position_verified": true,
+        "latency_ms": 3714.2,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "5fe7e2ff1c994a289734871c2530186d:CAM-01:0:capture-1",
+        "frame_id": 116,
+        "source_time_seconds": 4.64,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 3872.001,
+          "phases_ms": {
+            "source": 26.613,
+            "decode": 131.158,
+            "inference": 3708.689,
+            "artifacts": 0.018,
+            "persistence": 0.261,
+            "jpeg": 5.258
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 0.13,
+        "processed_fps": 0.241,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 1,
+          "first_success": {
+            "total_ms": 3872.001,
+            "phases_ms": {
+              "source": 26.613,
+              "decode": 131.158,
+              "inference": 3708.689,
+              "artifacts": 0.018,
+              "persistence": 0.261,
+              "jpeg": 5.258
+            }
+          },
+          "total": {
+            "p50_ms": 3872.001,
+            "p95_ms": 3872.001,
+            "max_ms": 3872.001
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 26.613,
+              "p95_ms": 26.613,
+              "max_ms": 26.613
+            },
+            "decode": {
+              "p50_ms": 131.158,
+              "p95_ms": 131.158,
+              "max_ms": 131.158
+            },
+            "inference": {
+              "p50_ms": 3708.689,
+              "p95_ms": 3708.689,
+              "max_ms": 3708.689
+            },
+            "artifacts": {
+              "p50_ms": 0.018,
+              "p95_ms": 0.018,
+              "max_ms": 0.018
+            },
+            "persistence": {
+              "p50_ms": 0.261,
+              "p95_ms": 0.261,
+              "max_ms": 0.261
+            },
+            "jpeg": {
+              "p50_ms": 5.258,
+              "p95_ms": 5.258,
+              "max_ms": 5.258
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-02",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "seek",
+        "decode_grabbed_frames": 1,
+        "decode_position_verified": null,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-03",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-04",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-05",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-06",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-07",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-08",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-09",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 0,
+          "limit_bytes": 2147483648
+        }
+      }
+    ],
+    "inference_branches": {
+      "vehicle_detection_enabled": true,
+      "plate_recognition_enabled": false
+    },
+    "vehicle_model_rollout": {
+      "mode": "stable_only",
+      "stable": {
+        "checkpoint": "yolov8n.pt",
+        "expected_sha256": null,
+        "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+        "loaded": true
+      },
+      "rollback": "remove the canary environment settings and restart the API"
+    },
+    "database_schema": 13,
+    "scope": "single API process; run uvicorn with one worker"
+  },
+  "last_health": {
+    "processing_enabled": true,
+    "cameras": [
+      {
+        "camera_id": "CAM-01",
+        "status": "processing",
+        "frames": 93,
+        "last_frame_at": 1792054082.790508,
+        "last_event_at": 1792051315.7598395,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 93,
+        "failed_attempts": 0,
+        "budget_overruns": 1,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 75,
+        "decode_position_verified": true,
+        "latency_ms": 103.0,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "5fe7e2ff1c994a289734871c2530186d:CAM-01:82:capture-1",
+        "frame_id": 331,
+        "source_time_seconds": 13.24,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 173.228,
+          "phases_ms": {
+            "source": 0.18,
+            "decode": 70.029,
+            "inference": 95.887,
+            "artifacts": 0.027,
+            "persistence": 0.209,
+            "jpeg": 6.863
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 2.04,
+        "processed_fps": 0.308,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 64,
+          "first_success": {
+            "total_ms": 3872.001,
+            "phases_ms": {
+              "source": 26.613,
+              "decode": 131.158,
+              "inference": 3708.689,
+              "artifacts": 0.018,
+              "persistence": 0.261,
+              "jpeg": 5.258
+            }
+          },
+          "total": {
+            "p50_ms": 158.454,
+            "p95_ms": 246.444,
+            "max_ms": 298.639
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.075,
+              "p95_ms": 0.256,
+              "max_ms": 0.299
+            },
+            "decode": {
+              "p50_ms": 72.024,
+              "p95_ms": 133.634,
+              "max_ms": 167.016
+            },
+            "inference": {
+              "p50_ms": 68.564,
+              "p95_ms": 111.754,
+              "max_ms": 149.203
+            },
+            "artifacts": {
+              "p50_ms": 0.015,
+              "p95_ms": 0.03,
+              "max_ms": 5.051
+            },
+            "persistence": {
+              "p50_ms": 0.139,
+              "p95_ms": 0.266,
+              "max_ms": 6.311
+            },
+            "jpeg": {
+              "p50_ms": 4.453,
+              "p95_ms": 7.295,
+              "max_ms": 10.499
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-02",
+        "status": "processing",
+        "frames": 93,
+        "last_frame_at": 1792054083.2599459,
+        "last_event_at": 1792054062.2966766,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 93,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "seek",
+        "decode_grabbed_frames": 1,
+        "decode_position_verified": true,
+        "latency_ms": 99.3,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "5fe7e2ff1c994a289734871c2530186d:CAM-02:84:capture-1",
+        "frame_id": 8,
+        "source_time_seconds": 0.32,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 142.172,
+          "phases_ms": {
+            "source": 0.478,
+            "decode": 42.35,
+            "inference": 92.45,
+            "artifacts": 0.024,
+            "persistence": 0.215,
+            "jpeg": 6.651
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 1.57,
+        "processed_fps": 0.308,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 64,
+          "first_success": {
+            "total_ms": 320.053,
+            "phases_ms": {
+              "source": 28.752,
+              "decode": 128.748,
+              "inference": 152.0,
+              "artifacts": 4.956,
+              "persistence": 0.879,
+              "jpeg": 4.713
+            }
+          },
+          "total": {
+            "p50_ms": 155.703,
+            "p95_ms": 253.999,
+            "max_ms": 418.464
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.174,
+              "p95_ms": 0.43,
+              "max_ms": 0.584
+            },
+            "decode": {
+              "p50_ms": 66.43,
+              "p95_ms": 115.454,
+              "max_ms": 294.063
+            },
+            "inference": {
+              "p50_ms": 70.382,
+              "p95_ms": 116.319,
+              "max_ms": 248.192
+            },
+            "artifacts": {
+              "p50_ms": 0.017,
+              "p95_ms": 7.48,
+              "max_ms": 8.311
+            },
+            "persistence": {
+              "p50_ms": 0.198,
+              "p95_ms": 5.111,
+              "max_ms": 6.213
+            },
+            "jpeg": {
+              "p50_ms": 4.697,
+              "p95_ms": 7.698,
+              "max_ms": 11.656
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-03",
+        "status": "processing",
+        "frames": 93,
+        "last_frame_at": 1792054083.866806,
+        "last_event_at": 1792054083.866806,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 93,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 75,
+        "decode_position_verified": true,
+        "latency_ms": 115.9,
+        "artifact_capture_ms": 7.9,
+        "artifact_capture": {
+          "image_attempts": 2,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "5fe7e2ff1c994a289734871c2530186d:CAM-03:82:capture-1",
+        "frame_id": 335,
+        "source_time_seconds": 13.4,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 263.298,
+          "phases_ms": {
+            "source": 0.265,
+            "decode": 147.154,
+            "inference": 94.473,
+            "artifacts": 7.888,
+            "persistence": 5.787,
+            "jpeg": 7.727
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 0.96,
+        "processed_fps": 0.308,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 64,
+          "first_success": {
+            "total_ms": 446.643,
+            "phases_ms": {
+              "source": 27.939,
+              "decode": 339.656,
+              "inference": 74.14,
+              "artifacts": 0.009,
+              "persistence": 0.141,
+              "jpeg": 4.756
+            }
+          },
+          "total": {
+            "p50_ms": 173.304,
+            "p95_ms": 270.98,
+            "max_ms": 367.484
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.199,
+              "p95_ms": 0.439,
+              "max_ms": 6.526
+            },
+            "decode": {
+              "p50_ms": 75.367,
+              "p95_ms": 148.02,
+              "max_ms": 202.349
+            },
+            "inference": {
+              "p50_ms": 67.018,
+              "p95_ms": 117.687,
+              "max_ms": 229.322
+            },
+            "artifacts": {
+              "p50_ms": 0.016,
+              "p95_ms": 7.931,
+              "max_ms": 14.044
+            },
+            "persistence": {
+              "p50_ms": 0.196,
+              "p95_ms": 5.787,
+              "max_ms": 6.374
+            },
+            "jpeg": {
+              "p50_ms": 4.754,
+              "p95_ms": 10.54,
+              "max_ms": 12.65
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-04",
+        "status": "processing",
+        "frames": 93,
+        "last_frame_at": 1792054084.296923,
+        "last_event_at": 1792054084.296923,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 93,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 75,
+        "decode_position_verified": true,
+        "latency_ms": 119.0,
+        "artifact_capture_ms": 7.8,
+        "artifact_capture": {
+          "image_attempts": 2,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "5fe7e2ff1c994a289734871c2530186d:CAM-04:84:capture-1",
+        "frame_id": 174,
+        "source_time_seconds": 6.96,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 193.411,
+          "phases_ms": {
+            "source": 0.326,
+            "decode": 74.041,
+            "inference": 97.319,
+            "artifacts": 7.833,
+            "persistence": 6.018,
+            "jpeg": 7.872
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 0.53,
+        "processed_fps": 0.308,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 64,
+          "first_success": {
+            "total_ms": 226.373,
+            "phases_ms": {
+              "source": 27.457,
+              "decode": 114.478,
+              "inference": 79.722,
+              "artifacts": 0.008,
+              "persistence": 0.138,
+              "jpeg": 4.566
+            }
+          },
+          "total": {
+            "p50_ms": 161.696,
+            "p95_ms": 256.111,
+            "max_ms": 463.362
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.183,
+              "p95_ms": 0.414,
+              "max_ms": 0.665
+            },
+            "decode": {
+              "p50_ms": 74.041,
+              "p95_ms": 125.838,
+              "max_ms": 166.566
+            },
+            "inference": {
+              "p50_ms": 68.23,
+              "p95_ms": 109.278,
+              "max_ms": 283.999
+            },
+            "artifacts": {
+              "p50_ms": 0.017,
+              "p95_ms": 7.52,
+              "max_ms": 7.833
+            },
+            "persistence": {
+              "p50_ms": 0.217,
+              "p95_ms": 5.761,
+              "max_ms": 6.109
+            },
+            "jpeg": {
+              "p50_ms": 4.759,
+              "p95_ms": 7.777,
+              "max_ms": 12.202
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-05",
+        "status": "loading",
+        "frames": 92,
+        "last_frame_at": 1792054081.787967,
+        "last_event_at": 1792054081.787967,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 92,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 75,
+        "decode_position_verified": true,
+        "latency_ms": 109.0,
+        "artifact_capture_ms": 7.1,
+        "artifact_capture": {
+          "image_attempts": 2,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "5fe7e2ff1c994a289734871c2530186d:CAM-05:83:capture-1",
+        "frame_id": 690,
+        "source_time_seconds": 27.6,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 184.714,
+          "phases_ms": {
+            "source": 0.466,
+            "decode": 75.18,
+            "inference": 89.112,
+            "artifacts": 7.165,
+            "persistence": 5.768,
+            "jpeg": 7.02
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 3.04,
+        "processed_fps": 0.304,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 64,
+          "first_success": {
+            "total_ms": 335.844,
+            "phases_ms": {
+              "source": 27.64,
+              "decode": 217.307,
+              "inference": 79.905,
+              "artifacts": 5.052,
+              "persistence": 0.984,
+              "jpeg": 4.954
+            }
+          },
+          "total": {
+            "p50_ms": 169.689,
+            "p95_ms": 258.817,
+            "max_ms": 474.207
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.17,
+              "p95_ms": 0.466,
+              "max_ms": 0.742
+            },
+            "decode": {
+              "p50_ms": 80.38,
+              "p95_ms": 115.999,
+              "max_ms": 161.098
+            },
+            "inference": {
+              "p50_ms": 66.502,
+              "p95_ms": 127.611,
+              "max_ms": 290.642
+            },
+            "artifacts": {
+              "p50_ms": 4.842,
+              "p95_ms": 10.39,
+              "max_ms": 13.702
+            },
+            "persistence": {
+              "p50_ms": 3.796,
+              "p95_ms": 6.14,
+              "max_ms": 6.457
+            },
+            "jpeg": {
+              "p50_ms": 4.669,
+              "p95_ms": 8.643,
+              "max_ms": 11.733
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-06",
+        "status": "processing",
+        "frames": 92,
+        "last_frame_at": 1792054082.2744346,
+        "last_event_at": 1792054037.2778468,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 92,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 76,
+        "decode_position_verified": true,
+        "latency_ms": 98.0,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "5fe7e2ff1c994a289734871c2530186d:CAM-06:41:capture-1",
+        "frame_id": 1455,
+        "source_time_seconds": 58.2,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 158.201,
+          "phases_ms": {
+            "source": 0.344,
+            "decode": 59.845,
+            "inference": 90.75,
+            "artifacts": 0.032,
+            "persistence": 0.211,
+            "jpeg": 7.014
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 2.55,
+        "processed_fps": 0.304,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 64,
+          "first_success": {
+            "total_ms": 229.05,
+            "phases_ms": {
+              "source": 27.24,
+              "decode": 106.858,
+              "inference": 90.321,
+              "artifacts": 0.011,
+              "persistence": 0.136,
+              "jpeg": 4.481
+            }
+          },
+          "total": {
+            "p50_ms": 154.192,
+            "p95_ms": 232.403,
+            "max_ms": 293.149
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.186,
+              "p95_ms": 0.395,
+              "max_ms": 0.473
+            },
+            "decode": {
+              "p50_ms": 70.111,
+              "p95_ms": 118.77,
+              "max_ms": 151.81
+            },
+            "inference": {
+              "p50_ms": 72.473,
+              "p95_ms": 108.274,
+              "max_ms": 133.175
+            },
+            "artifacts": {
+              "p50_ms": 0.016,
+              "p95_ms": 4.764,
+              "max_ms": 7.675
+            },
+            "persistence": {
+              "p50_ms": 0.182,
+              "p95_ms": 3.285,
+              "max_ms": 5.751
+            },
+            "jpeg": {
+              "p50_ms": 4.614,
+              "p95_ms": 7.467,
+              "max_ms": 7.849
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-07",
+        "status": "unavailable",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": "Source file missing",
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 92,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-08",
+        "status": "unavailable",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": "Source file missing",
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 92,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-09",
+        "status": "unavailable",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": "Source file missing",
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 0,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 92,
+        "retry_backoff_checks": 0,
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "5fe7e2ff1c994a289734871c2530186d",
+        "forward_decode_max_frames": 128,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 0,
+          "first_success": null,
+          "total": null,
+          "phases": {
+            "source": null,
+            "decode": null,
+            "inference": null,
+            "artifacts": null,
+            "persistence": null,
+            "jpeg": null
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 38056194,
+          "limit_bytes": 2147483648
+        }
+      }
+    ],
+    "inference_branches": {
+      "vehicle_detection_enabled": true,
+      "plate_recognition_enabled": false
+    },
+    "vehicle_model_rollout": {
+      "mode": "stable_only",
+      "stable": {
+        "checkpoint": "yolov8n.pt",
+        "expected_sha256": null,
+        "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+        "loaded": true
+      },
+      "rollback": "remove the canary environment settings and restart the API"
+    },
+    "database_schema": 13,
+    "scope": "single API process; run uvicorn with one worker"
+  },
+  "samples": [
+    {
+      "elapsed_seconds": 2.037,
+      "health_latency_ms": 5.85,
+      "frames": {
+        "CAM-01": 1,
+        "CAM-02": 1,
+        "CAM-03": 1,
+        "CAM-04": 1,
+        "CAM-05": 1,
+        "CAM-06": 0,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "idle",
+        "CAM-07": "idle",
+        "CAM-08": "idle",
+        "CAM-09": "idle"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.14,
+        "CAM-02": 1.82,
+        "CAM-03": 1.19,
+        "CAM-04": 0.91,
+        "CAM-05": 0.31,
+        "CAM-06": null,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 87.726,
+      "rss_mib": 514.746
+    },
+    {
+      "elapsed_seconds": 4.037,
+      "health_latency_ms": 5.814,
+      "frames": {
+        "CAM-01": 2,
+        "CAM-02": 2,
+        "CAM-03": 2,
+        "CAM-04": 1,
+        "CAM-05": 1,
+        "CAM-06": 1,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.51,
+        "CAM-02": 1.0,
+        "CAM-03": 0.46,
+        "CAM-04": 2.91,
+        "CAM-05": 2.31,
+        "CAM-06": 1.91,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 57.002,
+      "rss_mib": 528.566
+    },
+    {
+      "elapsed_seconds": 6.036,
+      "health_latency_ms": 5.291,
+      "frames": {
+        "CAM-01": 3,
+        "CAM-02": 3,
+        "CAM-03": 2,
+        "CAM-04": 2,
+        "CAM-05": 2,
+        "CAM-06": 2,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.5,
+        "CAM-02": 0.01,
+        "CAM-03": 2.46,
+        "CAM-04": 1.99,
+        "CAM-05": 1.47,
+        "CAM-06": 1.0,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 48.015,
+      "rss_mib": 514.777
+    },
+    {
+      "elapsed_seconds": 8.035,
+      "health_latency_ms": 4.068,
+      "frames": {
+        "CAM-01": 3,
+        "CAM-02": 3,
+        "CAM-03": 3,
+        "CAM-04": 3,
+        "CAM-05": 3,
+        "CAM-06": 3,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.5,
+        "CAM-02": 2.01,
+        "CAM-03": 1.5,
+        "CAM-04": 1.0,
+        "CAM-05": 0.51,
+        "CAM-06": 0.01,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.525,
+      "rss_mib": 530.238
+    },
+    {
+      "elapsed_seconds": 10.036,
+      "health_latency_ms": 5.386,
+      "frames": {
+        "CAM-01": 4,
+        "CAM-02": 4,
+        "CAM-03": 4,
+        "CAM-04": 3,
+        "CAM-05": 3,
+        "CAM-06": 3,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.5,
+        "CAM-02": 0.98,
+        "CAM-03": 0.5,
+        "CAM-04": 3.0,
+        "CAM-05": 2.51,
+        "CAM-06": 2.01,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.972,
+      "rss_mib": 530.863
+    },
+    {
+      "elapsed_seconds": 12.036,
+      "health_latency_ms": 5.165,
+      "frames": {
+        "CAM-01": 5,
+        "CAM-02": 5,
+        "CAM-03": 4,
+        "CAM-04": 4,
+        "CAM-05": 4,
+        "CAM-06": 4,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.49,
+        "CAM-02": 0.01,
+        "CAM-03": 2.5,
+        "CAM-04": 1.98,
+        "CAM-05": 1.5,
+        "CAM-06": 0.99,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 46.505,
+      "rss_mib": 530.863
+    },
+    {
+      "elapsed_seconds": 14.035,
+      "health_latency_ms": 4.664,
+      "frames": {
+        "CAM-01": 5,
+        "CAM-02": 5,
+        "CAM-03": 5,
+        "CAM-04": 5,
+        "CAM-05": 5,
+        "CAM-06": 4,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.49,
+        "CAM-02": 2.01,
+        "CAM-03": 1.48,
+        "CAM-04": 1.01,
+        "CAM-05": 0.46,
+        "CAM-06": 2.99,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.512,
+      "rss_mib": 530.812
+    },
+    {
+      "elapsed_seconds": 16.036,
+      "health_latency_ms": 5.671,
+      "frames": {
+        "CAM-01": 6,
+        "CAM-02": 6,
+        "CAM-03": 6,
+        "CAM-04": 5,
+        "CAM-05": 5,
+        "CAM-06": 5,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.51,
+        "CAM-02": 1.01,
+        "CAM-03": 0.51,
+        "CAM-04": 3.01,
+        "CAM-05": 2.46,
+        "CAM-06": 1.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 41.98,
+      "rss_mib": 531.438
+    },
+    {
+      "elapsed_seconds": 18.034,
+      "health_latency_ms": 3.676,
+      "frames": {
+        "CAM-01": 7,
+        "CAM-02": 6,
+        "CAM-03": 6,
+        "CAM-04": 6,
+        "CAM-05": 6,
+        "CAM-06": 6,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.51,
+        "CAM-02": 3.01,
+        "CAM-03": 2.51,
+        "CAM-04": 1.97,
+        "CAM-05": 1.48,
+        "CAM-06": 0.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.048,
+      "rss_mib": 532.812
+    },
+    {
+      "elapsed_seconds": 20.034,
+      "health_latency_ms": 3.664,
+      "frames": {
+        "CAM-01": 7,
+        "CAM-02": 7,
+        "CAM-03": 7,
+        "CAM-04": 7,
+        "CAM-05": 7,
+        "CAM-06": 6,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.51,
+        "CAM-02": 1.98,
+        "CAM-03": 1.53,
+        "CAM-04": 0.99,
+        "CAM-05": 0.47,
+        "CAM-06": 2.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 43.5,
+      "rss_mib": 531.039
+    },
+    {
+      "elapsed_seconds": 22.035,
+      "health_latency_ms": 4.07,
+      "frames": {
+        "CAM-01": 8,
+        "CAM-02": 8,
+        "CAM-03": 8,
+        "CAM-04": 7,
+        "CAM-05": 7,
+        "CAM-06": 7,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.51,
+        "CAM-02": 1.01,
+        "CAM-03": 0.49,
+        "CAM-04": 2.99,
+        "CAM-05": 2.47,
+        "CAM-06": 1.96,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.99,
+      "rss_mib": 533.121
+    },
+    {
+      "elapsed_seconds": 24.036,
+      "health_latency_ms": 5.199,
+      "frames": {
+        "CAM-01": 9,
+        "CAM-02": 8,
+        "CAM-03": 8,
+        "CAM-04": 8,
+        "CAM-05": 8,
+        "CAM-06": 8,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.48,
+        "CAM-02": 3.01,
+        "CAM-03": 2.49,
+        "CAM-04": 1.99,
+        "CAM-05": 1.49,
+        "CAM-06": 1.01,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.475,
+      "rss_mib": 533.121
+    },
+    {
+      "elapsed_seconds": 26.036,
+      "health_latency_ms": 5.341,
+      "frames": {
+        "CAM-01": 9,
+        "CAM-02": 9,
+        "CAM-03": 9,
+        "CAM-04": 9,
+        "CAM-05": 9,
+        "CAM-06": 8,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.48,
+        "CAM-02": 1.99,
+        "CAM-03": 1.5,
+        "CAM-04": 0.96,
+        "CAM-05": 0.5,
+        "CAM-06": 3.01,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.496,
+      "rss_mib": 525.605
+    },
+    {
+      "elapsed_seconds": 28.036,
+      "health_latency_ms": 5.013,
+      "frames": {
+        "CAM-01": 10,
+        "CAM-02": 10,
+        "CAM-03": 10,
+        "CAM-04": 9,
+        "CAM-05": 9,
+        "CAM-06": 9,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.5,
+        "CAM-02": 1.0,
+        "CAM-03": 0.5,
+        "CAM-04": 2.96,
+        "CAM-05": 2.5,
+        "CAM-06": 2.0,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 41.007,
+      "rss_mib": 531.402
+    },
+    {
+      "elapsed_seconds": 30.035,
+      "health_latency_ms": 3.974,
+      "frames": {
+        "CAM-01": 11,
+        "CAM-02": 10,
+        "CAM-03": 10,
+        "CAM-04": 10,
+        "CAM-05": 10,
+        "CAM-06": 10,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.49,
+        "CAM-02": 3.0,
+        "CAM-03": 2.5,
+        "CAM-04": 1.97,
+        "CAM-05": 1.49,
+        "CAM-06": 0.97,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.524,
+      "rss_mib": 533.363
+    },
+    {
+      "elapsed_seconds": 32.034,
+      "health_latency_ms": 3.692,
+      "frames": {
+        "CAM-01": 11,
+        "CAM-02": 11,
+        "CAM-03": 11,
+        "CAM-04": 11,
+        "CAM-05": 11,
+        "CAM-06": 10,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.49,
+        "CAM-02": 1.99,
+        "CAM-03": 1.41,
+        "CAM-04": 0.99,
+        "CAM-05": 0.46,
+        "CAM-06": 2.97,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 50.509,
+      "rss_mib": 525.906
+    },
+    {
+      "elapsed_seconds": 34.034,
+      "health_latency_ms": 3.636,
+      "frames": {
+        "CAM-01": 12,
+        "CAM-02": 12,
+        "CAM-03": 12,
+        "CAM-04": 11,
+        "CAM-05": 11,
+        "CAM-06": 11,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.5,
+        "CAM-02": 0.94,
+        "CAM-03": 0.45,
+        "CAM-04": 2.99,
+        "CAM-05": 2.46,
+        "CAM-06": 2.0,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.0,
+      "rss_mib": 532.5
+    },
+    {
+      "elapsed_seconds": 36.035,
+      "health_latency_ms": 4.265,
+      "frames": {
+        "CAM-01": 13,
+        "CAM-02": 12,
+        "CAM-03": 12,
+        "CAM-04": 12,
+        "CAM-05": 12,
+        "CAM-06": 12,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.43,
+        "CAM-02": 2.94,
+        "CAM-03": 2.45,
+        "CAM-04": 1.96,
+        "CAM-05": 1.49,
+        "CAM-06": 1.0,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 48.485,
+      "rss_mib": 534.617
+    },
+    {
+      "elapsed_seconds": 38.036,
+      "health_latency_ms": 5.153,
+      "frames": {
+        "CAM-01": 13,
+        "CAM-02": 13,
+        "CAM-03": 13,
+        "CAM-04": 13,
+        "CAM-05": 13,
+        "CAM-06": 12,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.43,
+        "CAM-02": 1.98,
+        "CAM-03": 1.47,
+        "CAM-04": 0.99,
+        "CAM-05": 0.49,
+        "CAM-06": 3.0,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.98,
+      "rss_mib": 534.672
+    },
+    {
+      "elapsed_seconds": 40.035,
+      "health_latency_ms": 4.218,
+      "frames": {
+        "CAM-01": 14,
+        "CAM-02": 14,
+        "CAM-03": 14,
+        "CAM-04": 13,
+        "CAM-05": 13,
+        "CAM-06": 13,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.45,
+        "CAM-02": 0.99,
+        "CAM-03": 0.46,
+        "CAM-04": 2.99,
+        "CAM-05": 2.49,
+        "CAM-06": 2.0,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.521,
+      "rss_mib": 534.617
+    },
+    {
+      "elapsed_seconds": 42.035,
+      "health_latency_ms": 4.404,
+      "frames": {
+        "CAM-01": 15,
+        "CAM-02": 14,
+        "CAM-03": 14,
+        "CAM-04": 14,
+        "CAM-05": 14,
+        "CAM-06": 14,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.49,
+        "CAM-02": 2.99,
+        "CAM-03": 2.46,
+        "CAM-04": 1.98,
+        "CAM-05": 1.47,
+        "CAM-06": 1.0,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.496,
+      "rss_mib": 534.582
+    },
+    {
+      "elapsed_seconds": 44.035,
+      "health_latency_ms": 3.779,
+      "frames": {
+        "CAM-01": 15,
+        "CAM-02": 15,
+        "CAM-03": 15,
+        "CAM-04": 15,
+        "CAM-05": 15,
+        "CAM-06": 14,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.49,
+        "CAM-02": 1.99,
+        "CAM-03": 1.49,
+        "CAM-04": 0.99,
+        "CAM-05": 0.49,
+        "CAM-06": 3.0,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.013,
+      "rss_mib": 534.547
+    },
+    {
+      "elapsed_seconds": 46.035,
+      "health_latency_ms": 4.176,
+      "frames": {
+        "CAM-01": 16,
+        "CAM-02": 16,
+        "CAM-03": 16,
+        "CAM-04": 15,
+        "CAM-05": 15,
+        "CAM-06": 15,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.49,
+        "CAM-02": 0.96,
+        "CAM-03": 0.48,
+        "CAM-04": 2.99,
+        "CAM-05": 2.49,
+        "CAM-06": 1.99,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 41.494,
+      "rss_mib": 534.5
+    },
+    {
+      "elapsed_seconds": 48.036,
+      "health_latency_ms": 5.134,
+      "frames": {
+        "CAM-01": 17,
+        "CAM-02": 16,
+        "CAM-03": 16,
+        "CAM-04": 16,
+        "CAM-05": 16,
+        "CAM-06": 16,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.47,
+        "CAM-02": 2.96,
+        "CAM-03": 2.48,
+        "CAM-04": 1.95,
+        "CAM-05": 1.47,
+        "CAM-06": 0.99,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 46.975,
+      "rss_mib": 534.992
+    },
+    {
+      "elapsed_seconds": 50.037,
+      "health_latency_ms": 5.813,
+      "frames": {
+        "CAM-01": 17,
+        "CAM-02": 17,
+        "CAM-03": 17,
+        "CAM-04": 17,
+        "CAM-05": 17,
+        "CAM-06": 16,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.47,
+        "CAM-02": 1.99,
+        "CAM-03": 1.46,
+        "CAM-04": 1.0,
+        "CAM-05": 0.43,
+        "CAM-06": 2.99,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.985,
+      "rss_mib": 534.684
+    },
+    {
+      "elapsed_seconds": 52.037,
+      "health_latency_ms": 5.983,
+      "frames": {
+        "CAM-01": 18,
+        "CAM-02": 18,
+        "CAM-03": 18,
+        "CAM-04": 17,
+        "CAM-05": 17,
+        "CAM-06": 17,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.49,
+        "CAM-02": 0.99,
+        "CAM-03": 0.49,
+        "CAM-04": 3.0,
+        "CAM-05": 2.43,
+        "CAM-06": 1.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 43.996,
+      "rss_mib": 533.836
+    },
+    {
+      "elapsed_seconds": 54.036,
+      "health_latency_ms": 5.731,
+      "frames": {
+        "CAM-01": 19,
+        "CAM-02": 18,
+        "CAM-03": 18,
+        "CAM-04": 18,
+        "CAM-05": 18,
+        "CAM-06": 18,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.48,
+        "CAM-02": 2.99,
+        "CAM-03": 2.49,
+        "CAM-04": 1.97,
+        "CAM-05": 1.47,
+        "CAM-06": 0.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.006,
+      "rss_mib": 535.059
+    },
+    {
+      "elapsed_seconds": 56.036,
+      "health_latency_ms": 5.045,
+      "frames": {
+        "CAM-01": 19,
+        "CAM-02": 19,
+        "CAM-03": 19,
+        "CAM-04": 19,
+        "CAM-05": 19,
+        "CAM-06": 18,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.48,
+        "CAM-02": 1.96,
+        "CAM-03": 1.5,
+        "CAM-04": 0.98,
+        "CAM-05": 0.45,
+        "CAM-06": 2.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.515,
+      "rss_mib": 533.984
+    },
+    {
+      "elapsed_seconds": 58.036,
+      "health_latency_ms": 4.9,
+      "frames": {
+        "CAM-01": 20,
+        "CAM-02": 20,
+        "CAM-03": 20,
+        "CAM-04": 19,
+        "CAM-05": 19,
+        "CAM-06": 19,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.48,
+        "CAM-02": 0.99,
+        "CAM-03": 0.47,
+        "CAM-04": 2.98,
+        "CAM-05": 2.45,
+        "CAM-06": 1.97,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 43.005,
+      "rss_mib": 535.996
+    },
+    {
+      "elapsed_seconds": 60.035,
+      "health_latency_ms": 4.289,
+      "frames": {
+        "CAM-01": 21,
+        "CAM-02": 20,
+        "CAM-03": 20,
+        "CAM-04": 20,
+        "CAM-05": 20,
+        "CAM-06": 20,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.46,
+        "CAM-02": 2.99,
+        "CAM-03": 2.47,
+        "CAM-04": 1.97,
+        "CAM-05": 1.48,
+        "CAM-06": 0.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 43.51,
+      "rss_mib": 534.863
+    },
+    {
+      "elapsed_seconds": 62.035,
+      "health_latency_ms": 4.317,
+      "frames": {
+        "CAM-01": 21,
+        "CAM-02": 21,
+        "CAM-03": 21,
+        "CAM-04": 21,
+        "CAM-05": 21,
+        "CAM-06": 20,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.46,
+        "CAM-02": 1.95,
+        "CAM-03": 1.48,
+        "CAM-04": 0.94,
+        "CAM-05": 0.48,
+        "CAM-06": 2.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 46.002,
+      "rss_mib": 534.664
+    },
+    {
+      "elapsed_seconds": 64.035,
+      "health_latency_ms": 4.11,
+      "frames": {
+        "CAM-01": 22,
+        "CAM-02": 22,
+        "CAM-03": 22,
+        "CAM-04": 21,
+        "CAM-05": 21,
+        "CAM-06": 21,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.48,
+        "CAM-02": 0.98,
+        "CAM-03": 0.48,
+        "CAM-04": 2.94,
+        "CAM-05": 2.48,
+        "CAM-06": 1.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 43.503,
+      "rss_mib": 534.453
+    },
+    {
+      "elapsed_seconds": 66.035,
+      "health_latency_ms": 4.137,
+      "frames": {
+        "CAM-01": 23,
+        "CAM-02": 22,
+        "CAM-03": 22,
+        "CAM-04": 22,
+        "CAM-05": 22,
+        "CAM-06": 22,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.47,
+        "CAM-02": 2.98,
+        "CAM-03": 2.48,
+        "CAM-04": 1.96,
+        "CAM-05": 1.44,
+        "CAM-06": 0.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 46.0,
+      "rss_mib": 535.828
+    },
+    {
+      "elapsed_seconds": 68.036,
+      "health_latency_ms": 5.044,
+      "frames": {
+        "CAM-01": 23,
+        "CAM-02": 23,
+        "CAM-03": 23,
+        "CAM-04": 23,
+        "CAM-05": 23,
+        "CAM-06": 22,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.47,
+        "CAM-02": 1.96,
+        "CAM-03": 1.38,
+        "CAM-04": 0.97,
+        "CAM-05": 0.47,
+        "CAM-06": 2.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 50.979,
+      "rss_mib": 534.113
+    },
+    {
+      "elapsed_seconds": 70.036,
+      "health_latency_ms": 5.473,
+      "frames": {
+        "CAM-01": 24,
+        "CAM-02": 24,
+        "CAM-03": 24,
+        "CAM-04": 23,
+        "CAM-05": 23,
+        "CAM-06": 23,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.47,
+        "CAM-02": 0.93,
+        "CAM-03": 0.43,
+        "CAM-04": 2.97,
+        "CAM-05": 2.47,
+        "CAM-06": 1.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.488,
+      "rss_mib": 536.094
+    },
+    {
+      "elapsed_seconds": 72.035,
+      "health_latency_ms": 4.269,
+      "frames": {
+        "CAM-01": 25,
+        "CAM-02": 24,
+        "CAM-03": 24,
+        "CAM-04": 24,
+        "CAM-05": 24,
+        "CAM-06": 24,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.4,
+        "CAM-02": 2.93,
+        "CAM-03": 2.43,
+        "CAM-04": 1.94,
+        "CAM-05": 1.46,
+        "CAM-06": 0.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 50.533,
+      "rss_mib": 534.441
+    },
+    {
+      "elapsed_seconds": 74.035,
+      "health_latency_ms": 4.109,
+      "frames": {
+        "CAM-01": 25,
+        "CAM-02": 25,
+        "CAM-03": 25,
+        "CAM-04": 25,
+        "CAM-05": 25,
+        "CAM-06": 24,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.4,
+        "CAM-02": 1.96,
+        "CAM-03": 1.46,
+        "CAM-04": 0.97,
+        "CAM-05": 0.47,
+        "CAM-06": 2.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.504,
+      "rss_mib": 534.648
+    },
+    {
+      "elapsed_seconds": 76.036,
+      "health_latency_ms": 5.595,
+      "frames": {
+        "CAM-01": 26,
+        "CAM-02": 26,
+        "CAM-03": 26,
+        "CAM-04": 25,
+        "CAM-05": 25,
+        "CAM-06": 25,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.44,
+        "CAM-02": 0.97,
+        "CAM-03": 0.44,
+        "CAM-04": 2.97,
+        "CAM-05": 2.47,
+        "CAM-06": 1.98,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.463,
+      "rss_mib": 535.148
+    },
+    {
+      "elapsed_seconds": 78.036,
+      "health_latency_ms": 5.597,
+      "frames": {
+        "CAM-01": 27,
+        "CAM-02": 26,
+        "CAM-03": 26,
+        "CAM-04": 26,
+        "CAM-05": 26,
+        "CAM-06": 26,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.47,
+        "CAM-02": 2.97,
+        "CAM-03": 2.44,
+        "CAM-04": 1.95,
+        "CAM-05": 1.45,
+        "CAM-06": 0.97,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.497,
+      "rss_mib": 534.348
+    },
+    {
+      "elapsed_seconds": 80.035,
+      "health_latency_ms": 4.666,
+      "frames": {
+        "CAM-01": 27,
+        "CAM-02": 27,
+        "CAM-03": 27,
+        "CAM-04": 27,
+        "CAM-05": 27,
+        "CAM-06": 26,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.47,
+        "CAM-02": 1.94,
+        "CAM-03": 1.47,
+        "CAM-04": 0.94,
+        "CAM-05": 0.47,
+        "CAM-06": 2.97,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.027,
+      "rss_mib": 536.469
+    },
+    {
+      "elapsed_seconds": 82.035,
+      "health_latency_ms": 4.341,
+      "frames": {
+        "CAM-01": 28,
+        "CAM-02": 28,
+        "CAM-03": 28,
+        "CAM-04": 27,
+        "CAM-05": 27,
+        "CAM-06": 27,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.47,
+        "CAM-02": 0.97,
+        "CAM-03": 0.46,
+        "CAM-04": 2.94,
+        "CAM-05": 2.47,
+        "CAM-06": 1.94,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.507,
+      "rss_mib": 530.148
+    },
+    {
+      "elapsed_seconds": 84.035,
+      "health_latency_ms": 4.314,
+      "frames": {
+        "CAM-01": 29,
+        "CAM-02": 28,
+        "CAM-03": 28,
+        "CAM-04": 28,
+        "CAM-05": 28,
+        "CAM-06": 28,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.43,
+        "CAM-02": 2.97,
+        "CAM-03": 2.46,
+        "CAM-04": 1.96,
+        "CAM-05": 1.43,
+        "CAM-06": 0.97,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.999,
+      "rss_mib": 530.387
+    },
+    {
+      "elapsed_seconds": 86.036,
+      "health_latency_ms": 4.675,
+      "frames": {
+        "CAM-01": 29,
+        "CAM-02": 29,
+        "CAM-03": 29,
+        "CAM-04": 29,
+        "CAM-05": 29,
+        "CAM-06": 28,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.43,
+        "CAM-02": 1.95,
+        "CAM-03": 1.43,
+        "CAM-04": 0.96,
+        "CAM-05": 0.41,
+        "CAM-06": 2.97,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.49,
+      "rss_mib": 534.512
+    },
+    {
+      "elapsed_seconds": 88.035,
+      "health_latency_ms": 4.278,
+      "frames": {
+        "CAM-01": 30,
+        "CAM-02": 30,
+        "CAM-03": 30,
+        "CAM-04": 29,
+        "CAM-05": 29,
+        "CAM-06": 29,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.47,
+        "CAM-02": 0.97,
+        "CAM-03": 0.46,
+        "CAM-04": 2.96,
+        "CAM-05": 2.41,
+        "CAM-06": 1.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.511,
+      "rss_mib": 536.242
+    },
+    {
+      "elapsed_seconds": 90.035,
+      "health_latency_ms": 4.137,
+      "frames": {
+        "CAM-01": 31,
+        "CAM-02": 30,
+        "CAM-03": 30,
+        "CAM-04": 30,
+        "CAM-05": 30,
+        "CAM-06": 30,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.46,
+        "CAM-02": 2.97,
+        "CAM-03": 2.46,
+        "CAM-04": 1.95,
+        "CAM-05": 1.45,
+        "CAM-06": 0.94,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.002,
+      "rss_mib": 527.336
+    },
+    {
+      "elapsed_seconds": 92.036,
+      "health_latency_ms": 4.902,
+      "frames": {
+        "CAM-01": 31,
+        "CAM-02": 31,
+        "CAM-03": 31,
+        "CAM-04": 31,
+        "CAM-05": 31,
+        "CAM-06": 30,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.46,
+        "CAM-02": 1.94,
+        "CAM-03": 1.49,
+        "CAM-04": 0.96,
+        "CAM-05": 0.43,
+        "CAM-06": 2.94,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.983,
+      "rss_mib": 535.797
+    },
+    {
+      "elapsed_seconds": 94.035,
+      "health_latency_ms": 4.357,
+      "frames": {
+        "CAM-01": 32,
+        "CAM-02": 32,
+        "CAM-03": 32,
+        "CAM-04": 31,
+        "CAM-05": 31,
+        "CAM-06": 31,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.47,
+        "CAM-02": 0.98,
+        "CAM-03": 0.45,
+        "CAM-04": 2.96,
+        "CAM-05": 2.43,
+        "CAM-06": 1.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 43.013,
+      "rss_mib": 535.504
+    },
+    {
+      "elapsed_seconds": 96.035,
+      "health_latency_ms": 4.399,
+      "frames": {
+        "CAM-01": 33,
+        "CAM-02": 32,
+        "CAM-03": 32,
+        "CAM-04": 32,
+        "CAM-05": 32,
+        "CAM-06": 32,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.44,
+        "CAM-02": 2.98,
+        "CAM-03": 2.45,
+        "CAM-04": 1.92,
+        "CAM-05": 1.45,
+        "CAM-06": 0.96,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.0,
+      "rss_mib": 534.746
+    },
+    {
+      "elapsed_seconds": 98.035,
+      "health_latency_ms": 4.724,
+      "frames": {
+        "CAM-01": 33,
+        "CAM-02": 33,
+        "CAM-03": 33,
+        "CAM-04": 33,
+        "CAM-05": 33,
+        "CAM-06": 32,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.44,
+        "CAM-02": 1.95,
+        "CAM-03": 1.46,
+        "CAM-04": 0.94,
+        "CAM-05": 0.46,
+        "CAM-06": 2.96,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.492,
+      "rss_mib": 534.711
+    },
+    {
+      "elapsed_seconds": 100.035,
+      "health_latency_ms": 4.237,
+      "frames": {
+        "CAM-01": 34,
+        "CAM-02": 34,
+        "CAM-03": 34,
+        "CAM-04": 33,
+        "CAM-05": 33,
+        "CAM-06": 33,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.46,
+        "CAM-02": 0.96,
+        "CAM-03": 0.46,
+        "CAM-04": 2.94,
+        "CAM-05": 2.46,
+        "CAM-06": 1.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 41.509,
+      "rss_mib": 535.887
+    },
+    {
+      "elapsed_seconds": 102.035,
+      "health_latency_ms": 4.468,
+      "frames": {
+        "CAM-01": 35,
+        "CAM-02": 34,
+        "CAM-03": 34,
+        "CAM-04": 34,
+        "CAM-05": 34,
+        "CAM-06": 34,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.43,
+        "CAM-02": 2.96,
+        "CAM-03": 2.46,
+        "CAM-04": 1.95,
+        "CAM-05": 1.42,
+        "CAM-06": 0.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 46.993,
+      "rss_mib": 527.039
+    },
+    {
+      "elapsed_seconds": 104.035,
+      "health_latency_ms": 4.54,
+      "frames": {
+        "CAM-01": 35,
+        "CAM-02": 35,
+        "CAM-03": 35,
+        "CAM-04": 35,
+        "CAM-05": 35,
+        "CAM-06": 34,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.43,
+        "CAM-02": 1.93,
+        "CAM-03": 1.36,
+        "CAM-04": 0.95,
+        "CAM-05": 0.45,
+        "CAM-06": 2.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 51.003,
+      "rss_mib": 534.773
+    },
+    {
+      "elapsed_seconds": 106.037,
+      "health_latency_ms": 5.746,
+      "frames": {
+        "CAM-01": 36,
+        "CAM-02": 36,
+        "CAM-03": 36,
+        "CAM-04": 35,
+        "CAM-05": 35,
+        "CAM-06": 35,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.45,
+        "CAM-02": 0.91,
+        "CAM-03": 0.41,
+        "CAM-04": 2.95,
+        "CAM-05": 2.45,
+        "CAM-06": 1.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.968,
+      "rss_mib": 527.359
+    },
+    {
+      "elapsed_seconds": 108.036,
+      "health_latency_ms": 4.83,
+      "frames": {
+        "CAM-01": 37,
+        "CAM-02": 36,
+        "CAM-03": 36,
+        "CAM-04": 36,
+        "CAM-05": 36,
+        "CAM-06": 36,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.39,
+        "CAM-02": 2.91,
+        "CAM-03": 2.41,
+        "CAM-04": 1.92,
+        "CAM-05": 1.45,
+        "CAM-06": 0.96,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.525,
+      "rss_mib": 536.512
+    },
+    {
+      "elapsed_seconds": 110.036,
+      "health_latency_ms": 5.696,
+      "frames": {
+        "CAM-01": 37,
+        "CAM-02": 37,
+        "CAM-03": 37,
+        "CAM-04": 37,
+        "CAM-05": 37,
+        "CAM-06": 36,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.39,
+        "CAM-02": 1.95,
+        "CAM-03": 1.44,
+        "CAM-04": 0.95,
+        "CAM-05": 0.45,
+        "CAM-06": 2.96,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.981,
+      "rss_mib": 536.41
+    },
+    {
+      "elapsed_seconds": 112.035,
+      "health_latency_ms": 4.708,
+      "frames": {
+        "CAM-01": 38,
+        "CAM-02": 38,
+        "CAM-03": 38,
+        "CAM-04": 37,
+        "CAM-05": 37,
+        "CAM-06": 37,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.42,
+        "CAM-02": 0.95,
+        "CAM-03": 0.42,
+        "CAM-04": 2.95,
+        "CAM-05": 2.45,
+        "CAM-06": 1.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.523,
+      "rss_mib": 536.48
+    },
+    {
+      "elapsed_seconds": 114.035,
+      "health_latency_ms": 4.231,
+      "frames": {
+        "CAM-01": 39,
+        "CAM-02": 38,
+        "CAM-03": 38,
+        "CAM-04": 38,
+        "CAM-05": 38,
+        "CAM-06": 38,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.45,
+        "CAM-02": 2.95,
+        "CAM-03": 2.42,
+        "CAM-04": 1.94,
+        "CAM-05": 1.42,
+        "CAM-06": 0.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.009,
+      "rss_mib": 527.391
+    },
+    {
+      "elapsed_seconds": 116.035,
+      "health_latency_ms": 4.57,
+      "frames": {
+        "CAM-01": 39,
+        "CAM-02": 39,
+        "CAM-03": 39,
+        "CAM-04": 39,
+        "CAM-05": 39,
+        "CAM-06": 38,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.45,
+        "CAM-02": 1.93,
+        "CAM-03": 1.44,
+        "CAM-04": 0.92,
+        "CAM-05": 0.47,
+        "CAM-06": 2.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.492,
+      "rss_mib": 536.531
+    },
+    {
+      "elapsed_seconds": 118.035,
+      "health_latency_ms": 4.162,
+      "frames": {
+        "CAM-01": 40,
+        "CAM-02": 40,
+        "CAM-03": 40,
+        "CAM-04": 39,
+        "CAM-05": 39,
+        "CAM-06": 39,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "loading",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.45,
+        "CAM-02": 0.94,
+        "CAM-03": 0.45,
+        "CAM-04": 2.92,
+        "CAM-05": 2.47,
+        "CAM-06": 1.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.509,
+      "rss_mib": 536.293
+    },
+    {
+      "elapsed_seconds": 120.035,
+      "health_latency_ms": 3.932,
+      "frames": {
+        "CAM-01": 41,
+        "CAM-02": 40,
+        "CAM-03": 40,
+        "CAM-04": 40,
+        "CAM-05": 40,
+        "CAM-06": 40,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.43,
+        "CAM-02": 2.94,
+        "CAM-03": 2.45,
+        "CAM-04": 1.94,
+        "CAM-05": 1.42,
+        "CAM-06": 0.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.007,
+      "rss_mib": 535.352
+    },
+    {
+      "elapsed_seconds": 122.036,
+      "health_latency_ms": 4.854,
+      "frames": {
+        "CAM-01": 41,
+        "CAM-02": 41,
+        "CAM-03": 41,
+        "CAM-04": 41,
+        "CAM-05": 41,
+        "CAM-06": 40,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.43,
+        "CAM-02": 1.95,
+        "CAM-03": 1.42,
+        "CAM-04": 0.93,
+        "CAM-05": 0.4,
+        "CAM-06": 2.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.477,
+      "rss_mib": 527.559
+    },
+    {
+      "elapsed_seconds": 124.035,
+      "health_latency_ms": 4.628,
+      "frames": {
+        "CAM-01": 42,
+        "CAM-02": 42,
+        "CAM-03": 42,
+        "CAM-04": 41,
+        "CAM-05": 41,
+        "CAM-06": 41,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.45,
+        "CAM-02": 0.92,
+        "CAM-03": 0.45,
+        "CAM-04": 2.93,
+        "CAM-05": 2.4,
+        "CAM-06": 1.92,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.004,
+      "rss_mib": 527.852
+    },
+    {
+      "elapsed_seconds": 126.035,
+      "health_latency_ms": 4.142,
+      "frames": {
+        "CAM-01": 43,
+        "CAM-02": 42,
+        "CAM-03": 42,
+        "CAM-04": 42,
+        "CAM-05": 42,
+        "CAM-06": 42,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.45,
+        "CAM-02": 2.92,
+        "CAM-03": 2.45,
+        "CAM-04": 1.93,
+        "CAM-05": 1.43,
+        "CAM-06": 0.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 46.012,
+      "rss_mib": 537.191
+    },
+    {
+      "elapsed_seconds": 128.035,
+      "health_latency_ms": 4.192,
+      "frames": {
+        "CAM-01": 43,
+        "CAM-02": 43,
+        "CAM-03": 43,
+        "CAM-04": 43,
+        "CAM-05": 43,
+        "CAM-06": 42,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.45,
+        "CAM-02": 1.95,
+        "CAM-03": 1.46,
+        "CAM-04": 0.94,
+        "CAM-05": 0.41,
+        "CAM-06": 2.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.497,
+      "rss_mib": 536.844
+    },
+    {
+      "elapsed_seconds": 130.036,
+      "health_latency_ms": 4.891,
+      "frames": {
+        "CAM-01": 44,
+        "CAM-02": 44,
+        "CAM-03": 44,
+        "CAM-04": 43,
+        "CAM-05": 43,
+        "CAM-06": 43,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.45,
+        "CAM-02": 0.94,
+        "CAM-03": 0.44,
+        "CAM-04": 2.94,
+        "CAM-05": 2.41,
+        "CAM-06": 1.94,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.489,
+      "rss_mib": 536.859
+    },
+    {
+      "elapsed_seconds": 132.035,
+      "health_latency_ms": 4.424,
+      "frames": {
+        "CAM-01": 45,
+        "CAM-02": 44,
+        "CAM-03": 44,
+        "CAM-04": 44,
+        "CAM-05": 44,
+        "CAM-06": 44,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.42,
+        "CAM-02": 2.94,
+        "CAM-03": 2.44,
+        "CAM-04": 1.9,
+        "CAM-05": 1.44,
+        "CAM-06": 0.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.508,
+      "rss_mib": 532.852
+    },
+    {
+      "elapsed_seconds": 134.036,
+      "health_latency_ms": 5.334,
+      "frames": {
+        "CAM-01": 45,
+        "CAM-02": 45,
+        "CAM-03": 45,
+        "CAM-04": 45,
+        "CAM-05": 45,
+        "CAM-06": 44,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.42,
+        "CAM-02": 1.94,
+        "CAM-03": 1.44,
+        "CAM-04": 0.93,
+        "CAM-05": 0.44,
+        "CAM-06": 2.95,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.98,
+      "rss_mib": 527.77
+    },
+    {
+      "elapsed_seconds": 136.035,
+      "health_latency_ms": 4.717,
+      "frames": {
+        "CAM-01": 46,
+        "CAM-02": 46,
+        "CAM-03": 46,
+        "CAM-04": 45,
+        "CAM-05": 45,
+        "CAM-06": 45,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.44,
+        "CAM-02": 0.95,
+        "CAM-03": 0.44,
+        "CAM-04": 2.93,
+        "CAM-05": 2.44,
+        "CAM-06": 1.92,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 43.016,
+      "rss_mib": 529.031
+    },
+    {
+      "elapsed_seconds": 138.035,
+      "health_latency_ms": 4.292,
+      "frames": {
+        "CAM-01": 47,
+        "CAM-02": 46,
+        "CAM-03": 46,
+        "CAM-04": 46,
+        "CAM-05": 46,
+        "CAM-06": 46,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.42,
+        "CAM-02": 2.94,
+        "CAM-03": 2.44,
+        "CAM-04": 1.93,
+        "CAM-05": 1.4,
+        "CAM-06": 0.94,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.508,
+      "rss_mib": 527.672
+    },
+    {
+      "elapsed_seconds": 140.035,
+      "health_latency_ms": 4.439,
+      "frames": {
+        "CAM-01": 47,
+        "CAM-02": 47,
+        "CAM-03": 47,
+        "CAM-04": 47,
+        "CAM-05": 47,
+        "CAM-06": 46,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.42,
+        "CAM-02": 1.88,
+        "CAM-03": 1.34,
+        "CAM-04": 0.9,
+        "CAM-05": 0.43,
+        "CAM-06": 2.94,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 53.496,
+      "rss_mib": 534.152
+    },
+    {
+      "elapsed_seconds": 142.035,
+      "health_latency_ms": 4.447,
+      "frames": {
+        "CAM-01": 48,
+        "CAM-02": 48,
+        "CAM-03": 48,
+        "CAM-04": 47,
+        "CAM-05": 47,
+        "CAM-06": 47,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.43,
+        "CAM-02": 0.93,
+        "CAM-03": 0.39,
+        "CAM-04": 2.9,
+        "CAM-05": 2.43,
+        "CAM-06": 1.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.0,
+      "rss_mib": 538.191
+    },
+    {
+      "elapsed_seconds": 144.035,
+      "health_latency_ms": 4.419,
+      "frames": {
+        "CAM-01": 49,
+        "CAM-02": 48,
+        "CAM-03": 48,
+        "CAM-04": 48,
+        "CAM-05": 48,
+        "CAM-06": 48,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.37,
+        "CAM-02": 2.93,
+        "CAM-03": 2.39,
+        "CAM-04": 1.93,
+        "CAM-05": 1.43,
+        "CAM-06": 0.92,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.0,
+      "rss_mib": 530.473
+    },
+    {
+      "elapsed_seconds": 146.035,
+      "health_latency_ms": 4.412,
+      "frames": {
+        "CAM-01": 49,
+        "CAM-02": 49,
+        "CAM-03": 49,
+        "CAM-04": 49,
+        "CAM-05": 49,
+        "CAM-06": 48,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "loading",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.37,
+        "CAM-02": 1.93,
+        "CAM-03": 1.42,
+        "CAM-04": 0.93,
+        "CAM-05": 0.4,
+        "CAM-06": 2.92,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 46.001,
+      "rss_mib": 529.023
+    },
+    {
+      "elapsed_seconds": 148.035,
+      "health_latency_ms": 4.214,
+      "frames": {
+        "CAM-01": 50,
+        "CAM-02": 50,
+        "CAM-03": 50,
+        "CAM-04": 49,
+        "CAM-05": 49,
+        "CAM-06": 49,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.4,
+        "CAM-02": 0.94,
+        "CAM-03": 0.4,
+        "CAM-04": 2.93,
+        "CAM-05": 2.4,
+        "CAM-06": 1.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.504,
+      "rss_mib": 529.043
+    },
+    {
+      "elapsed_seconds": 150.035,
+      "health_latency_ms": 4.31,
+      "frames": {
+        "CAM-01": 51,
+        "CAM-02": 50,
+        "CAM-03": 50,
+        "CAM-04": 50,
+        "CAM-05": 50,
+        "CAM-06": 50,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.43,
+        "CAM-02": 2.94,
+        "CAM-03": 2.4,
+        "CAM-04": 1.93,
+        "CAM-05": 1.43,
+        "CAM-06": 0.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.998,
+      "rss_mib": 529.246
+    },
+    {
+      "elapsed_seconds": 152.037,
+      "health_latency_ms": 6.268,
+      "frames": {
+        "CAM-01": 51,
+        "CAM-02": 51,
+        "CAM-03": 51,
+        "CAM-04": 51,
+        "CAM-05": 51,
+        "CAM-06": 50,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.43,
+        "CAM-02": 1.9,
+        "CAM-03": 1.43,
+        "CAM-04": 0.9,
+        "CAM-05": 0.44,
+        "CAM-06": 2.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.954,
+      "rss_mib": 529.09
+    },
+    {
+      "elapsed_seconds": 154.036,
+      "health_latency_ms": 5.561,
+      "frames": {
+        "CAM-01": 52,
+        "CAM-02": 52,
+        "CAM-03": 52,
+        "CAM-04": 51,
+        "CAM-05": 51,
+        "CAM-06": 51,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.43,
+        "CAM-02": 0.93,
+        "CAM-03": 0.42,
+        "CAM-04": 2.9,
+        "CAM-05": 2.44,
+        "CAM-06": 1.91,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.018,
+      "rss_mib": 528.746
+    },
+    {
+      "elapsed_seconds": 156.037,
+      "health_latency_ms": 6.335,
+      "frames": {
+        "CAM-01": 53,
+        "CAM-02": 52,
+        "CAM-03": 52,
+        "CAM-04": 52,
+        "CAM-05": 52,
+        "CAM-06": 52,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.39,
+        "CAM-02": 2.93,
+        "CAM-03": 2.42,
+        "CAM-04": 1.92,
+        "CAM-05": 1.39,
+        "CAM-06": 0.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.98,
+      "rss_mib": 528.922
+    },
+    {
+      "elapsed_seconds": 158.036,
+      "health_latency_ms": 4.904,
+      "frames": {
+        "CAM-01": 53,
+        "CAM-02": 53,
+        "CAM-03": 53,
+        "CAM-04": 53,
+        "CAM-05": 53,
+        "CAM-06": 52,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.39,
+        "CAM-02": 1.92,
+        "CAM-03": 1.4,
+        "CAM-04": 0.89,
+        "CAM-05": 0.39,
+        "CAM-06": 2.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 49.036,
+      "rss_mib": 539.094
+    },
+    {
+      "elapsed_seconds": 160.036,
+      "health_latency_ms": 4.879,
+      "frames": {
+        "CAM-01": 54,
+        "CAM-02": 54,
+        "CAM-03": 54,
+        "CAM-04": 53,
+        "CAM-05": 53,
+        "CAM-06": 53,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.43,
+        "CAM-02": 0.9,
+        "CAM-03": 0.43,
+        "CAM-04": 2.89,
+        "CAM-05": 2.39,
+        "CAM-06": 1.89,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.501,
+      "rss_mib": 528.191
+    },
+    {
+      "elapsed_seconds": 162.036,
+      "health_latency_ms": 4.655,
+      "frames": {
+        "CAM-01": 55,
+        "CAM-02": 54,
+        "CAM-03": 54,
+        "CAM-04": 54,
+        "CAM-05": 54,
+        "CAM-06": 54,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.42,
+        "CAM-02": 2.9,
+        "CAM-03": 2.43,
+        "CAM-04": 1.91,
+        "CAM-05": 1.41,
+        "CAM-06": 0.91,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.504,
+      "rss_mib": 528.398
+    },
+    {
+      "elapsed_seconds": 164.035,
+      "health_latency_ms": 4.634,
+      "frames": {
+        "CAM-01": 55,
+        "CAM-02": 55,
+        "CAM-03": 55,
+        "CAM-04": 55,
+        "CAM-05": 55,
+        "CAM-06": 54,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.42,
+        "CAM-02": 1.93,
+        "CAM-03": 1.44,
+        "CAM-04": 0.91,
+        "CAM-05": 0.39,
+        "CAM-06": 2.91,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.501,
+      "rss_mib": 539.152
+    },
+    {
+      "elapsed_seconds": 166.035,
+      "health_latency_ms": 4.587,
+      "frames": {
+        "CAM-01": 56,
+        "CAM-02": 56,
+        "CAM-03": 56,
+        "CAM-04": 55,
+        "CAM-05": 55,
+        "CAM-06": 55,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.42,
+        "CAM-02": 0.91,
+        "CAM-03": 0.41,
+        "CAM-04": 2.91,
+        "CAM-05": 2.39,
+        "CAM-06": 1.89,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.001,
+      "rss_mib": 528.074
+    },
+    {
+      "elapsed_seconds": 168.036,
+      "health_latency_ms": 5.581,
+      "frames": {
+        "CAM-01": 57,
+        "CAM-02": 56,
+        "CAM-03": 56,
+        "CAM-04": 56,
+        "CAM-05": 56,
+        "CAM-06": 56,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.4,
+        "CAM-02": 2.91,
+        "CAM-03": 2.41,
+        "CAM-04": 1.88,
+        "CAM-05": 1.42,
+        "CAM-06": 0.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.477,
+      "rss_mib": 529.555
+    },
+    {
+      "elapsed_seconds": 170.036,
+      "health_latency_ms": 4.764,
+      "frames": {
+        "CAM-01": 57,
+        "CAM-02": 57,
+        "CAM-03": 57,
+        "CAM-04": 57,
+        "CAM-05": 57,
+        "CAM-06": 56,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.4,
+        "CAM-02": 1.92,
+        "CAM-03": 1.42,
+        "CAM-04": 0.9,
+        "CAM-05": 0.42,
+        "CAM-06": 2.93,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.519,
+      "rss_mib": 528.469
+    },
+    {
+      "elapsed_seconds": 172.036,
+      "health_latency_ms": 4.802,
+      "frames": {
+        "CAM-01": 58,
+        "CAM-02": 58,
+        "CAM-03": 58,
+        "CAM-04": 57,
+        "CAM-05": 57,
+        "CAM-06": 57,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.42,
+        "CAM-02": 0.91,
+        "CAM-03": 0.42,
+        "CAM-04": 2.9,
+        "CAM-05": 2.42,
+        "CAM-06": 1.92,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 42.499,
+      "rss_mib": 528.41
+    },
+    {
+      "elapsed_seconds": 174.035,
+      "health_latency_ms": 4.652,
+      "frames": {
+        "CAM-01": 59,
+        "CAM-02": 58,
+        "CAM-03": 58,
+        "CAM-04": 58,
+        "CAM-05": 58,
+        "CAM-06": 58,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.39,
+        "CAM-02": 2.91,
+        "CAM-03": 2.42,
+        "CAM-04": 1.91,
+        "CAM-05": 1.38,
+        "CAM-06": 0.89,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.503,
+      "rss_mib": 530.012
+    },
+    {
+      "elapsed_seconds": 176.036,
+      "health_latency_ms": 5.09,
+      "frames": {
+        "CAM-01": 59,
+        "CAM-02": 59,
+        "CAM-03": 59,
+        "CAM-04": 59,
+        "CAM-05": 59,
+        "CAM-06": 58,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.39,
+        "CAM-02": 1.87,
+        "CAM-03": 1.32,
+        "CAM-04": 0.89,
+        "CAM-05": 0.41,
+        "CAM-06": 2.89,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 53.49,
+      "rss_mib": 531.539
+    },
+    {
+      "elapsed_seconds": 178.035,
+      "health_latency_ms": 4.613,
+      "frames": {
+        "CAM-01": 60,
+        "CAM-02": 60,
+        "CAM-03": 60,
+        "CAM-04": 59,
+        "CAM-05": 59,
+        "CAM-06": 59,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.4,
+        "CAM-02": 0.91,
+        "CAM-03": 0.37,
+        "CAM-04": 2.88,
+        "CAM-05": 2.4,
+        "CAM-06": 1.92,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.51,
+      "rss_mib": 541.141
+    },
+    {
+      "elapsed_seconds": 180.036,
+      "health_latency_ms": 4.719,
+      "frames": {
+        "CAM-01": 61,
+        "CAM-02": 60,
+        "CAM-03": 60,
+        "CAM-04": 60,
+        "CAM-05": 60,
+        "CAM-06": 60,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.35,
+        "CAM-02": 2.91,
+        "CAM-03": 2.37,
+        "CAM-04": 1.91,
+        "CAM-05": 1.41,
+        "CAM-06": 0.92,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 44.998,
+      "rss_mib": 531.0
+    },
+    {
+      "elapsed_seconds": 182.036,
+      "health_latency_ms": 4.939,
+      "frames": {
+        "CAM-01": 61,
+        "CAM-02": 61,
+        "CAM-03": 61,
+        "CAM-04": 61,
+        "CAM-05": 61,
+        "CAM-06": 60,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.35,
+        "CAM-02": 1.91,
+        "CAM-03": 1.4,
+        "CAM-04": 0.91,
+        "CAM-05": 0.39,
+        "CAM-06": 2.92,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.995,
+      "rss_mib": 530.516
+    },
+    {
+      "elapsed_seconds": 184.036,
+      "health_latency_ms": 5.284,
+      "frames": {
+        "CAM-01": 62,
+        "CAM-02": 62,
+        "CAM-03": 62,
+        "CAM-04": 61,
+        "CAM-05": 61,
+        "CAM-06": 61,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.39,
+        "CAM-02": 0.89,
+        "CAM-03": 0.38,
+        "CAM-04": 2.91,
+        "CAM-05": 2.39,
+        "CAM-06": 1.89,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 47.994,
+      "rss_mib": 530.43
+    },
+    {
+      "elapsed_seconds": 186.036,
+      "health_latency_ms": 5.078,
+      "frames": {
+        "CAM-01": 63,
+        "CAM-02": 62,
+        "CAM-03": 62,
+        "CAM-04": 62,
+        "CAM-05": 62,
+        "CAM-06": 62,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.41,
+        "CAM-02": 2.89,
+        "CAM-03": 2.38,
+        "CAM-04": 1.88,
+        "CAM-05": 1.41,
+        "CAM-06": 0.89,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 45.505,
+      "rss_mib": 530.051
+    },
+    {
+      "elapsed_seconds": 206.785,
+      "health_latency_ms": 15.219,
+      "frames": {
+        "CAM-01": 63,
+        "CAM-02": 63,
+        "CAM-03": 62,
+        "CAM-04": 62,
+        "CAM-05": 62,
+        "CAM-06": 62,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2668.82,
+        "CAM-02": 2668.32,
+        "CAM-03": 2670.79,
+        "CAM-04": 2670.29,
+        "CAM-05": 2669.83,
+        "CAM-06": 2669.31,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 1.012,
+      "rss_mib": 541.012
+    },
+    {
+      "elapsed_seconds": 208.039,
+      "health_latency_ms": 7.886,
+      "frames": {
+        "CAM-01": 63,
+        "CAM-02": 63,
+        "CAM-03": 63,
+        "CAM-04": 63,
+        "CAM-05": 63,
+        "CAM-06": 62,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2670.08,
+        "CAM-02": 2669.57,
+        "CAM-03": 1.07,
+        "CAM-04": 0.54,
+        "CAM-05": 0.04,
+        "CAM-06": 2670.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 86.155,
+      "rss_mib": 530.496
+    },
+    {
+      "elapsed_seconds": 210.038,
+      "health_latency_ms": 7.624,
+      "frames": {
+        "CAM-01": 64,
+        "CAM-02": 64,
+        "CAM-03": 64,
+        "CAM-04": 63,
+        "CAM-05": 63,
+        "CAM-06": 63,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.02,
+        "CAM-02": 0.34,
+        "CAM-03": 0.06,
+        "CAM-04": 2.54,
+        "CAM-05": 2.04,
+        "CAM-06": 1.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 81.512,
+      "rss_mib": 530.156
+    },
+    {
+      "elapsed_seconds": 212.04,
+      "health_latency_ms": 9.496,
+      "frames": {
+        "CAM-01": 65,
+        "CAM-02": 64,
+        "CAM-03": 64,
+        "CAM-04": 64,
+        "CAM-05": 64,
+        "CAM-06": 64,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.04,
+        "CAM-02": 2.34,
+        "CAM-03": 2.06,
+        "CAM-04": 1.45,
+        "CAM-05": 0.99,
+        "CAM-06": 0.53,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 87.905,
+      "rss_mib": 531.254
+    },
+    {
+      "elapsed_seconds": 214.067,
+      "health_latency_ms": 35.977,
+      "frames": {
+        "CAM-01": 65,
+        "CAM-02": 65,
+        "CAM-03": 65,
+        "CAM-04": 65,
+        "CAM-05": 64,
+        "CAM-06": 64,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "loading",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.06,
+        "CAM-02": 1.39,
+        "CAM-03": 0.91,
+        "CAM-04": 0.32,
+        "CAM-05": 3.0,
+        "CAM-06": 2.54,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 105.611,
+      "rss_mib": 532.668
+    },
+    {
+      "elapsed_seconds": 216.039,
+      "health_latency_ms": 8.543,
+      "frames": {
+        "CAM-01": 66,
+        "CAM-02": 66,
+        "CAM-03": 66,
+        "CAM-04": 65,
+        "CAM-05": 65,
+        "CAM-06": 65,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.06,
+        "CAM-02": 0.55,
+        "CAM-03": 0.07,
+        "CAM-04": 2.3,
+        "CAM-05": 1.8,
+        "CAM-06": 1.47,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 94.802,
+      "rss_mib": 530.496
+    },
+    {
+      "elapsed_seconds": 218.04,
+      "health_latency_ms": 9.695,
+      "frames": {
+        "CAM-01": 66,
+        "CAM-02": 66,
+        "CAM-03": 66,
+        "CAM-04": 66,
+        "CAM-05": 66,
+        "CAM-06": 66,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "loading",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.06,
+        "CAM-02": 2.55,
+        "CAM-03": 2.07,
+        "CAM-04": 1.49,
+        "CAM-05": 0.97,
+        "CAM-06": 0.49,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 82.447,
+      "rss_mib": 539.133
+    },
+    {
+      "elapsed_seconds": 220.039,
+      "health_latency_ms": 8.293,
+      "frames": {
+        "CAM-01": 67,
+        "CAM-02": 67,
+        "CAM-03": 67,
+        "CAM-04": 67,
+        "CAM-05": 66,
+        "CAM-06": 66,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "loading",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.96,
+        "CAM-02": 1.52,
+        "CAM-03": 1.01,
+        "CAM-04": 0.55,
+        "CAM-05": 2.97,
+        "CAM-06": 2.49,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 85.067,
+      "rss_mib": 529.988
+    },
+    {
+      "elapsed_seconds": 222.039,
+      "health_latency_ms": 7.771,
+      "frames": {
+        "CAM-01": 68,
+        "CAM-02": 68,
+        "CAM-03": 67,
+        "CAM-04": 67,
+        "CAM-05": 67,
+        "CAM-06": 67,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "loading",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.01,
+        "CAM-02": 0.53,
+        "CAM-03": 3.01,
+        "CAM-04": 2.55,
+        "CAM-05": 2.01,
+        "CAM-06": 1.57,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 73.018,
+      "rss_mib": 533.191
+    },
+    {
+      "elapsed_seconds": 224.04,
+      "health_latency_ms": 9.036,
+      "frames": {
+        "CAM-01": 68,
+        "CAM-02": 68,
+        "CAM-03": 68,
+        "CAM-04": 68,
+        "CAM-05": 68,
+        "CAM-06": 68,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "loading",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.01,
+        "CAM-02": 2.53,
+        "CAM-03": 2.0,
+        "CAM-04": 1.52,
+        "CAM-05": 1.07,
+        "CAM-06": 0.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 74.953,
+      "rss_mib": 531.293
+    },
+    {
+      "elapsed_seconds": 226.039,
+      "health_latency_ms": 8.517,
+      "frames": {
+        "CAM-01": 69,
+        "CAM-02": 69,
+        "CAM-03": 69,
+        "CAM-04": 69,
+        "CAM-05": 69,
+        "CAM-06": 68,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.01,
+        "CAM-02": 1.39,
+        "CAM-03": 0.95,
+        "CAM-04": 0.57,
+        "CAM-05": 0.06,
+        "CAM-06": 2.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 89.525,
+      "rss_mib": 529.156
+    },
+    {
+      "elapsed_seconds": 228.037,
+      "health_latency_ms": 6.316,
+      "frames": {
+        "CAM-01": 70,
+        "CAM-02": 70,
+        "CAM-03": 70,
+        "CAM-04": 69,
+        "CAM-05": 69,
+        "CAM-06": 69,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.04,
+        "CAM-02": 0.56,
+        "CAM-03": 0.02,
+        "CAM-04": 2.57,
+        "CAM-05": 2.06,
+        "CAM-06": 1.53,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 70.08,
+      "rss_mib": 529.391
+    },
+    {
+      "elapsed_seconds": 230.041,
+      "health_latency_ms": 9.921,
+      "frames": {
+        "CAM-01": 71,
+        "CAM-02": 70,
+        "CAM-03": 70,
+        "CAM-04": 70,
+        "CAM-05": 70,
+        "CAM-06": 70,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.06,
+        "CAM-02": 2.57,
+        "CAM-03": 2.02,
+        "CAM-04": 1.56,
+        "CAM-05": 1.04,
+        "CAM-06": 0.57,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 67.873,
+      "rss_mib": 540.363
+    },
+    {
+      "elapsed_seconds": 232.038,
+      "health_latency_ms": 6.924,
+      "frames": {
+        "CAM-01": 71,
+        "CAM-02": 71,
+        "CAM-03": 71,
+        "CAM-04": 71,
+        "CAM-05": 71,
+        "CAM-06": 70,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.06,
+        "CAM-02": 1.56,
+        "CAM-03": 1.05,
+        "CAM-04": 0.49,
+        "CAM-05": 0.1,
+        "CAM-06": 2.57,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 68.101,
+      "rss_mib": 539.797
+    },
+    {
+      "elapsed_seconds": 234.039,
+      "health_latency_ms": 8.581,
+      "frames": {
+        "CAM-01": 72,
+        "CAM-02": 72,
+        "CAM-03": 72,
+        "CAM-04": 71,
+        "CAM-05": 71,
+        "CAM-06": 71,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.05,
+        "CAM-02": 0.57,
+        "CAM-03": 0.03,
+        "CAM-04": 2.49,
+        "CAM-05": 2.1,
+        "CAM-06": 1.57,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 65.949,
+      "rss_mib": 540.066
+    },
+    {
+      "elapsed_seconds": 236.037,
+      "health_latency_ms": 6.346,
+      "frames": {
+        "CAM-01": 73,
+        "CAM-02": 72,
+        "CAM-03": 72,
+        "CAM-04": 72,
+        "CAM-05": 72,
+        "CAM-06": 72,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.07,
+        "CAM-02": 2.56,
+        "CAM-03": 2.03,
+        "CAM-04": 1.56,
+        "CAM-05": 1.04,
+        "CAM-06": 0.59,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 64.07,
+      "rss_mib": 540.441
+    },
+    {
+      "elapsed_seconds": 238.039,
+      "health_latency_ms": 8.141,
+      "frames": {
+        "CAM-01": 73,
+        "CAM-02": 73,
+        "CAM-03": 73,
+        "CAM-04": 73,
+        "CAM-05": 72,
+        "CAM-06": 72,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "loading",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.07,
+        "CAM-02": 1.5,
+        "CAM-03": 1.06,
+        "CAM-04": 0.56,
+        "CAM-05": 3.04,
+        "CAM-06": 2.59,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 68.44,
+      "rss_mib": 540.195
+    },
+    {
+      "elapsed_seconds": 240.039,
+      "health_latency_ms": 8.619,
+      "frames": {
+        "CAM-01": 74,
+        "CAM-02": 74,
+        "CAM-03": 74,
+        "CAM-04": 73,
+        "CAM-05": 73,
+        "CAM-06": 73,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.07,
+        "CAM-02": 0.56,
+        "CAM-03": 0.06,
+        "CAM-04": 2.56,
+        "CAM-05": 2.01,
+        "CAM-06": 1.58,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 65.977,
+      "rss_mib": 530.414
+    },
+    {
+      "elapsed_seconds": 242.039,
+      "health_latency_ms": 8.156,
+      "frames": {
+        "CAM-01": 75,
+        "CAM-02": 74,
+        "CAM-03": 74,
+        "CAM-04": 74,
+        "CAM-05": 74,
+        "CAM-06": 74,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.03,
+        "CAM-02": 2.56,
+        "CAM-03": 2.06,
+        "CAM-04": 1.5,
+        "CAM-05": 1.03,
+        "CAM-06": 0.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 70.523,
+      "rss_mib": 530.484
+    },
+    {
+      "elapsed_seconds": 244.038,
+      "health_latency_ms": 7.634,
+      "frames": {
+        "CAM-01": 75,
+        "CAM-02": 75,
+        "CAM-03": 75,
+        "CAM-04": 75,
+        "CAM-05": 75,
+        "CAM-06": 74,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.03,
+        "CAM-02": 1.56,
+        "CAM-03": 1.02,
+        "CAM-04": 0.57,
+        "CAM-05": 0.03,
+        "CAM-06": 2.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 67.515,
+      "rss_mib": 530.484
+    },
+    {
+      "elapsed_seconds": 246.037,
+      "health_latency_ms": 6.032,
+      "frames": {
+        "CAM-01": 76,
+        "CAM-02": 76,
+        "CAM-03": 76,
+        "CAM-04": 75,
+        "CAM-05": 75,
+        "CAM-06": 75,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.07,
+        "CAM-02": 0.57,
+        "CAM-03": 0.07,
+        "CAM-04": 2.57,
+        "CAM-05": 2.03,
+        "CAM-06": 1.57,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 61.05,
+      "rss_mib": 530.484
+    },
+    {
+      "elapsed_seconds": 248.037,
+      "health_latency_ms": 5.918,
+      "frames": {
+        "CAM-01": 77,
+        "CAM-02": 76,
+        "CAM-03": 76,
+        "CAM-04": 76,
+        "CAM-05": 76,
+        "CAM-06": 76,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.08,
+        "CAM-02": 2.57,
+        "CAM-03": 2.07,
+        "CAM-04": 1.54,
+        "CAM-05": 1.06,
+        "CAM-06": 0.53,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 65.507,
+      "rss_mib": 530.414
+    },
+    {
+      "elapsed_seconds": 250.036,
+      "health_latency_ms": 5.634,
+      "frames": {
+        "CAM-01": 77,
+        "CAM-02": 77,
+        "CAM-03": 77,
+        "CAM-04": 77,
+        "CAM-05": 77,
+        "CAM-06": 76,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.08,
+        "CAM-02": 1.53,
+        "CAM-03": 1.05,
+        "CAM-04": 0.57,
+        "CAM-05": 0.06,
+        "CAM-06": 2.53,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 64.509,
+      "rss_mib": 529.375
+    },
+    {
+      "elapsed_seconds": 252.037,
+      "health_latency_ms": 6.222,
+      "frames": {
+        "CAM-01": 78,
+        "CAM-02": 78,
+        "CAM-03": 78,
+        "CAM-04": 77,
+        "CAM-05": 77,
+        "CAM-06": 77,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.07,
+        "CAM-02": 0.55,
+        "CAM-03": 0.06,
+        "CAM-04": 2.57,
+        "CAM-05": 2.06,
+        "CAM-06": 1.55,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 64.481,
+      "rss_mib": 539.812
+    },
+    {
+      "elapsed_seconds": 254.039,
+      "health_latency_ms": 8.546,
+      "frames": {
+        "CAM-01": 78,
+        "CAM-02": 78,
+        "CAM-03": 78,
+        "CAM-04": 78,
+        "CAM-05": 78,
+        "CAM-06": 78,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "loading",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.07,
+        "CAM-02": 2.55,
+        "CAM-03": 2.06,
+        "CAM-04": 1.52,
+        "CAM-05": 1.01,
+        "CAM-06": 0.55,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 68.909,
+      "rss_mib": 539.797
+    },
+    {
+      "elapsed_seconds": 256.038,
+      "health_latency_ms": 7.442,
+      "frames": {
+        "CAM-01": 79,
+        "CAM-02": 79,
+        "CAM-03": 79,
+        "CAM-04": 79,
+        "CAM-05": 79,
+        "CAM-06": 78,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.99,
+        "CAM-02": 1.56,
+        "CAM-03": 1.06,
+        "CAM-04": 0.59,
+        "CAM-05": 0.05,
+        "CAM-06": 2.55,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 65.045,
+      "rss_mib": 529.434
+    },
+    {
+      "elapsed_seconds": 258.039,
+      "health_latency_ms": 8.295,
+      "frames": {
+        "CAM-01": 80,
+        "CAM-02": 80,
+        "CAM-03": 79,
+        "CAM-04": 79,
+        "CAM-05": 79,
+        "CAM-06": 79,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "loading",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.98,
+        "CAM-02": 0.53,
+        "CAM-03": 3.06,
+        "CAM-04": 2.59,
+        "CAM-05": 2.05,
+        "CAM-06": 1.57,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 69.468,
+      "rss_mib": 529.414
+    },
+    {
+      "elapsed_seconds": 260.042,
+      "health_latency_ms": 10.894,
+      "frames": {
+        "CAM-01": 81,
+        "CAM-02": 80,
+        "CAM-03": 80,
+        "CAM-04": 80,
+        "CAM-05": 80,
+        "CAM-06": 80,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.02,
+        "CAM-02": 2.53,
+        "CAM-03": 2.02,
+        "CAM-04": 1.54,
+        "CAM-05": 1.05,
+        "CAM-06": 0.53,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 69.408,
+      "rss_mib": 529.383
+    },
+    {
+      "elapsed_seconds": 262.039,
+      "health_latency_ms": 8.186,
+      "frames": {
+        "CAM-01": 81,
+        "CAM-02": 81,
+        "CAM-03": 81,
+        "CAM-04": 81,
+        "CAM-05": 81,
+        "CAM-06": 80,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.02,
+        "CAM-02": 1.56,
+        "CAM-03": 0.95,
+        "CAM-04": 0.55,
+        "CAM-05": 0.02,
+        "CAM-06": 2.53,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 72.101,
+      "rss_mib": 529.379
+    },
+    {
+      "elapsed_seconds": 264.039,
+      "health_latency_ms": 8.107,
+      "frames": {
+        "CAM-01": 82,
+        "CAM-02": 82,
+        "CAM-03": 81,
+        "CAM-04": 81,
+        "CAM-05": 81,
+        "CAM-06": 81,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "loading",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.05,
+        "CAM-02": 0.54,
+        "CAM-03": 2.95,
+        "CAM-04": 2.55,
+        "CAM-05": 2.02,
+        "CAM-06": 1.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 66.501,
+      "rss_mib": 538.961
+    },
+    {
+      "elapsed_seconds": 266.04,
+      "health_latency_ms": 8.844,
+      "frames": {
+        "CAM-01": 83,
+        "CAM-02": 82,
+        "CAM-03": 82,
+        "CAM-04": 82,
+        "CAM-05": 82,
+        "CAM-06": 82,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.06,
+        "CAM-02": 2.54,
+        "CAM-03": 2.02,
+        "CAM-04": 1.55,
+        "CAM-05": 1.06,
+        "CAM-06": 0.57,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 63.476,
+      "rss_mib": 540.336
+    },
+    {
+      "elapsed_seconds": 268.038,
+      "health_latency_ms": 7.433,
+      "frames": {
+        "CAM-01": 83,
+        "CAM-02": 83,
+        "CAM-03": 83,
+        "CAM-04": 83,
+        "CAM-05": 83,
+        "CAM-06": 82,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.06,
+        "CAM-02": 1.57,
+        "CAM-03": 1.03,
+        "CAM-04": 0.52,
+        "CAM-05": 0.07,
+        "CAM-06": 2.57,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 63.548,
+      "rss_mib": 540.961
+    },
+    {
+      "elapsed_seconds": 270.039,
+      "health_latency_ms": 7.981,
+      "frames": {
+        "CAM-01": 84,
+        "CAM-02": 84,
+        "CAM-03": 84,
+        "CAM-04": 83,
+        "CAM-05": 83,
+        "CAM-06": 83,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.02,
+        "CAM-02": 0.54,
+        "CAM-03": 0.04,
+        "CAM-04": 2.52,
+        "CAM-05": 2.07,
+        "CAM-06": 1.49,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 68.476,
+      "rss_mib": 532.461
+    },
+    {
+      "elapsed_seconds": 272.039,
+      "health_latency_ms": 8.236,
+      "frames": {
+        "CAM-01": 85,
+        "CAM-02": 84,
+        "CAM-03": 84,
+        "CAM-04": 84,
+        "CAM-05": 84,
+        "CAM-06": 84,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.05,
+        "CAM-02": 2.54,
+        "CAM-03": 2.04,
+        "CAM-04": 1.53,
+        "CAM-05": 1.01,
+        "CAM-06": 0.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 65.493,
+      "rss_mib": 529.52
+    },
+    {
+      "elapsed_seconds": 274.039,
+      "health_latency_ms": 8.202,
+      "frames": {
+        "CAM-01": 85,
+        "CAM-02": 85,
+        "CAM-03": 85,
+        "CAM-04": 85,
+        "CAM-05": 84,
+        "CAM-06": 84,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "loading",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.05,
+        "CAM-02": 1.51,
+        "CAM-03": 1.04,
+        "CAM-04": 0.55,
+        "CAM-05": 3.01,
+        "CAM-06": 2.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 66.505,
+      "rss_mib": 540.324
+    },
+    {
+      "elapsed_seconds": 276.038,
+      "health_latency_ms": 7.696,
+      "frames": {
+        "CAM-01": 86,
+        "CAM-02": 86,
+        "CAM-03": 86,
+        "CAM-04": 85,
+        "CAM-05": 85,
+        "CAM-06": 85,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.05,
+        "CAM-02": 0.53,
+        "CAM-03": 0.06,
+        "CAM-04": 2.55,
+        "CAM-05": 2.0,
+        "CAM-06": 1.54,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 66.516,
+      "rss_mib": 529.281
+    },
+    {
+      "elapsed_seconds": 278.039,
+      "health_latency_ms": 8.044,
+      "frames": {
+        "CAM-01": 87,
+        "CAM-02": 86,
+        "CAM-03": 86,
+        "CAM-04": 86,
+        "CAM-05": 86,
+        "CAM-06": 86,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.02,
+        "CAM-02": 2.53,
+        "CAM-03": 2.06,
+        "CAM-04": 1.52,
+        "CAM-05": 1.04,
+        "CAM-06": 0.52,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 65.987,
+      "rss_mib": 529.281
+    },
+    {
+      "elapsed_seconds": 280.039,
+      "health_latency_ms": 7.873,
+      "frames": {
+        "CAM-01": 87,
+        "CAM-02": 87,
+        "CAM-03": 87,
+        "CAM-04": 87,
+        "CAM-05": 87,
+        "CAM-06": 86,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.02,
+        "CAM-02": 1.56,
+        "CAM-03": 1.02,
+        "CAM-04": 0.56,
+        "CAM-05": 0.01,
+        "CAM-06": 2.52,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 63.505,
+      "rss_mib": 530.676
+    },
+    {
+      "elapsed_seconds": 282.04,
+      "health_latency_ms": 8.975,
+      "frames": {
+        "CAM-01": 88,
+        "CAM-02": 88,
+        "CAM-03": 88,
+        "CAM-04": 87,
+        "CAM-05": 87,
+        "CAM-06": 87,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.05,
+        "CAM-02": 0.52,
+        "CAM-03": 0.06,
+        "CAM-04": 2.56,
+        "CAM-05": 2.01,
+        "CAM-06": 1.56,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 61.466,
+      "rss_mib": 529.184
+    },
+    {
+      "elapsed_seconds": 284.039,
+      "health_latency_ms": 8.093,
+      "frames": {
+        "CAM-01": 89,
+        "CAM-02": 88,
+        "CAM-03": 88,
+        "CAM-04": 88,
+        "CAM-05": 88,
+        "CAM-06": 88,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.06,
+        "CAM-02": 2.52,
+        "CAM-03": 2.06,
+        "CAM-04": 1.54,
+        "CAM-05": 1.04,
+        "CAM-06": 0.52,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 64.027,
+      "rss_mib": 529.094
+    },
+    {
+      "elapsed_seconds": 286.039,
+      "health_latency_ms": 7.778,
+      "frames": {
+        "CAM-01": 89,
+        "CAM-02": 89,
+        "CAM-03": 89,
+        "CAM-04": 89,
+        "CAM-05": 89,
+        "CAM-06": 88,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.06,
+        "CAM-02": 1.55,
+        "CAM-03": 1.04,
+        "CAM-04": 0.51,
+        "CAM-05": 0.05,
+        "CAM-06": 2.52,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 63.513,
+      "rss_mib": 540.523
+    },
+    {
+      "elapsed_seconds": 288.041,
+      "health_latency_ms": 9.815,
+      "frames": {
+        "CAM-01": 90,
+        "CAM-02": 90,
+        "CAM-03": 90,
+        "CAM-04": 89,
+        "CAM-05": 89,
+        "CAM-06": 89,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.05,
+        "CAM-02": 0.55,
+        "CAM-03": 0.06,
+        "CAM-04": 2.51,
+        "CAM-05": 2.05,
+        "CAM-06": 1.53,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 60.434,
+      "rss_mib": 540.242
+    },
+    {
+      "elapsed_seconds": 290.039,
+      "health_latency_ms": 8.196,
+      "frames": {
+        "CAM-01": 90,
+        "CAM-02": 90,
+        "CAM-03": 90,
+        "CAM-04": 90,
+        "CAM-05": 90,
+        "CAM-06": 90,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "loading",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.04,
+        "CAM-02": 2.55,
+        "CAM-03": 2.06,
+        "CAM-04": 1.56,
+        "CAM-05": 1.0,
+        "CAM-06": 0.52,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 62.555,
+      "rss_mib": 540.375
+    },
+    {
+      "elapsed_seconds": 292.038,
+      "health_latency_ms": 7.591,
+      "frames": {
+        "CAM-01": 91,
+        "CAM-02": 91,
+        "CAM-03": 91,
+        "CAM-04": 91,
+        "CAM-05": 91,
+        "CAM-06": 90,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.98,
+        "CAM-02": 1.55,
+        "CAM-03": 1.04,
+        "CAM-04": 0.56,
+        "CAM-05": 0.03,
+        "CAM-06": 2.52,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 65.018,
+      "rss_mib": 532.137
+    },
+    {
+      "elapsed_seconds": 294.04,
+      "health_latency_ms": 9.02,
+      "frames": {
+        "CAM-01": 92,
+        "CAM-02": 92,
+        "CAM-03": 91,
+        "CAM-04": 91,
+        "CAM-05": 91,
+        "CAM-06": 91,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "loading",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.97,
+        "CAM-02": 0.52,
+        "CAM-03": 3.04,
+        "CAM-04": 2.56,
+        "CAM-05": 2.03,
+        "CAM-06": 1.54,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 66.454,
+      "rss_mib": 531.363
+    },
+    {
+      "elapsed_seconds": 296.04,
+      "health_latency_ms": 9.085,
+      "frames": {
+        "CAM-01": 93,
+        "CAM-02": 92,
+        "CAM-03": 92,
+        "CAM-04": 92,
+        "CAM-05": 92,
+        "CAM-06": 92,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.04,
+        "CAM-02": 2.52,
+        "CAM-03": 2.01,
+        "CAM-04": 1.53,
+        "CAM-05": 1.04,
+        "CAM-06": 0.55,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 63.5,
+      "rss_mib": 531.465
+    },
+    {
+      "elapsed_seconds": 298.038,
+      "health_latency_ms": 7.598,
+      "frames": {
+        "CAM-01": 93,
+        "CAM-02": 93,
+        "CAM-03": 93,
+        "CAM-04": 93,
+        "CAM-05": 92,
+        "CAM-06": 92,
+        "CAM-07": 0,
+        "CAM-08": 0,
+        "CAM-09": 0
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "loading",
+        "CAM-06": "processing",
+        "CAM-07": "unavailable",
+        "CAM-08": "unavailable",
+        "CAM-09": "unavailable"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.04,
+        "CAM-02": 1.57,
+        "CAM-03": 0.96,
+        "CAM-04": 0.53,
+        "CAM-05": 3.04,
+        "CAM-06": 2.55,
+        "CAM-07": null,
+        "CAM-08": null,
+        "CAM-09": null
+      },
+      "cpu_percent": 65.046,
+      "rss_mib": 540.777
+    }
+  ],
+  "limitations": [
+    "Timing windows contain at most 64 successful attempts per camera; failures have separate counters and last-attempt timing.",
+    "First-success timing is per camera and can include source/model initialization; it is not a controlled cold-start benchmark.",
+    "Budget overruns mean a processing attempt exceeded its scheduled interval; they are not source frames or browser playback drops.",
+    "Sparse replay sampling intentionally skips source frames. VFR/capture drops, INP/LCP/CLS and real plate accuracy are unmeasured.",
+    "CPU percent uses process CPU seconds and can exceed 100%; memory is RSS, not peak resident usage. API restart can invalidate counters."
+  ],
+  "application_commit": "69d39c37b69f0ba827182c238adf97c945a35b3a",
+  "sampling_budget_fps": 2,
+  "inference_branches": {
+    "vehicle_detection_enabled": true,
+    "plate_recognition_enabled": false
+  },
+  "data_root_scope": "Disposable /tmp/ai26-ev09-long-soak-69d39c3; service stopped after the profile.",
+  "replay_sources_sha256": {
+    "CAM-01": "2fa6cffcf7a5edd25bf9a3bc1cddeea59a098c4c81d78ed51d9658f238ed4a0f",
+    "CAM-02": "eca71f58121803e972f086e5ca280afbb8aa95380e87545f1483f29a57dc1fd0",
+    "CAM-03": "03c7e49e89dc6a552369211c959d821627cb6db0a92c471f2db61f011cd7d33c",
+    "CAM-04": "735448fd4b25b1d2d035def69df1714dbc7b71073739ae8691c6dcdd817e41cf",
+    "CAM-05": "56922cb8df3242034ac62e1c4a474e84ccbb4090b19d8c7a78855c0b21192a86",
+    "CAM-06": "48a562a900dab2698a503e04882f4dd1856c8b8ae6f58201db9ef4b3977aa3d7"
+  },
+  "recorded_at_utc": "2026-10-15T08:48:04+00:00"
+}

@@ -1,0 +1,136 @@
+rule_files:
+  - /ops/ai26-alerts.yml
+
+evaluation_interval: 1m
+
+tests:
+  - name: API scrape outage fires after one minute
+    interval: 1m
+    input_series:
+      - series: 'up{job="ai26",instance="backend:8001"}'
+        values: '0 0 1 1'
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: AI26APIDown
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: AI26APIDown
+        exp_alerts:
+          - exp_labels:
+              job: ai26
+              instance: backend:8001
+              severity: critical
+            exp_annotations:
+              summary: AI26 API metrics endpoint is unavailable
+              description: Prometheus has failed to scrape AI26 for at least one minute.
+      - eval_time: 2m
+        alertname: AI26APIDown
+        exp_alerts: []
+
+  - name: all sources unavailable fires after two minutes
+    interval: 1m
+    input_series:
+      - series: 'ai26_camera_source_available{camera_id="CAM-01"}'
+        values: '0 0 0 1 1'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: AI26NoAvailableCameraSources
+        exp_alerts: []
+      - eval_time: 2m
+        alertname: AI26NoAvailableCameraSources
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: AI26 has no available camera sources
+              description: Every configured camera source has been unavailable for at least two minutes.
+      - eval_time: 3m
+        alertname: AI26NoAvailableCameraSources
+        exp_alerts: []
+
+  - name: processing enabled without any frame becomes stale
+    interval: 1m
+    input_series:
+      - series: 'ai26_processing_enabled'
+        values: '1+0x3'
+      - series: 'ai26_camera_source_available{camera_id="CAM-01"}'
+        values: '1+0x3'
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: AI26CameraFrameStale
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: AI26CameraFrameStale
+        exp_alerts:
+          - exp_labels:
+              camera_id: CAM-01
+              severity: warning
+            exp_annotations:
+              summary: AI26 camera processing has stopped producing fresh frames
+              description: A configured source has had no processed frame or its latest processed frame is older than 30 seconds.
+
+  - name: stale frame alert clears after a fresh frame
+    interval: 1m
+    input_series:
+      - series: 'ai26_processing_enabled'
+        values: '1+0x3'
+      - series: 'ai26_camera_source_available{camera_id="CAM-01"}'
+        values: '1+0x3'
+      - series: 'ai26_camera_frame_age_seconds{camera_id="CAM-01"}'
+        values: '45 45 0 0'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: AI26CameraFrameStale
+        exp_alerts:
+          - exp_labels:
+              camera_id: CAM-01
+              severity: warning
+            exp_annotations:
+              summary: AI26 camera processing has stopped producing fresh frames
+              description: A configured source has had no processed frame or its latest processed frame is older than 30 seconds.
+      - eval_time: 2m
+        alertname: AI26CameraFrameStale
+        exp_alerts: []
+
+  - name: repeated processing failures fire after one minute
+    interval: 1m
+    input_series:
+      - series: 'ai26_camera_failed_attempts_total{camera_id="CAM-01"}'
+        values: '0 1 2 3 4 5 6 6 6 6 6'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: AI26CameraProcessingFailures
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: AI26CameraProcessingFailures
+        exp_alerts:
+          - exp_labels:
+              camera_id: CAM-01
+              severity: warning
+            exp_annotations:
+              summary: AI26 camera processing is repeatedly failing
+              description: A camera has recorded at least three failed processing attempts in five minutes.
+      - eval_time: 10m
+        alertname: AI26CameraProcessingFailures
+        exp_alerts: []
+
+  - name: artifact storage near capacity fires after two minutes and clears
+    interval: 1m
+    input_series:
+      - series: 'ai26_artifact_storage_utilization_ratio'
+        values: '0.89 0.91 0.92 0.92 0.88'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: AI26ArtifactStorageNearCapacity
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: AI26ArtifactStorageNearCapacity
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: AI26 sampled-read image storage is nearly full
+              description: Managed evidence images have used at least 90% of the configured storage budget for two minutes. New image capture may be incomplete until capacity is increased or retention cleanup runs.
+      - eval_time: 4m
+        alertname: AI26ArtifactStorageNearCapacity
+        exp_alerts: []

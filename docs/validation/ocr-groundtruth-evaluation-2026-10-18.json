@@ -1,0 +1,224 @@
+{
+  "accuracy_claim_allowed": false,
+  "by_camera": {
+    "CAM-07": {
+      "mismatch": 2,
+      "mismatch_rejected_by_pipeline": 2,
+      "readable": 2
+    },
+    "CAM-08": {
+      "mismatch": 1,
+      "mismatch_rejected_by_pipeline": 1,
+      "readable": 1
+    },
+    "CAM-09": {
+      "mismatch": 1,
+      "mismatch_rejected_by_pipeline": 1,
+      "readable": 1
+    }
+  },
+  "captured_at_utc": "2026-10-18T06:20:34+00:00",
+  "evaluation_tool": "backend/evaluate_review.py",
+  "evaluation_tool_sha256": "cb62d11e8de86cc7d0af38b9c3aec12a256cfe63244e65230f4e8d16dbb65b0c",
+  "limitations": [
+    "This summary covers only the selected reviewed crops; it is not a representative accuracy estimate.",
+    "Unreadable, uncertain, pending, and invalid samples are not exact-string comparisons.",
+    "Missing outputs and inconsistent repeated outputs are reported separately from mismatches.",
+    "A mismatch is counted as rejected only when every matched stored read explicitly has an invalid, low-confidence, or ambiguous status, or format_valid=false."
+  ],
+  "offline_preprocessing_probe": {
+    "all_four_full_frames_had_one_overlapping_plate_box": true,
+    "cam07_02_nearby_frame_probe": {
+      "contrast_variant_5_exact_matches": 1,
+      "frames_attempted": [
+        1106,
+        1110,
+        1114,
+        1118,
+        1122
+      ],
+      "scope": "Spatial proximity to the reviewed box is not independently verified identity.",
+      "target_candidate_found_frames": [
+        1114
+      ]
+    },
+    "captured_at_utc": "2026-10-18T06:39:30+00:00",
+    "detected_crop_contrast_exact_matches": 1,
+    "detected_crop_contrast_exact_matches_passing_current_gates": 1,
+    "device": "CPUExecutionProvider",
+    "expanded_region_exact_matches_across_samples": 0,
+    "full_frame_exact_matches_across_samples": 0,
+    "image_recorded": false,
+    "ocr_model": "global-plates-mobile-vit-v2-model",
+    "ocr_text_recorded": false,
+    "readable_samples_tested": 4,
+    "reproducible_command_template": "PYTHONPATH=backend AI26_CPU_THREADS=2 backend/.venv/bin/python evaluation/probe_review_crop_ocr.py --manifest <private-review-manifest> --sample-id <reviewed-sample-id> --cpu-threads 2",
+    "sample_results": [
+      {
+        "crop_sha256": "2111c1de6d1c1099c47805d31e11ff8c6fe6fd1b19a85b19e6aa82a95c83d31e",
+        "detected_crop_contrast_exact_matches": 0,
+        "detected_crop_contrast_matches_passing_format_and_confidence_gates": 0,
+        "detected_plate_count": 1,
+        "detections_overlapping_reviewed_box_iou_025": 1,
+        "exact_match_variant_indices": [],
+        "exact_match_variant_names": [],
+        "exact_match_variants": 0,
+        "expanded_review_box_ocr_exact_match": false,
+        "frame_dimensions": [
+          1920,
+          1080
+        ],
+        "frame_index": 1173,
+        "full_frame_exact_matches": 0,
+        "sample_id": "CAM-07-01",
+        "source_sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689"
+      },
+      {
+        "crop_sha256": "37bedf56ffcf38d8ae570c8209a43ab20e8d1161647b499b64c9b4b28be03ac7",
+        "detected_crop_contrast_exact_matches": 1,
+        "detected_crop_contrast_matches_passing_format_and_confidence_gates": 1,
+        "detected_plate_count": 1,
+        "detections_overlapping_reviewed_box_iou_025": 1,
+        "exact_match_variant_indices": [
+          5
+        ],
+        "exact_match_variant_names": [
+          "grayscale_contrast_alpha_1_5_beta_minus_25"
+        ],
+        "exact_match_variants": 1,
+        "expanded_review_box_ocr_exact_match": false,
+        "frame_dimensions": [
+          1920,
+          1080
+        ],
+        "frame_index": 1114,
+        "full_frame_exact_matches": 0,
+        "sample_id": "CAM-07-02",
+        "source_sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689"
+      },
+      {
+        "crop_sha256": "ac29d02e76a7216a2858114db0ea91e0e26c2c1d5cfbb9357a73a844feb39480",
+        "detected_crop_contrast_exact_matches": 0,
+        "detected_crop_contrast_matches_passing_format_and_confidence_gates": 0,
+        "detected_plate_count": 1,
+        "detections_overlapping_reviewed_box_iou_025": 1,
+        "exact_match_variant_indices": [],
+        "exact_match_variant_names": [],
+        "exact_match_variants": 0,
+        "expanded_review_box_ocr_exact_match": false,
+        "frame_dimensions": [
+          1920,
+          1080
+        ],
+        "frame_index": 425,
+        "full_frame_exact_matches": 0,
+        "sample_id": "CAM-08-01",
+        "source_sha256": "348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d"
+      },
+      {
+        "crop_sha256": "f0354b4175993bafd9d9ac09c20877e71e08ad21838b3c3a2f5c1f0fd5fbf049",
+        "detected_crop_contrast_exact_matches": 0,
+        "detected_crop_contrast_matches_passing_format_and_confidence_gates": 0,
+        "detected_plate_count": 1,
+        "detections_overlapping_reviewed_box_iou_025": 1,
+        "exact_match_variant_indices": [],
+        "exact_match_variant_names": [],
+        "exact_match_variants": 0,
+        "expanded_review_box_ocr_exact_match": false,
+        "frame_dimensions": [
+          1920,
+          1080
+        ],
+        "frame_index": 337,
+        "full_frame_exact_matches": 0,
+        "sample_id": "CAM-09-F01",
+        "source_sha256": "e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341"
+      }
+    ],
+    "samples_with_at_least_one_exact_match": 1,
+    "scope": "Four selected reviewed crops and exact source frames; exploratory preprocessing only, not a representative accuracy estimate or production change.",
+    "tool": "evaluation/probe_review_crop_ocr.py",
+    "tool_sha256": "93ed71d00a3502b89cb64241432d4ab3d133a7cc86ab4d24a1ef38dc7037a11d",
+    "total_crop_variants_tested": 68,
+    "variant_gate_audit": {
+      "captured_at_utc": "2026-10-18T06:48:48+00:00",
+      "exact_gate_passing_variants": 1,
+      "inexact_gate_passing_variants": 4,
+      "production_change_promoted": false,
+      "sample_results": [
+        {
+          "crop_sha256": "2111c1de6d1c1099c47805d31e11ff8c6fe6fd1b19a85b19e6aa82a95c83d31e",
+          "exact_gate_passing_variant_indices": [],
+          "exact_match_variant_indices": [],
+          "frame_index": 1173,
+          "image_recorded": false,
+          "inexact_gate_passing_variant_indices": [
+            9
+          ],
+          "ocr_text_recorded": false,
+          "sample_id": "CAM-07-01",
+          "source_sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689",
+          "variants_passing_format_and_confidence_gates": 1
+        },
+        {
+          "crop_sha256": "37bedf56ffcf38d8ae570c8209a43ab20e8d1161647b499b64c9b4b28be03ac7",
+          "exact_gate_passing_variant_indices": [
+            5
+          ],
+          "exact_match_variant_indices": [
+            5
+          ],
+          "frame_index": 1114,
+          "image_recorded": false,
+          "inexact_gate_passing_variant_indices": [],
+          "ocr_text_recorded": false,
+          "sample_id": "CAM-07-02",
+          "source_sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689",
+          "variants_passing_format_and_confidence_gates": 1
+        },
+        {
+          "crop_sha256": "ac29d02e76a7216a2858114db0ea91e0e26c2c1d5cfbb9357a73a844feb39480",
+          "exact_gate_passing_variant_indices": [],
+          "exact_match_variant_indices": [],
+          "frame_index": 425,
+          "image_recorded": false,
+          "inexact_gate_passing_variant_indices": [
+            5,
+            8,
+            9
+          ],
+          "ocr_text_recorded": false,
+          "sample_id": "CAM-08-01",
+          "source_sha256": "348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d",
+          "variants_passing_format_and_confidence_gates": 3
+        },
+        {
+          "crop_sha256": "f0354b4175993bafd9d9ac09c20877e71e08ad21838b3c3a2f5c1f0fd5fbf049",
+          "exact_gate_passing_variant_indices": [],
+          "exact_match_variant_indices": [],
+          "frame_index": 337,
+          "image_recorded": false,
+          "inexact_gate_passing_variant_indices": [],
+          "ocr_text_recorded": false,
+          "sample_id": "CAM-09-F01",
+          "source_sha256": "e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341",
+          "variants_passing_format_and_confidence_gates": 0
+        }
+      ],
+      "threshold_scope": "Plate format valid and OCR confidence >= 0.35; association and repeat-read gates not evaluated.",
+      "tool_sha256": "27d62c76b2576ebccad8cd6d7d282f09371008ca70a0e9a3b67c68a598e8dc5f",
+      "variants_passing_format_and_confidence_gates": 5,
+      "variants_tested": 68
+    },
+    "variants_tested": 17
+  },
+  "plate_values_or_images_in_report": false,
+  "reviewed_crop_summary": {
+    "mismatch": 4,
+    "mismatch_rejected_by_pipeline": 4,
+    "readable": 4,
+    "uncertain": 1,
+    "unreadable": 16
+  },
+  "schema_version": 1
+}

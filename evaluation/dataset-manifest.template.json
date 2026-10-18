@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "dataset_id": "replace-with-dataset-name-and-version",
+  "split_dimensions": [
+    "vehicle_id",
+    "camera_id",
+    "location_id",
+    "session_id"
+  ],
+  "clips": [],
+  "missing_inputs": [
+    {
+      "camera_id": "CAM-07",
+      "reason": "A candidate clip is locally available, but source authorization, origin and original recording clock are unverified; no independent vehicle/session split with complete readable and negative labels is available for held-out evaluation."
+    },
+    {
+      "camera_id": "CAM-08",
+      "reason": "A candidate clip is locally available, but source authorization, origin and original recording clock are unverified; no independent vehicle/session split with complete readable and negative labels is available for held-out evaluation."
+    },
+    {
+      "camera_id": "CAM-09",
+      "reason": "A candidate clip is locally available, but source authorization, origin and original recording clock are unverified; no independent vehicle/session split with complete readable and negative labels is available for held-out evaluation."
+    }
+  ]
+}

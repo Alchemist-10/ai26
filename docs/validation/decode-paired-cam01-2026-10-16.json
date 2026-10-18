@@ -1,0 +1,37 @@
+{
+  "generated_at_utc": "2026-10-16T04:16:45Z",
+  "scope": "Paired decode-only comparison on one bundled playback proxy. No inference, accuracy, multi-camera, or browser playback claim.",
+  "conditions": {
+    "source": "backend/static/playback/CAM-01.mp4",
+    "source_sha256": "2fa6cffcf7a5edd25bf9a3bc1cddeea59a098c4c81d78ed51d9658f238ed4a0f",
+    "opencv_threads": 1,
+    "reported_fps": 25.0,
+    "frame_count": 896,
+    "target_count_per_round": 12,
+    "rounds": 6,
+    "target_spacing_frames": 50,
+    "method_order": "Alternated seek-first and forward-first by round",
+    "timed_region": "OpenCV cursor checks and seek/grab/retrieve/read calls; pixel hashing was outside the timed interval"
+  },
+  "results": {
+    "seek": {
+      "samples": 72,
+      "median_ms": 72.035,
+      "p95_ms": 148.329,
+      "max_ms": 164.855
+    },
+    "forward": {
+      "samples": 72,
+      "median_ms": 13.309,
+      "p95_ms": 60.838,
+      "max_ms": 67.881
+    },
+    "pixel_hashes_match": true,
+    "decoder_positions_match": true
+  },
+  "limitations": [
+    "One bundled proxy and one local host; not a controlled multi-host study.",
+    "No model inference, frontend interaction, native playback frame-loss, or six-camera load was measured.",
+    "This result does not establish plate detection or OCR accuracy."
+  ]
+}

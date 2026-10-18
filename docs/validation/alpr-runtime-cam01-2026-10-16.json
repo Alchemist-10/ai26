@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "scope": "Single-process CPU ALPR latency on sampled frames; not OCR accuracy, a live six-camera test, or a browser measurement.",
+  "source": {
+    "filename": "CAM-01.mp4",
+    "sha256": "2fa6cffcf7a5edd25bf9a3bc1cddeea59a098c4c81d78ed51d9658f238ed4a0f",
+    "width": 960,
+    "height": 540,
+    "reported_fps": 25.0,
+    "frame_count": 896,
+    "duration_seconds": 35.84
+  },
+  "conditions": {
+    "python": "3.12.14",
+    "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+    "logical_cpus": 12,
+    "device": "CPUExecutionProvider",
+    "cpu_threads": 2,
+    "onnxruntime_version": "1.30.0",
+    "model_metadata": {
+      "weight_provenance_status": "hashed_loaded_files",
+      "detector_model": "yolo-v9-t-384-license-plate-end2end",
+      "ocr_model": "global-plates-mobile-vit-v2-model",
+      "model_files": [
+        {
+          "role": "plate_detector_weights",
+          "sha256": "888397b96d761c89db40bc9c305838e8652660f5e282c2cadebbe8d2951a77a8",
+          "size": 7771218,
+          "filename": "yolo-v9-t-384-license-plates-end2end.onnx"
+        },
+        {
+          "role": "ocr_weights",
+          "sha256": "e2fe5946c02e73901f73d21b3b7223a0c3e3b02059d4964fbf279b01af38d63c",
+          "size": 4991602,
+          "filename": "global_mobile_vit_v2_ocr.onnx"
+        },
+        {
+          "role": "ocr_configuration",
+          "sha256": "202b90f2a1f3a0d486b8f1fbd5cdc2f19f4f4881a094f086b983976ed3108aaf",
+          "size": 507,
+          "filename": "global_mobile_vit_v2_ocr_config.yaml"
+        }
+      ],
+      "compatibility": {
+        "status": "passed",
+        "detector_probe_shape": [
+          640,
+          640,
+          3
+        ],
+        "detector_candidate_count": 0,
+        "ocr_probe_shape": [
+          72,
+          320,
+          3
+        ],
+        "ocr_result_type": "OcrResult",
+        "ocr_confidence_count": 9
+      },
+      "detector_execution_providers": [
+        "CPUExecutionProvider"
+      ],
+      "ocr_execution_providers": [
+        "CPUExecutionProvider"
+      ],
+      "onnx_intra_op_threads": 2,
+      "onnx_inter_op_threads": 1,
+      "fast_alpr_version": "0.4.0",
+      "fast_plate_ocr_version": "1.1.0",
+      "open_image_models_version": "0.6.0",
+      "onnxruntime_version": "1.30.0"
+    },
+    "requested_max_frames": 12,
+    "requested_stride_seconds": 2.0,
+    "sampled_frames": 12
+  },
+  "timing": {
+    "base_runtime_import_ms": 1707.969,
+    "alpr_import_session_and_preflight_ms": 558.565,
+    "first_prediction_ms": 63.828,
+    "decode": {
+      "samples": 12,
+      "median_ms": 1.759,
+      "p95_ms": 38.122,
+      "max_ms": 38.122
+    },
+    "prediction_all": {
+      "samples": 12,
+      "median_ms": 53.319,
+      "p95_ms": 63.934,
+      "max_ms": 63.934
+    },
+    "prediction_after_first": {
+      "samples": 11,
+      "median_ms": 53.193,
+      "p95_ms": 63.934,
+      "max_ms": 63.934
+    },
+    "synthetic_ocr_first_prediction_ms": 6.993,
+    "synthetic_ocr_after_first": {
+      "samples": 11,
+      "median_ms": 6.95,
+      "p95_ms": 7.462,
+      "max_ms": 7.462
+    }
+  },
+  "aggregate": {
+    "decoded_samples": 12,
+    "plate_detection_count": 0,
+    "detected_plate_ocr_result_count": 0,
+    "synthetic_ocr_calls": 12,
+    "ocr_text_recorded": false
+  },
+  "samples": [
+    {
+      "frame_index": 0,
+      "source_time_seconds": 0.0,
+      "decode_ms": 38.122,
+      "alpr_predict_ms": 63.828,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 50,
+      "source_time_seconds": 2.0,
+      "decode_ms": 1.315,
+      "alpr_predict_ms": 60.526,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 100,
+      "source_time_seconds": 4.0,
+      "decode_ms": 2.657,
+      "alpr_predict_ms": 62.868,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 150,
+      "source_time_seconds": 6.0,
+      "decode_ms": 3.41,
+      "alpr_predict_ms": 63.934,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 200,
+      "source_time_seconds": 8.0,
+      "decode_ms": 1.111,
+      "alpr_predict_ms": 51.618,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 250,
+      "source_time_seconds": 10.0,
+      "decode_ms": 1.82,
+      "alpr_predict_ms": 53.193,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 300,
+      "source_time_seconds": 12.0,
+      "decode_ms": 1.697,
+      "alpr_predict_ms": 53.444,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 350,
+      "source_time_seconds": 14.0,
+      "decode_ms": 2.594,
+      "alpr_predict_ms": 55.428,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 400,
+      "source_time_seconds": 16.0,
+      "decode_ms": 1.626,
+      "alpr_predict_ms": 52.261,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 450,
+      "source_time_seconds": 18.0,
+      "decode_ms": 0.775,
+      "alpr_predict_ms": 50.834,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 500,
+      "source_time_seconds": 20.0,
+      "decode_ms": 1.97,
+      "alpr_predict_ms": 49.756,
+      "plate_detections": 0,
+      "ocr_results": 0
+    },
+    {
+      "frame_index": 550,
+      "source_time_seconds": 22.0,
+      "decode_ms": 1.506,
+      "alpr_predict_ms": 50.39,
+      "plate_detections": 0,
+      "ocr_results": 0
+    }
+  ],
+  "limitations": [
+    "No OCR strings, boxes, crops, or images are recorded.",
+    "The input clip may not contain readable plates; detection count is not a quality metric.",
+    "Synthetic OCR timings use one in-memory generated crop and do not measure accuracy or real plate image quality.",
+    "The first predictions include provider warm-up and are reported separately.",
+    "This isolated benchmark does not measure the shared six-camera scheduler, browser playback, or target hardware."
+  ]
+}

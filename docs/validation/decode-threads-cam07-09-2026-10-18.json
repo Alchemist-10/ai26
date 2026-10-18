@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-18",
+  "scope": "Seek/read timing by OpenCV/FFmpeg decoder thread count on exact supplied 1080p sources",
+  "conditions": {
+    "opencv": "5.0.0",
+    "decoder": "OpenCV CAP_FFMPEG",
+    "background": "Nine-source AI26 inference process active; desktop load uncontrolled",
+    "target_indices": [90, 270, 450],
+    "samples_per_setting_per_camera": 9,
+    "pixel_comparison": "Every thread setting matched the one-thread SHA-256 raw-pixel hash at each target",
+    "interpretation": "Paired local diagnostic under shared load, not an isolated decoder guarantee"
+  },
+  "sources": {
+    "CAM-07": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689",
+    "CAM-08": "348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d",
+    "CAM-09": "e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341"
+  },
+  "results": {
+    "CAM-07": {
+      "1": {"p50_ms": 796.0, "p95_ms": 1793.6},
+      "2": {"p50_ms": 682.5, "p95_ms": 1435.3},
+      "4": {"p50_ms": 604.4, "p95_ms": 1036.2},
+      "default": {"p50_ms": 524.3, "p95_ms": 739.3}
+    },
+    "CAM-08": {
+      "1": {"p50_ms": 1292.0, "p95_ms": 2774.1},
+      "2": {"p50_ms": 897.1, "p95_ms": 2058.4},
+      "4": {"p50_ms": 639.1, "p95_ms": 1486.5},
+      "default": {"p50_ms": 442.6, "p95_ms": 1050.8}
+    },
+    "CAM-09": {
+      "1": {"p50_ms": 1708.4, "p95_ms": 3352.2},
+      "2": {"p50_ms": 1106.8, "p95_ms": 1911.7},
+      "4": {"p50_ms": 937.9, "p95_ms": 1242.2},
+      "default": {"p50_ms": 501.9, "p95_ms": 675.0}
+    }
+  },
+  "choice": "Use two decoder threads as the bounded default for recorded sources. It improved paired medians on all three clips without relying on unrestricted default threading; the full-system comparison is recorded separately."
+}

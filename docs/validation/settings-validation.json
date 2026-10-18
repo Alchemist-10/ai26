@@ -1,0 +1,158 @@
+{
+  "date": "2026-10-11",
+  "scope": "Synthetic metadata only; disposable DB, processing disabled, no observations. Browser checks are manual integration verification, not new automated frontend tests or measured ML accuracy.",
+  "fixture_ports": {
+    "api": 8002,
+    "frontend": 5175
+  },
+  "backend_tests": {
+    "passed": 113,
+    "command": "AI26_DATA_ROOT=<temporary directory> AI26_PROCESSING_ENABLED=0 backend/.venv/bin/python -m unittest discover -s tests -v"
+  },
+  "browser_checks": {
+    "native_coordinate_validation_blocks_91": true,
+    "valid_save_created_revision_2": true,
+    "revision_1_read_only_history_retained": true,
+    "draft_survived_navigation": true,
+    "stale_revision_rejected_409": true,
+    "explicit_rebase_then_separate_save_created_4": true,
+    "api_outage_502_preserved_draft_and_blocked_retry": true,
+    "review_failure_then_restart_recovery": true,
+    "use_latest_explicitly_discarded_draft": true,
+    "matching_latest_revision_5_required_no_additional_save": true,
+    "keyboard_tab_reached_latitude": true,
+    "desktop_horizontal_overflow": false,
+    "mobile_horizontal_overflow": false,
+    "input_font_size_px": 16,
+    "video_elements_on_settings": 0,
+    "prior_notice_clears_on_edits": true
+  },
+  "camera_revisions": [
+    {
+      "calibration_status": "unverified",
+      "id": "CAM-07",
+      "kind": "plate",
+      "lat": 9.968,
+      "location": "Subhash Chandra Bose Jn",
+      "location_confirmed": true,
+      "lon": 76.281,
+      "metadata_source": "repository defaults",
+      "revision": 1,
+      "updated_at": 0
+    },
+    {
+      "calibration_status": "unverified",
+      "id": "CAM-07",
+      "kind": "plate",
+      "lat": 9.9685,
+      "location": "Fixture East junction",
+      "location_confirmed": true,
+      "lon": 76.281,
+      "metadata_source": "local operator entry; calibration unverified",
+      "revision": 2,
+      "updated_at": 1791696725.3275013
+    },
+    {
+      "calibration_status": "unverified",
+      "id": "CAM-07",
+      "kind": "plate",
+      "lat": 9.9685,
+      "location": "Fixture concurrent editor",
+      "location_confirmed": true,
+      "lon": 76.282,
+      "metadata_source": "local operator entry; calibration unverified",
+      "revision": 3,
+      "updated_at": 1791696756.5647318
+    },
+    {
+      "calibration_status": "unverified",
+      "id": "CAM-07",
+      "kind": "plate",
+      "lat": 9.9685,
+      "location": "Fixture pending draft",
+      "location_confirmed": true,
+      "lon": 76.281,
+      "metadata_source": "local operator entry; calibration unverified",
+      "revision": 4,
+      "updated_at": 1791696770.1360915
+    },
+    {
+      "calibration_status": "unverified",
+      "id": "CAM-07",
+      "kind": "plate",
+      "lat": 9.9685,
+      "location": "Fixture East junction",
+      "location_confirmed": true,
+      "lon": 76.281,
+      "metadata_source": "local operator entry; calibration unverified",
+      "revision": 5,
+      "updated_at": 1791696863.392259
+    }
+  ],
+  "audit_records": [
+    {
+      "reason": "Synthetic browser verification in isolated database",
+      "reviewer": "Settings test operator",
+      "revision": 2
+    },
+    {
+      "reason": "Isolated stale revision exercise",
+      "reviewer": "Second test operator",
+      "revision": 3
+    },
+    {
+      "reason": "Synthetic conflict recovery",
+      "reviewer": "Settings test operator",
+      "revision": 4
+    },
+    {
+      "reason": "Isolated already-saved draft verification",
+      "reviewer": "Second test operator",
+      "revision": 5
+    }
+  ],
+  "fixture_observations": 0,
+  "main_catalog_unchanged": true,
+  "configuration_requests_during_idle": {
+    "seconds": 6.0,
+    "before": 17,
+    "after": 17,
+    "added": 0
+  },
+  "screenshots": {
+    "desktop": ".impeccable/review/desktop.jpg",
+    "desktop_lower": ".impeccable/review/desktop-lower.jpg",
+    "mobile": ".impeccable/review/mobile.jpg",
+    "mobile_form": ".impeccable/review/mobile-form.jpg",
+    "mobile_history": ".impeccable/review/mobile-history.jpg"
+  },
+  "limitations": [
+    "Metadata editor only; sources and detector routes fixed",
+    "No independent calibration or authenticated reviewer",
+    "Unsaved drafts survive internal navigation, not browser closure/reload",
+    "Zero extra requests over six idle seconds does not establish sustained performance or frame throughput"
+  ],
+  "frontend": {
+    "lint": "pass with two existing shared-component Fast Refresh warnings",
+    "build": "pass",
+    "settings_chunk": "CameraSettings-Cd2_OszI.js",
+    "bytes": 13567,
+    "gzip_level_6_bytes": 4057,
+    "sha256": "c973a0ef611af77b9a71b92e6f688567e8276f53f904f5ef089dafb7372cc90c",
+    "new_dependencies": 0
+  },
+  "finish_review": {
+    "initial_disposition": "fix",
+    "finding": "Prior no-save notice survived metadata edits",
+    "verdict": "resolved",
+    "final_disposition": "ship",
+    "scope": "Verdict pass scores the notice-lifecycle fix; not a new whole-application audit"
+  },
+  "screenshots_scope": "Local review viewport captures, available in delivery; ignored in source repository. Current captures show an unsaved synthetic draft.",
+  "cleanup": {
+    "fixture_services_stopped": true,
+    "fixture_data_removed": true,
+    "test_tab_closed": true,
+    "viewport_reset": true
+  }
+}

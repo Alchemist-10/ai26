@@ -1,0 +1,47 @@
+groups:
+  - name: ai26-operations
+    rules:
+      - alert: AI26APIDown
+        expr: up{job="ai26"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: AI26 API metrics endpoint is unavailable
+          description: Prometheus has failed to scrape AI26 for at least one minute.
+
+      - alert: AI26NoAvailableCameraSources
+        expr: sum(ai26_camera_source_available) == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: AI26 has no available camera sources
+          description: Every configured camera source has been unavailable for at least two minutes.
+
+      - alert: AI26CameraFrameStale
+        expr: ((ai26_camera_source_available == 1 and on() (ai26_processing_enabled == 1)) unless on(camera_id) ai26_camera_frame_age_seconds) or (ai26_camera_source_available == 1 and on() (ai26_processing_enabled == 1) and on(camera_id) (ai26_camera_frame_age_seconds > 30))
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: AI26 camera processing has stopped producing fresh frames
+          description: A configured source has had no processed frame or its latest processed frame is older than 30 seconds.
+
+      - alert: AI26CameraProcessingFailures
+        expr: increase(ai26_camera_failed_attempts_total[5m]) >= 3
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: AI26 camera processing is repeatedly failing
+          description: A camera has recorded at least three failed processing attempts in five minutes.
+
+      - alert: AI26ArtifactStorageNearCapacity
+        expr: ai26_artifact_storage_utilization_ratio >= 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: AI26 sampled-read image storage is nearly full
+          description: Managed evidence images have used at least 90% of the configured storage budget for two minutes. New image capture may be incomplete until capacity is increased or retention cleanup runs.

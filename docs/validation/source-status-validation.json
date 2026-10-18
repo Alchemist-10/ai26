@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-11",
+  "scope": "Read-only source inspection; two generated color clips in a disposable disabled-processing API/database, not real plate-source accuracy or sustained performance",
+  "backend_tests": 140,
+  "new_source_status_tests": 12,
+  "frontend_lint": "pass with two existing shared Fast Refresh warnings",
+  "frontend_build": "pass",
+  "settings_chunk": {
+    "filename": "CameraSettings-Bv4ohkVk.js",
+    "raw_kB": 22.24,
+    "gzip_kB": 6.24
+  },
+  "fixture": {
+    "running_release_before_restart": "e1742de6a9f34f84893a9a5fcda0b83d",
+    "selected_release_before_restart": "478c834117994cf6bc1400d335bebfe8",
+    "invalid_selection_preserved_running_source": true,
+    "browser_502_retry_guidance": true,
+    "restart_activated_selected_release": true,
+    "refresh_cleared_error_and_pending_notice": true,
+    "observations": 0,
+    "audit_rows": 0,
+    "metadata_revisions": [
+      1
+    ],
+    "sources": "generated red/blue one-second clips"
+  },
+  "browser_checks": {
+    "source_refresh_preserved_unsaved_metadata": true,
+    "native_disclosures_keyboard_accessible": true,
+    "camera_specific_host_commands": "CAM-07 and explicit --replace verified in expanded DOM",
+    "error_and_command_verification": "browser DOM; screenshot packet covers status/history layouts",
+    "viewports": [
+      {
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 786,
+        "height": 758
+      }
+    ],
+    "horizontal_overflow": false,
+    "settings_video_elements": 0,
+    "text_control_font_px": 16,
+    "idle_source_requests": {
+      "seconds": 6.0,
+      "source_requests_before": 6,
+      "source_requests_after": 6,
+      "new_source_requests": 0
+    }
+  },
+  "review": {
+    "disposition": "ship",
+    "scope": "Source inspection extension; six screenshots valid, no material fixes. Error/command behavior source/DOM verified, not screenshot coverage",
+    "detector_findings": []
+  },
+  "cleanup": {
+    "fixture_API_and_frontend_stopped": true,
+    "fixture_data_removed": true,
+    "fixture_tab_closed": true,
+    "viewport_override_reset": true
+  },
+  "main_app": {
+    "catalog_and_sources_unchanged": true,
+    "historical_sample_ids_retained": 10,
+    "decoded_snapshots": 6,
+    "new_reads_match_current_nine_component_digests": 10,
+    "sample_read_ids": [
+      "ace1a7153b72f3aba7328b4ba1963ae1",
+      "d10dc3588fcffa3a9b3218d5bb26b53f",
+      "c3541df30fc92bc40cbbce1369073776",
+      "6edbf76262b3e6f720847dc691bc9765",
+      "046b241d636173549e29f1c5b4c6cc79",
+      "efa5f10761ec567631bf6e39f36b004f",
+      "6cd0c695d644b2f67341dcea8e8d68af",
+      "fab69e51bf49bada0c0faa19013b177b",
+      "d0f97198686505d8d04963c41a450846",
+      "396745a04a1a3082132cb0e748aab1b1"
+    ],
+    "launcher_pid": 78804,
+    "vehicle_sources_available": 6,
+    "plate_sources_missing": 3
+  },
+  "file_digests": {
+    "backend/source_catalog.py": "6272aeeeae88b91e19a2056df3a9d360144903078eb34a311979a5fba5cdf00e",
+    "backend/source_status.py": "daa22297ccccd695dfc145dfed32f6835595ba5de38460731d787a3c6418f4c2",
+    "frontend/src/components/settings/CameraSources.tsx": "8aaf70b01f1ec16a43bf8c77bb84430f359b27f701409508170e62408e6f0267"
+  }
+}

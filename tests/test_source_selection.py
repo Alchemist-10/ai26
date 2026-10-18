@@ -1,0 +1,181 @@
+"""Browser selection changes next-startup files, never the running decoder binding."""
+import fcntl
+import hashlib
+import json
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch,MagicMock
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'backend'))
+import cameras
+import import_source
+import main
+import source_selection as selector
+from source_catalog import load_source
+from source_status import source_status
+from fastapi.testclient import TestClient
+
+class SourceSelection(unittest.TestCase):
+    def setUp(self):
+        temp=tempfile.TemporaryDirectory();self.addCleanup(temp.cleanup)
+        self.base=Path(temp.name);self.root=self.base/'sources';self.data=self.base/'data';self.data.mkdir()
+        self.addCleanup(patch.stopall)
+        patch.dict(cameras.MANAGED_SOURCES,{},clear=True).start()
+        patch.dict(cameras.CAMERAS_BY_ID,{'CAM-07':{'path':str(self.base/'missing')}}).start()
+        patch.object(cameras,'PLAYBACK_ROOT',self.base/'proxies').start()
+        patch.object(main,'select_for_restart',side_effect=lambda cam,body,**kwargs:selector.select_for_restart(cam,body,root=self.root,**kwargs)).start()
+        patch.object(main,'source_status',side_effect=lambda cam:source_status(cam,self.root)).start()
+        self.client=TestClient(main.app)
+    def release(self,index,previous=None,select=False):
+        release=f'{index:032x}';folder=self.root/'CAM-07/releases'/release;folder.mkdir(parents=True)
+        manifest={'version':1,'camera_id':'CAM-07','release':release,'previous_release':previous,'reviewer':'Synthetic import','reason':'Synthetic fixture','time_basis':'replay_clock'}
+        for role,name in [('original','original.media'),('playback','playback.mp4')]:
+            content=f'{role} {index}'.encode();(folder/name).write_bytes(content)
+            manifest[role]={'file':name,'bytes':len(content),'sha256':hashlib.sha256(content).hexdigest()}
+        (folder/'manifest.json').write_text(json.dumps(manifest))
+        if select:(self.root/'CAM-07/active.json').write_text(json.dumps(manifest))
+        return manifest
+    def body(self,target,intent='select',token=None):
+        return {'release':target['release'],'expected_token':token or selector.selection_token(load_source('CAM-07',self.root)),
+                'intent':intent,'reviewer':'Local operator','reason':'Synthetic selection check'}
+    def select(self,target,intent='select',token=None):
+        return selector.select_for_restart('CAM-07',self.body(target,intent,token),root=self.root)
+    def test_selection_while_processing_retains_cached_original_playback_and_no_sql(self):
+        first=self.release(1,select=True);binding=load_source('CAM-07',self.root,verify=True);cameras.MANAGED_SOURCES['CAM-07']=binding
+        second=self.release(2,first['release'])
+        store=MagicMock()
+        with (self.data/'.processing.lock').open('a+') as owner,patch.object(main,'store',store):
+            fcntl.flock(owner,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            response=self.client.post('/api/cameras/CAM-07/source/selection',json=self.body(second))
+        self.assertEqual(response.status_code,200);result=response.json()['source']
+        self.assertEqual(result['selection']['status'],'restart_required');self.assertEqual(result['active']['release']['release'],first['release'])
+        self.assertEqual(cameras.camera_source('CAM-07'),binding['original'])
+        self.assertEqual(self.client.get('/api/video/CAM-07').content,b'playback 1');self.assertEqual(store.mock_calls,[])
+        self.assertEqual((binding['original'].parent/'manifest.json').read_text(),json.dumps(first))
+        claim=result['selection']['last_action'];receipt=self.root/'CAM-07/selection_history'/f"{claim['id']}.json"
+        self.assertEqual(json.loads(receipt.read_text())['reviewer'],'Local operator')
+        self.assertNotIn(str(self.base),json.dumps(result))
+    def test_restart_then_rollback_requires_restart_and_keeps_both_old_roles(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);self.select(second)
+        cameras.MANAGED_SOURCES['CAM-07']=load_source('CAM-07',self.root,verify=True)
+        self.select(first,'rollback');result=source_status('CAM-07',self.root)
+        self.assertEqual(result['selection']['status'],'restart_required');self.assertEqual(result['active']['release']['release'],second['release'])
+        self.assertEqual(self.client.get('/api/video/CAM-07').content,b'playback 2')
+        cameras.MANAGED_SOURCES['CAM-07']=load_source('CAM-07',self.root,verify=True)
+        self.assertEqual(source_status('CAM-07',self.root)['selection']['status'],'current')
+        self.assertEqual(self.client.get('/api/video/CAM-07').content,b'playback 1')
+    def test_revert_pending_selection_to_running_release_clears_restart_notice(self):
+        first=self.release(1,select=True);cameras.MANAGED_SOURCES['CAM-07']=load_source('CAM-07',self.root)
+        second=self.release(2,first['release']);self.select(second);self.select(first,'rollback')
+        self.assertEqual(source_status('CAM-07',self.root)['selection']['status'],'current')
+    def test_token_protects_against_stale_requests_and_return_to_same_release(self):
+        first=self.release(1,select=True);token=self.body(first)['expected_token'];second=self.release(2,first['release'])
+        self.select(second);self.select(first,'rollback')
+        with self.assertRaises(selector.SelectionConflict):self.select(second,token=token)
+        self.assertNotEqual(token,self.body(first)['expected_token'])
+    def test_token_ignores_json_formatting_but_tracks_manifest_edits(self):
+        first=self.release(1,select=True);old=self.body(first)['expected_token'];pointer=self.root/'CAM-07/active.json'
+        pointer.write_text(json.dumps(first,indent=4,sort_keys=True));self.assertEqual(old,self.body(first)['expected_token'])
+        pointer.write_text(json.dumps({**first,'reason':'Edited'}));self.assertNotEqual(old,self.body(first)['expected_token'])
+    def test_wrong_preparation_base_and_unlinked_rollback_reject(self):
+        first=self.release(1,select=True);second=self.release(2)
+        with self.assertRaises(selector.SelectionConflict):self.select(second)
+        with self.assertRaisesRegex(ValueError,'displayed parent'):self.select(second,'rollback')
+        self.assertEqual(load_source('CAM-07',self.root)['manifest']['release'],first['release'])
+    def test_rollback_bounds_and_invalid_parent_reference(self):
+        previous=None
+        for index in range(1,12):previous=self.release(index,previous,select=True)['release']
+        with self.assertRaises(ValueError):self.select({'release':f'{1:032x}'},'rollback')
+        pointer=self.root/'CAM-07/active.json';value=json.loads(pointer.read_text())
+        for invalid in ('../outside',{},[],False,12):
+            value['previous_release']=invalid;pointer.write_text(json.dumps(value))
+            with self.assertRaises(ValueError):self.select({'release':f'{10:032x}'},'rollback')
+        self.assertEqual(len(list((self.root/'CAM-07').glob('selection_history/*.json'))),0)
+    def test_both_file_hashes_rechecked_and_pointer_preserved(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);pointer=self.root/'CAM-07/active.json';old=pointer.read_bytes()
+        for role,name in [('original','original.media'),('playback','playback.mp4')]:
+            path=self.root/'CAM-07/releases'/second['release']/name;original=path.read_bytes();path.write_bytes(b'x'*len(original))
+            with self.assertRaisesRegex(ValueError,'digest mismatch'):self.select(second)
+            self.assertEqual(pointer.read_bytes(),old);path.write_bytes(original)
+    def test_publication_failure_preserves_prior_pointer_and_removes_proposal(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);pointer=self.root/'CAM-07/active.json';old=pointer.read_bytes();real=selector.atomic_json
+        def fail(path,value):
+            if path.name=='active.json':raise OSError('Synthetic publication failure')
+            real(path,value)
+        with patch.object(selector,'atomic_json',side_effect=fail):
+            with self.assertRaises(OSError):self.select(second)
+        self.assertEqual(pointer.read_bytes(),old);self.assertFalse(list((self.root/'CAM-07/selection_history').glob('*.json')))
+    def test_interrupted_return_after_publication_keeps_committed_record(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);real=selector.atomic_json
+        def interrupt(path,value):
+            real(path,value)
+            if path.name=='active.json':raise KeyboardInterrupt()
+        with patch.object(selector,'atomic_json',side_effect=interrupt):
+            with self.assertRaises(KeyboardInterrupt):self.select(second)
+        marker=load_source('CAM-07',self.root)['manifest']['source_selection']
+        self.assertTrue((self.root/'CAM-07/selection_history'/f"{marker['id']}.json").exists())
+    def test_successive_committed_records_link_and_idempotent_selection_does_not_append(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);self.select(second)
+        one=load_source('CAM-07',self.root)['manifest']['source_selection'];self.select(first,'rollback')
+        two=load_source('CAM-07',self.root)['manifest']['source_selection'];self.assertEqual(two['previous_selection'],one['id'])
+        self.assertTrue(self.select(first,'rollback')['already_selected'])
+        self.assertEqual(len(list((self.root/'CAM-07/selection_history').glob('*.json'))),2)
+        history=source_status('CAM-07',self.root)['selection']['history']
+        self.assertEqual([entry['id'] for entry in history['entries']],[two['id'],one['id']])
+        self.assertFalse(history['more']);self.assertIsNone(history['error'])
+    def test_selection_history_reports_corrupt_link_as_partial_without_paths(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);self.select(second)
+        marker=load_source('CAM-07',self.root)['manifest']['source_selection']
+        receipt=self.root/'CAM-07/selection_history'/f"{marker['id']}.json"
+        receipt.write_text(json.dumps({**marker,'reason':'Edited after publication'}))
+        history=source_status('CAM-07',self.root)['selection']['history']
+        self.assertEqual(history['entries'],[]);self.assertFalse(history['more'])
+        self.assertIn('unavailable or invalid',history['error'])
+        self.assertNotIn(str(self.base),json.dumps(history))
+    def test_selection_history_is_bounded_to_twenty_linked_records(self):
+        previous=self.release(1,select=True)
+        for index in range(2,24):
+            current=self.release(index,previous['release']);self.select(current);previous=current
+        history=source_status('CAM-07',self.root)['selection']['history']
+        self.assertEqual(len(history['entries']),20);self.assertTrue(history['more']);self.assertIsNone(history['error'])
+    def test_authenticated_selection_records_server_verified_account(self):
+        first=self.release(1,select=True);second=self.release(2,first['release'])
+        result=selector.select_for_restart('CAM-07',self.body(second),root=self.root,authenticated_user='operator-1')
+        status=source_status('CAM-07',self.root)['selection']['last_action']
+        record=json.loads((self.root/'CAM-07/selection_history'/f"{status['id']}.json").read_text())
+        self.assertEqual(result['release'],second['release'])
+        self.assertTrue(status['reviewer_authenticated']);self.assertEqual(status['authenticated_user'],'operator-1')
+        self.assertTrue(record['reviewer_authenticated']);self.assertEqual(record['authenticated_user'],'operator-1')
+        self.assertEqual(record['reviewer'],'Local operator')
+    def test_authenticated_api_selection_overrides_spoofed_reviewer(self):
+        first=self.release(1,select=True);second=self.release(2,first['release'])
+        session={'username':'real-operator','role':'operator','csrf_token':'csrf'}
+        auth_service=MagicMock();auth_service.session.return_value=session;auth_service.can_access_case.return_value=True
+        with patch.object(main,'auth_enabled',return_value=True),patch.object(main,'AuthService',return_value=auth_service),patch.object(main.store,'case_camera_ids',return_value=['CAM-07']):
+            response=self.client.post('/api/cameras/CAM-07/source/selection',json=self.body(second),
+                cookies={main.SESSION_COOKIE:'session'},headers={main.CSRF_HEADER:'csrf','X-AI26-Case-ID':'CASE-1','X-AI26-Purpose':'system_test'})
+        self.assertEqual(response.status_code,200,response.text)
+        claim=response.json()['source']['selection']['last_action']
+        self.assertEqual(claim['reviewer'],'real-operator');self.assertEqual(claim['authenticated_user'],'real-operator')
+        self.assertTrue(claim['reviewer_authenticated']);auth_service.audit_sensitive_access.assert_called_once()
+    def test_selection_record_symlink_escape_rejects_without_pointer_changes(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);outside=self.base/'outside';outside.mkdir()
+        (self.root/'CAM-07/selection_history').symlink_to(outside,target_is_directory=True)
+        with self.assertRaisesRegex(ValueError,'escape'):self.select(second)
+        self.assertEqual(list(outside.iterdir()),[]);self.assertEqual(load_source('CAM-07',self.root)['manifest']['release'],first['release'])
+    def test_api_validation_conflict_ownership_and_missing_files_are_explicit(self):
+        first=self.release(1,select=True);second=self.release(2,first['release']);body=self.body(second)
+        for change in ({'reviewer':' '},{'reason':False},{'intent':'activate'},{'release':'../bad'},{'expected_token':'bad'},{'extra':'field'}):
+            self.assertEqual(self.client.post('/api/cameras/CAM-07/source/selection',json={**body,**change}).status_code,422)
+        self.assertEqual(self.client.post('/api/cameras/CAM-99/source/selection',json=body).status_code,404)
+        with (self.root/'.import.lock').open('a+') as owner:
+            fcntl.flock(owner,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            self.assertEqual(self.client.post('/api/cameras/CAM-07/source/selection',json=body).status_code,409)
+        self.select(second)
+        self.assertEqual(self.client.post('/api/cameras/CAM-07/source/selection',json=body).status_code,409)
+        (self.root/'CAM-07/releases'/first['release']/'playback.mp4').unlink()
+        response=self.client.post('/api/cameras/CAM-07/source/selection',json=self.body(first,'rollback'))
+        self.assertEqual(response.status_code,422);self.assertNotIn(str(self.base),response.text)
+
+if __name__=='__main__':unittest.main()

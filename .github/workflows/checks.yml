@@ -1,0 +1,45 @@
+name: AI26 regression checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --directory backend
+      - name: Backend regressions without ML downloads
+        run: uv run --frozen --directory backend python -m unittest discover -s ../tests -v
+        env:
+          AI26_PROCESSING_ENABLED: "0"
+      - name: Evaluation fixture
+        run: python evaluation/evaluate.py --records evaluation/example.jsonl --output evaluation/results/fixture.json
+      - name: Compose HTTP and TLS configuration
+        run: |
+          docker compose -f compose.yaml config -q
+          AI26_TLS_CERT_FILE=/tmp/ai26-test-fullchain.pem AI26_TLS_KEY_FILE=/tmp/ai26-test-key.pem \
+            docker compose -f compose.yaml -f compose.tls.yaml config -q
+          AI26_EVIDENCE_SIGNING_PRIVATE_KEY_FILE=/tmp/ai26-signing-private.pem \
+            docker compose -f compose.yaml -f compose.evidence-signing.yaml config -q
+          AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE=/tmp/ai26-bootstrap-password \
+            docker compose -f compose.yaml -f compose.auth.yaml config -q
+          AI26_TLS_CERT_FILE=/tmp/ai26-test-fullchain.pem AI26_TLS_KEY_FILE=/tmp/ai26-test-key.pem \
+          AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE=/tmp/ai26-bootstrap-password AI26_AUTH_COOKIE_SECURE=1 \
+            docker compose -f compose.yaml -f compose.tls.yaml -f compose.auth.yaml config -q
+          AI26_PRIVACY_KEY_FILE=/tmp/ai26-privacy.key docker compose -f compose.yaml -f compose.privacy.yaml config -q
+          AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE=/tmp/ai26-bootstrap-password AI26_AUTH_MFA_KEY_FILE=/tmp/ai26-auth-mfa.key docker compose -f compose.yaml -f compose.auth.yaml -f compose.auth-mfa.yaml config -q
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - name: Frontend checks
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build

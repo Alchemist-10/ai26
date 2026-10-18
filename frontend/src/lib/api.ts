@@ -5,9 +5,195 @@ export interface Camera {
   location_confirmed: boolean
   lat: number
   lon: number
+  source_available: boolean
+  health: CameraHealth
+}
+export interface CaseCameraScope { case_id: string; camera_ids: string[] }
+export interface CaseCameraScopesResponse { cameras: { id: string; name: string }[]; scopes: CaseCameraScope[] }
+export interface PrivacyStatus {
+  enabled: boolean
+  plate_identifiers: "raw" | "keyed_pseudonyms"
+  sampled_person_mask: "disabled" | "person_box_pixelation"
+  scope: string
+}
+export interface CameraConfiguration {
+  id: string
+  kind: "vehicle" | "plate"
+  location: string
+  location_confirmed: boolean
+  lat: number
+  lon: number
+  revision: number
+  metadata_source: string
+  calibration_status: string
+  updated_at: number
+}
+export interface CameraConfigurationUpdate {
+  expected_revision: number
+  location: string
+  location_confirmed: boolean
+  lat: number
+  lon: number
+  reviewer: string
+  reason: string
+}
+export interface OnvifDiscoveryResult {
+  devices: Array<{
+    endpoint_id: string | null
+    source_address: string
+    service_addresses: string[]
+    scopes: string[]
+  }>
+  probe_timeout_seconds: number
+  elapsed_seconds: number
+}
+export interface OnvifProfileResult {
+  device_ip: string
+  clock: {
+    status: "estimated" | "unavailable"
+    camera_utc: string | null
+    host_time_at_midpoint_utc?: string
+    estimated_host_offset_seconds: number | null
+    uncertainty_seconds: number | null
+    network_round_trip_seconds: number | null
+    date_time_type: string | null
+    daylight_savings: boolean | null
+    host_clock_accuracy: "not_assessed"
+  }
+  profile_count: number
+  persisted: false
+  activated: false
+  profiles: Array<{
+    token: string
+    name: string
+    encoding: string | null
+    stream_uri: string | null
+    stream_uri_status: "available" | "unavailable" | "redacted_or_untrusted_uri"
+  }>
+}
+export interface CameraPairConstraint {
+  from_camera: string
+  to_camera: string
+  from_revision: number
+  to_revision: number
+  min_travel_seconds: number
+  max_travel_seconds: number
+  enabled: boolean
+  reviewer: string
+  reason: string
+  updated_at: number
+  current_locations_valid: boolean
+}
+export interface CameraPairConstraintUpdate {
+  from_camera_id: string
+  to_camera_id: string
+  min_travel_seconds: number
+  max_travel_seconds: number
+  enabled: boolean
+  reviewer: string
+  reason: string
+}
+export interface SourceRelease {
+  release: string
+  reviewer: string | null
+  reason: string | null
+  imported_at: number | null
+  time_basis: string | null
+  previous_release: string | null
+  uploader_authenticated: boolean
+  authenticated_uploader: string | null
+  recording_clock: { start_utc: string; uncertainty_seconds: number | null; provenance: "operator_claimed"; status: "unverified" } | null
+  source_provenance: {
+    status: "operator_claimed" | "not_provided"
+    verified: false
+    archive_creator: string | null
+    export_system: string | null
+    external_camera_id: string | null
+    recording_timezone: string
+    authorization_basis: string | null
+    retention_note: string | null
+  }
+  original: SourceFileMetadata
+  playback: SourceFileMetadata
+}
+export interface SourceFileMetadata {
+  bytes: number | null
+  sha256: string | null
+  video: { width: number | null; height: number | null; fps: number | null; duration_seconds: number | null; frame_count: number | null }
+}
+export interface CameraSourceStatus {
+  camera_id: string
+  checked_at: number
+  time_basis: string
+  active: {
+    kind: "managed" | "configured_original" | "bundled_proxy" | "missing"
+    release: SourceRelease | null
+    inference: { filename: string; available: boolean; bytes: number | null; size_matches_import: boolean | null }
+    playback: { filename: string; available: boolean; bytes: number | null; size_matches_import: boolean | null }
+  }
+  selection: {
+    status: "current" | "restart_required" | "invalid"; release: SourceRelease | null; error: string | null
+    token: string | null
+    last_action: { id: string | null; intent: string | null; reviewer: string | null; reason: string | null; from_release: string | null; to_release: string | null; reviewer_authenticated: boolean; authenticated_user: string | null; selected_at: number | null } | null
+    history: { entries: { id: string; intent: string; reviewer: string | null; reason: string | null; reviewer_authenticated: boolean; authenticated_user: string | null; from_release: string | null; to_release: string | null; selected_at: number | null }[]; more: boolean; error: string | null }
+  }
+  history: { releases: SourceRelease[]; more: boolean; error: string | null }
+  verification: string
+}
+export interface SourcePreparation {
+  job_id: string
+  camera_id: string
+  filename: string
+  status: "uploading" | "preparing" | "ready" | "failed" | "cancelled"
+  created_at: number
+  error: string | null
+  release: SourceRelease | null
+}
+export interface SourceProvenanceClaims {
+  archive_creator: string
+  export_system: string
+  external_camera_id: string
+  recording_timezone: string
+  authorization_basis: string
+  retention_note: string
+}
+export function prepareCameraSource(cameraId: string, file: File, reviewer: string, reason: string, replace: boolean, recordingStartUTC: string, uncertaintySeconds: number | undefined, provenance: SourceProvenanceClaims, signal: AbortSignal): Promise<SourcePreparation> {
+  const metadata = JSON.stringify({filename:file.name,bytes:file.size,reviewer,reason,replace,recording_start_utc:recordingStartUTC || undefined,clock_uncertainty_seconds:uncertaintySeconds,...provenance})
+  const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(metadata)))
+  if (encoded.length > 8192) return Promise.reject(new Error("Upload details are too long. Shorten the filename or reason."))
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/source/prepare`, {
+    method:"POST",headers:{"Content-Type":"application/octet-stream","X-AI26-Upload":encoded},body:file,signal,
+  })
+}
+export function getSourcePreparation(jobId: string, signal?: AbortSignal): Promise<SourcePreparation> {
+  return requestJson(`/api/source-preparations/${encodeURIComponent(jobId)}`, {signal})
+}
+export function cancelSourcePreparation(jobId: string): Promise<SourcePreparation> {
+  return requestJson(`/api/source-preparations/${encodeURIComponent(jobId)}/cancel`, {method:"POST"})
+}
+export function selectCameraSource(cameraId: string, release: string, expectedToken: string, intent: "select" | "rollback", reviewer: string, reason: string): Promise<{source:CameraSourceStatus;already_selected:boolean}> {
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/source/selection`, {
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({release,expected_token:expectedToken,intent,reviewer,reason}),
+  })
+}
+export interface CameraHealth {
+  camera_id: string
+  status: string
+  processing_enabled: boolean
+  inference_branches: { vehicle_detection_enabled: boolean; plate_recognition_enabled: boolean }
+  last_frame_at: number | null
+  frame_age_seconds: number | null
+  processed_fps: number
+  error: string | null
 }
 
 export interface DetectionEvent {
+  event_id: string
+  passage_id: string
+  track_id?: number
+  identity_status?: string
+  source_mode?: string
   camera_id: string
   kind: "vehicle" | "plate"
   label?: string
@@ -22,6 +208,10 @@ export interface DetectionEvent {
 }
 
 export interface Alert {
+  alert_id?: string
+  state?: string
+  review?: { reviewer: string; reviewer_authenticated?: boolean; state: string; note: string; escalation_target?: string | null; ts: number }[]
+  escalation_target?: string | null
   severity: "info" | "warning" | "critical"
   type: string
   summary: string
@@ -29,20 +219,57 @@ export interface Alert {
   ts: number
 }
 
+export interface EscalationCursor { ts: number; id: string }
+export interface EscalationPage { items: Alert[]; next_cursor: EscalationCursor | null }
+
 export interface Stats {
+  vehicle_passages: number
+  per_camera_passages: Record<string, number>
   total_events: number
   events_last_minute: number
   per_camera: Record<string, number>
   busiest_camera: string | null
   avg_confidence: number
+  metrics: {
+    camera_local_tracked_passages: { value: number; unit: "passages"; status: "sampled_unvalidated"; scope: string }
+    globally_unique_vehicles: { value: null; unit: "vehicles"; status: "not_measured"; reason: string }
+    occupancy_percent: { value: null; unit: "percent"; status: "not_measured"; reason: string }
+    density_vehicles_per_km: { value: null; unit: "vehicles/km"; status: "not_measured"; reason: string }
+    physical_speed_kmh: { value: null; unit: "km/h"; status: "not_measured"; reason: string }
+  }
+}
+
+export interface TrafficBaseline {
+  window_days: number
+  timezone: string
+  scope: string
+  time_basis: "capture_arrival_clock"
+  retention_days: number
+  speed_kmh: null
+  speed_status: string
+  cameras: {
+    camera_id: string
+    status: "no_live_history" | "insufficient_coverage" | "insufficient_history" | "baseline_ready" | "stale"
+    latest_complete_hour_local: string | null
+    latest_passages: number | null
+    latest_processed_samples: number | null
+    latest_covered_quarter_hours: number | null
+    baseline_median: number | null
+    baseline_mean: number | null
+    baseline_comparable_hours: number
+    change_vs_median_percent: number | null
+    age_seconds: number | null
+  }[]
 }
 
 export interface TrajectoryHop {
+  time_basis?: string
+  source_mode?: string
   camera_id: string
   location: string
   location_confirmed: boolean
-  lat: number
-  lon: number
+  lat: number | null
+  lon: number | null
   ts: number
   confidence: number
   plate?: string
@@ -56,50 +283,233 @@ export interface TrajectoryLink {
   to_camera_id: string
   from_ts: number
   to_ts: number
-  distance_km: number
+  distance_km: number | null
   elapsed_seconds: number
-  implied_speed_kmh: number
+  implied_speed_kmh: number | null
   reason?: string
 }
 
 export interface Trajectory {
   mode: "live"
-  status: "not_found" | "observed" | "confirmed" | "cloning_candidate"
+  status: "not_found" | "observed" | "candidate" | "review_required"
   plate: string
   observations: TrajectoryHop[]
   accepted_links: TrajectoryLink[]
   rejected_links: TrajectoryLink[]
+  candidate_links: TrajectoryLink[]
 }
 
 export interface EvidenceReport {
   report_id: string
   generated_at: number
   retention: string
+  expires_at: number
+  artifacts: {sha256: string; role: string; url: string}[]
   package_hash: string
   trajectory: Trajectory
+  image_review_candidates?: {
+    scorer: string
+    status: string
+    raw_reads_retained: boolean
+    accuracy_claim: false
+    groups: {
+      passage_id: string
+      candidate_count: number
+      top_k: {
+        event_id?: string
+        crop_sha256: string
+        score: number
+        quality_components: Record<string, number>
+        ts?: number
+      }[]
+    }[]
+  }
+}
+
+export class ApiError extends Error {
+  readonly status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+  }
+}
+
+export interface AuthUser { username: string; role: "admin" | "operator" | "analyst" | "viewer" }
+export type AuthRole = AuthUser["role"]
+export interface ManagedUser extends AuthUser { disabled: boolean; case_ids: string[]; created_at: number; updated_at: number; mfa_enabled: boolean }
+export interface AuthState { enabled: boolean; user: AuthUser | null; caseIds: string[]; csrfToken: string }
+export interface MfaStatus { enabled: boolean; setup_pending: boolean; supported: boolean }
+let csrfToken = ""
+let securityContext = { caseId: "", purpose: "investigation" }
+
+export function setSecurityContext(caseId: string, purpose: string) {
+  securityContext = { caseId: caseId.trim(), purpose }
+}
+
+export function scopedResourceUrl(url: string): string {
+  const target = new URL(url, window.location.href)
+  target.searchParams.set("case_id", securityContext.caseId)
+  target.searchParams.set("purpose", securityContext.purpose)
+  return `${target.pathname}${target.search}`
+}
+
+export async function getAuthState(): Promise<AuthState> {
+  const status = await requestJson<{ enabled: boolean }>("/api/auth/status")
+  if (!status.enabled) return { enabled: false, user: null, caseIds: [], csrfToken: "" }
+  try {
+    const session = await requestJson<{ user: AuthUser; case_ids: string[]; csrf_token: string }>("/api/auth/me")
+    csrfToken = session.csrf_token
+    return { enabled: true, user: session.user, caseIds: session.case_ids, csrfToken }
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return { enabled: true, user: null, caseIds: [], csrfToken: "" }
+    throw error
+  }
+}
+
+export async function login(username: string, password: string, mfaCode?: string): Promise<AuthState> {
+  const session = await requestJson<{ user: AuthUser; case_ids: string[]; csrf_token: string }>("/api/auth/login", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, ...(mfaCode ? {mfa_code:mfaCode} : {}) }),
+  })
+  csrfToken = session.csrf_token
+  return { enabled: true, user: session.user, caseIds: session.case_ids, csrfToken }
+}
+
+export async function recoverPassword(username: string, newPassword: string, code: string): Promise<void> {
+  await requestJson<{ recovery_requested: boolean }>("/api/auth/password-recovery", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, new_password: newPassword, code }),
+  })
+}
+
+export function getMfaStatus(signal?: AbortSignal): Promise<MfaStatus> {
+  return requestJson<MfaStatus>("/api/auth/mfa", {signal})
+}
+export function setupMfa(): Promise<{secret:string;otpauth_uri:string;expires_at:number}> {
+  return requestJson("/api/auth/mfa/setup", {method:"POST"})
+}
+export function enableMfa(code:string): Promise<{enabled:boolean;recovery_codes:string[]}> {
+  return requestJson("/api/auth/mfa/enable", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code})})
+}
+export function disableMfa(password:string,code:string): Promise<{enabled:boolean;sessions_revoked:boolean}> {
+  return requestJson("/api/auth/mfa/disable", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password,code})})
+}
+export function resetUserMfa(username:string, reason:string): Promise<{mfa_reset:boolean;sessions_revoked:boolean}> {
+  return requestJson(`/api/auth/users/${encodeURIComponent(username)}/mfa/reset`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reason})})
+}
+
+export async function logout(): Promise<void> {
+  await requestJson("/api/auth/logout", { method: "POST" })
+  csrfToken = ""
+}
+
+export function getUsers(signal?: AbortSignal): Promise<ManagedUser[]> {
+  return requestJson("/api/auth/users", { signal })
+}
+export function getCaseCameraScopes(signal?: AbortSignal): Promise<CaseCameraScopesResponse> {
+  return requestJson("/api/auth/case-camera-scopes", { signal })
+}
+export function saveCaseCameraScope(caseId: string, cameraIds: string[]): Promise<CaseCameraScope> {
+  return requestJson("/api/auth/case-camera-scopes", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ case_id: caseId, camera_ids: cameraIds }) })
+}
+export function createUser(username: string, password: string, role: AuthRole, caseIds: string[]): Promise<ManagedUser> {
+  return requestJson("/api/auth/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role, case_ids: caseIds }) })
+}
+export function updateUser(username: string, changes: { role?: AuthRole; disabled?: boolean; case_ids?: string[] }): Promise<ManagedUser> {
+  return requestJson(`/api/auth/users/${encodeURIComponent(username)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) })
+}
+export function resetUserPassword(username: string, password: string, reason: string): Promise<{ password_reset: boolean; sessions_revoked: boolean }> {
+  return requestJson(`/api/auth/users/${encodeURIComponent(username)}/password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password, reason }) })
+}
+export function changeOwnPassword(currentPassword: string, newPassword: string): Promise<{ password_changed: boolean; sessions_revoked: boolean }> {
+  return requestJson("/api/auth/me/password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }) })
 }
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init)
-  if (!response.ok) throw new Error(`Request failed (${response.status})`)
+  const requestUrl = input instanceof Request ? input.url : String(input)
+  const path = new URL(requestUrl, window.location.href)
+  const scoped = path.pathname.startsWith("/api/") && ["/api/cameras", "/api/camera-pair-constraints", "/api/source-preparations/", "/api/journey-links", "/api/traffic/", "/api/stream/", "/api/video/", "/api/snapshot/", "/api/preview/", "/api/events", "/api/stats", "/api/flows", "/api/alerts", "/api/rules", "/api/nlquery", "/api/trajectory/", "/api/evidence/", "/api/reports/", "/api/artifacts/"].some(prefix => path.pathname.startsWith(prefix))
+  const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined))
+  if (scoped) {
+    headers.set("X-AI26-Case-ID", securityContext.caseId)
+    headers.set("X-AI26-Purpose", securityContext.purpose)
+  }
+  if (csrfToken && ["POST", "PUT", "PATCH", "DELETE"].includes((init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase())) headers.set("X-AI26-CSRF-Token", csrfToken)
+  const response = await fetch(scoped ? path : input, { ...init, headers, credentials: "same-origin" })
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    throw new ApiError(body?.error?.message ?? `Request failed (${response.status})`, response.status)
+  }
   return response.json() as Promise<T>
 }
 
-export async function getCameras(): Promise<Camera[]> {
-  return requestJson<Camera[]>("/api/cameras")
+export async function getCameras(signal?: AbortSignal): Promise<Camera[]> {
+  return requestJson<Camera[]>("/api/cameras", { signal })
 }
 
-export async function getEvents(params: { camera?: string; plate?: string } = {}): Promise<DetectionEvent[]> {
-  const q = new URLSearchParams(params as Record<string, string>).toString()
-  return requestJson<DetectionEvent[]>(`/api/events${q ? `?${q}` : ""}`)
+export function getPrivacyStatus(signal?: AbortSignal): Promise<PrivacyStatus> {
+  return requestJson<PrivacyStatus>("/api/privacy/status", { signal })
 }
 
-export async function getAlerts(): Promise<Alert[]> {
-  return requestJson<Alert[]>("/api/alerts")
+export function getCameraConfiguration(cameraId: string, revision?: number, signal?: AbortSignal): Promise<CameraConfiguration> {
+  const query = revision === undefined ? "" : `?revision=${revision}`
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/configuration${query}`, { signal })
 }
 
-export async function getStats(): Promise<Stats> {
-  return requestJson<Stats>("/api/stats")
+export function getCameraSourceStatus(cameraId: string, signal?: AbortSignal): Promise<CameraSourceStatus> {
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/source`, { signal })
+}
+
+export function saveCameraConfiguration(cameraId: string, change: CameraConfigurationUpdate): Promise<CameraConfiguration> {
+  return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/configuration`, {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(change),
+  })
+}
+
+export function discoverOnvifCameras(timeoutSeconds = 2): Promise<OnvifDiscoveryResult> {
+  return requestJson("/api/cameras/onvif/discover", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ timeout_seconds: timeoutSeconds }),
+  })
+}
+
+export function inspectOnvifProfiles(input: { source_address: string; service_address: string; username: string; password: string; timeout_seconds?: number }): Promise<OnvifProfileResult> {
+  return requestJson("/api/cameras/onvif/profiles", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input),
+  })
+}
+
+export function getCameraPairConstraints(signal?: AbortSignal): Promise<CameraPairConstraint[]> {
+  return requestJson("/api/camera-pair-constraints", { signal })
+}
+
+export function saveCameraPairConstraint(change: CameraPairConstraintUpdate): Promise<CameraPairConstraint> {
+  return requestJson("/api/camera-pair-constraints", {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(change),
+  })
+}
+
+export async function getEvents(params: { camera?: string; plate?: string; limit?: number } = {}, signal?: AbortSignal): Promise<DetectionEvent[]> {
+  const q = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)])).toString()
+  return requestJson<DetectionEvent[]>(`/api/events${q ? `?${q}` : ""}`, { signal })
+}
+
+export async function getAlerts(signal?: AbortSignal, includeEscalated = false): Promise<Alert[]> {
+  return requestJson<Alert[]>(`/api/alerts${includeEscalated ? "?include_escalated=true" : ""}`, { signal })
+}
+
+export async function getEscalations(cursor?: EscalationCursor | null, signal?: AbortSignal): Promise<EscalationPage> {
+  const params = new URLSearchParams({ limit: "50" })
+  if (cursor) { params.set("before_ts", String(cursor.ts)); params.set("before_id", cursor.id) }
+  return requestJson<EscalationPage>(`/api/alerts/escalations?${params}`, { signal })
+}
+
+export async function getStats(signal?: AbortSignal): Promise<Stats> {
+  return requestJson<Stats>("/api/stats", { signal })
+}
+
+export async function getTrafficBaselines(signal?: AbortSignal, days = 28): Promise<TrafficBaseline> {
+  return requestJson<TrafficBaseline>(`/api/traffic/baselines?days=${days}`, { signal })
 }
 
 export async function askNL(question: string): Promise<{ text: string; sql?: string }> {
@@ -110,23 +520,23 @@ export async function askNL(question: string): Promise<{ text: string; sql?: str
   })
 }
 
-export async function getTrajectory(plate: string): Promise<Trajectory> {
-  return requestJson<Trajectory>(`/api/trajectory/${encodeURIComponent(plate)}`)
+export async function getTrajectory(plate: string, interval: Record<string, string> = {}, signal?: AbortSignal): Promise<Trajectory> {
+  return requestJson<Trajectory>(`/api/trajectory/${encodeURIComponent(plate)}?${new URLSearchParams(interval)}`, { signal })
 }
 
-export async function createEvidenceReport(plate: string): Promise<EvidenceReport> {
-  return requestJson<EvidenceReport>(`/api/evidence/${encodeURIComponent(plate)}`, { method: "POST" })
+export async function createEvidenceReport(plate: string, interval: Record<string, string> = {}): Promise<EvidenceReport> {
+  return requestJson<EvidenceReport>(`/api/evidence/${encodeURIComponent(plate)}?${new URLSearchParams(interval)}`, { method: "POST" })
 }
 
 export function streamUrl(cameraId: string, startAt?: number, retry = 0, anchorAt?: number) {
   const params = new URLSearchParams({ retry: String(retry) })
   if (startAt !== undefined) params.set("start", startAt.toFixed(3))
   if (anchorAt !== undefined) params.set("anchor", anchorAt.toFixed(3))
-  return `/api/stream/${cameraId}?${params}`
+  return scopedResourceUrl(`/api/stream/${cameraId}?${params}`)
 }
 
 export function videoUrl(cameraId: string) {
-  return `/api/video/${cameraId}`
+  return scopedResourceUrl(`/api/video/${cameraId}`)
 }
 
 export function cameraPlaybackOffset(cameraId: string, duration: number, now = Date.now()) {
@@ -136,5 +546,23 @@ export function cameraPlaybackOffset(cameraId: string, duration: number, now = D
 }
 
 export function snapshotUrl(cameraId: string) {
-  return `/api/snapshot/${cameraId}?t=${Date.now()}`
+  return scopedResourceUrl(`/api/snapshot/${cameraId}?t=${Date.now()}`)
+}
+
+export async function getFlows(signal?: AbortSignal): Promise<{ from: string; to: string; count: number }[]> {
+  return requestJson("/api/flows", { signal })
+}
+export async function reviewAlert(id: string, state: string, reviewer: string, note: string, escalationTarget?: string) {
+  return requestJson(`/api/alerts/${encodeURIComponent(id)}/review`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({state, reviewer, note, ...(escalationTarget ? { escalation_target: escalationTarget } : {})}) })
+}
+export interface RuleConfig {
+  watchlist: Record<string, string>
+  watchlist_conditions: Record<string, { active_from?: number | null; active_until?: number | null; minimum_sightings: number; history_window_seconds: number }>
+  restricted_cameras: string[]
+  zone_permits: { permit_id: string; plate: string; camera_ids: string[]; valid_from: number; valid_until: number; reason: string }[]
+  dwell_zones: { camera_id: string; zone: [number,number,number,number]; dwell_seconds: number; max_gap_seconds: number }[]
+}
+export async function getRules(): Promise<RuleConfig> { return requestJson("/api/rules") }
+export async function saveRules(config: RuleConfig): Promise<RuleConfig> {
+  return requestJson("/api/rules", {method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(config)})
 }

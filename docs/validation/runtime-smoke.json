@@ -1,0 +1,281 @@
+{
+  "before_start": {
+    "observations": 863,
+    "sample_ids": [
+      "5cc98b6e0d2321e6fabf58fbd3cf36f0",
+      "bcc9e5716ecd990d195f09c3a547fbf5",
+      "88d22259edadcfe8cd2ba0d795d94123",
+      "a9d4865856fa5fa93f12282b3059b7d4",
+      "8e9e9bff60240bc022c9218a8b380073",
+      "35d21e5845ddd31af18dfa9c6b51f5e4",
+      "758effc2f8c1e615fd8407afc8aa4bf7",
+      "622dab3af5c8f9743f7d2a75d0104439",
+      "83d1acf88568d04e9775b5ecdfada83c",
+      "c04814a9b503705b85b66b599e63a41a"
+    ]
+  },
+  "ui_fixture_report": {
+    "synthetic": true,
+    "isolated_port": 5175,
+    "json_downloaded": true,
+    "zip_downloaded": true,
+    "manifest_hash_verified": true,
+    "zip_artifact_hashes_verified": true,
+    "print_observations": 2,
+    "supporting_raw_reads": 2
+  },
+  "fixture_clean_shutdown": true,
+  "before_restart": {
+    "count": 1734
+  },
+  "main_clean_shutdown": true,
+  "restart_persistence": {
+    "retained_sample_ids": 10,
+    "sample_ids_checked": 10,
+    "count_after_restart": 1736
+  },
+  "health_after_restart": {
+    "processing_enabled": true,
+    "cameras": [
+      {
+        "camera_id": "CAM-01",
+        "status": "processing",
+        "frames": 1,
+        "last_frame_at": 1791521827.9349465,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "latency_ms": 3270.8,
+        "session_id": "96423af0fbf943c4a43993a73fae8e3d:CAM-01:0:capture-1",
+        "frame_id": 116,
+        "source_time_seconds": 4.64,
+        "frame_age_seconds": 2.71,
+        "processed_fps": 0.158,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      },
+      {
+        "camera_id": "CAM-02",
+        "status": "processing",
+        "frames": 1,
+        "last_frame_at": 1791521828.2346559,
+        "last_event_at": 1791521828.2346559,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "latency_ms": 160.2,
+        "session_id": "96423af0fbf943c4a43993a73fae8e3d:CAM-02:0:capture-1",
+        "frame_id": 315,
+        "source_time_seconds": 12.6,
+        "frame_age_seconds": 2.41,
+        "processed_fps": 0.158,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      },
+      {
+        "camera_id": "CAM-03",
+        "status": "processing",
+        "frames": 1,
+        "last_frame_at": 1791521828.8742166,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "latency_ms": 85.2,
+        "session_id": "96423af0fbf943c4a43993a73fae8e3d:CAM-03:0:capture-1",
+        "frame_id": 440,
+        "source_time_seconds": 17.6,
+        "frame_age_seconds": 1.77,
+        "processed_fps": 0.158,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      },
+      {
+        "camera_id": "CAM-04",
+        "status": "processing",
+        "frames": 1,
+        "last_frame_at": 1791521829.1560068,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "latency_ms": 75.1,
+        "session_id": "96423af0fbf943c4a43993a73fae8e3d:CAM-04:0:capture-1",
+        "frame_id": 565,
+        "source_time_seconds": 22.6,
+        "frame_age_seconds": 1.49,
+        "processed_fps": 0.158,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      },
+      {
+        "camera_id": "CAM-05",
+        "status": "processing",
+        "frames": 1,
+        "last_frame_at": 1791521829.7456057,
+        "last_event_at": 1791521829.7456057,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "latency_ms": 84.7,
+        "session_id": "96423af0fbf943c4a43993a73fae8e3d:CAM-05:0:capture-1",
+        "frame_id": 690,
+        "source_time_seconds": 27.6,
+        "frame_age_seconds": 0.9,
+        "processed_fps": 0.158,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      },
+      {
+        "camera_id": "CAM-06",
+        "status": "processing",
+        "frames": 1,
+        "last_frame_at": 1791521830.1531236,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "latency_ms": 76.8,
+        "session_id": "96423af0fbf943c4a43993a73fae8e3d:CAM-06:0:capture-1",
+        "frame_id": 815,
+        "source_time_seconds": 32.6,
+        "frame_age_seconds": 0.49,
+        "processed_fps": 0.158,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      },
+      {
+        "camera_id": "CAM-07",
+        "status": "unavailable",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": "Source file missing",
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      },
+      {
+        "camera_id": "CAM-08",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      },
+      {
+        "camera_id": "CAM-09",
+        "status": "idle",
+        "frames": 0,
+        "last_frame_at": null,
+        "last_event_at": null,
+        "error": null,
+        "source_available": false,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "frame_age_seconds": null,
+        "processed_fps": 0.0,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0
+      }
+    ],
+    "database_schema": 2,
+    "scope": "single API process; run uvicorn with one worker"
+  },
+  "decoded_snapshots": {
+    "CAM-01": {
+      "width": 960,
+      "height": 540,
+      "jpeg_bytes": 141054
+    },
+    "CAM-02": {
+      "width": 960,
+      "height": 540,
+      "jpeg_bytes": 170838
+    },
+    "CAM-03": {
+      "width": 960,
+      "height": 540,
+      "jpeg_bytes": 173559
+    },
+    "CAM-04": {
+      "width": 960,
+      "height": 540,
+      "jpeg_bytes": 169898
+    },
+    "CAM-05": {
+      "width": 960,
+      "height": 540,
+      "jpeg_bytes": 170007
+    },
+    "CAM-06": {
+      "width": 960,
+      "height": 540,
+      "jpeg_bytes": 159658
+    }
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "cpu": "",
+    "logical_cpus": 12,
+    "torch": "2.14.0+cpu",
+    "cuda_available": false,
+    "api_rss_mib": 572.0,
+    "scope": "short smoke sample, not sustained throughput/accuracy benchmark"
+  },
+  "ui_checks": {
+    "mobile_width": 390,
+    "mobile_height": 844,
+    "camera_wall_no_horizontal_overflow": true,
+    "investigation_no_horizontal_overflow": true,
+    "alerts_no_horizontal_overflow": true,
+    "unknown_plate_export_disabled": true,
+    "navigation_focus_trap": true,
+    "navigation_escape_restores_focus": true,
+    "viewport_override_reset": true
+  },
+  "checked_at_utc": "2026-10-09T04:31:03.355401+00:00",
+  "backend_regressions": {
+    "passed": 49,
+    "failed": 0,
+    "scope": "deterministic isolated fixtures; no ML accuracy claim"
+  },
+  "frontend_checks": {
+    "lint": "passed",
+    "existing_fast_refresh_warnings": 2,
+    "typescript_vite_build": "passed"
+  },
+  "pull_request": "https://github.com/moneytosms/ai26/pull/2",
+  "ci": {
+    "status": "passed",
+    "url": "https://github.com/bharadwaj-b-chand04/ai26/actions/runs/37884292728",
+    "commit": "8b7bbf42e28edbaaa2f7077393717da91f7a1922"
+  }
+}

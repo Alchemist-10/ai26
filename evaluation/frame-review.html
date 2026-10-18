@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI26 · Frame review</title>
+<style>
+:root{color-scheme:dark;--bg:#080d12;--panel:#11191f;--line:#34434c;--text:#e7eef0;--muted:#acbac2;--accent:#38d1c2;--error:#ffb8b8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "IBM Plex Sans",system-ui,sans-serif}button,input,select,textarea{font:inherit}button,.file-button,a{touch-action:manipulation}button,.file-button{min-height:44px;padding:9px 14px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--text);cursor:pointer}button:hover,.file-button:hover{border-color:var(--accent)}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--accent);color:#061412;border-color:var(--accent);font-weight:650}a{color:var(--accent);text-underline-offset:4px}input,textarea,select{max-width:100%;min-height:44px;padding:9px 11px;background:#080d12;color:var(--text);border:1px solid var(--line);border-radius:4px;caret-color:var(--accent)}input[type=checkbox]{min-height:20px;width:20px;height:20px;accent-color:var(--accent)}:focus-visible{outline:2px solid var(--accent);outline-offset:3px}::selection{background:var(--accent);color:#061412}*{scrollbar-color:var(--line) var(--bg)}header{padding:20px 28px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:18px 30px;align-items:center;justify-content:space-between}h1{margin:0;font-size:28px;line-height:1.25;font-weight:650}h2{margin:0;font-size:20px}p{margin:6px 0 0;max-width:72ch}.muted,small{color:var(--muted)}.actions,.row,.tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.file-button{display:inline-flex;align-items:center}.file-input{position:absolute;width:1px;height:1px;opacity:0}.file-button:focus-within{outline:2px solid var(--accent);outline-offset:3px}.intro{padding:18px 28px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,300px);gap:16px}.intro label{display:flex;flex-direction:column;gap:5px}.notice{margin:0;padding:10px 28px;min-height:44px;color:var(--muted);border-bottom:1px solid var(--line)}.notice.error{color:var(--error)}.workspace{padding:24px 28px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;max-width:1800px;margin:auto}.image-heading{display:flex;align-items:start;justify-content:space-between;gap:16px;flex-wrap:wrap}.tools{margin:18px 0 12px}.tools button[aria-pressed=true]{background:var(--text);color:var(--bg)}.stage{position:relative;line-height:0;background:#000;min-height:90px}.stage img{width:100%;height:auto;display:block}.stage svg{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y}.stage.drawing svg{touch-action:none;cursor:crosshair}.stage rect{vector-effect:non-scaling-stroke;stroke-width:2;fill-opacity:.08}.stage text{font-family:system-ui,sans-serif;font-weight:700;paint-order:stroke;stroke:#000;stroke-width:3;stroke-linejoin:round}.hint{font-size:14px;margin-top:10px}.controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:18px}.controls label{display:flex;align-items:center;gap:8px}.controls select{max-width:230px}aside{border-left:1px solid var(--line);padding-left:26px;min-width:0}aside>label{display:flex;flex-direction:column;gap:7px;margin:20px 0}aside h2{font-size:20px}.checkline{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px!important;font-size:14px}.checkline input{flex-shrink:0;margin:2px 0}.annotation{margin:16px 0;border-top:1px solid var(--line);padding-top:12px}.annotation .row{justify-content:space-between;align-items:center}.annotation input,.annotation select{width:100%;margin-top:8px}.annotation button{min-height:36px;padding:5px 10px;font-size:14px}.annotation small{display:block;margin-top:4px}#notes{width:100%;min-height:80px;resize:vertical}.status{font-size:14px;color:var(--muted)}.empty{font-size:14px;color:var(--muted);padding:12px 0;border-top:1px solid var(--line)}.footnote{padding:16px 28px 28px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}[hidden]{display:none!important}body{font-variant-numeric:tabular-nums}@media(max-width:1000px){.workspace{grid-template-columns:minmax(0,1fr)}aside{border-left:0;border-top:1px solid var(--line);padding:22px 0 0}.intro{grid-template-columns:1fr}header,.intro,.workspace,.footnote{padding-left:18px;padding-right:18px}.notice{padding-left:18px;padding-right:18px}.actions{gap:8px}h1{font-size:26px}}@media(prefers-reduced-motion:no-preference){button{transition:background-color .12s,border-color .12s}}
+</style>
+</head>
+<body>
+<!-- Operate extension of AI26's established dark/zinc/teal review tools. A large source frame leads; human labels and explicit completeness states sit alongside it. No predictions prefill labels. Narrow screens stack the same workflow. This artifact records exploratory review, not independently held-out evaluation. -->
+<header><div><h1>AI26 frame review</h1><p class="muted" id="progress">Preparing the review set…</p></div><div class="actions"><button id="export" class="primary">Export labels JSON</button><label class="file-button">Import labels<input id="import" class="file-input" type="file" accept="application/json,.json"></label><a href="manifest.json" download>Source manifest</a></div></header>
+<div class="intro"><div><strong>Start with vehicle counts.</strong><p class="muted">Count the vehicles you can identify, then save the frame. Boxes are optional for count review. Draw every vehicle and confirm box coverage to prepare detector scoring. Draw plate regions only when you want to review their readability.</p></div><label for="reviewer">Your name<input id="reviewer" autocomplete="name" maxlength="100" placeholder="Reviewer name"></label></div>
+<p id="notice" class="notice" role="status" aria-live="polite">Labels stay in this browser. Export a JSON backup when you finish a session.</p>
+<main class="workspace">
+<section aria-label="Review image"><div class="image-heading"><div><h2 id="sample-title"></h2><p class="muted" id="sample-meta"></p></div><a id="original" target="review-original" rel="noopener">Open full-size image</a></div>
+<div class="tools" role="group" aria-label="Image interaction"><button id="inspect" aria-pressed="true">Inspect</button><button id="vehicle" aria-pressed="false">Draw vehicle box</button><button id="plate" aria-pressed="false">Draw plate box</button></div>
+<div id="stage" class="stage"><img id="frame" src="frames/CAM-01-01.jpg" alt="Camera frame for manual review"><svg id="overlay" xmlns="http://www.w3.org/2000/svg" aria-label="Annotation canvas"></svg></div>
+<p class="hint muted" id="draw-hint">Open the full-size image if a detail is difficult to see. Annotate only what is visible.</p>
+<div class="controls"><button id="previous">Previous</button><button id="next">Next</button><button id="next-pending">Next pending</button><label for="jump">Frame<select id="jump"></select></label></div>
+</section>
+<aside aria-labelledby="labels-heading"><h2 id="labels-heading">Your observations</h2><p id="frame-status" class="status"></p>
+<label for="count">Visible vehicle count<input id="count" type="number" inputmode="numeric" min="0" max="1000" step="1" placeholder="Enter a count, including zero"></label>
+<p class="hint muted">Include identifiable partial vehicles. Count cars, buses, trucks, motorcycles and bicycles. Exclude people, reflections and vehicles shown on signs.</p>
+<label class="checkline" for="complete"><input id="complete" type="checkbox"><span>I have boxed every visible vehicle. The number of vehicle boxes must equal my count.</span></label>
+<div id="annotations"></div>
+<label for="notes">Notes or reason the frame is unusable<textarea id="notes" maxlength="2000" placeholder="Optional for reviewed frames"></textarea></label>
+<div class="actions"><button id="reviewed" class="primary">Save frame as reviewed</button><button id="unusable">Mark unusable</button></div>
+<p class="hint muted">Drawn boxes use the original image coordinates. Plate text is required only when a plate is marked readable.</p>
+</aside>
+</main>
+<footer class="footnote"><p id="scope"></p><p id="prior"></p><p>Editing a reviewed frame returns it to pending until you save it again. No AI predictions or counts have been prefilled.</p></footer>
+<script id="review-data" type="application/json">/* REVIEW_PAYLOAD */ null</script>
+<script>
+'use strict';
+const payload=JSON.parse(document.getElementById('review-data').textContent);
+if(!payload)throw Error('Generate this page with prepare_frame_review.py first.');
+const manifest=payload.manifest, samples=manifest.samples, key='ai26-frame-review:'+manifest.review_set_id;
+const $=id=>document.getElementById(id), classes=['car','bus','truck','motorcycle','bicycle'];
+let labels=structuredClone(payload.labels),position=0,mode='inspect',drag=null,storageReady=true;
+function notice(message,error=false){$('notice').textContent=message;$('notice').classList.toggle('error',error)}
+function sample(){return samples[position]}function annotation(){return labels.annotations[sample().sample_id]}
+function validateAnnotation(row,s){
+ if(!row||!['pending','reviewed','unusable'].includes(row.status))throw Error('Invalid frame status.');
+ if(row.vehicle_count!==null&&(!Number.isInteger(row.vehicle_count)||row.vehicle_count<0||row.vehicle_count>1000))throw Error('Invalid vehicle count.');
+ if(typeof row.vehicle_boxes_complete!=='boolean'||typeof row.notes!=='string'||row.notes.length>2000)throw Error('Invalid annotation fields.');
+ for(const kind of ['vehicles','plates']){
+  if(!Array.isArray(row[kind])||row[kind].length>1000)throw Error('Invalid box list.');
+  for(const box of row[kind]){
+   const b=box.bbox;if(!Array.isArray(b)||b.length!==4||!b.every(Number.isFinite)||b[0]<0||b[1]<0||b[2]>s.width||b[3]>s.height||b[2]<=b[0]||b[3]<=b[1])throw Error('Invalid box coordinates.');
+   if(kind==='vehicles'&&!classes.includes(box.class))throw Error('Invalid vehicle class.');
+   if(kind==='plates'&&(!['pending','readable','uncertain','unreadable'].includes(box.readability)||typeof box.text!=='string'||box.text.length>64))throw Error('Invalid plate label.');
+  }
+ }
+ if(row.status==='reviewed'){
+  if(row.vehicle_count===null)throw Error('A reviewed frame needs a vehicle count.');
+  if(row.vehicle_boxes_complete&&row.vehicle_count!==row.vehicles.length)throw Error('Complete box count differs from the vehicle count.');
+  if(row.plates.some(p=>p.readability==='pending'||(p.readability==='readable'&&!/[a-z0-9]/i.test(p.text))))throw Error('Finish the plate labels before saving this frame.');
+ }
+ if(row.status!=='pending'&&(typeof row.reviewed_by!=='string'||!row.reviewed_by.trim()||typeof row.reviewed_at!=='string'||!Number.isFinite(Date.parse(row.reviewed_at))))throw Error('Completed labels need a reviewer and review time.');
+ if(row.status==='unusable'&&!row.notes.trim())throw Error('An unusable frame needs a reason.');
+}
+function validate(data){
+ if(data?.schema_version!==1||data.review_set_id!==manifest.review_set_id)throw Error('These labels belong to a different review set.');
+ if(typeof data.reviewer!=='string'||data.reviewer.length>100||!data.annotations||Object.keys(data.annotations).length!==samples.length)throw Error('The label file has missing or invalid fields.');
+ for(const s of samples)validateAnnotation(data.annotations[s.sample_id],s);
+ return data;
+}
+function progress(){
+ const rows=Object.values(labels.annotations),done=rows.filter(a=>a.status!=='pending').length;
+ $('progress').textContent=`${done} of ${samples.length} frames completed · ${samples.length/5===9?'9 cameras':manifest.source_clips.length+' cameras'}`;
+ $('frame-status').textContent=annotation().status==='pending'?'Pending review':`${annotation().status==='reviewed'?'Reviewed':'Unusable'} · ${annotation().reviewed_by}`;
+ $('jump').querySelectorAll('option').forEach((o,i)=>o.textContent=`${samples[i].sample_id} · ${labels.annotations[samples[i].sample_id].status}`);
+}
+function persist(){
+ if(storageReady){try{localStorage.setItem(key,JSON.stringify(labels));notice('Draft saved in this browser. Export labels JSON for a backup.')}catch{notice('Browser storage is unavailable or full. Use Export labels JSON to keep your work.',true)}}
+ progress();
+}
+function changed(){const a=annotation();a.status='pending';delete a.reviewed_at;delete a.reviewed_by;persist()}
+function node(tag,text){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n}
+function option(value,label){const o=node('option',label);o.value=value;return o}
+function setMode(value){mode=value;for(const kind of ['inspect','vehicle','plate'])$(kind).setAttribute('aria-pressed',String(mode===kind));$('stage').classList.toggle('drawing',mode!=='inspect');$('draw-hint').textContent=mode==='inspect'?'Open the full-size image if a detail is difficult to see. Annotate only what is visible.':`Drag a rectangle around one ${mode==='vehicle'?'vehicle':'plate'}. Then choose its ${mode==='vehicle'?'class':'readability'} below.`}
+function draw(){
+ const svg=$('overlay'),s=sample(),a=annotation();svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${s.width} ${s.height}`);
+ const boxes=[...a.vehicles.map((b,i)=>({b,label:'Vehicle '+(i+1),color:'#38d1c2'})),...a.plates.map((b,i)=>({b,label:'Plate '+(i+1),color:'#ffd27c'}))];
+ for(const {b,label,color} of boxes){const r=document.createElementNS(svg.namespaceURI,'rect');r.setAttribute('x',b.bbox[0]);r.setAttribute('y',b.bbox[1]);r.setAttribute('width',b.bbox[2]-b.bbox[0]);r.setAttribute('height',b.bbox[3]-b.bbox[1]);r.setAttribute('stroke',color);r.setAttribute('fill',color);svg.append(r);const t=document.createElementNS(svg.namespaceURI,'text');t.setAttribute('x',b.bbox[0]+3);t.setAttribute('y',Math.max(18,b.bbox[1]-5));t.setAttribute('fill',color);t.setAttribute('font-size',Math.max(14,s.width/70));t.textContent=label;svg.append(t)}
+}
+function renderAnnotations(){
+ const container=$('annotations'),a=annotation();container.replaceChildren();
+ for(const kind of ['vehicles','plates'])for(const [index,box] of a[kind].entries()){
+  const section=node('section');section.className='annotation';const top=node('div');top.className='row';top.append(node('strong',`${kind==='vehicles'?'Vehicle':'Plate'} ${index+1}`));
+  const remove=node('button','Remove');remove.type='button';remove.setAttribute('aria-label',`Remove ${kind==='vehicles'?'vehicle':'plate'} ${index+1}`);remove.onclick=()=>{a[kind].splice(index,1);changed();renderAnnotations();draw()};top.append(remove);section.append(top);
+  const label=node('label',kind==='vehicles'?'Vehicle class':'Plate readability'),select=node('select');
+  if(kind==='vehicles'){classes.forEach(c=>select.append(option(c,c[0].toUpperCase()+c.slice(1))));select.value=box.class;select.onchange=()=>{box.class=select.value;changed()}}
+  else{[['pending','Choose readability'],['readable','Readable'],['uncertain','Uncertain'],['unreadable','Unreadable']].forEach(([v,t])=>select.append(option(v,t)));select.value=box.readability;select.onchange=()=>{box.readability=select.value;if(select.value!=='readable')box.text='';changed();renderAnnotations()}}
+  label.append(select);section.append(label);
+  if(kind==='plates'&&box.readability==='readable'){const textLabel=node('label','Visible plate text'),input=node('input');input.maxLength=64;input.autocomplete='off';input.spellcheck=false;input.value=box.text;input.oninput=()=>{box.text=input.value;changed()};textLabel.append(input);section.append(textLabel)}
+  section.append(node('small',`Box: ${box.bbox.join(', ')}`));container.append(section);
+ }
+ if(!a.vehicles.length&&!a.plates.length){const empty=node('p','No boxes drawn. You can review the vehicle count without drawing boxes.');empty.className='empty';container.append(empty)}
+}
+function render(){
+ const s=sample(),a=annotation(),source=manifest.source_clips.find(c=>c.camera_id===s.camera_id);
+ $('sample-title').textContent=`${s.sample_id} · Frame ${position+1} of ${samples.length}`;
+ $('sample-meta').textContent=`${s.source_time_seconds.toFixed(2)} seconds into clip · ${s.width} × ${s.height} · ${source.role==='playback_fallback'?'Playback copy; original unavailable':'Original source'}`;
+ $('frame').src=s.image;$('frame').alt=`Review frame ${s.sample_id}; human labels pending or saved separately`;$('original').href=s.image;
+ $('count').value=a.vehicle_count===null?'':a.vehicle_count;$('complete').checked=a.vehicle_boxes_complete;$('notes').value=a.notes;
+ $('previous').disabled=position===0;$('next').disabled=position===samples.length-1;$('jump').value=String(position);
+ setMode('inspect');renderAnnotations();draw();progress();
+}
+function mark(status){
+ if(!labels.reviewer.trim()){notice('Enter your name before saving a reviewed frame.',true);$('reviewer').focus();return}
+ if(status==='reviewed'&&(!$('frame').complete||!$('frame').naturalWidth)){notice('Wait for the review image to load before saving.',true);return}
+ const next={...annotation(),status,reviewed_by:labels.reviewer.trim(),reviewed_at:new Date().toISOString()};
+ try{validateAnnotation(next,sample())}catch(e){notice(e.message,true);return}
+ labels.annotations[sample().sample_id]=next;persist();notice(`Saved ${sample().sample_id} as ${status}. Use Next to continue.`);
+}
+samples.forEach((s,i)=>$('jump').append(option(String(i),s.sample_id)));
+try{const stored=localStorage.getItem(key);if(stored)labels=validate(JSON.parse(stored))}catch{storageReady=false;notice('Saved browser data could not be read. It has not been overwritten. Import a valid exported label file to recover, or export this new draft.',true)}
+$('reviewer').value=labels.reviewer;$('reviewer').oninput=()=>{labels.reviewer=$('reviewer').value;persist()};
+$('count').oninput=()=>{const value=$('count').value===''?null:Number($('count').value);annotation().vehicle_count=value!==null&&Number.isInteger(value)&&value>=0&&value<=1000?value:null;changed();if(value!==null&&annotation().vehicle_count===null)notice('Enter a whole-number vehicle count from 0 to 1,000.',true)};
+$('complete').onchange=()=>{annotation().vehicle_boxes_complete=$('complete').checked;changed()};
+$('notes').oninput=()=>{annotation().notes=$('notes').value;changed()};
+$('reviewed').onclick=()=>mark('reviewed');$('unusable').onclick=()=>mark('unusable');
+$('previous').onclick=()=>{if(position>0){position--;render()}};$('next').onclick=()=>{if(position<samples.length-1){position++;render()}};
+$('next-pending').onclick=()=>{for(let n=1;n<=samples.length;n++){const i=(position+n)%samples.length;if(labels.annotations[samples[i].sample_id].status==='pending'){position=i;render();return}}notice('Every frame is reviewed or marked unusable. Export labels JSON to keep the completed set.')};
+$('jump').onchange=()=>{position=Number($('jump').value);render()};for(const kind of ['inspect','vehicle','plate'])$(kind).onclick=()=>setMode(kind);
+function point(event){const r=$('overlay').getBoundingClientRect(),s=sample();return [Math.max(0,Math.min(s.width,Math.round((event.clientX-r.left)/r.width*s.width))),Math.max(0,Math.min(s.height,Math.round((event.clientY-r.top)/r.height*s.height)))]}
+$('overlay').onpointerdown=e=>{if(mode==='inspect'||e.button!==0)return;drag={start:point(e),end:point(e)};$('overlay').setPointerCapture(e.pointerId);e.preventDefault()};
+$('overlay').onpointermove=e=>{if(!drag)return;drag.end=point(e);draw();const r=document.createElementNS($('overlay').namespaceURI,'rect');r.setAttribute('x',Math.min(drag.start[0],drag.end[0]));r.setAttribute('y',Math.min(drag.start[1],drag.end[1]));r.setAttribute('width',Math.abs(drag.start[0]-drag.end[0]));r.setAttribute('height',Math.abs(drag.start[1]-drag.end[1]));r.setAttribute('stroke','#fff');r.setAttribute('fill','#fff');$('overlay').append(r)};
+$('overlay').onpointerup=e=>{if(!drag)return;const start=drag.start,end=point(e);drag=null;$('overlay').releasePointerCapture(e.pointerId);if(Math.abs(end[0]-start[0])>=5&&Math.abs(end[1]-start[1])>=5){const box={bbox:[Math.min(start[0],end[0]),Math.min(start[1],end[1]),Math.max(start[0],end[0]),Math.max(start[1],end[1])]};if(mode==='vehicle')annotation().vehicles.push({...box,class:'car'});else annotation().plates.push({...box,readability:'pending',text:''});changed();renderAnnotations()}draw()};
+$('overlay').onpointercancel=()=>{drag=null;draw()};
+$('frame').onerror=()=>notice('The review image could not load. Keep this frame pending and check the extracted files.',true);
+$('export').onclick=()=>{try{validate(labels)}catch(e){notice(e.message+' Correct the draft before exporting.',true);return}const data={...labels,exported_at:new Date().toISOString()},url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=node('a');a.href=url;a.download='ai26-frame-labels-'+manifest.review_set_id.slice(0,12)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notice('Labels exported. Keep this JSON with the source manifest.')};
+$('import').onchange=async()=>{const file=$('import').files[0];if(!file)return;try{if(file.size>2*1024*1024)throw Error('Label file is larger than 2 MiB.');const incoming=validate(JSON.parse(await file.text()));const currentDone=Object.values(labels.annotations).some(a=>a.status!=='pending'||a.vehicle_count!==null||a.vehicles.length||a.plates.length||a.notes);if(currentDone&&!window.confirm('Replace the current browser draft with this imported label file? Export the current draft first if you need to keep it.'))return;labels=incoming;storageReady=true;$('reviewer').value=labels.reviewer;persist();render();notice('Imported labels for this review set.')}catch(e){notice('Import failed: '+e.message+' Current labels were preserved.',true)}finally{$('import').value=''}};
+$('scope').textContent=manifest.scope;
+$('prior').textContent=`${manifest.prior_plate_reviews.reduce((n,r)=>n+r.samples,0)} earlier plate crops remain in their original review files. They have not been copied into or overwritten by this frame set.`;
+document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;if(e.key==='ArrowRight')$('next').click();if(e.key==='ArrowLeft')$('previous').click()});
+render();
+</script>
+</body>
+</html>

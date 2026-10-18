@@ -1,0 +1,108 @@
+{
+  "architecture": "Two inference branches: Ultralytics YOLOv8n vehicle detector and Fast-ALPR plate detector plus OCR. CPU model assets are loaded lazily and snapshotted by digest. See the bundle descriptor for exact component and source hashes.",
+  "data": {
+    "dataset_id": "No reviewed model training/evaluation dataset supplied",
+    "known_coverage_gaps": [
+      "Training data lineage and geographic/camera coverage are unknown for all bundled weights.",
+      "CAM-07 through CAM-09 footage is unavailable; the current sample set has no labeled plate-positive examples.",
+      "No reviewed train/validation/test manifest, plate labels, vehicle labels, or independent annotation audit is available.",
+      "License and redistribution terms for the component weights are unverified.",
+      "The OCR provider marks this exact MobileViT-v2 checkpoint as a legacy inference model; upstream scope is global, but Indian-plate performance is unmeasured by AI26."
+    ],
+    "labeling_method": "No reviewed labels supplied.",
+    "manifest_path": "evaluation/dataset-manifest.json (template only; no ready labeled manifest)",
+    "manifest_sha256": "",
+    "test_split_summary": "No held-out labeled test set supplied. Runtime sample: 12 frames at 2-second strides from CAM-01, not accuracy-evaluable.",
+    "train_split_summary": "For the selected OCR model, upstream documentation describes a global model trained on 85k+ plates from 65+ countries. This is a provider statement, not independently verified here; exact source manifest, split membership, and lineage remain unknown. Vehicle and plate-detector training manifests are not present in this workspace.",
+    "validation_split_summary": "Unknown; no verified model validation split supplied.",
+    "vehicle_camera_location_session_separation": "Not established for model training or validation; runtime clips are not a held-out labeled test set."
+  },
+  "evaluation": {
+    "conditions": [
+      "CAM-01 960x540, reported 25 FPS; 12 sampled frames at two-second intervals.",
+      "Two ONNX intra-op threads and one inter-op thread.",
+      "The source sample had zero detected plate candidates; no detector accuracy denominator exists.",
+      "Synthetic OCR timing used a generated in-memory crop and did not record OCR text."
+    ],
+    "confidence_calibration_method": "None. Configured confidence thresholds are operational cutoffs, not calibrated probabilities.",
+    "failure_cases": [
+      "No positive plate detections in the 12-frame runtime sample; because frames were unlabeled this is not a measured miss rate.",
+      "Separate all-black synthetic OCR preflight returned AB251D, demonstrating that raw OCR text can be invalid; this is not a field error-rate estimate.",
+      "Legacy OCR ONNX emitted shape-merge warnings during load while inference session initialized."
+    ],
+    "hardware": "12-logical-CPU Linux host; CPUExecutionProvider. Separate vehicle edge comparison was run on 12th Gen Intel Core i5-12450H; deployment target is unconfirmed.",
+    "limitations": [
+      "No field accuracy, recall, precision, exact-plate match, false-read, or calibration measurement is available.",
+      "The companion edge benchmark measures agreement and latency on unlabeled local clips only; it is not target-device validation or accuracy evaluation.",
+      "Runtime sample does not measure six-camera shared scheduling, full capture-to-display latency, or field conditions.",
+      "Hashed weights establish byte identity, not trusted authorship, training lineage, annotation quality, or model correctness.",
+      "Upstream model-reported coverage/benchmarks are not AI26 measurements and do not establish accuracy on the bundled footage or Indian plates."
+    ],
+    "metrics": {
+      "accuracy_measured": false,
+      "alpr_initialization_and_synthetic_preflight_ms": 558.565,
+      "alpr_prediction_median_ms": 53.319,
+      "alpr_prediction_p95_ms": 63.934,
+      "plate_detector_candidates": 0,
+      "plate_ocr_calls_on_detected_plates": 0,
+      "synthetic_ocr_timing_calls": 12,
+      "vehicle_accuracy_measured": false
+    },
+    "report_path": "docs/validation/alpr-runtime-cam01-2026-10-16.json",
+    "report_sha256": "fe8369f62c35f99d42ba99f1ac367d83c7d0c2da983d71a369be3b498dc55b75",
+    "runtime_versions": {
+      "fast-alpr": "0.4.0",
+      "fast-plate-ocr": "1.1.0",
+      "onnxruntime": "1.30.0",
+      "open-image-models": "0.6.0",
+      "torch": "2.14.0+cpu",
+      "ultralytics": "8.4.155"
+    },
+    "sample_count": 12
+  },
+  "intended_use": "Research and operator-reviewed traffic observations in the AI26 demonstration. Outputs are not a sole basis for enforcement, identity decisions, or other consequential action.",
+  "model_id": "ai26-active-vehicle-and-alpr-pipeline",
+  "model_version": "fec01059cd3f16e3828dbaab12e8e54cd8b767df",
+  "out_of_scope_uses": [
+    "Automated enforcement or penalties",
+    "Unreviewed identity matching or watchlist action",
+    "Claims of calibrated confidence or accuracy",
+    "Use outside the camera, geography, lighting, weather, and image-quality conditions represented by a future reviewed evaluation"
+  ],
+  "pipeline": {
+    "confidence_thresholds": {
+      "minimum_ocr_confidence_for_supported_identity": 0.35,
+      "plate_detection": 0.4,
+      "vehicle_detection": 0.4
+    },
+    "configuration_sha256": "5d30bfe64af619b5d20d39b68084e2f6dc8ae851567844531c3aed34166cfdc5",
+    "postprocessing": "Vehicle class filter and confidence threshold; plate detection and OCR; plate-format normalization; OCR confidence and format checks; per-camera association and review-only per-track consensus. Exact code digests are in the bundle descriptor.",
+    "preprocessing_id": "Versioned inference implementation in the bundle descriptor; YOLO 640x640 RGB BCHW float32 [0,1] benchmark input; Fast-ALPR library preprocessing for plate branch.",
+    "preprocessing_sha256": "db5df8809bed9bd3f798a9a36c8728cddbaf95288e94938f5c5983b23707fd25"
+  },
+  "provenance_bundle": {
+    "path": "evaluation/model-bundle.current.json",
+    "sha256": "5d30bfe64af619b5d20d39b68084e2f6dc8ae851567844531c3aed34166cfdc5"
+  },
+  "release_decision": {
+    "reason": "Documentation card only. No reviewed labeled holdout, license review, or approved deployment thresholds exist; this does not approve production use or model promotion.",
+    "reviewed_at": null,
+    "reviewer": "",
+    "status": "unreviewed"
+  },
+  "risk_controls": [
+    "Exact asset and pipeline hashes are recorded in the bundle descriptor.",
+    "Plate results below 0.35 OCR confidence, with unsupported format, or ambiguous association are not treated as supported identities.",
+    "Synthetic/model smoke tests are explicitly separated from real accuracy evidence.",
+    "Use human review before consequential decisions; disable/rollback controls exist, but no model promotion gate has passed on held-out labels.",
+    "Software-package license declarations are separated from model-weight rights; do not redistribute or deploy the weights until their specific terms are established."
+  ],
+  "schema_version": 1,
+  "task": "Detect vehicles and license plates in sampled camera frames, recognize candidate plate text, normalize text against supported Indian registration formats, and expose track-associated observations for review.",
+  "weights": {
+    "format": "Composite: PyTorch vehicle checkpoint, ONNX plate detector/OCR, YAML OCR configuration",
+    "license": "The inference-library code repositories declare MIT; weight-specific terms for all bundled model files are not explicitly verified. See evaluation/model-bundle.current.json external_references.",
+    "path_or_registry_id": "evaluation/model-bundle.current.json (composite bundle descriptor; not a single checkpoint)",
+    "sha256": "5d30bfe64af619b5d20d39b68084e2f6dc8ae851567844531c3aed34166cfdc5"
+  }
+}

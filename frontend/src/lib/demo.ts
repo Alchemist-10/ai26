@@ -15,16 +15,16 @@ export const DEMO_PLATE = {
 export const DEMO_ALERTS: Alert[] = [
   {
     severity: "critical",
-    type: "cloned plate",
-    summary: "KL07AB1234 appears on two impossible routes",
+    type: "route review",
+    summary: "Synthetic plate example has a rejected camera transition",
     detail: "Demo scenario · 228 km/h implied between CAM-08 and CAM-07 · human review required",
     ts: Date.now() / 1000,
   },
   {
     severity: "warning",
-    type: "loitering",
-    summary: "6 vehicle sightings at CAM-02 in 30 seconds",
-    detail: "Demo scenario · repeated local detections trigger the route-anomaly rule",
+    type: "zone dwell",
+    summary: "Synthetic track remained in a configured zone for 45 seconds",
+    detail: "Synthetic example · 30-second dwell threshold; camera-local identity requires review",
     ts: Date.now() / 1000 - 42,
   },
 ]

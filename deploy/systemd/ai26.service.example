@@ -1,0 +1,24 @@
+[Unit]
+Description=AI26 camera analytics API and frontend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ai26
+Group=ai26
+WorkingDirectory=/opt/ai26
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+EnvironmentFile=/etc/ai26/ai26.env
+ExecStart=/usr/bin/env uv run /opt/ai26/run.py --skip-install
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+KillMode=mixed
+UMask=0077
+NoNewPrivileges=true
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

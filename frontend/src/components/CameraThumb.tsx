@@ -1,54 +1,46 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-import { cameraPlaybackOffset, videoUrl } from "@/lib/api"
+import { memo, useEffect, useRef, useState } from "react"
+import { usePolling } from "@/hooks/usePolling"
+import { scopedResourceUrl } from "@/lib/api"
 
-export function CameraThumb({ cameraId, className, onTimeUpdate }: { cameraId: string; className?: string; onTimeUpdate?: (time: number) => void }) {
+const PREVIEW_POLL_INTERVAL_MS = 5000
+
+export const CameraThumb = memo(function CameraThumb({ cameraId, available, processingEnabled, processingStatus, className }: { cameraId: string; available: boolean; processingEnabled: boolean; processingStatus: string; className?: string }) {
+  const [image, setImage] = useState("")
   const [failed, setFailed] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const offsetRef = useRef<number | null>(null)
-
-  const playFromOffset = useCallback((restart = false) => {
-    const video = videoRef.current
-    if (!video) return
-    if (video.duration && Number.isFinite(video.duration) && (restart || offsetRef.current === null)) {
-      offsetRef.current = cameraPlaybackOffset(cameraId, video.duration)
-      video.currentTime = offsetRef.current
-    }
-    void video.play().catch(() => undefined)
-  }, [cameraId])
-
+  const [nearViewport, setNearViewport] = useState(() => !("IntersectionObserver" in window))
+  const container = useRef<HTMLDivElement>(null)
+  const etag = useRef("")
+  const objectUrl = useRef("")
   useEffect(() => {
-    offsetRef.current = null
-    const video = videoRef.current
-    if (!video) return
-    video.muted = true
-    playFromOffset()
-  }, [cameraId, playFromOffset])
-
-  if (failed) {
-    return <div role="img" aria-label={`${cameraId} feed unavailable`} className="flex h-full items-center justify-center bg-zinc-950 font-sans text-xs text-zinc-500">Feed unavailable</div>
+    const element = container.current
+    if (!element) return
+    if (!("IntersectionObserver" in window)) return
+    const observer = new IntersectionObserver(([entry]) => {
+      setNearViewport(Boolean(entry?.isIntersecting))
+    }, { rootMargin: "120px 0px" })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+  usePolling(async signal => {
+    try {
+      const response = await fetch(scopedResourceUrl(`/api/preview/${cameraId}`), { signal, credentials: "same-origin", headers: etag.current ? { "If-None-Match": etag.current } : {} })
+      if (response.status === 304) { if (!signal.aborted) setFailed(false); return }
+      if (!response.ok) throw new Error("Preview unavailable")
+      const nextEtag = response.headers.get("etag") || ""
+      if (nextEtag && nextEtag === etag.current && image) { if (!signal.aborted) setFailed(false); return }
+      const blob = await response.blob()
+      if (signal.aborted) return
+      const next = URL.createObjectURL(blob)
+      const previous = objectUrl.current
+      objectUrl.current = next; etag.current = nextEtag
+      setImage(next); setFailed(false)
+      if (previous) URL.revokeObjectURL(previous)
+    } catch { if (!signal.aborted && processingStatus !== "loading") setFailed(true) }
+  }, PREVIEW_POLL_INTERVAL_MS, nearViewport && available && processingEnabled && ["loading", "processing"].includes(processingStatus))
+  useEffect(() => () => { if (objectUrl.current) URL.revokeObjectURL(objectUrl.current) }, [])
+  if (!available || !processingEnabled || !["loading", "processing"].includes(processingStatus) || failed || !image) {
+    const message = !available ? "Source missing" : !processingEnabled ? "Processing paused" : processingStatus === "error" ? "Processing error" : failed ? "Preview unavailable" : "Preview preparing"
+    return <div ref={container} role="img" aria-label={`${cameraId} ${message}`} className="flex h-full w-full items-center justify-center bg-zinc-950 px-1 text-center text-[0px] leading-none text-zinc-500 lg:text-xs lg:leading-normal">{message}</div>
   }
-
-  return (
-    <video
-      ref={videoRef}
-      src={videoUrl(cameraId)}
-      aria-label={`${cameraId} continuous camera playback`}
-      className={className}
-      autoPlay
-      muted
-      playsInline
-      preload="metadata"
-      onLoadedMetadata={() => playFromOffset()}
-      onCanPlay={() => {
-        setFailed(false)
-        playFromOffset()
-      }}
-      onEnded={() => {
-        offsetRef.current = null
-        playFromOffset(true)
-      }}
-      onTimeUpdate={(event) => onTimeUpdate?.(event.currentTarget.currentTime)}
-      onError={() => setFailed(true)}
-    />
-  )
-}
+  return <div ref={container} className="h-full w-full"><img src={image} alt={`${cameraId} sampled preview`} className={className} decoding="async" /></div>
+})

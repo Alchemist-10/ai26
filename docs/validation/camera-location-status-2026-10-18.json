@@ -1,0 +1,23 @@
+{
+  "captured_at_utc": "2026-10-18T05:35:28+00:00",
+  "endpoint": "/api/cameras",
+  "camera_count": 9,
+  "confirmed_location_count": 0,
+  "spatially_plot_eligible_count": 0,
+  "cameras": [
+    {"camera_id": "CAM-01", "location_confirmed": false, "coordinates_present_but_unconfirmed": true},
+    {"camera_id": "CAM-02", "location_confirmed": false, "coordinates_present_but_unconfirmed": true},
+    {"camera_id": "CAM-03", "location_confirmed": false, "coordinates_present_but_unconfirmed": true},
+    {"camera_id": "CAM-04", "location_confirmed": false, "coordinates_present_but_unconfirmed": true},
+    {"camera_id": "CAM-05", "location_confirmed": false, "coordinates_present_but_unconfirmed": true},
+    {"camera_id": "CAM-06", "location_confirmed": false, "coordinates_present_but_unconfirmed": true},
+    {"camera_id": "CAM-07", "location_confirmed": false, "coordinates_present_but_unconfirmed": true},
+    {"camera_id": "CAM-08", "location_confirmed": false, "coordinates_present_but_unconfirmed": true},
+    {"camera_id": "CAM-09", "location_confirmed": false, "coordinates_present_but_unconfirmed": true}
+  ],
+  "interpretation": "The local map correctly has no camera points eligible for spatial plotting. Stored numeric defaults are explicitly unconfirmed and are not usable measurements.",
+  "limitations": [
+    "This is a point-in-time local API snapshot, not independent camera-site verification.",
+    "No road-segment network, lane geometry, or calibrated passage-density measurements are available."
+  ]
+}

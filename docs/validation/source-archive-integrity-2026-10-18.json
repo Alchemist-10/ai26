@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "checked_at_utc": "2026-10-18T05:32:43.343349+00:00",
+  "archive": {
+    "filename": "multi sample bus-20261015T121500Z-1-001.zip",
+    "bytes": 55095739,
+    "sha256": "607332afd0f26de98ce6de6ae465d6313ba0d1d183937f3dfbfbdef7fb924587"
+  },
+  "members": [
+    {
+      "camera_id": "CAM-07",
+      "archive_member": "multi sample bus/clip 4.mp4",
+      "bytes": 27989471,
+      "archive_member_sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689",
+      "active_release": "2571ae928171496ca8095f367998f5a1",
+      "active_manifest_sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689",
+      "stored_original_sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689",
+      "matches_archive_member": true,
+      "matches_active_manifest": true
+    },
+    {
+      "camera_id": "CAM-08",
+      "archive_member": "multi sample bus/clip_2_00_25-00_50.mp4",
+      "bytes": 14740586,
+      "archive_member_sha256": "348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d",
+      "active_release": "c99338d5cd4c49f59d37fd60ee7a65f9",
+      "active_manifest_sha256": "348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d",
+      "stored_original_sha256": "348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d",
+      "matches_archive_member": true,
+      "matches_active_manifest": true
+    },
+    {
+      "camera_id": "CAM-09",
+      "archive_member": "multi sample bus/clip_2_00_30-01_00.mp4",
+      "bytes": 12356495,
+      "archive_member_sha256": "e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341",
+      "active_release": "af26a94a2f1d449f88092b5cf696ba42",
+      "active_manifest_sha256": "e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341",
+      "stored_original_sha256": "e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341",
+      "matches_archive_member": true,
+      "matches_active_manifest": true
+    }
+  ],
+  "limitations": [
+    "Hash equality ties these local source bytes to members in the supplied archive; it does not authenticate who created or exported the archive, verify the stated camera/location, establish permission to use it, or verify embedded timestamps."
+  ]
+}

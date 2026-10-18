@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "date": "2026-10-16",
+  "scope": "Supplementary local active-inference profile and one warmed dashboard navigation observation; not a controlled browser performance benchmark",
+  "conditions": {
+    "revision": "5590a15",
+    "api": "isolated loopback API on port 8002 with a temporary data root",
+    "frontend": "production preview on loopback port 5175",
+    "processing_enabled": true,
+    "sampling_budget_fps": 2.0,
+    "available_recorded_sources": 6,
+    "missing_sources": [
+      "CAM-07",
+      "CAM-08",
+      "CAM-09"
+    ],
+    "profile_duration_seconds": 20.0,
+    "valid_counter_window_seconds": 19.006,
+    "health_samples": 19,
+    "logical_cpus": 12
+  },
+  "runtime": {
+    "completed_frames": 38,
+    "completed_fps": 1.9993,
+    "failed_attempts": 0,
+    "health_failures": 0,
+    "health_latency_ms": {
+      "median": 6.447,
+      "p95": 10.227
+    },
+    "process_cpu_percent": {
+      "median": 62.983,
+      "p95": 102.134
+    },
+    "process_rss_mib": {
+      "median": 547.355,
+      "p95": 548.75
+    },
+    "first_cam01_attempt_ms": 4902.804,
+    "first_cam01_inference_phase_ms": 4662.907,
+    "budget_overruns_in_measured_window": 0,
+    "initial_cam01_budget_overruns_before_counter_window": 1
+  },
+  "browser": {
+    "route": "Analytics after warmed route chunk",
+    "observation": "Clicked Analytics and captured the accessibility state; the Traffic observation analytics heading and camera-health table were present.",
+    "action_plus_accessibility_capture_ms": 566,
+    "samples": 1,
+    "limitations": [
+      "A single accessibility-action plus state-capture duration is not click-to-paint, INP, or a percentile.",
+      "Browser main-thread work, video playback drops, network throttling, and low-end hardware were not measured.",
+      "The six replay sources and temporary API do not represent live capture or real-time camera feeds."
+    ]
+  },
+  "limitations": [
+    "This is a 20-second local replay sample; it does not establish sustained throughput or target-device behavior.",
+    "The first CAM-01 attempt includes lazy model initialization; later aggregate throughput reflects the warmed process.",
+    "Three configured source files were missing and did no decode or inference work.",
+    "Vehicle and plate accuracy, OCR behavior, and six-stream browser playback were not tested.",
+    "The profiler counter window starts after the first sampled health state; the first CAM-01 initialization attempt took 4.90 seconds and had one budget overrun before the measured window."
+  ]
+}

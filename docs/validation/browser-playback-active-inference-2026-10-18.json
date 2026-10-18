@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "scope": "Single paired 30-second full-camera-wall comparison on the local in-app Chromium browser",
+  "conditions": {
+    "camera": "CAM-07",
+    "viewport_css_pixels": [572, 758],
+    "device_pixel_ratio": 1.125,
+    "playback_dimensions": [1280, 720],
+    "playback_bytes": 11700824,
+    "playback_sha256": "f61381ce6892f8305fe4f0d0e3fe176c4d77ab6fe3fb382175ecffaa1135f2f3",
+    "playback_sha256_matches_active_manifest": true,
+    "same_browser_tab_and_camera_wall": true,
+    "processing_on_run": "Normal local launcher; all nine sources showed processing and zero failed attempts at the start of the sample.",
+    "processing_off_run": "Same launcher with AI26_PROCESSING_ENABLED=0; API health reported all nine cameras idle, zero failed attempts; the original browser-safe playback remained available.",
+    "other_test_media_sessions": "Closed before the paired camera-wall runs.",
+    "desktop_load": "Uncontrolled; one local pair only."
+  },
+  "processing_on": {
+    "requested_seconds": 30,
+    "elapsed_seconds": 30,
+    "start": {"dropped_frames": 1, "total_frames": 201},
+    "end": {"dropped_frames": 37, "total_frames": 1066},
+    "delta": {"dropped_frames": 36, "total_frames": 865, "drop_rate_percent": 4.162}
+  },
+  "processing_off": {
+    "requested_seconds": 30,
+    "elapsed_seconds": 30,
+    "start": {"dropped_frames": 1, "total_frames": 66},
+    "end": {"dropped_frames": 22, "total_frames": 916},
+    "delta": {"dropped_frames": 21, "total_frames": 850, "drop_rate_percent": 2.471}
+  },
+  "difference_percentage_points": 1.691,
+  "result": "In this paired sample the active full app dropped more playback frames than the inference-disabled full app. The comparison changes both backend processing and the preview tiles (active previews versus paused placeholders); it does not isolate inference from preview rendering, browser decode, GPU/CPU contention or background desktop load. This is evidence of an end-to-end playback cost on this host, not a causal or device-independent performance guarantee.",
+  "recovery": {
+    "processing_restored": true,
+    "all_nine_cameras_processing": true,
+    "failed_attempts_after_restart": 0,
+    "user_tab_restored_to_unloaded_camera_view": true,
+    "temporary_browser_viewport_override_reset": true
+  }
+}

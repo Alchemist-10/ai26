@@ -1,0 +1,116 @@
+{
+  "generated_at_utc": "2026-10-11T05:03:57Z",
+  "backend_tests_passed": 96,
+  "new_model_provenance_tests": 14,
+  "database_schema": 3,
+  "vehicle_metadata_observations_checked": 20,
+  "vehicle_checkpoint_sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+  "pipeline_components_sha256": {
+    "inference.py": "c054b048514e7e5903c8aa5a32ef10fecea4fc7a197524bb7f25c0d79f837559",
+    "model_provenance.py": "ae49394fd95f82f4e6314a229585f52c9bb848fec3f6bdd7cc74da29ba206e98",
+    "tracking.py": "0e1566b5969df0da31ee6073dc61720366c64eda551491eb1861dad23c1ea9f1",
+    "fusion.py": "c78d5424f3776e6d8370ff67e6032405294fb7c83a2903dc67f49d4dc803ed00",
+    "plate_format.py": "8f2508bae81c098eaee7598d4227da698b7973014bbe9b01a4e932ae4369eb90"
+  },
+  "six_available_sources_active": true,
+  "three_plate_sources_missing": true,
+  "stored_live_plate_reads": 0,
+  "synthetic_print_records_in_main_database": 0,
+  "main_service_ports_healthy": true,
+  "restart_persistence": {
+    "retained_sample_ids": 10,
+    "sample_ids_checked": 10,
+    "count_after_restart": 15863
+  },
+  "decoded_camera_snapshots": 6,
+  "clean_shutdown_verified": true,
+  "cpu_threads": 2,
+  "real_alpr_model_smoke": {
+    "generated_at_utc": "2026-10-10T06:47:01Z",
+    "python": "3.12.14",
+    "model_metadata": {
+      "weight_provenance_status": "hashed_loaded_files",
+      "detector_model": "yolo-v9-t-384-license-plate-end2end",
+      "ocr_model": "global-plates-mobile-vit-v2-model",
+      "model_files": [
+        {
+          "role": "plate_detector_weights",
+          "sha256": "888397b96d761c89db40bc9c305838e8652660f5e282c2cadebbe8d2951a77a8",
+          "size": 7771218,
+          "filename": "yolo-v9-t-384-license-plates-end2end.onnx"
+        },
+        {
+          "role": "ocr_weights",
+          "sha256": "e2fe5946c02e73901f73d21b3b7223a0c3e3b02059d4964fbf279b01af38d63c",
+          "size": 4991602,
+          "filename": "global_mobile_vit_v2_ocr.onnx"
+        },
+        {
+          "role": "ocr_configuration",
+          "sha256": "202b90f2a1f3a0d486b8f1fbd5cdc2f19f4f4881a094f086b983976ed3108aaf",
+          "size": 507,
+          "filename": "global_mobile_vit_v2_ocr_config.yaml"
+        }
+      ],
+      "detector_execution_providers": [
+        "CPUExecutionProvider"
+      ],
+      "ocr_execution_providers": [
+        "CPUExecutionProvider"
+      ],
+      "onnx_intra_op_threads": 2,
+      "onnx_inter_op_threads": 1,
+      "fast_alpr_version": "0.4.0",
+      "fast_plate_ocr_version": "1.1.0",
+      "open_image_models_version": "0.6.0",
+      "onnxruntime_version": "1.30.0",
+      "verification_scope": "Real selected weights and config loaded from hashed snapshots; one all-black detector input and one all-black OCR crop only. No plate accuracy or complete pipeline claim."
+    },
+    "input": {
+      "type": "all-black synthetic image",
+      "width": 384,
+      "height": 384
+    },
+    "returned_plate_detections": 0,
+    "ocr_session_executed": true,
+    "ocr_blank_crop_text": "AB251D",
+    "single_ocr_seconds": 0.016,
+    "initialization_seconds": 1.253,
+    "single_prediction_seconds": 0.116,
+    "main_database_modified": false,
+    "temporary_model_snapshots_removed_on_exit": true
+  },
+  "print_browser_checks": {
+    "desktop": {
+      "modelDigestPresent": true,
+      "noHorizontalOverflow": true,
+      "provenanceHeading": true,
+      "viewportWidth": 1280
+    },
+    "mobile": {
+      "mobileHintVisible": true,
+      "noHorizontalOverflow": true,
+      "scrollableTables": [
+        {
+          "contentWidth": 640,
+          "keyboardFocusable": true,
+          "width": 343
+        },
+        {
+          "contentWidth": 640,
+          "keyboardFocusable": true,
+          "width": 343
+        }
+      ],
+      "viewportWidth": 390
+    },
+    "viewportOverrideReset": true,
+    "scope": "Isolated explicit synthetic printable report; no main-database fixture records."
+  },
+  "limits": [
+    "Real models executed on synthetic blank inputs only; no readable plate footage or accuracy measurement.",
+    "Model digests identify bytes; they do not authenticate models or establish custody.",
+    "Provenance does not reconstruct older/manual reads or add full per-read frame coverage.",
+    "Model weights are retained in local models cache when provisioned; not bundled in evidence ZIP."
+  ]
+}

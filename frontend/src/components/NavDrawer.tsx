@@ -1,15 +1,20 @@
-import { MapIcon, History, TriangleAlert, ChartColumn, Gauge, MessageSquare, LayoutGrid, X, ShieldCheck } from "lucide-react"
+import { useEffect, useRef } from "react"
+import { MapIcon, History, TriangleAlert, ChartColumn, Gauge, MessageSquare, LayoutGrid, Settings, X, ShieldCheck, Users, KeyRound, Route } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
 
 const NAV: { id: Page; label: string; icon: typeof MapIcon; blurb: string }[] = [
   { id: "cameras", label: "Camera Wall", icon: LayoutGrid, blurb: "Live grid + main feed" },
   { id: "map", label: "Map", icon: MapIcon, blurb: "Camera locations, Kochi" },
-  { id: "congestion", label: "Congestion", icon: Gauge, blurb: "Live load across the city" },
+  { id: "congestion", label: "Traffic activity", icon: Gauge, blurb: "Sampled track passages" },
   { id: "timeline", label: "Evidence Timeline", icon: History, blurb: "Per-camera detection log" },
   { id: "alerts", label: "Alerts", icon: TriangleAlert, blurb: "Route-anomaly rules" },
   { id: "analytics", label: "Analytics", icon: ChartColumn, blurb: "Stats + congestion map" },
   { id: "query", label: "Ask the Grid", icon: MessageSquare, blurb: "Natural-language query" },
+  { id: "settings", label: "Camera settings", icon: Settings, blurb: "Footage, metadata and history" },
+  { id: "routes", label: "Travel constraints", icon: Route, blurb: "Directed camera-pair windows" },
+  { id: "accounts", label: "User administration", icon: Users, blurb: "Accounts, roles and passwords" },
+  { id: "security", label: "Account security", icon: KeyRound, blurb: "Password, authenticator and recovery codes" },
 ]
 
 export function NavDrawer({
@@ -17,12 +22,34 @@ export function NavDrawer({
   page,
   onNavigate,
   onClose,
+  isAdmin = false,
+  isAuthenticated = false,
+  canManageRoutes = false,
 }: {
   open: boolean
   page: Page
   onNavigate: (p: Page) => void
   onClose: () => void
+  isAdmin?: boolean
+  isAuthenticated?: boolean
+  canManageRoutes?: boolean
 }) {
+  const root = useRef<HTMLElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const previous = document.activeElement as HTMLElement | null
+    root.current?.querySelector<HTMLButtonElement>("button")?.focus()
+    const keys = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+      if (e.key !== "Tab") return
+      const buttons = Array.from(root.current?.querySelectorAll<HTMLButtonElement>("button") ?? [])
+      const first=buttons[0], last=buttons.at(-1)
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
+    }
+    document.addEventListener("keydown", keys)
+    return () => { document.removeEventListener("keydown", keys); previous?.focus() }
+  }, [open, onClose])
   return (
     <>
       {/* Backdrop */}
@@ -37,6 +64,9 @@ export function NavDrawer({
 
       {/* Drawer */}
       <aside
+        ref={root}
+        inert={!open}
+        aria-hidden={!open}
         className={cn(
           "fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r border-zinc-800 bg-black font-sans text-white transition-transform duration-200 ease-out select-none",
           open ? "translate-x-0" : "-translate-x-full"
@@ -66,7 +96,7 @@ export function NavDrawer({
 
         {/* Navigation items */}
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
-          {NAV.map((item) => {
+          {NAV.filter(item => (item.id !== "accounts" || isAdmin) && (item.id !== "security" || isAuthenticated) && (item.id !== "routes" || canManageRoutes)).map((item) => {
             const Icon = item.icon
             const active = page === item.id
             return (
@@ -113,7 +143,7 @@ export function NavDrawer({
 
         {/* Footer info */}
         <div className="border-t border-zinc-800/80 bg-zinc-950/60 px-4 py-3 text-[11px] text-zinc-500 font-sans">
-          Kochi Municipal Grid · Live Inference
+          AI26 course project · Recorded inputs
         </div>
       </aside>
     </>

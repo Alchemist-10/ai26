@@ -1,0 +1,37 @@
+{
+  "/api/cameras": {
+    "median_ms": 2.68,
+    "max_ms": 24.42,
+    "bytes": 5297,
+    "samples": 12
+  },
+  "/api/stats": {
+    "median_ms": 2.05,
+    "max_ms": 2.98,
+    "bytes": 468,
+    "samples": 12
+  },
+  "/api/events?camera=CAM-05": {
+    "median_ms": 10.56,
+    "max_ms": 11.13,
+    "bytes": 99323,
+    "samples": 12
+  },
+  "/api/alerts": {
+    "median_ms": 7.43,
+    "max_ms": 9.22,
+    "bytes": 2,
+    "samples": 12
+  },
+  "/api/snapshot/CAM-05": {
+    "median_ms": 1.62,
+    "max_ms": 2.61,
+    "bytes": 168900,
+    "samples": 12
+  },
+  "process": {
+    "cpu_percent": 123.1,
+    "rss_mib": 733.3,
+    "sample_seconds": 3.31
+  }
+}

@@ -1,0 +1,7 @@
+{"sample_id":"a1","synthetic":true,"camera":"CAM-07","session":"fixture-a","track_id":1,"frame_index":1,"expected_plate":"KL07AB1234","predicted_plate":"KL07AB1234","confidence":0.9}
+{"sample_id":"b1","synthetic":true,"camera":"CAM-07","session":"fixture-a","track_id":2,"frame_index":1,"expected_plate":"TN22ZZ0007","predicted_plate":"TN22ZZ0007","confidence":0.9}
+{"sample_id":"a2","synthetic":true,"camera":"CAM-07","session":"fixture-a","track_id":1,"frame_index":2,"expected_plate":"KL07AB1234","predicted_plate":"KL07AB1234","confidence":0.9}
+{"sample_id":"b2","synthetic":true,"camera":"CAM-07","session":"fixture-a","track_id":2,"frame_index":2,"expected_plate":"TN22ZZ0007","predicted_plate":"TN22ZZ0007","confidence":0.9}
+{"sample_id":"a3","synthetic":true,"camera":"CAM-07","session":"fixture-a","track_id":1,"frame_index":3,"expected_plate":"KL07AB1234","predicted_plate":"KL07AB1234","confidence":0.9}
+{"sample_id":"b3","synthetic":true,"camera":"CAM-07","session":"fixture-a","track_id":2,"frame_index":3,"expected_plate":"TN22ZZ0007","predicted_plate":"TN22ZZ0007","confidence":0.9}
+{"sample_id":"a4","synthetic":true,"camera":"CAM-07","session":"fixture-a","track_id":1,"frame_index":4,"expected_plate":"KL07AB1234","predicted_plate":"KL07AB1284","confidence":0.9}

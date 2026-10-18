@@ -1,54 +1,98 @@
 # AI26 — Multi-camera vehicle analytics
 
-AI course project for vehicle detection, number-plate recognition, cross-camera
-trajectory reconstruction, and traffic analysis. The application accepts recorded
-camera footage and runs inference on the focused camera.
+Independent AI course project for recorded-camera vehicle detection, plate OCR,
+candidate journeys, local rule review, and traffic activity. The SIH submission
+and competition materials remain in the original Godseye repository.
 
-## Features
-
-- YOLO vehicle detection with per-camera centroid tracking and motion trails.
-- Fast-ALPR plate OCR, Indian plate-format normalization, and short-window OCR voting.
-- Camera wall, OpenStreetMap view, and congestion/analytics panels.
-- Plate trajectories with travel-speed checks and rejected-hop explanations.
-- Mock watchlist/restricted-zone rules, alerts, and JSON evidence reports with hashes.
-- Rule-based natural-language questions over the detection log.
-- A separate static walkthrough with synthetic data in `demo/`.
+One background processor samples every available camera. Browser streams and
+snapshots consume its cached output; opening more viewers does not add inference
+workers. Six included vehicle clips work locally. CAM-07–09 need readable plate
+footage before real OCR and cross-camera accuracy can be evaluated.
 
 ## Start
 
-Install Python 3.12+, Node.js 22.12+ and npm, and `uv`, then run:
+On Linux, install Python 3.12, Node.js 22.12+ with npm, and `uv`, then run:
 
 ```bash
 uv run run.py
 ```
 
-This installs the locked dependencies and starts the app at
-**http://localhost:5174**, with the API at **http://127.0.0.1:8001**.
-The first inference request may download the Fast-ALPR models. See [RUN.md](RUN.md)
-for footage configuration, separate-process startup, and troubleshooting.
+Open **http://localhost:5174**, API **http://127.0.0.1:8001**. The frozen lock uses
+CPU PyTorch on Linux. After the first installation, restart with
+`uv run run.py --skip-install`. The launcher serves the optimized frontend by
+default; use `--dev-frontend` when actively editing the UI. See [RUN.md](RUN.md)
+for configuration and checks.
 
-## Structure
+## Working functionality
+
+- YOLO detections, local motion/box association with ambiguity abstention, and shared annotated feeds.
+- SQLite observations, replay sessions, deduplicated passages, review history,
+  local rules, versioned camera metadata, queried journey decisions, report snapshots,
+  and audit records that survive API restart.
+- Per-camera/per-track OCR consensus with abstention on conflicting reads;
+  raw, failed, and canonical OCR reads remain separate. Exact ALPR weight/config
+  digests and pipeline component hashes identify newly processed reads. Each new
+  sampled read attempts its own frame/crop capture, with explicit missing coverage
+  and a configurable 2 GiB image budget.
+- True empty investigations, explicit walkthrough selection, time filters, and
+  distinct accepted/rejected/unresolved candidate paths.
+- Offline recorded-source onboarding with original-byte preservation, validated
+  browser playback, explicit replacement and restart activation.
+- Browser source uploads prepare inactive, validated releases with manual status/cancel;
+  browser hash-checked selection and retained-parent rollback take effect after host restart.
+- Camera settings with source inspection/pending-restart status, bounded import history,
+  audited metadata edits, read-only revision history, preserved
+  drafts and explicit concurrent-save recovery.
+- Editable local watchlists, zone sightings, elapsed-time dwell rules, and a
+  durable local alert-escalation queue with reassignment and audit history.
+- Recorded sampling advances nearby verified frame positions with bounded grabs,
+  retaining seeks for resets and larger jumps.
+- Available cameras share the configured sampling budget without missing/retry slots;
+  bounded phase timings and a read-only runtime profiler expose processing costs.
+- Actual processing health, sampled passage counts, and computed accepted-link
+  flow counts. Model confidence is labeled separately from measured accuracy.
+- Bounded rule-based plate/camera/class/date queries; no LLM or registry lookup.
+- Immutable JSON reports, verified frame/crop ZIP packages, dedicated print/PDF
+  views, expiry enforcement, and empty-report rejection.
+- Isolated regression tests, a reproducible evaluation CLI, and CI configuration.
+- Optional Docker Compose packaging with same-origin Nginx API routing and
+  verified SQLite snapshot/restore scripts.
+
+## Limits and remaining work
+
+Recorded clips have replay timestamps, not synchronized original capture times.
+Their cross-camera links remain unresolved candidates. Heuristic local tracking and OCR
+are not validated identity systems; passage counts are camera-local sampled
+counts, not unique vehicles across the city. Occupancy, calibrated speed,
+historical congestion, fuzzy plate linking, learned appearance tracking, held-out accuracy
+measurements, production access controls, and optional weather restoration are
+pending. A hash detects changes to a report; it is not a digital signature.
+
+The separate `demo/` walkthrough is synthetic. Missing cameras and empty
+investigations never receive its observations automatically.
 
 | Path | Purpose |
 | --- | --- |
-| `backend/` | FastAPI endpoints, inference, tracking, plate normalization, event log |
-| `frontend/` | React/TypeScript application |
-| `demo/` | Standalone synthetic HTML/CSS/JS walkthrough |
-| `docs/IMPLEMENTATION.md` | Architecture and current implementation limits |
+| `backend/` | API, shared inference owner, SQLite repository, rules and artifacts |
+| `frontend/` | React/TypeScript investigation and activity dashboard |
+| `evaluation/` | Labeled-record evaluation contract and synthetic metric fixture |
+| `tests/` | Deterministic backend regression and contract tests |
+| `docs/IMPLEMENTATION.md` | Data contracts, architecture and current limits |
+| `docs/PROGRESS.md` | Full implementation checklist with completion evidence |
+| `docs/PERSISTENCE.md` | Camera revision and stored journey decision API |
+| `docs/SETTINGS.md` | Metadata editor, draft/conflict recovery and browser validation |
+| `docs/ALERT_REVIEW.md` | Alert decisions, durable escalations and workflow limits |
+| `docs/DEPLOYMENT.md` | Local Compose deployment, database backup and restore |
+| `docs/MODEL_ROLLOUT.md` | Pinned detector weights, camera-scoped canary assignment and rollback |
+| `docs/SOURCE_IMPORT.md` | Validated recorded footage import, activation and recovery |
+| `docs/SOURCE_STATUS.md` | Read-only source inspection, pending imports and history |
+| `docs/SOURCE_UPLOADS.md` | Streamed browser preparation, cancellation and retained receipts |
+| `docs/SOURCE_SELECTION.md` | Browser selection, retained-parent rollback and host restart |
+| `docs/RUNTIME_PROFILE.md` | Sampling budget, bounded timing metrics and runtime profiling |
+| `docs/DECODE_SAMPLING.md` | Bounded recorded-frame advancement, exact-pixel validation and runtime limits |
+| `docs/PROVENANCE.md` | Exact model/config identity, report coverage and validation limits |
+| `docs/READ_IMAGES.md` | Per-read images, failure coverage, storage budget and measured capture cost |
 | `docs/IMPORT.md` | Import provenance and separation from the SIH project |
-| `tests/` | Backend regression checks for the imported functionality |
 
-## Current limits
-
-This is a prototype. Events are stored in memory, with a five-minute rolling window
-applied when detections arrive. Refreshing the UI does not persist evidence to a
-database; restarting the backend clears events. Only the focused camera produces
-inference events. Six vehicle playback clips are included; three plate-camera
-clips must be supplied locally. Plates are normalized against format rules; no
-live government registry is connected. Class-based cross-camera alerts do not
-establish vehicle identity, and the query feature is a keyword matcher, not an LLM.
-Walkthrough data is explicitly labeled synthetic. See the implementation document
-for the scope of evidence hashing and trajectory checks.
-
-AI26 is maintained as an independent course project. SIH submissions, pitch decks,
-competition plans, and SIH branding remain in the original project.
+Camera metadata revisions and queried journey-link history are durable in schema 3.
+See [persistence API and limitations](docs/PERSISTENCE.md).

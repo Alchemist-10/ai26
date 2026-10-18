@@ -1,0 +1,23 @@
+{
+  "conditions": "One decoded CAM-05 frame; warm CPU YOLO; main API also running; not held-out accuracy or sustained throughput",
+  "results": [
+    {
+      "threads": 8,
+      "median_ms": 319.4,
+      "max_ms": 985.4,
+      "samples": 12
+    },
+    {
+      "threads": 1,
+      "median_ms": 135.4,
+      "max_ms": 160.0,
+      "samples": 12
+    },
+    {
+      "threads": 2,
+      "median_ms": 77.1,
+      "max_ms": 101.1,
+      "samples": 12
+    }
+  ]
+}

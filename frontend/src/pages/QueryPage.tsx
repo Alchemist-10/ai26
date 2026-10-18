@@ -12,7 +12,7 @@ export function QueryPage() {
             <h1 className="text-sm font-semibold text-white tracking-wide">Ask the Grid</h1>
           </div>
           <p className="text-xs text-zinc-400 font-sans leading-relaxed">
-            Natural language interface for querying cross-camera logs, vehicle sightings, and spatial traffic metrics.
+            Query supported plate sightings, camera-local vehicle counts, camera activity, and configured rule alerts.
           </p>
         </div>
 

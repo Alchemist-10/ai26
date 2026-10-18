@@ -1,0 +1,109 @@
+{
+  "desktop": {
+    "images": [
+      {
+        "alt": "CAM-01 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-02 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-03 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-04 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-05 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-06 sampled preview",
+        "height": 180,
+        "width": 320
+      }
+    ],
+    "overflow": false,
+    "videos": [
+      {
+        "currentTime": 34.358492,
+        "paused": false,
+        "src": "/api/video/CAM-01"
+      }
+    ]
+  },
+  "mobile": {
+    "overflow": false,
+    "videos": 1
+  },
+  "detections": {
+    "stream": [
+      {
+        "alt": "CAM-01 sampled detections",
+        "height": 0,
+        "width": 0
+      }
+    ],
+    "videos": 0
+  },
+  "missing": true,
+  "recoveredDetection": [
+    {
+      "height": 540,
+      "src": "/api/stream/CAM-01?retry=0",
+      "width": 960
+    }
+  ],
+  "analytics": {
+    "mediaCount": 0,
+    "title": true
+  },
+  "emptyInvestigation": {
+    "title": true,
+    "exportDisabled": true
+  },
+  "final": {
+    "previews": [
+      {
+        "alt": "CAM-01 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-02 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-03 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-04 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-05 sampled preview",
+        "height": 180,
+        "width": 320
+      },
+      {
+        "alt": "CAM-06 sampled preview",
+        "height": 180,
+        "width": 320
+      }
+    ],
+    "videos": 1
+  }
+}

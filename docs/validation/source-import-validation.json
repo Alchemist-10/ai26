@@ -1,0 +1,151 @@
+{
+  "date": "2026-10-11",
+  "scope": "Two generated one-second color clips; isolated disabled-ML API plus no-op annotation decode, not real plate-source or OCR accuracy evidence",
+  "ffmpeg_version": "ffmpeg version n9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+  "check_did_not_create_storage": true,
+  "first_release": {
+    "version": 1,
+    "camera_id": "CAM-07",
+    "release": "bab9d9a292ed416b8fefe4fa5827aae8",
+    "imported_at": 1791701982.3414736,
+    "reviewer": "Synthetic validation operator",
+    "reason": "Generated color clip; no plate identity",
+    "time_basis": "replay_clock",
+    "scope": "Local operator import; content, location and original clocks unverified",
+    "conversion": {
+      "recipe": "h264-preview-v1",
+      "ffmpeg_version": "ffmpeg version n9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+      "importer_sha256": "4aa6422f9560c1a27b540913afd9676dde85cf6a02cbe742f544b5857e772e52",
+      "threads": 1,
+      "crf": 23,
+      "preset": "fast"
+    },
+    "original": {
+      "file": "original.media",
+      "bytes": 1904,
+      "sha256": "4a092e38852885bbbe947b07582252ab0b7bb12bd8fc2b8b9eeb98c42681c730",
+      "video": {
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "width": 320,
+        "height": 240,
+        "fps": 10.0,
+        "duration_seconds": 1.0,
+        "frame_count": 10
+      }
+    },
+    "playback": {
+      "file": "playback.mp4",
+      "bytes": 1896,
+      "sha256": "f8785402490f8f6ab31debcf3856decd9b4019867eb8e79c2c186f221a0bd42f",
+      "video": {
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "width": 320,
+        "height": 240,
+        "fps": 10.0,
+        "duration_seconds": 1.0,
+        "frame_count": 10
+      },
+      "derivative": "Silent H.264/yuv420p, max 1280px width; original bytes unchanged"
+    },
+    "previous_release": null,
+    "restart_required": true
+  },
+  "replacement_release": {
+    "version": 1,
+    "camera_id": "CAM-07",
+    "release": "84e12b747cc149e0bdbee8cd460f589f",
+    "imported_at": 1791701983.5945275,
+    "reviewer": "Synthetic validation operator",
+    "reason": "Generated color clip; no plate identity",
+    "time_basis": "replay_clock",
+    "scope": "Local operator import; content, location and original clocks unverified",
+    "conversion": {
+      "recipe": "h264-preview-v1",
+      "ffmpeg_version": "ffmpeg version n9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+      "importer_sha256": "4aa6422f9560c1a27b540913afd9676dde85cf6a02cbe742f544b5857e772e52",
+      "threads": 1,
+      "crf": 23,
+      "preset": "fast"
+    },
+    "original": {
+      "file": "original.media",
+      "bytes": 1903,
+      "sha256": "f2ae68e65b196af5308685905b2c881c15eb5b91cdcbd53b6b55e1da08aea297",
+      "video": {
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "width": 320,
+        "height": 240,
+        "fps": 10.0,
+        "duration_seconds": 1.0,
+        "frame_count": 10
+      }
+    },
+    "playback": {
+      "file": "playback.mp4",
+      "bytes": 1895,
+      "sha256": "d2129c90334de65e35914558be66fe2d52c05c946d033211758aacf4190be4e1",
+      "video": {
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "width": 320,
+        "height": 240,
+        "fps": 10.0,
+        "duration_seconds": 1.0,
+        "frame_count": 10
+      },
+      "derivative": "Silent H.264/yuv420p, max 1280px width; original bytes unchanged"
+    },
+    "previous_release": "bab9d9a292ed416b8fefe4fa5827aae8",
+    "restart_required": true
+  },
+  "original_hashes_match_inputs": true,
+  "live_binding_remained_previous_until_restart": true,
+  "restart_activated_new_playback": true,
+  "range_response_matches_proxy": true,
+  "original_decoded_by_processor_with_noop_annotation": {
+    "source_sha256": "f2ae68e65b196af5308685905b2c881c15eb5b91cdcbd53b6b55e1da08aea297",
+    "decoded_shape": [
+      240,
+      320,
+      3
+    ],
+    "pixel_bgr": [
+      254,
+      0,
+      0
+    ],
+    "fixture_observations": 0
+  },
+  "main_catalog_and_source_availability_unchanged": true,
+  "prior_release_retained": true,
+  "no_SQL_import_writes": true,
+  "pipeline_components": 9,
+  "backend_tests": 128,
+  "cleanup": {
+    "fixture_API_stopped": true,
+    "fixture_data_removed": true
+  },
+  "main_restart": {
+    "historical_sample_ids_retained": 10,
+    "decoded_snapshots": 6,
+    "new_read_component_hashes_match_current_files": 9,
+    "reads_checked": 10,
+    "event_ids": [
+      "6ca0a7ad21b9d47277080e2f9b68abdc",
+      "4da36171ae492069fc45f4d712b2741d",
+      "ab8e3efdba0aaa17b9a5a07726cf0b6b",
+      "6597a4980f811bfd71a373d423305c44",
+      "8cd087a015b962c3703e74248645f41f",
+      "f4fa10cffe0d2487c106c6ea4abe5985",
+      "bfa8b7985a3a8326803f98045f66b39b",
+      "08f108f19b6628cb246723c8b55cf8f3",
+      "9301aa7142ce0225de22312f1a381a4d",
+      "0c7af69be22add940a9752400f4cfadf"
+    ],
+    "plate_sources_still_unavailable": true,
+    "launcher_pid": 65531
+  }
+}

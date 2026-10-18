@@ -10,7 +10,7 @@ interface Msg {
 
 const PRESETS = [
   "Which plates crossed Kathrikkadavu Junction today?",
-  "Show all violations this session",
+  "Show configured alerts today",
   "What's the busiest camera right now?",
 ]
 
@@ -18,7 +18,7 @@ export function NLQueryChat() {
   const [msgs, setMsgs] = useState<Msg[]>([
     {
       role: "bot",
-      text: "Ask about plates, cameras, or alerts — answers come from the live detection log.",
+      text: "Ask about plates, cameras, vehicle classes or alerts. Add today or a date to search retained history; otherwise the last five minutes are used.",
     },
   ])
   const [input, setInput] = useState("")
@@ -67,7 +67,7 @@ export function NLQueryChat() {
                 <div className="mt-2 overflow-x-auto rounded border border-zinc-800 bg-black/60 p-2 text-[11px] text-zinc-400 font-sans">
                   <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                     <Database className="h-3 w-3" />
-                    <span>Generated SQL Query</span>
+                    <span>Query explanation</span>
                   </div>
                   <div className="text-zinc-300 font-sans">{m.sql}</div>
                 </div>
@@ -118,9 +118,11 @@ export function NLQueryChat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder="Ask the grid (e.g., plates, junctions, congestion)..."
+          aria-label="Question about camera observations"
+          maxLength={500}
+          placeholder="Plates at CAM-07 today"
           disabled={busy}
-          className="flex-1 rounded-md border border-zinc-800 bg-zinc-900/70 px-3.5 py-2.5 text-xs font-sans text-white placeholder:text-zinc-600 outline-none transition-colors focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500"
+          className="flex-1 rounded-md border border-zinc-800 bg-zinc-900/70 px-3.5 py-2.5 text-base font-sans text-white placeholder:text-zinc-600 outline-none transition-colors focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500"
         />
         <button
           type="button"

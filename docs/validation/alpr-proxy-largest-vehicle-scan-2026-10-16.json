@@ -1,0 +1,191 @@
+{
+  "aggregate": {
+    "accuracy_measured": false,
+    "false_negatives_measured": false,
+    "ocr_calls": 0,
+    "plate_detector_candidates": 0,
+    "same_vehicle_independence_verified": false,
+    "vehicle_model_selected_frames": 6
+  },
+  "date": "2026-10-16",
+  "limitations": [
+    "The frame search is model-guided; it is not an independently labeled dataset or exhaustive manual plate search.",
+    "The selected frames have no reviewed ground-truth plate boxes or readable/unreadable labels.",
+    "Zero detector candidates cannot be called false negatives without reviewed plate-presence labels.",
+    "The six clips may contain correlated views of one physical residential road or the same vehicles; location and session independence are not established.",
+    "Only the single largest vehicle-box frame per clip was passed to ALPR; the other 246 sampled frames were used only for candidate vehicle selection.",
+    "No OCR text, images, crops, or plate strings are stored in this report.",
+    "These six proxies do not replace missing CAM-07\u201309 footage or establish performance on the target junctions."
+  ],
+  "models": {
+    "alpr_models": [
+      {
+        "filename": "yolo-v9-t-384-license-plates-end2end.onnx",
+        "role": "plate_detector_weights",
+        "sha256": "888397b96d761c89db40bc9c305838e8652660f5e282c2cadebbe8d2951a77a8",
+        "size": 7771218
+      },
+      {
+        "filename": "global_mobile_vit_v2_ocr.onnx",
+        "role": "ocr_weights",
+        "sha256": "e2fe5946c02e73901f73d21b3b7223a0c3e3b02059d4964fbf279b01af38d63c",
+        "size": 4991602
+      },
+      {
+        "filename": "global_mobile_vit_v2_ocr_config.yaml",
+        "role": "ocr_configuration",
+        "sha256": "202b90f2a1f3a0d486b8f1fbd5cdc2f19f4f4881a094f086b983976ed3108aaf",
+        "size": 507
+      }
+    ],
+    "alpr_versions": {
+      "fast_alpr_version": "0.4.0",
+      "fast_plate_ocr_version": "1.1.0",
+      "onnxruntime_version": "1.30.0",
+      "open_image_models_version": "0.6.0"
+    },
+    "pipeline_source_sha256": {
+      "backend/fusion.py": "01b7034f752382c7d93b9bb0ff7224501139185c485a76327481991b51f5e1a0",
+      "backend/inference.py": "db5df8809bed9bd3f798a9a36c8728cddbaf95288e94938f5c5983b23707fd25",
+      "backend/model_provenance.py": "a84a21cf35cfac0063c5a92bc348d5c586676ecb15c1119616d29fb6f5277f19",
+      "backend/model_rollout.py": "f37375773509c836abe714d0e205b7ae23b08a495135050f1d874dbcbd1131c0",
+      "backend/plate_format.py": "8f2508bae81c098eaee7598d4227da698b7973014bbe9b01a4e932ae4369eb90",
+      "backend/tracking.py": "0e1566b5969df0da31ee6073dc61720366c64eda551491eb1861dad23c1ea9f1"
+    },
+    "vehicle_detector_sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36"
+  },
+  "runtime": {
+    "device": "CPUExecutionProvider",
+    "onnx_inter_op_threads": 1,
+    "onnx_intra_op_threads": 2,
+    "plate_detector_confidence_threshold": 0.4,
+    "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+    "python": "3.14.7",
+    "vehicle_detector_confidence_threshold": 0.4
+  },
+  "samples": [
+    {
+      "bbox_area_pixels": 163108.8,
+      "bbox_xyxy": [
+        171.65,
+        315.87,
+        917.07,
+        534.69
+      ],
+      "camera": "CAM-01",
+      "class": "car",
+      "clip_path": "backend/static/playback/CAM-01.mp4",
+      "clip_sha256": "2fa6cffcf7a5edd25bf9a3bc1cddeea59a098c4c81d78ed51d9658f238ed4a0f",
+      "confidence": 0.5685,
+      "frame_index": 150,
+      "frame_pixel_sha256": "09437409278c02928f10243fd82bbecb5724c891861523aaf32ece93f9222942",
+      "ocr_result_count": 0,
+      "plate_detection_count": 0,
+      "source_time_seconds": 6.0
+    },
+    {
+      "bbox_area_pixels": 29942.4,
+      "bbox_xyxy": [
+        283.07,
+        310.86,
+        477.78,
+        464.64
+      ],
+      "camera": "CAM-02",
+      "class": "car",
+      "clip_path": "backend/static/playback/CAM-02.mp4",
+      "clip_sha256": "eca71f58121803e972f086e5ca280afbb8aa95380e87545f1483f29a57dc1fd0",
+      "confidence": 0.8937,
+      "frame_index": 225,
+      "frame_pixel_sha256": "54f20fd924a3071a03c5cbded4bdb0f1e56e4c9882a54f211cd79f912bc130f5",
+      "ocr_result_count": 0,
+      "plate_detection_count": 0,
+      "source_time_seconds": 9.0
+    },
+    {
+      "bbox_area_pixels": 124600.9,
+      "bbox_xyxy": [
+        180.28,
+        298.23,
+        703.78,
+        536.24
+      ],
+      "camera": "CAM-03",
+      "class": "car",
+      "clip_path": "backend/static/playback/CAM-03.mp4",
+      "clip_sha256": "03c7e49e89dc6a552369211c959d821627cb6db0a92c471f2db61f011cd7d33c",
+      "confidence": 0.9104,
+      "frame_index": 275,
+      "frame_pixel_sha256": "806e3b905b166c4919b254e8d033c03d2a3e0159a01c678e05985d042161d5a3",
+      "ocr_result_count": 0,
+      "plate_detection_count": 0,
+      "source_time_seconds": 11.0
+    },
+    {
+      "bbox_area_pixels": 11307.0,
+      "bbox_xyxy": [
+        695.16,
+        334.78,
+        843.32,
+        411.1
+      ],
+      "camera": "CAM-04",
+      "class": "car",
+      "clip_path": "backend/static/playback/CAM-04.mp4",
+      "clip_sha256": "735448fd4b25b1d2d035def69df1714dbc7b71073739ae8691c6dcdd817e41cf",
+      "confidence": 0.8974,
+      "frame_index": 250,
+      "frame_pixel_sha256": "65cc1c72395c19db7794da218f530882611c44897c00fde540b4aa9c08da0523",
+      "ocr_result_count": 0,
+      "plate_detection_count": 0,
+      "source_time_seconds": 10.0
+    },
+    {
+      "bbox_area_pixels": 27137.3,
+      "bbox_xyxy": [
+        525.18,
+        217.86,
+        701.55,
+        371.72
+      ],
+      "camera": "CAM-05",
+      "class": "car",
+      "clip_path": "backend/static/playback/CAM-05.mp4",
+      "clip_sha256": "56922cb8df3242034ac62e1c4a474e84ccbb4090b19d8c7a78855c0b21192a86",
+      "confidence": 0.8777,
+      "frame_index": 100,
+      "frame_pixel_sha256": "dc8ff7fb5ad7de1929421c469acdf6df94db88388587c03ffbdb67b2d9b6fccb",
+      "ocr_result_count": 0,
+      "plate_detection_count": 0,
+      "source_time_seconds": 4.0
+    },
+    {
+      "bbox_area_pixels": 21206.1,
+      "bbox_xyxy": [
+        570.86,
+        283.33,
+        716.25,
+        429.19
+      ],
+      "camera": "CAM-06",
+      "class": "motorcycle",
+      "clip_path": "backend/static/playback/CAM-06.mp4",
+      "clip_sha256": "48a562a900dab2698a503e04882f4dd1856c8b8ae6f58201db9ef4b3977aa3d7",
+      "confidence": 0.7186,
+      "frame_index": 1100,
+      "frame_pixel_sha256": "56af66fdc419c6f97a236b9ebbc7c4e8837e443111d2dad3d4efe0539dc775a4",
+      "ocr_result_count": 0,
+      "plate_detection_count": 0,
+      "source_time_seconds": 44.0
+    }
+  ],
+  "sampling": {
+    "clips": 6,
+    "method": "YOLOv8n vehicle detector at confidence 0.4; one frame sampled per second from clip start; candidate with largest predicted vehicle bounding-box area selected per clip.",
+    "sampled_frames": 252,
+    "selected_frames": 6
+  },
+  "schema_version": 1,
+  "scope": "All six available CAM-01\u201306 playback clips were sampled at one-second frame intervals for visible vehicle detections. The single largest vehicle-model box per clip was then passed to the selected ALPR pipeline. It does not include the missing CAM-07\u201309 inputs.",
+  "type": "one_second_proxy_search_for_plate_detector_candidates_not_accuracy_evaluation"
+}

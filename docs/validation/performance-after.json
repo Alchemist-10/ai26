@@ -1,0 +1,49 @@
+{
+  "/api/cameras": {
+    "median_ms": 2.35,
+    "max_ms": 14.48,
+    "bytes": 5238,
+    "samples": 12
+  },
+  "/api/stats": {
+    "median_ms": 1.6,
+    "max_ms": 3.04,
+    "bytes": 446,
+    "samples": 12
+  },
+  "/api/events?camera=CAM-05": {
+    "median_ms": 8.82,
+    "max_ms": 13.87,
+    "bytes": 96337,
+    "samples": 12
+  },
+  "/api/events?camera=CAM-05&limit=40": {
+    "median_ms": 6.26,
+    "max_ms": 7.86,
+    "bytes": 62177,
+    "samples": 12
+  },
+  "/api/alerts": {
+    "median_ms": 5.7,
+    "max_ms": 7.22,
+    "bytes": 2,
+    "samples": 12
+  },
+  "/api/snapshot/CAM-05": {
+    "median_ms": 1.84,
+    "max_ms": 2.39,
+    "bytes": 170564,
+    "samples": 12
+  },
+  "/api/preview/CAM-05": {
+    "median_ms": 1.76,
+    "max_ms": 2.41,
+    "bytes": 12963,
+    "samples": 12
+  },
+  "process": {
+    "cpu_percent": 64.2,
+    "rss_mib": 545.5,
+    "sample_seconds": 3.37
+  }
+}

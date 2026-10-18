@@ -1,0 +1,6 @@
+services:
+  backend:
+    environment:
+      AI26_AUTH_MFA_KEY_FILE: /run/secrets/ai26-auth-mfa.key
+    volumes:
+      - ${AI26_AUTH_MFA_KEY_FILE:?Set AI26_AUTH_MFA_KEY_FILE to a protected 32-byte key}:/run/secrets/ai26-auth-mfa.key:ro
