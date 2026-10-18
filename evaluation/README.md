@@ -1,5 +1,10 @@
 # Evaluation inputs
 
+For the student's first manual vehicle-count and box-labeling session, see
+[Frame review](FRAME_REVIEW.md). It creates private, prediction-blind frame
+samples and an import/export review page. This exploratory workflow does not
+replace the held-out manifest requirements below.
+
 Run from the repository root:
 
 ```bash

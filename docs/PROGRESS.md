@@ -8,6 +8,17 @@ SIH source was left intact. The app runs on http://127.0.0.1:5174/.
 
 Across all 80 planned tasks: **53 done, 27 partial, 0 pending**. Done means the stated engineering behavior works within the documented local prototype scope. It does not imply real OCR/identity accuracy. Partial tasks retain explicit remaining work below.
 
+Student evaluation preparation on 2026-10-18 adds a private 45-frame review set
+(five temporal-stratum midpoints from each current camera source), with blank
+vehicle counts, optional vehicle/plate boxes, per-plate readability, browser
+draft saving, and JSON export/import. Existing 21 plate crop labels remain
+untouched. CAM-01–06 samples use available playback copies; CAM-07–09 use their
+managed originals. Three synthetic preparation tests and isolated desktop/mobile
+browser checks pass. No human counts or new recognition metrics have been
+created, and the inspected source clips do not form an independent held-out set.
+See [the review workflow](../evaluation/FRAME_REVIEW.md). Evaluation tasks remain
+partial until reviewed labels, corresponding predictions, and suitable data exist.
+
 ## What now works
 
 Shared background six-camera processing; durable SQLite observations/passages;
