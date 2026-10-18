@@ -1,0 +1,25 @@
+{
+  "captured_at_utc": "2026-10-18T05:38:08+00:00",
+  "environment": "Local AI26 API, nine configured recorded/replay sources actively processing, shared 2 FPS budget",
+  "method": "Concurrent conditional GETs to /api/preview/CAM-01..09; compare ETags before and after the named interval",
+  "observations": [
+    {
+      "interval_seconds": 3,
+      "cameras_with_initial_preview": 9,
+      "unchanged_etag_304": 7,
+      "changed_frame": 2
+    },
+    {
+      "interval_seconds": 5,
+      "cameras_with_initial_preview": 9,
+      "unchanged_etag_304": 4,
+      "changed_frame": 5
+    }
+  ],
+  "change": "Camera wall preview poll interval changed from 3,000 ms to 5,000 ms. This reduces per-visible-tile request frequency by 40% and approximately matches the 4.5-second average per-camera scheduling interval when nine feeds share 2 FPS.",
+  "limitations": [
+    "Only one short local sample per interval; camera scheduling was not randomized or controlled for competing work.",
+    "ETag equality shows the image bytes did not change, but does not directly measure browser paint cost, user-perceived latency, INP, or dropped playback frames.",
+    "Recorded/replay behavior does not establish live-camera timing or performance on slower hardware."
+  ]
+}

@@ -77,7 +77,7 @@ class TrafficBaselineTests(unittest.TestCase):
         self.repo.record_traffic_sample('CAM-01',old)
         self.repo.cleanup(self.now-7*86400,self.now)
         self.assertEqual(self.repo.db.execute('SELECT count(*) FROM camera_traffic_buckets WHERE bucket_start_utc<?',(self.now-90*86400,)).fetchone()[0],0)
-        self.assertEqual(self.repo.schema_version,14)
+        self.assertEqual(self.repo.schema_version,15)
 
     def test_traffic_retention_is_operator_configurable(self):
         self.repo.record_traffic_sample('CAM-01',self.now-45*86400)

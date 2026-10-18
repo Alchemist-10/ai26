@@ -13,7 +13,7 @@ import cv2
 import numpy as np
 
 
-METHODS = ("clahe", "gamma", "gray_world", "retinex", "dark_channel", "unsharp")
+METHODS = ("clahe", "gamma", "gray_world", "retinex", "dark_channel", "unsharp", "grayscale_contrast")
 METHOD_PARAMETERS = {
     "clahe": {"clip_limit": 2.0, "tile_size": 8, "channel": "Lab L"},
     "gamma": {"gamma": 1.2},
@@ -21,6 +21,7 @@ METHOD_PARAMETERS = {
     "retinex": {"sigma": 30.0, "range_percentiles": [1, 99]},
     "dark_channel": {"radius": 7, "omega": 0.85, "minimum_transmission": 0.15},
     "unsharp": {"amount": 0.5, "sigma": 1.0},
+    "grayscale_contrast": {"alpha": 1.5, "beta": -25.0, "channel": "grayscale"},
 }
 
 
@@ -102,6 +103,16 @@ def unsharp(image: np.ndarray, amount: float = 0.5, sigma: float = 1.0) -> np.nd
     return cv2.addWeighted(image, 1 + amount, blur, -amount, 0)
 
 
+def grayscale_contrast(image: np.ndarray, alpha: float = 1.5, beta: float = -25.0) -> np.ndarray:
+    """Apply a bounded linear contrast/brightness transform to grayscale luminance."""
+    _image(image)
+    if not 0.1 <= alpha <= 3.0 or not -128 <= beta <= 128:
+        raise ValueError("alpha must be 0.1..3 and beta -128..128")
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    adjusted = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
+    return cv2.cvtColor(adjusted, cv2.COLOR_GRAY2BGR)
+
+
 TRANSFORMS: dict[str, Callable[[np.ndarray], np.ndarray]] = {
     "clahe": clahe,
     "gamma": gamma_correct,
@@ -109,6 +120,7 @@ TRANSFORMS: dict[str, Callable[[np.ndarray], np.ndarray]] = {
     "retinex": retinex,
     "dark_channel": dark_channel,
     "unsharp": unsharp,
+    "grayscale_contrast": grayscale_contrast,
 }
 
 

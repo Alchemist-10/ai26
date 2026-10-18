@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
-import { cancelSourcePreparation, getSourcePreparation, prepareCameraSource, type CameraSourceStatus, type SourcePreparation } from "@/lib/api"
+import { cancelSourcePreparation, getSourcePreparation, prepareCameraSource, type CameraSourceStatus, type SourcePreparation, type SourceProvenanceClaims } from "@/lib/api"
 import SourceSelection from "@/components/settings/SourceSelection"
 
 const control="w-full min-w-0 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-base text-white disabled:opacity-50"
 const button="min-h-11 rounded border border-zinc-600 px-3 py-2 text-sm font-medium hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
 const maxBytes=128*1024*1024
+const emptyProvenance:SourceProvenanceClaims={archive_creator:"",export_system:"",external_camera_id:"",recording_timezone:"unknown",authorization_basis:"",retention_note:""}
 function message(error: unknown) { return error instanceof Error ? error.message : "Preparation unavailable" }
 function storedId(camera: string) { try { const id=localStorage.getItem(`ai26:source-preparation:${camera}`); return id && /^[0-9a-f]{32}$/.test(id) ? id : null } catch { return null } }
 
@@ -14,6 +15,7 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
   const [reason,setReason]=useState("")
   const [recordingStart,setRecordingStart]=useState("")
   const [clockUncertainty,setClockUncertainty]=useState("")
+  const [provenance,setProvenance]=useState<SourceProvenanceClaims>(emptyProvenance)
   const [replace,setReplace]=useState(false)
   const [job,setJob]=useState<SourcePreparation|null>(null)
   const [error,setError]=useState("")
@@ -52,7 +54,7 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
     const controller=new AbortController();transfer.current=controller
     let keepBusy=false
     try {
-      const result=await prepareCameraSource(cameraId,file,reviewer.trim(),reason.trim(),replace,startUTC,uncertainty,controller.signal)
+      const result=await prepareCameraSource(cameraId,file,reviewer.trim(),reason.trim(),replace,startUTC,uncertainty,provenance,controller.signal)
       setJob(result);keepBusy=result.status==="preparing" || result.status==="uploading"
       try {localStorage.setItem(`ai26:source-preparation:${cameraId}`,result.job_id)} catch { /* Receipt ID remains visible if storage is unavailable. */ }
     } catch(error) {setError(controller.signal.aborted ? "Upload cancelled. Existing footage is unchanged." : message(error))}
@@ -94,8 +96,20 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
         <label htmlFor="source-upload-clock-uncertainty" className="block text-sm font-medium">Clock uncertainty in seconds (optional)
           <input id="source-upload-clock-uncertainty" type="number" min="0" max="86400" step="any" value={clockUncertainty} className={`${control} mt-2`} onChange={event=>setClockUncertainty(event.target.value)} />
         </label>
+        <details className="rounded border border-zinc-800 p-3 text-sm sm:col-span-2">
+          <summary className="min-h-11 cursor-pointer py-2 font-medium">Source provenance claims (optional)</summary>
+          <p className="mb-3 max-w-[70ch] leading-relaxed text-zinc-400">These are operator-provided claims only. AI26 does not independently verify source ownership, export details, recording timezone, authorization or retention terms.</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block">Archive creator or supplier<input maxLength={200} value={provenance.archive_creator} className={`${control} mt-1`} onChange={event=>setProvenance(value=>({...value,archive_creator:event.target.value}))} /></label>
+            <label className="block">Export system / NVR<input maxLength={200} value={provenance.export_system} className={`${control} mt-1`} onChange={event=>setProvenance(value=>({...value,export_system:event.target.value}))} /></label>
+            <label className="block">Camera identifier in source system<input maxLength={100} value={provenance.external_camera_id} className={`${control} mt-1`} onChange={event=>setProvenance(value=>({...value,external_camera_id:event.target.value}))} /></label>
+            <label className="block">Recording timezone (IANA or “unknown”)<input maxLength={64} value={provenance.recording_timezone} className={`${control} mt-1`} onChange={event=>setProvenance(value=>({...value,recording_timezone:event.target.value}))} /></label>
+            <label className="block">Authorization basis<input maxLength={500} value={provenance.authorization_basis} className={`${control} mt-1`} placeholder="Why this footage may be stored and processed" onChange={event=>setProvenance(value=>({...value,authorization_basis:event.target.value}))} /></label>
+            <label className="block">Retention / deletion terms<input maxLength={500} value={provenance.retention_note} className={`${control} mt-1`} placeholder="Operator claim; does not configure deletion" onChange={event=>setProvenance(value=>({...value,retention_note:event.target.value}))} /></label>
+          </div>
+        </details>
         {needsReplace && <label htmlFor="source-upload-replace" className="flex min-h-11 items-start gap-3 text-sm leading-relaxed sm:col-span-2"><input id="source-upload-replace" type="checkbox" required checked={replace} className="mt-1 h-5 w-5 shrink-0 accent-teal-400" onChange={event=>setReplace(event.target.checked)} />I intend to replace this camera’s footage after validation, selection and restart.</label>}
-        <p className="text-sm leading-relaxed text-zinc-300 sm:col-span-2">One clip can be prepared at a time. Your name, locations and recording clocks are operator claims, not verification. When sign-in is enabled, AI26 records the authenticated uploader account separately. A supplied start time is paired with frame index ÷ reported FPS as an approximate source offset; it does not replace replay time or enable calibrated cross-camera links. Ready releases remain on the host until managed separately.</p>
+        <p className="text-sm leading-relaxed text-zinc-300 sm:col-span-2">One clip can be prepared at a time. Your name, source details and recording clocks are operator claims, not verification. When sign-in is enabled, AI26 records the authenticated uploader account separately. A supplied start time is paired with frame index ÷ reported FPS as an approximate source offset; it does not replace replay time or enable calibrated cross-camera links. Ready releases remain on the host until managed separately.</p>
         <button type="submit" className={`${button} w-fit border-white bg-white text-black hover:bg-zinc-200`} disabled={!file}>{busy ? "Uploading clip…" : "Upload and prepare clip"}</button>
       </fieldset>
     </form>

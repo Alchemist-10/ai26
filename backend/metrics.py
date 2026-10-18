@@ -33,6 +33,21 @@ def render_metrics(cameras, processing_enabled, branches):
            [({'branch':'vehicle_person'}, branches.get('vehicle_detection_enabled')),
             ({'branch':'plate_recognition'}, branches.get('plate_recognition_enabled'))])
 
+    storage = next((camera.get('artifact_storage') for camera in cameras
+                    if isinstance(camera.get('artifact_storage'), dict)), None)
+    if storage is not None:
+        used = storage.get('used_bytes')
+        limit = storage.get('limit_bytes')
+        family('ai26_artifact_storage_used_bytes',
+               'Bytes used by managed sampled-read image artifacts.', 'gauge', [({}, used)])
+        family('ai26_artifact_storage_limit_bytes',
+               'Configured byte capacity for managed sampled-read image artifacts.', 'gauge', [({}, limit)])
+        ratio = used / limit if isinstance(used, (int, float)) and not isinstance(used, bool) \
+            and isinstance(limit, (int, float)) and not isinstance(limit, bool) and limit > 0 else None
+        family('ai26_artifact_storage_utilization_ratio',
+               'Fraction of managed sampled-read image artifact capacity currently used.',
+               'gauge', [({}, ratio)])
+
     counters=(('frames_total','frames','Frames successfully processed.'),
               ('attempts_total','attempts','Source processing attempts.'),
               ('failed_attempts_total','failed_attempts','Failed source processing attempts.'),

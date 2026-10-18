@@ -212,6 +212,20 @@ than a six-stream or production performance result. Raw samples are in
 The browser API defines total frames as frames displayed or dropped and exposes
 dropped frames since media load ([MDN reference](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/getVideoPlaybackQuality)).
 
+A matched 30-second in-app browser comparison used the same camera wall, CAM-07
+playback asset (1280×720, 11,700,824 bytes, matching its active-source manifest),
+browser tab and 572×758 CSS viewport. With the normal nine-camera processor
+active, playback added 36 dropped frames out of 865 (4.16%). With processing
+disabled, playback added 21 out of 850 (2.47%). The rate was 1.69 percentage
+points lower in the disabled run. This is a single local pair under uncontrolled
+desktop load. The disabled wall also showed paused placeholders instead of active
+preview tiles, so the result captures end-to-end app behavior and does not isolate
+inference from preview rendering, video decode, GPU/CPU contention or background
+load. The app was restarted with inference enabled afterward; all nine cameras
+returned to processing with zero failed attempts, and the user's camera view was
+restored to unloaded. See the
+[paired playback sample](validation/browser-playback-active-inference-2026-10-18.json).
+
 ## Local production launcher and deferred camera media — 15 October 2026
 
 Two uncached headless Chromium runs at 1280×800 compared the local Vite dev
@@ -389,8 +403,74 @@ During this sample, backend RSS was 548.9 MiB median (550.8 MiB p95), CPU was
 median / 37.7 ms p95 across 19 requests. The high CPU percentile is a brief
 sample and can include other desktop load. The isolated run used no camera media
 for CAM-07–09 and measured no OCR accuracy. Its API timing does not include
-click-to-paint, INP, video decode drops, or physical mobile behavior. A separate
-15 October warmed-inference browser check measured 145–182 ms accessibility
-action calls; that remains the only browser interaction sample under active
-inference. Full counters and phase timings are in
+click-to-paint, INP, video decode drops, or physical mobile behavior. At that
+time, a separate 15 October warmed-inference browser check measured 145–182 ms
+accessibility action calls. Full counters and phase timings are in
 [`validation/active-inference-profile-2026-10-16.json`](validation/active-inference-profile-2026-10-16.json).
+
+## Nine-source active-inference repeat — 18 October 2026
+
+The production launcher ran all nine available managed/replay sources with the
+shared 2 FPS budget. A 119.007-second verified counter window completed 138
+frames (1.1596 FPS), with no failed inference attempts or health reads. CAM-07,
+CAM-08 and CAM-09 recorded 15, 15 and 16 budget overruns respectively. Backend
+CPU was 118.5% median / 205.2% p95 across 12 logical CPUs, RSS was 756.8 MiB
+median / 773.8 MiB p95, and health latency was 9.8 / 14.2 ms median / p95.
+
+The phase timings identify 1087 ms, 1664 ms and 1219 ms median decoding time
+for CAM-07, CAM-08 and CAM-09; their inference medians were about 171–176 ms.
+This points to source decoding as the main measured cost on the three 1080p
+clips. CAM-07/08 used verified seek reads, while CAM-09 used bounded forward
+decoding. The measurement does not justify changing frame selection or using a
+lower-resolution proxy for recognition; pixel-equivalent decode profiling is
+needed first. It is a local replay sample, not browser responsiveness, live
+capture performance or OCR accuracy. Full counters are in
+[`validation/active-inference-profile-9cams-2026-10-18.json`](validation/active-inference-profile-9cams-2026-10-18.json).
+
+## Recorded decoder thread adjustment — 18 October 2026
+
+The recorded-source decoder now uses two FFmpeg threads by default, bounded to
+one through four by `AI26_RECORDED_DECODE_THREADS`. A paired raw-pixel diagnostic
+on the supplied CAM-07–09 originals found all thread settings decode identical
+pixels at the three checked targets. Two threads lowered median seek time against
+one thread on every clip. The default unrestricted thread count was faster in
+that diagnostic, but it has no predictable CPU bound, so it was not selected.
+
+After restarting the full nine-source application with two threads, a 119.010
+second valid counter window completed 163 frames (1.3696 FPS), up from 138
+(1.1596 FPS) in the adjacent one-thread run. Plate-source decode medians fell
+from 1.09/1.66/1.22 seconds to 0.51/0.71/0.75 seconds on CAM-07/08/09. CPU p95
+rose from 205.2% to 256.8% across 12 logical CPUs and RSS p95 from 773.8 to
+809.7 MiB. This is an observed improvement under the tested local workload, not
+a controlled benchmark; throughput remains below 2 FPS and the repeated plate
+camera budget overruns remain. Browser interaction latency, playback drops, and
+live camera behavior were not measured. See the
+[thread-count comparison](validation/decode-threads-cam07-09-2026-10-18.json)
+and [full-system profile](validation/active-inference-profile-9cams-2026-10-18-2decode-threads.json).
+
+A separate full-system four-thread run completed 152 frames (1.2772 FPS), versus
+163 at two threads. It also raised CPU p95 to 326.0% and RSS p95 to 907.6 MiB,
+so the application was restored to its two-thread default. These are adjacent
+local replay samples with uncontrolled desktop load; the comparison is evidence
+for this host and footage only.
+
+## Headless browser responsiveness under active inference — 18 October 2026
+
+Isolated Chromium 152 headless tabs at 1280×800 and 390×844 loaded the local
+camera wall while all nine recorded-source processors were active. On desktop,
+DOMContentLoaded occurred at 448 ms and LCP at 1,100 ms, with CLS 0.0012. Twelve alternating
+All/Plate filter interactions reached their expected camera-card DOM state in
+61–122 ms (median 94 ms). Thirteen Event Timing interactions had a sampled p95
+of 64 ms; two long tasks were recorded, with a 69 ms maximum. Nine preview images
+loaded and no video request occurred because no media view was selected. The
+post-run API check showed all nine sources available and processing with zero
+failed attempts.
+
+These are local headless samples, not a production INP distribution,
+click-to-paint result, physical-device test, throttled-network run, playback-drop
+measurement or sustained-load guarantee. The mobile-sized run had 708 ms LCP,
+zero measured CLS, 12 filter actions at 95–198 ms (median 114 ms), Event Timing
+p95 72 ms, and no horizontal overflow at 390 px. Both runs suggest the sampled
+camera-wall filter UI remained responsive under inference, while the replay
+processor itself still ran below its configured 2 FPS total budget. See the complete
+[browser sample](validation/browser-active-inference-ui-2026-10-18.json).

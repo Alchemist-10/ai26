@@ -24,6 +24,7 @@ from import_source import atomic_json
 from source_catalog import DATA_ROOT, SOURCE_ROOT, MAX_MANIFEST_BYTES, load_release
 from source_status import release_summary, text, number
 from source_clock import normalize_recording_clock
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 MAX_UPLOAD_BYTES = 128 * 1024**2
 UPLOAD_TIMEOUT = 120
@@ -40,12 +41,36 @@ class UploadMetadata(BaseModel):
     replace: StrictBool = False
     recording_start_utc: StrictStr | None = Field(default=None, max_length=64)
     clock_uncertainty_seconds: float | None = Field(default=None, ge=0, le=86400, allow_inf_nan=False)
+    archive_creator: StrictStr | None = Field(default=None, max_length=200)
+    export_system: StrictStr | None = Field(default=None, max_length=200)
+    external_camera_id: StrictStr | None = Field(default=None, max_length=100)
+    recording_timezone: StrictStr = Field(default='unknown', max_length=64)
+    authorization_basis: StrictStr | None = Field(default=None, max_length=500)
+    retention_note: StrictStr | None = Field(default=None, max_length=500)
 
     @field_validator('filename', 'reviewer', 'reason')
     @classmethod
     def nonblank(cls, value):
         if not value.strip(): raise ValueError('Enter a nonblank value')
         return value.strip()
+
+    @field_validator('archive_creator', 'export_system', 'external_camera_id', 'authorization_basis', 'retention_note', mode='before')
+    @classmethod
+    def normalize_optional_claim(cls, value):
+        if value is None: return None
+        if not isinstance(value, str): raise ValueError('Source provenance entries must be text')
+        return value.strip() or None
+
+    @field_validator('recording_timezone')
+    @classmethod
+    def valid_recording_timezone(cls, value):
+        value = value.strip()
+        if value.lower() == 'unknown': return 'unknown'
+        if not value: raise ValueError('Use an IANA timezone or explicitly enter unknown')
+        try: ZoneInfo(value)
+        except (ZoneInfoNotFoundError, ValueError) as error:
+            raise ValueError('Enter a valid IANA timezone such as Asia/Kolkata, or unknown') from error
+        return value
 
     @field_validator('clock_uncertainty_seconds', mode='before')
     @classmethod
@@ -182,6 +207,10 @@ class SourceUploads:
                     args.extend(['--recording-start-utc',meta['recording_start_utc']])
                 if meta['clock_uncertainty_seconds'] is not None:
                     args.extend(['--clock-uncertainty-seconds',str(meta['clock_uncertainty_seconds'])])
+                for key, option in (('archive_creator','--archive-creator'),('export_system','--export-system'),
+                                    ('external_camera_id','--external-camera-id'),('recording_timezone','--recording-timezone'),
+                                    ('authorization_basis','--authorization-basis'),('retention_note','--retention-note')):
+                    if meta.get(key): args.extend([option,meta[key]])
                 env=dict(os.environ,AI26_DATA_ROOT=str(self.data),AI26_SOURCE_ROOT=str(self.root),AI26_PROCESSING_ENABLED='0')
                 self.process=subprocess.Popen(args,cwd=Path(__file__).parent,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)
                 process=self.process

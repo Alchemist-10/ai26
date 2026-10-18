@@ -100,3 +100,49 @@ independently cold OCR, VFR/capture-clock calibration and held-out accuracy rema
 unmeasured. Sparse replay sampling intentionally omits source frames. Imported
 recordings with short keyframe spacing or different codecs may favor seeks; use
 0 to disable this optimization when measured on such inputs.
+
+## Supplied 1080p plate clips — 18 October 2026
+
+A paired decode-only diagnostic compared seek/read with forward grab/retrieve on
+CAM-07–09 originals at 120-, 180-, 200- and 220-frame gaps. All tested target
+pixels matched exactly. Forward decode was faster on CAM-07 and CAM-09 through
+220 frames, but CAM-08 seek/read was faster at 200 and 220 frames. The profile
+was collected while the nine-source inference process was active, so the values
+are paired comparisons under shared load, not isolated speed guarantees. The
+results do not support raising one global forward-decode bound. A measured,
+source-hash-scoped policy now allows 221 grab calls (the target plus up to a
+220-frame gap) only for the exact tested CAM-07 and CAM-09 originals. CAM-08 and
+any changed/replacement source retain the global 128-call cap. An explicit
+`AI26_FORWARD_DECODE_MAX_FRAMES` setting remains authoritative, including `0` to
+disable forward decode. Health reports the effective per-camera bound. Ten focused
+decoder tests cover source-hash matching, replacement fallback, override behavior
+and the exact tested gap. The full 427-test backend suite passes. This changes the
+runtime decoder policy, but does not yet establish higher full-system FPS; that
+requires a post-restart profile. See the
+[paired diagnostic](validation/decode-gap-cam07-09-2026-10-18.json).
+
+After restart, a direct check through the production `Processor.decode_frame`
+method primed each exact source at frame 100 and requested frame 321. CAM-07/09
+selected forward mode with 221 grabs; CAM-08 selected seek with its 128-call
+default. All resulting decoder positions verified at frame 322 and all three
+pixel hashes matched independent seek/read results. See the
+[production policy check](validation/decode-production-policy-cam07-09-2026-10-18.json).
+The accompanying 58.003-second nine-source profile completed 112 frames
+(1.9309 FPS), with no failures and three CAM-08 budget overruns. Its largest
+observed forward gap was only 112 grabs, so it did not exercise the >128 policy;
+no throughput gain is attributed to the source-specific bound. See the
+[source-tuned profile](validation/active-inference-profile-9cams-2026-10-18-source-tuned-60s.json).
+
+The same 1080p sources were also decoded at OpenCV/FFmpeg thread counts 1, 2, 4
+and the library default. All tested frame hashes matched. Two threads improved
+median seeks over one thread on each clip, while the unrestricted library default
+was faster but had no bounded CPU cost. Recorded sources now default to two
+threads (`AI26_RECORDED_DECODE_THREADS`, clamp 1–4); live RTSP readers retain
+their separate single-thread setting. The full nine-source follow-up improved
+from 1.1596 to 1.3696 completed FPS, with increased CPU/RSS and throughput still
+below the 2 FPS budget. See the
+[thread-count results](validation/decode-threads-cam07-09-2026-10-18.json) and
+[full-system profile](validation/active-inference-profile-9cams-2026-10-18-2decode-threads.json).
+A separate four-thread full-system run was slower at 1.2772 FPS and consumed
+more CPU/RSS, so the app has been restored to two threads. See its
+[profile](validation/active-inference-profile-9cams-2026-10-18-4decode-threads.json).

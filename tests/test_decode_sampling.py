@@ -28,7 +28,7 @@ class Capture:
 
 class DecodeSampling(unittest.TestCase):
     def setUp(self):
-        self.p=processing.Processor(cameras=[{'id':'CAM-01','kind':'vehicle'},{'id':'CAM-02','kind':'vehicle'}]);self.cap=Capture()
+        self.p=processing.Processor(cameras=[{'id':'CAM-01','kind':'vehicle'},{'id':'CAM-02','kind':'vehicle'},{'id':'CAM-07','kind':'plate'}]);self.cap=Capture()
     def frame(self,target,camera='CAM-01',cap=None):
         raw=self.p.decode_frame(camera,cap or self.cap,target);self.assertTrue(np.all(raw==target%256));return raw
     def test_first_seek_then_forward_grabs_retrieve_exact_target(self):
@@ -69,5 +69,23 @@ class DecodeSampling(unittest.TestCase):
         for supplied,expected in [('999',128),('-1',0),('0',0),('32',32)]:
             with patch.dict(os.environ,{'AI26_FORWARD_DECODE_MAX_FRAMES':supplied}):
                 self.assertEqual(processing.Processor(cameras=[]).forward_decode_limit,expected)
+
+    def test_larger_forward_bound_applies_only_to_measured_source_hashes(self):
+        cam07='661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689'
+        cam08='348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d'
+        cam09='e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341'
+        self.assertEqual(processing.forward_decode_limit_for('CAM-07',cam07,128),221)
+        self.assertEqual(processing.forward_decode_limit_for('CAM-09',cam09,128),221)
+        self.assertEqual(processing.forward_decode_limit_for('CAM-08',cam08,128),128)
+        self.assertEqual(processing.forward_decode_limit_for('CAM-07','b'*64,128),128)
+        self.assertEqual(processing.forward_decode_limit_for('CAM-07',cam07,32,override=True),32)
+        self.assertEqual(processing.forward_decode_limit_for('CAM-07',cam07,0,override=True),0)
+
+    def test_source_bound_grabs_measured_220_frame_gap_exactly(self):
+        self.p.source_forward_decode_limits['CAM-07']=221
+        self.frame(1,camera='CAM-07');self.frame(222,camera='CAM-07')
+        self.assertEqual(self.cap.seeks,[1])
+        self.assertEqual(self.cap.grabs,221)
+        self.assertEqual(self.p.state['CAM-07']['decode_mode'],'forward')
 
 if __name__=='__main__':unittest.main()

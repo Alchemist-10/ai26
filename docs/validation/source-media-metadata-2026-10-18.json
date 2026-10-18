@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "inspected_at_utc": "2026-10-18T06:11:26Z",
+  "archive": {
+    "filename": "multi sample bus-20261015T121500Z-1-001.zip",
+    "sha256": "607332afd0f26de98ce6de6ae465d6313ba0d1d183937f3dfbfbdef7fb924587",
+    "member_count": 3,
+    "archive_comment_present": false,
+    "member_comments_present": false,
+    "creator_platform": "MS-DOS/OS2/NT FAT",
+    "member_timestamp_basis": "DOS date/time; timezone not encoded",
+    "member_extra_field_ids": [
+      "0x7075 UTF-8 path name"
+    ],
+    "members": [
+      {
+        "camera_id_mapping": "CAM-08",
+        "filename": "multi sample bus/clip_2_00_25-00_50.mp4",
+        "zip_member_mtime": "2026-02-28 20:21:28",
+        "uncompressed_bytes": 14740586,
+        "sha256": "348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d"
+      },
+      {
+        "camera_id_mapping": "CAM-09",
+        "filename": "multi sample bus/clip_2_00_30-01_00.mp4",
+        "zip_member_mtime": "2026-02-28 20:22:24",
+        "uncompressed_bytes": 12356495,
+        "sha256": "e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341"
+      },
+      {
+        "camera_id_mapping": "CAM-07",
+        "filename": "multi sample bus/clip 4.mp4",
+        "zip_member_mtime": "2026-03-05 01:23:46",
+        "uncompressed_bytes": 27989471,
+        "sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689"
+      }
+    ]
+  },
+  "mp4_stream_metadata": [
+    {
+      "camera_id": "CAM-07",
+      "format_encoder_tag": "Lavf58.31.104",
+      "creation_time_present": false,
+      "video_start_time_seconds": 0.0,
+      "duration_seconds": 51.4,
+      "average_frame_rate": "25/1",
+      "container_nb_frames": 1285,
+      "fully_decoded_frames_recorded_at_import": 1285
+    },
+    {
+      "camera_id": "CAM-08",
+      "format_encoder_tag": "Lavf58.45.100",
+      "creation_time_present": false,
+      "video_start_time_seconds": 0.0,
+      "duration_seconds": 25.2,
+      "average_frame_rate": "25/1",
+      "container_nb_frames": 752,
+      "fully_decoded_frames_recorded_at_import": 627
+    },
+    {
+      "camera_id": "CAM-09",
+      "format_encoder_tag": "Lavf58.45.100",
+      "creation_time_present": false,
+      "video_start_time_seconds": 0.0,
+      "duration_seconds": 30.0,
+      "average_frame_rate": "18/1",
+      "container_nb_frames": 580,
+      "fully_decoded_frames_recorded_at_import": 540
+    }
+  ],
+  "conclusion": "The ZIP and MP4 containers provide file/member timestamps and generic muxer tags, but no verified capture date, timezone, NVR identifier, camera serial, GPS, or authenticated exporter identity. CAM-08/09 container frame-count fields disagree with full decode counts.",
+  "limitations": [
+    "ZIP DOS timestamps describe archive member filesystem metadata, not video recording time; timezone and clock provenance are unknown.",
+    "Lavf encoder tags are container metadata and do not independently identify the footage creator, exporter, camera or source system.",
+    "Absence of capture metadata cannot prove the footage is inauthentic or determine where it was captured.",
+    "This inspection does not establish source authorization, camera/junction identity, original capture time, or retention/publication rights."
+  ]
+}

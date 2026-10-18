@@ -42,6 +42,33 @@ class SourceImport(unittest.TestCase):
         self.assertEqual(result['time_basis'],'replay_clock');self.assertTrue(result['restart_required'])
         self.assertFalse((self.data/'ai26.sqlite3').exists());self.assertEqual(self.input.read_bytes(),b'original-video-bytes')
 
+    def test_source_provenance_is_retained_as_unverified_operator_claims(self):
+        result=self.run_import(archive_creator='  Transit Ops  ',export_system='NVR-X',
+                              external_camera_id='Gate 7',recording_timezone='Asia/Kolkata',
+                              authorization_basis='Research authorization',retention_note='Delete after review')
+        expected={'status':'operator_claimed','verified':False,'archive_creator':'Transit Ops',
+                  'export_system':'NVR-X','external_camera_id':'Gate 7','recording_timezone':'Asia/Kolkata',
+                  'authorization_basis':'Research authorization','retention_note':'Delete after review'}
+        self.assertEqual(result['source_provenance'],expected)
+        loaded=load_source('CAM-07',self.root,verify=True)
+        self.assertEqual(loaded['manifest']['source_provenance'],expected)
+        self.assertEqual(release_summary(loaded['manifest'])['source_provenance'],expected)
+
+    def test_source_provenance_defaults_to_unknown_without_claiming_verification(self):
+        result=self.run_import()
+        self.assertEqual(result['source_provenance'],{
+            'archive_creator':None,'export_system':None,'external_camera_id':None,
+            'authorization_basis':None,'retention_note':None,'recording_timezone':'unknown',
+            'status':'not_provided','verified':False})
+
+    def test_invalid_source_provenance_is_rejected_before_publication(self):
+        for options in ({'recording_timezone':'Mars/Olympus'},
+                        {'archive_creator':'x'*201}, {'authorization_basis':'x'*501},
+                        {'recording_timezone':' ' }):
+            with self.subTest(options=options),self.assertRaises(ValueError):
+                self.run_import(**options)
+        self.assertFalse((self.root/'CAM-07'/'active.json').exists())
+
     def test_optional_recording_clock_is_retained_as_an_unverified_claim(self):
         result=self.run_import(recording_start_utc='2026-10-14T12:00:00+05:30',clock_uncertainty_seconds=2.5)
         self.assertEqual(result['recording_clock'],{

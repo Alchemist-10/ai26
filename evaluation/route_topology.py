@@ -93,11 +93,46 @@ def load_records(path: Path) -> tuple[list[dict], str]:
 def fit_and_evaluate(records: list[dict], data_sha256: str, *, lower_quantile: float = 0.05,
                      upper_quantile: float = 0.95) -> dict:
     """Fit empirical edge windows on training positives and score session-held-out test rows."""
+    if not isinstance(records, list) or not records or len(records) > MAX_RECORDS:
+        raise RouteDataError(f"records must be a non-empty list of at most {MAX_RECORDS} rows")
     if not re.fullmatch(r"[0-9a-f]{64}", data_sha256):
         raise RouteDataError("data_sha256 must be a lowercase SHA-256 digest")
     if (type(lower_quantile) not in (int, float) or type(upper_quantile) not in (int, float)
             or not 0 <= lower_quantile < upper_quantile <= 1):
         raise RouteDataError("quantiles must satisfy 0 <= lower < upper <= 1")
+    seen_ids, session_split, session_edges = set(), {}, set()
+    for index, record in enumerate(records, 1):
+        if not isinstance(record, dict):
+            raise RouteDataError(f"record {index} must be an object")
+        record_id = _text(record.get("record_id"), "record_id")
+        session = _text(record.get("session_id"), "session_id")
+        source = _text(record.get("from_camera"), "from_camera")
+        target = _text(record.get("to_camera"), "to_camera")
+        split = record.get("split")
+        elapsed = record.get("elapsed_seconds")
+        if source == target:
+            raise RouteDataError(f"record {index} must describe different cameras")
+        if split not in ("train", "test"):
+            raise RouteDataError(f"record {index}.split must be train or test")
+        if type(record.get("traversed")) is not bool:
+            raise RouteDataError(f"record {index}.traversed must be boolean")
+        if (type(elapsed) not in (int, float) or not math.isfinite(elapsed)
+                or not 0 < elapsed <= 7 * 86400):
+            raise RouteDataError(f"record {index}.elapsed_seconds must be finite and in (0, 604800]")
+        if (type(record.get("coordinates_validated")) is not bool
+                or type(record.get("clocks_synchronized")) is not bool):
+            raise RouteDataError(f"record {index} must state coordinate and clock validation explicitly")
+        if record_id in seen_ids:
+            raise RouteDataError(f"duplicate record_id: {record_id}")
+        edge_key = (session, source, target)
+        if edge_key in session_edges:
+            raise RouteDataError(f"session {session!r} has repeated samples for the same directed camera pair")
+        previous_split = session_split.setdefault(session, split)
+        if previous_split != split:
+            raise RouteDataError(f"session leakage: session {session!r} appears in both splits")
+        seen_ids.add(record_id)
+        session_edges.add(edge_key)
+
     train = [record for record in records if record["split"] == "train"]
     test = [record for record in records if record["split"] == "test"]
     if not train or not test:

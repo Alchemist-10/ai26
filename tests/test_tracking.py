@@ -4,6 +4,7 @@ import itertools
 import random
 import sys
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -20,6 +21,38 @@ def detection(x,label='car',width=4,height=4):
 
 
 class Association(unittest.TestCase):
+    def test_detector_evaluator_maximizes_valid_one_to_one_matches(self):
+        predictions=[detection(0),detection(1)]
+        ground=[detection(10),detection(11)]
+        # Greedy highest-IoU matching would take p0-g0 and strand p1;
+        # maximum-cardinality matching finds both valid pairs.
+        scores={(0,10):.90,(0,11):.60,(1,10):.80}
+        with patch.object(evaluation,'iou',side_effect=lambda a,b:scores.get((a[0],b[0]),0)):
+            matches=evaluation._box_matches(predictions,ground)
+        self.assertEqual(len(matches),2)
+        self.assertEqual(matches,{0:1,1:0})
+
+    def test_detector_evaluator_rejects_malformed_boxes(self):
+        record={'sample_id':'bad-box','expected_boxes':[{'label':'car','bbox':[0,0,float('nan'),1]}], 'predicted_boxes':[]}
+        with self.assertRaisesRegex(ValueError,'finite, ordered bbox'):
+            evaluation.evaluate([record])
+
+    def test_detector_metrics_require_explicit_paired_ground_truth_and_predictions(self):
+        unlabeled={'sample_id':'unlabeled','predicted_boxes':[detection(0)]}
+        with self.assertRaisesRegex(ValueError,'both expected_boxes and predicted_boxes'):
+            evaluation.evaluate([unlabeled])
+        report=evaluation.evaluate([{'sample_id':'not-a-detector-sample'}])
+        self.assertEqual(report['detector']['evaluated_sample_count'],0)
+        self.assertIsNone(report['detector']['precision'])
+        self.assertIsNone(report['detector']['recall'])
+        negative=evaluation.evaluate([{'sample_id':'labeled-negative','expected_boxes':[], 'predicted_boxes':[]}])
+        self.assertEqual(negative['detector']['evaluated_sample_count'],1)
+
+    def test_empty_or_non_object_evaluation_does_not_emit_metrics(self):
+        for records in ([],[None]):
+            with self.subTest(records=records),self.assertRaises(ValueError):
+                evaluation.evaluate(records)
+
     def test_assignment_matches_exhaustive_small_matrices(self):
         rng=random.Random(26)
         for rows in range(1,5):

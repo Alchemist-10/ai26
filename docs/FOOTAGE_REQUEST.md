@@ -38,17 +38,46 @@ three MP4 files whose names match the CAM-07–09 catalog expectations above.
 They were fingerprinted and prepared in the local, Git-ignored
 `backend/data/sources` directory, then selected as active managed releases after
 the user's explicit activation request. After restart, the API reports all
-three sources available, and HTTP byte-range playback requests return 206. The
-API's inference processing remains disabled. CAM-07 decoded as 1,285 frames;
+three sources available, and HTTP byte-range playback requests return 206. A
+120-second read-only profile on 2026-10-16 observed inference enabled and all
+three sources continuing to process without failed attempts; this is not a
+junction or source-authorization check. CAM-07 decoded as 1,285 frames;
 CAM-08 decoded as 627 frames despite a stale container count of
 752; CAM-09 decoded as 540 frames despite a stale container count of 580. The
 importer now compares fully decoded counts for import validation, while its
-read-only check remains metadata-only. These checks confirm valid video decode
-and filename mapping only: the requested junction views, readable plates,
-source authorization, export provenance, recording times/timezone, retention
-terms and camera-clock offsets have not been independently verified. The smoke run produced two format-valid, unreviewed OCR candidates on CAM-09, but none on CAM-07 and only invalid/low-confidence candidates on CAM-08; this is not an accuracy result. No plate
+read-only check remains metadata-only. Representative frames show burned-in
+camera/location labels matching each catalog entry and an on-screen date of
+18 May 2025 with differing local times. Those labels and clock overlays are
+clip-provided claims, not independently
+authenticated camera identity or verified NVR timestamps. Readable-plate labels,
+source authorization, export provenance, timezone/clock accuracy, retention
+terms and camera-clock offsets remain unverified. The earlier smoke run produced
+two format-valid, unreviewed OCR candidates on CAM-09, none on CAM-07 and only
+invalid/low-confidence candidates on CAM-08; this is not an accuracy result. No plate
 values or frame images are recorded here. See `docs/SOURCE_IMPORT.md` for the
 managed-import workflow.
+
+On 2026-10-18, the supplied ZIP and all three active managed originals were
+hashed again. Each archive member's SHA-256 matched both the corresponding
+active-release manifest and stored original bytes, tying the currently used
+clips byte-for-byte to this supplied archive. The archive SHA-256 is
+`607332afd0f26de98ce6de6ae465d6313ba0d1d183937f3dfbfbdef7fb924587`; the
+per-camera comparison is recorded in
+[`source-archive-integrity-2026-10-18.json`](validation/source-archive-integrity-2026-10-18.json).
+This establishes local byte integrity and the archive-to-import mapping only.
+It does not identify the archive's creator or exporting system, prove that the
+footage shows the named junctions, grant permission, or validate its overlays
+as original camera timestamps.
+
+A local ZIP/MP4 metadata inspection found only DOS member modification times
+(February 28 and March 5, 2026; timezone unknown) and a UTF-8 filename extra
+field. The MP4s have generic `Lavf` muxer tags but no `creation_time`, recording
+timecode, NVR/camera identifier, or location metadata. CAM-08 and CAM-09
+container frame-count fields (752 and 580) disagree with the fully decoded
+counts (627 and 540). The findings are recorded in
+[`source-media-metadata-2026-10-18.json`](validation/source-media-metadata-2026-10-18.json).
+These are container/archive properties, not evidence of capture date, exporter,
+site, authorization or authenticity.
 
 ## Public contact for routing
 
@@ -121,6 +150,10 @@ Before putting a received clip into AI26:
   area is not an equivalent fixed-camera ITMS source and must not be relabeled as
   CAM-07, CAM-08 or CAM-09.
 
-Until the supplied candidates pass source authorization and content review, keep
-them inactive. Real-plate evaluation remains unverified until readable plates
-are manually labeled and reviewed; synthetic fixtures do not close that gate.
+The supplied candidates are currently active at the user's direction while
+source authorization and origin remain unverified. A user has manually
+transcribed four readable crop candidates; all four stored OCR outputs differed
+and were rejected by the format gate. Sixteen other sampled crops were marked
+unreadable and one uncertain. These selected detections are not a representative
+or held-out evaluation and do not measure detector misses; synthetic fixtures do
+not close that gate.

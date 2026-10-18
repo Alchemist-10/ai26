@@ -2,6 +2,8 @@ import { memo, useEffect, useRef, useState } from "react"
 import { usePolling } from "@/hooks/usePolling"
 import { scopedResourceUrl } from "@/lib/api"
 
+const PREVIEW_POLL_INTERVAL_MS = 5000
+
 export const CameraThumb = memo(function CameraThumb({ cameraId, available, processingEnabled, processingStatus, className }: { cameraId: string; available: boolean; processingEnabled: boolean; processingStatus: string; className?: string }) {
   const [image, setImage] = useState("")
   const [failed, setFailed] = useState(false)
@@ -34,7 +36,7 @@ export const CameraThumb = memo(function CameraThumb({ cameraId, available, proc
       setImage(next); setFailed(false)
       if (previous) URL.revokeObjectURL(previous)
     } catch { if (!signal.aborted && processingStatus !== "loading") setFailed(true) }
-  }, 3000, nearViewport && available && processingEnabled && ["loading", "processing"].includes(processingStatus))
+  }, PREVIEW_POLL_INTERVAL_MS, nearViewport && available && processingEnabled && ["loading", "processing"].includes(processingStatus))
   useEffect(() => () => { if (objectUrl.current) URL.revokeObjectURL(objectUrl.current) }, [])
   if (!available || !processingEnabled || !["loading", "processing"].includes(processingStatus) || failed || !image) {
     const message = !available ? "Source missing" : !processingEnabled ? "Processing paused" : processingStatus === "error" ? "Processing error" : failed ? "Preview unavailable" : "Preview preparing"

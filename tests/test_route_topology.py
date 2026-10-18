@@ -51,6 +51,16 @@ class RouteTopologyTests(unittest.TestCase):
         weak=[row for row in self.rows if row['record_id']!='r4']
         with self.assertRaises(route.RouteDataError): route.fit_and_evaluate(weak,"a"*64)
 
+    def test_direct_fit_revalidates_rows_instead_of_trusting_loader(self):
+        with self.assertRaisesRegex(route.RouteDataError, "duplicate record_id"):
+            route.fit_and_evaluate(self.rows + [dict(self.rows[0], split="test", session_id="other")], "a"*64)
+        malformed = [dict(row) for row in self.rows]
+        malformed[0]["elapsed_seconds"] = float("nan")
+        with self.assertRaisesRegex(route.RouteDataError, "elapsed_seconds"):
+            route.fit_and_evaluate(malformed, "a"*64)
+        with self.assertRaisesRegex(route.RouteDataError, "non-empty list"):
+            route.fit_and_evaluate([], "a"*64)
+
     def test_loader_rejects_correlated_repeated_edge_samples_in_one_session(self):
         duplicate=[record(1,'same-session','train',True,70),
                    record(2,'same-session','train',True,72)]

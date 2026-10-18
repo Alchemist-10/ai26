@@ -24,6 +24,14 @@ class ClassicalEnhanceTests(unittest.TestCase):
             self.assertEqual(result.shape, image.shape)
             self.assertEqual(result.dtype, np.uint8)
 
+    def test_grayscale_contrast_transform_matches_pinned_parameters(self):
+        image = np.full((8, 12, 3), (30, 60, 90), dtype=np.uint8)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        expected = cv2.cvtColor(cv2.convertScaleAbs(gray, alpha=1.5, beta=-25), cv2.COLOR_GRAY2BGR)
+        result = enhance.grayscale_contrast(image)
+        self.assertTrue(np.array_equal(result, expected))
+        self.assertFalse(np.array_equal(result, image))
+
 
     def test_cli_creates_labeled_derivatives_and_preserves_source(self):
         import tempfile
@@ -35,14 +43,14 @@ class ClassicalEnhanceTests(unittest.TestCase):
             self.assertTrue(cv2.imwrite(str(source), image))
             before = hashlib.sha256(source.read_bytes()).hexdigest()
 
-            manifest_path = enhance.run(source, tmp_path / "derived", ["clahe", "gamma", "unsharp"])
+            manifest_path = enhance.run(source, tmp_path / "derived", ["clahe", "gamma", "grayscale_contrast", "unsharp"])
 
             manifest = json.loads(manifest_path.read_text())
             self.assertEqual(manifest["source"]["sha256"], before)
             self.assertEqual(manifest["source"]["status"], "raw_reference_unchanged")
             self.assertFalse(manifest["accuracy_claim"])
             self.assertEqual(manifest["quality_metrics"]["type"], "descriptive_only_not_accuracy")
-            self.assertEqual([item["method"] for item in manifest["derivatives"]], ["clahe", "gamma", "unsharp"])
+            self.assertEqual([item["method"] for item in manifest["derivatives"]], ["clahe", "gamma", "grayscale_contrast", "unsharp"])
             for item in manifest["derivatives"]:
                 output = manifest_path.parent / item["path"]
                 self.assertEqual(item["status"], "research_derivative")
@@ -72,6 +80,10 @@ class ClassicalEnhanceTests(unittest.TestCase):
             enhance.gamma_correct(np.zeros((4, 4), dtype=np.uint8))
         with self.assertRaises(ValueError):
             enhance.gamma_correct(np.zeros((4, 4, 3), dtype=np.uint8), gamma=9)
+        with self.assertRaises(ValueError):
+            enhance.grayscale_contrast(np.zeros((4, 4), dtype=np.uint8))
+        with self.assertRaises(ValueError):
+            enhance.grayscale_contrast(np.zeros((4, 4, 3), dtype=np.uint8), alpha=9)
         import tempfile
         with tempfile.TemporaryDirectory() as temp:
             tmp_path = Path(temp)

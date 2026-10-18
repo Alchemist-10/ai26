@@ -37,9 +37,17 @@ fixtures remain available without a manifest and are reported as synthetic.
 The included records are **synthetic correctness fixtures**, not model accuracy.
 Supply held-out, manually labeled prediction records to measure the real models.
 Each line has a unique sample_id and optional expected_plate/predicted_plate,
-expected_boxes/predicted_boxes (class label, bbox; optional ground-truth identity
+paired expected_boxes/predicted_boxes (class label, bbox; optional ground-truth identity
 and predicted track_id), expected_link/predicted_link and expected_rule/predicted_rule
-Booleans, and independently counted expected_passages/predicted_passages.
+Booleans, and independently counted expected_passages/predicted_passages. Detector
+metrics only include samples that explicitly provide both box arrays; use two empty
+arrays for a labeled negative frame. Supplying just one array is an error, and the
+report includes the detector sample denominator.
+Detector boxes require a non-empty class and finite ordered `[x1, y1, x2, y2]`
+coordinates. Detection scoring finds a maximum-cardinality one-to-one assignment
+among same-class boxes with IoU at least 0.5, so an early high-IoU match cannot
+hide another valid detection. This improves score counting only; it does not
+validate annotations or establish model accuracy.
 For real records, add the test `clip_id` and exact `model_sha256`; the evaluator
 requires the model digest to match `--model-sha256` and binds the report to the
 manifest bytes, prediction-record bytes, and exact sample-ID set. Synthetic

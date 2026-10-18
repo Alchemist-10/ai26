@@ -1,6 +1,6 @@
 # Camera revisions and journey decision persistence
 
-Schema version 14 stores users, per-case grants, case-to-camera access grants, hashed authentication sessions, atomic authentication-attempt windows, encrypted TOTP enrollment, one-use recovery-code hashes and the last accepted TOTP counter,
+Schema version 15 stores users, per-case grants, case-to-camera access grants, hashed authentication sessions, atomic authentication-attempt windows, encrypted TOTP enrollment, one-use recovery-code hashes and the last accepted TOTP counter,
 the nine-camera catalog, and immutable queried link decisions alongside existing
 directed camera-pair travel constraints, sessions, immutable reads, camera-local passages, alerts, rules, reports and
 hash-chained audit records, and 90-day camera/quarter-hour aggregate buckets for live-source processed samples and unique vehicle passages. Supported legacy versions migrate automatically; future schema
@@ -19,8 +19,12 @@ camera's observations. Legacy alerts without camera IDs remain admin-visible.
 
 Directed camera-pair constraints store inclusive minimum/maximum travel windows,
 connected/disconnected state, reviewer, reason and update time. Saving requires
-both camera locations to be marked confirmed; this is an operator assertion, not
-independent geospatial validation. Each newly materialized journey-link decision
+both camera locations to be marked confirmed and contain coordinates; this is an
+operator assertion, not independent geospatial validation. Journey links keep
+coordinates, distance and speed null for unconfirmed positions. Manual, legacy
+and unknown timestamp bases remain unresolved; only the explicit
+`synchronized_capture_clock` basis can pass the time gate, and no current runtime
+source emits it. Each newly materialized journey-link decision
 captures the active pair constraint. Missing constraints leave links unresolved,
 disconnected pairs are rejected, and travel outside a configured window is
 rejected. Existing immutable decisions retain their original constraint snapshot.
@@ -87,7 +91,11 @@ or nonfinite coordinates, blank text, extra fields and source/kind/ID edits retu
 persisted catalog; duplicate matching names require a camera ID.
 
 Reviewer names are unauthenticated local claims. `location_confirmed` is a local
-label assertion, not coordinate or clock validation. `calibration_status` remains
+operator assertion, not coordinate or clock validation. Repository defaults keep
+CAM-07–09 unconfirmed because a junction name burned into a clip is not independent
+source or site verification. Schema 15 adds a new unconfirmed revision only where
+the old repository default was still current; it preserves the earlier revision and
+does not change later operator edits. `calibration_status` remains
 `unverified`; metadata edits cannot change it. The [Camera settings page](SETTINGS.md)
 edits metadata and inspects saved revisions with explicit stale-save recovery.
 Recorded sources can now be imported through the [offline command](SOURCE_IMPORT.md).

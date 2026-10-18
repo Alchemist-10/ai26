@@ -22,7 +22,7 @@ class Repository:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version > 14:
+        if version > 15:
             self.db.close()
             raise RuntimeError('Database version is newer than this application')
         with self.db:
@@ -192,9 +192,28 @@ class Repository:
                     PRAGMA user_version=14;
                     COMMIT;
                 ''')
+            if version < 15:
+                # Earlier defaults treated burned-in junction labels as verified sites.
+                # Preserve the old revision for audit/history, but withdraw that default
+                # assertion. Never touch cameras with a later, operator-created revision.
+                self.db.executescript('''
+                    BEGIN IMMEDIATE;
+                    INSERT OR IGNORE INTO camera_catalog(camera,revision,data)
+                    SELECT camera,2,
+                           json_set(data,'$.revision',2,'$.location_confirmed',json('false'),
+                                    '$.metadata_source','repository defaults; overlay is unverified',
+                                    '$.calibration_status','unverified','$.updated_at',0)
+                    FROM camera_catalog
+                    WHERE camera IN ('CAM-07','CAM-08','CAM-09')
+                      AND revision=1
+                      AND json_extract(data,'$.metadata_source')='repository defaults'
+                      AND json_extract(data,'$.location_confirmed')=1;
+                    PRAGMA user_version=15;
+                    COMMIT;
+                ''')
         with self.db:
             self.db.execute('CREATE INDEX IF NOT EXISTS audit_subject_action_time ON audit(subject,action,ts)')
-        self.schema_version = 14
+        self.schema_version = 15
         # Seed only missing IDs. Restart never overwrites operator metadata or its history.
         from cameras import CAMERAS
         with self.lock, self.db:
@@ -295,6 +314,9 @@ class Repository:
                 raise ValueError('A camera pair must connect two different cameras')
             if not locations[from_camera]['location_confirmed'] or not locations[to_camera]['location_confirmed']:
                 raise ValueError('Mark both camera locations as confirmed before setting pair constraints')
+            if any(locations[camera].get('lat') is None or locations[camera].get('lon') is None
+                   for camera in (from_camera, to_camera)):
+                raise ValueError('Both confirmed camera locations need coordinates before setting pair constraints')
             previous_row=self.db.execute('SELECT * FROM camera_pair_constraints WHERE from_camera=? AND to_camera=?',
                                          (from_camera,to_camera)).fetchone()
             previous={**dict(previous_row),'enabled':bool(previous_row['enabled'])} if previous_row else None

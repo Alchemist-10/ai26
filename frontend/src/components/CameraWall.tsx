@@ -110,9 +110,9 @@ export const CameraWall = memo(function CameraWall({
                 )}
 
                 {/* Status Indicator */}
-                <span className="absolute right-1.5 top-1.5 flex items-center gap-1.5 rounded border border-white/10 bg-black/75 px-1.5 py-0.5 text-[9px] font-sans font-medium tracking-wide text-zinc-300 backdrop-blur-sm">
+                <span aria-label={cam.source_available ? "Source available" : "Source missing"} className="absolute right-1.5 top-1.5 flex items-center gap-1.5 rounded border border-white/10 bg-black/75 px-1.5 py-0.5 text-[9px] font-sans font-medium tracking-wide text-zinc-300 backdrop-blur-sm">
                   <span className={cn("h-1.5 w-1.5 rounded-full", active ? "bg-white" : "bg-zinc-400")} />
-                  {cam.source_available ? "REC" : "MISSING"}
+                  {cam.source_available ? "AVAILABLE" : "MISSING"}
                 </span>
 
                 {/* Bottom Metadata */}

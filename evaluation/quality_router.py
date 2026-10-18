@@ -15,7 +15,8 @@ import numpy as np
 
 def _image_metrics(image: np.ndarray, *, include_weather: bool) -> dict:
     """Return descriptive, uncalibrated image hints for one BGR region."""
-    if not isinstance(image, np.ndarray) or image.dtype != np.uint8 or image.ndim != 3 or image.shape[2] != 3:
+    if (not isinstance(image, np.ndarray) or image.dtype != np.uint8 or image.ndim != 3
+            or image.shape[2] != 3 or image.shape[0] == 0 or image.shape[1] == 0):
         raise ValueError("image must be a uint8 BGR image with three channels")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -33,12 +34,12 @@ def _image_metrics(image: np.ndarray, *, include_weather: bool) -> dict:
     suggestions = ["raw"]  # raw is always retained as the comparison/reference branch
     if features["mean_luminance"] < 70:
         flags.append("low_light_possible")
-        suggestions.extend(("gamma", "clahe"))
+        suggestions.extend(("gamma", "clahe", "grayscale_contrast"))
     if features["mean_luminance"] > 205 or features["clipped_bright_fraction"] > 0.1:
         flags.append("overexposure_possible")
     if features["luminance_stddev"] < 35:
         flags.append("low_contrast_possible")
-        suggestions.append("clahe")
+        suggestions.extend(("clahe", "grayscale_contrast"))
     if features["laplacian_variance"] < 80:
         flags.append("low_sharpness_possible")
         suggestions.append("unsharp")
@@ -72,7 +73,8 @@ def _validate_plate_boxes(plate_boxes, width: int, height: int) -> list[tuple[in
 
 def inspect(image: np.ndarray, plate_boxes=None, *, plate_box_source="operator_supplied",
             plate_model_metadata=None) -> dict:
-    if not isinstance(image, np.ndarray) or image.dtype != np.uint8 or image.ndim != 3 or image.shape[2] != 3:
+    if (not isinstance(image, np.ndarray) or image.dtype != np.uint8 or image.ndim != 3
+            or image.shape[2] != 3 or image.shape[0] == 0 or image.shape[1] == 0):
         raise ValueError("image must be a uint8 BGR image with three channels")
     height, width = image.shape[:2]
     whole = _image_metrics(image, include_weather=True)

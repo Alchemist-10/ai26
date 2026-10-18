@@ -21,6 +21,9 @@ attempts, failed_attempts, budget_overruns, missing_source_checks and
 retry_backoff_checks. Attempts count source/decode/model work; missing/retry checks
 are separate. A budget overrun means an attempted step exceeded `1 / sampling_budget_fps`
 seconds. It does not count dropped source frames or browser playback frames.
+Prometheus also exports managed sampled-read image bytes used, configured capacity,
+and utilization ratio so the optional alert rules can warn before image capture is
+blocked by the storage budget.
 `processed_fps` uses monotonic elapsed time so wall-clock changes do not inflate it.
 The public health and camera-catalog endpoints report configured source availability
 independently from processor state: a recorded source can remain available while
@@ -84,6 +87,12 @@ gap exceeds 2.5 intervals, frame ages show a wall-clock discontinuity, or the
 counter window is unverified. Older APIs without the new counters/run ID are
 unverified too.
 
+Each sample includes monotonic elapsed time and host wall time. A frame-age reset
+is treated as a clock warning only when that camera's frame counter did not
+advance; a newly processed frame normally resets its age and is not a clock jump.
+This avoids suppressing a valid rate on sparsely scheduled cameras while retaining
+an explicit host wall-clock discontinuity check.
+
 The output contains conditions, first/last health, bounded per-tick counters,
 endpoint latency, optional CPU/RSS distributions, counter deltas, profile-quality
 flags and the reasons a steady-state rate may be suppressed. It writes only its
@@ -108,6 +117,14 @@ verified counter window is recorded separately. Results are in
 plate sources, independently cold OCR runs, variable-rate capture accounting,
 long-duration load, physical mobile devices, throttled networks and held-out accuracy
 remain unmeasured. Sparse replay sampling intentionally omits source frames.
+
+A later [five-minute nine-camera profile](validation/active-inference-profile-9cams-2026-10-18-300s.json)
+recorded 349 completed frames in a verified 298.011-second counter window
+(1.1711 FPS against the 2 FPS budget), with no failed attempts, health failures,
+counter resets or sampling/clock anomalies. All nine recorded sources were
+processing at both ends of the window. CAM-07–09 exceeded their shared-budget
+interval on most attempts. This is local replay evidence, not a live recovery,
+multi-hour, browser frame-drop, or accuracy measurement.
 
 The browser check confirmed one playing native video, six decoded 320×180 previews
 and no document overflow at the actual 798×812 viewport. The read-only browser

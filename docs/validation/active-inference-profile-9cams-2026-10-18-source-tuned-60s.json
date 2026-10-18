@@ -1,0 +1,3301 @@
+{
+  "version": 1,
+  "scope": "Read-only local API/process observation under current desktop load; not a controlled accuracy or browser playback benchmark",
+  "conditions": {
+    "api": "http://127.0.0.1:8001",
+    "authenticated_request": false,
+    "requested_seconds": 60.0,
+    "interval_seconds": 2.0,
+    "successful_counter_window_seconds": 58.003,
+    "python": "3.12.14",
+    "platform": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+    "logical_cpus": 12,
+    "pid": 71705,
+    "process_status": "sampled",
+    "process_birth_ticks": 912010
+  },
+  "sampling": {
+    "per_camera": {
+      "CAM-01": {
+        "frames": 13,
+        "attempts": 13,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-02": {
+        "frames": 12,
+        "attempts": 12,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-03": {
+        "frames": 12,
+        "attempts": 12,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-04": {
+        "frames": 12,
+        "attempts": 12,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-05": {
+        "frames": 12,
+        "attempts": 12,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-06": {
+        "frames": 12,
+        "attempts": 12,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-07": {
+        "frames": 13,
+        "attempts": 13,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-08": {
+        "frames": 13,
+        "attempts": 13,
+        "failed_attempts": 0,
+        "budget_overruns": 3,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      },
+      "CAM-09": {
+        "frames": 13,
+        "attempts": 13,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0
+      }
+    },
+    "unverified_cameras": [],
+    "total_completed_frames": 112,
+    "total_completed_fps": 1.9309,
+    "steady_state_total_completed_fps": 1.9309,
+    "counter_window_valid": true,
+    "health_failures": 0,
+    "profile_quality": {
+      "steady_state_rate_valid": true,
+      "steady_state_rate_invalid_reasons": [],
+      "max_sample_gap_seconds": 2.007
+    }
+  },
+  "health_latency_ms": {
+    "samples": 29,
+    "median": 3.285,
+    "p95": 4.644,
+    "max": 11.268
+  },
+  "cpu_percent": {
+    "samples": 29,
+    "median": 110.524,
+    "p95": 180.517,
+    "max": 186.479
+  },
+  "rss_mib": {
+    "samples": 29,
+    "median": 796.133,
+    "p95": 812.527,
+    "max": 814.445
+  },
+  "first_health": {
+    "processing_enabled": true,
+    "cameras": [
+      {
+        "camera_id": "CAM-01",
+        "status": "processing",
+        "frames": 5,
+        "last_frame_at": 1792304085.9918554,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 5,
+        "failed_attempts": 0,
+        "budget_overruns": 1,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 112,
+        "decode_position_verified": true,
+        "latency_ms": 36.1,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-01:0:capture-1",
+        "frame_id": 667,
+        "source_time_seconds": 26.68,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 64.437,
+          "phases_ms": {
+            "source": 0.183,
+            "decode": 28.12,
+            "inference": 33.858,
+            "artifacts": 0.013,
+            "persistence": 0.095,
+            "jpeg": 2.165
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 2.54,
+        "processed_fps": 0.202,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 5,
+          "first_success": {
+            "total_ms": 3789.482,
+            "phases_ms": {
+              "source": 1738.772,
+              "decode": 49.943,
+              "inference": 1996.383,
+              "artifacts": 0.01,
+              "persistence": 0.124,
+              "jpeg": 4.247
+            }
+          },
+          "total": {
+            "p50_ms": 84.451,
+            "p95_ms": 3789.482,
+            "max_ms": 3789.482
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.17,
+              "p95_ms": 1738.772,
+              "max_ms": 1738.772
+            },
+            "decode": {
+              "p50_ms": 41.312,
+              "p95_ms": 49.943,
+              "max_ms": 49.943
+            },
+            "inference": {
+              "p50_ms": 37.802,
+              "p95_ms": 1996.383,
+              "max_ms": 1996.383
+            },
+            "artifacts": {
+              "p50_ms": 0.01,
+              "p95_ms": 0.013,
+              "max_ms": 0.013
+            },
+            "persistence": {
+              "p50_ms": 0.097,
+              "p95_ms": 0.143,
+              "max_ms": 0.143
+            },
+            "jpeg": {
+              "p50_ms": 2.423,
+              "p95_ms": 4.247,
+              "max_ms": 4.247
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-02",
+        "status": "processing",
+        "frames": 5,
+        "last_frame_at": 1792304086.51646,
+        "last_event_at": 1792304067.7948985,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 5,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 112,
+        "decode_position_verified": true,
+        "latency_ms": 47.8,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-02:0:capture-1",
+        "frame_id": 792,
+        "source_time_seconds": 31.68,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 89.798,
+          "phases_ms": {
+            "source": 0.167,
+            "decode": 41.782,
+            "inference": 44.529,
+            "artifacts": 0.01,
+            "persistence": 0.085,
+            "jpeg": 3.222
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 2.01,
+        "processed_fps": 0.202,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 5,
+          "first_success": {
+            "total_ms": 195.389,
+            "phases_ms": {
+              "source": 28.518,
+              "decode": 50.56,
+              "inference": 65.92,
+              "artifacts": 13.598,
+              "persistence": 34.045,
+              "jpeg": 2.745
+            }
+          },
+          "total": {
+            "p50_ms": 89.798,
+            "p95_ms": 195.389,
+            "max_ms": 195.389
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.167,
+              "p95_ms": 28.518,
+              "max_ms": 28.518
+            },
+            "decode": {
+              "p50_ms": 41.785,
+              "p95_ms": 65.14,
+              "max_ms": 65.14
+            },
+            "inference": {
+              "p50_ms": 41.388,
+              "p95_ms": 65.92,
+              "max_ms": 65.92
+            },
+            "artifacts": {
+              "p50_ms": 0.01,
+              "p95_ms": 13.598,
+              "max_ms": 13.598
+            },
+            "persistence": {
+              "p50_ms": 0.093,
+              "p95_ms": 34.045,
+              "max_ms": 34.045
+            },
+            "jpeg": {
+              "p50_ms": 2.393,
+              "p95_ms": 3.222,
+              "max_ms": 3.222
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-03",
+        "status": "processing",
+        "frames": 5,
+        "last_frame_at": 1792304087.0011225,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 5,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "seek",
+        "decode_grabbed_frames": 1,
+        "decode_position_verified": true,
+        "latency_ms": 40.8,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-03:1:capture-1",
+        "frame_id": 18,
+        "source_time_seconds": 0.72,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 73.396,
+          "phases_ms": {
+            "source": 12.821,
+            "decode": 19.721,
+            "inference": 38.413,
+            "artifacts": 0.01,
+            "persistence": 0.094,
+            "jpeg": 2.335
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 1.53,
+        "processed_fps": 0.202,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 5,
+          "first_success": {
+            "total_ms": 190.541,
+            "phases_ms": {
+              "source": 26.251,
+              "decode": 125.987,
+              "inference": 35.956,
+              "artifacts": 0.004,
+              "persistence": 0.082,
+              "jpeg": 2.258
+            }
+          },
+          "total": {
+            "p50_ms": 74.802,
+            "p95_ms": 190.541,
+            "max_ms": 190.541
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.155,
+              "p95_ms": 26.251,
+              "max_ms": 26.251
+            },
+            "decode": {
+              "p50_ms": 35.862,
+              "p95_ms": 125.987,
+              "max_ms": 125.987
+            },
+            "inference": {
+              "p50_ms": 36.377,
+              "p95_ms": 42.513,
+              "max_ms": 42.513
+            },
+            "artifacts": {
+              "p50_ms": 0.006,
+              "p95_ms": 0.01,
+              "max_ms": 0.01
+            },
+            "persistence": {
+              "p50_ms": 0.082,
+              "p95_ms": 0.094,
+              "max_ms": 0.094
+            },
+            "jpeg": {
+              "p50_ms": 2.311,
+              "p95_ms": 2.388,
+              "max_ms": 2.388
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-04",
+        "status": "processing",
+        "frames": 5,
+        "last_frame_at": 1792304087.5037327,
+        "last_event_at": 1792304087.5037327,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 5,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 112,
+        "decode_position_verified": true,
+        "latency_ms": 75.2,
+        "artifact_capture_ms": 3.4,
+        "artifact_capture": {
+          "image_attempts": 2,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-04:1:capture-1",
+        "frame_id": 161,
+        "source_time_seconds": 6.44,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 105.408,
+          "phases_ms": {
+            "source": 0.133,
+            "decode": 30.104,
+            "inference": 42.97,
+            "artifacts": 3.44,
+            "persistence": 26.544,
+            "jpeg": 2.216
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 1.02,
+        "processed_fps": 0.202,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 5,
+          "first_success": {
+            "total_ms": 101.349,
+            "phases_ms": {
+              "source": 14.926,
+              "decode": 48.566,
+              "inference": 35.224,
+              "artifacts": 0.005,
+              "persistence": 0.079,
+              "jpeg": 2.548
+            }
+          },
+          "total": {
+            "p50_ms": 101.349,
+            "p95_ms": 105.408,
+            "max_ms": 105.408
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.135,
+              "p95_ms": 14.926,
+              "max_ms": 14.926
+            },
+            "decode": {
+              "p50_ms": 43.194,
+              "p95_ms": 60.219,
+              "max_ms": 60.219
+            },
+            "inference": {
+              "p50_ms": 35.49,
+              "p95_ms": 43.82,
+              "max_ms": 43.82
+            },
+            "artifacts": {
+              "p50_ms": 0.006,
+              "p95_ms": 3.44,
+              "max_ms": 3.44
+            },
+            "persistence": {
+              "p50_ms": 0.088,
+              "p95_ms": 26.544,
+              "max_ms": 26.544
+            },
+            "jpeg": {
+              "p50_ms": 2.216,
+              "p95_ms": 2.548,
+              "max_ms": 2.548
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-05",
+        "status": "processing",
+        "frames": 5,
+        "last_frame_at": 1792304088.0084934,
+        "last_event_at": 1792304083.5068808,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 5,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 112,
+        "decode_position_verified": true,
+        "latency_ms": 36.3,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-05:1:capture-1",
+        "frame_id": 281,
+        "source_time_seconds": 11.24,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 80.167,
+          "phases_ms": {
+            "source": 0.148,
+            "decode": 43.729,
+            "inference": 33.903,
+            "artifacts": 0.011,
+            "persistence": 0.094,
+            "jpeg": 2.28
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 0.52,
+        "processed_fps": 0.202,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 5,
+          "first_success": {
+            "total_ms": 275.491,
+            "phases_ms": {
+              "source": 23.198,
+              "decode": 78.875,
+              "inference": 35.806,
+              "artifacts": 4.961,
+              "persistence": 130.395,
+              "jpeg": 2.253
+            }
+          },
+          "total": {
+            "p50_ms": 116.418,
+            "p95_ms": 275.491,
+            "max_ms": 275.491
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.158,
+              "p95_ms": 23.198,
+              "max_ms": 23.198
+            },
+            "decode": {
+              "p50_ms": 43.729,
+              "p95_ms": 78.875,
+              "max_ms": 78.875
+            },
+            "inference": {
+              "p50_ms": 34.796,
+              "p95_ms": 36.014,
+              "max_ms": 36.014
+            },
+            "artifacts": {
+              "p50_ms": 4.961,
+              "p95_ms": 15.169,
+              "max_ms": 15.169
+            },
+            "persistence": {
+              "p50_ms": 25.656,
+              "p95_ms": 130.395,
+              "max_ms": 130.395
+            },
+            "jpeg": {
+              "p50_ms": 2.259,
+              "p95_ms": 2.38,
+              "max_ms": 2.38
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-06",
+        "status": "processing",
+        "frames": 5,
+        "last_frame_at": 1792304088.519707,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 5,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 112,
+        "decode_position_verified": true,
+        "latency_ms": 44.7,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-06:0:capture-1",
+        "frame_id": 1292,
+        "source_time_seconds": 51.68,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 91.326,
+          "phases_ms": {
+            "source": 0.206,
+            "decode": 46.414,
+            "inference": 42.262,
+            "artifacts": 0.013,
+            "persistence": 0.118,
+            "jpeg": 2.311
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 0.01,
+        "processed_fps": 0.202,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 5,
+          "first_success": {
+            "total_ms": 108.958,
+            "phases_ms": {
+              "source": 14.805,
+              "decode": 48.272,
+              "inference": 43.433,
+              "artifacts": 0.008,
+              "persistence": 0.128,
+              "jpeg": 2.31
+            }
+          },
+          "total": {
+            "p50_ms": 91.326,
+            "p95_ms": 108.958,
+            "max_ms": 108.958
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.157,
+              "p95_ms": 14.805,
+              "max_ms": 14.805
+            },
+            "decode": {
+              "p50_ms": 46.414,
+              "p95_ms": 54.293,
+              "max_ms": 54.293
+            },
+            "inference": {
+              "p50_ms": 36.74,
+              "p95_ms": 43.433,
+              "max_ms": 43.433
+            },
+            "artifacts": {
+              "p50_ms": 0.008,
+              "p95_ms": 0.013,
+              "max_ms": 0.013
+            },
+            "persistence": {
+              "p50_ms": 0.099,
+              "p95_ms": 0.128,
+              "max_ms": 0.128
+            },
+            "jpeg": {
+              "p50_ms": 2.311,
+              "p95_ms": 2.473,
+              "max_ms": 2.473
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-07",
+        "status": "processing",
+        "frames": 4,
+        "last_frame_at": 1792304084.551858,
+        "last_event_at": 1792304084.551858,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 4,
+        "failed_attempts": 0,
+        "budget_overruns": 1,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "seek",
+        "decode_grabbed_frames": 1,
+        "decode_position_verified": true,
+        "latency_ms": 188.9,
+        "artifact_capture_ms": 20.1,
+        "artifact_capture": {
+          "image_attempts": 3,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-07:1:capture-1",
+        "frame_id": 20,
+        "source_time_seconds": 0.8,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 260.111,
+          "phases_ms": {
+            "source": 13.166,
+            "decode": 58.039,
+            "inference": 51.589,
+            "artifacts": 20.158,
+            "persistence": 110.644,
+            "jpeg": 6.512
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 3.98,
+        "processed_fps": 0.161,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 221,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 4,
+          "first_success": {
+            "total_ms": 897.01,
+            "phases_ms": {
+              "source": 76.015,
+              "decode": 409.601,
+              "inference": 348.956,
+              "artifacts": 9.423,
+              "persistence": 45.939,
+              "jpeg": 7.073
+            }
+          },
+          "total": {
+            "p50_ms": 361.957,
+            "p95_ms": 897.01,
+            "max_ms": 897.01
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.122,
+              "p95_ms": 76.015,
+              "max_ms": 76.015
+            },
+            "decode": {
+              "p50_ms": 237.388,
+              "p95_ms": 409.601,
+              "max_ms": 409.601
+            },
+            "inference": {
+              "p50_ms": 58.144,
+              "p95_ms": 348.956,
+              "max_ms": 348.956
+            },
+            "artifacts": {
+              "p50_ms": 20.158,
+              "p95_ms": 21.73,
+              "max_ms": 21.73
+            },
+            "persistence": {
+              "p50_ms": 31.24,
+              "p95_ms": 110.644,
+              "max_ms": 110.644
+            },
+            "jpeg": {
+              "p50_ms": 7.073,
+              "p95_ms": 7.587,
+              "max_ms": 7.587
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-08",
+        "status": "processing",
+        "frames": 4,
+        "last_frame_at": 1792304085.2196345,
+        "last_event_at": 1792304085.2196345,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 4,
+        "failed_attempts": 0,
+        "budget_overruns": 2,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 113,
+        "decode_position_verified": true,
+        "latency_ms": 106.0,
+        "artifact_capture_ms": 20.8,
+        "artifact_capture": {
+          "image_attempts": 4,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-08:2:capture-1",
+        "frame_id": 176,
+        "source_time_seconds": 7.04,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 343.459,
+          "phases_ms": {
+            "source": 0.165,
+            "decode": 237.299,
+            "inference": 52.895,
+            "artifacts": 20.847,
+            "persistence": 26.031,
+            "jpeg": 6.219
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 3.31,
+        "processed_fps": 0.161,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 4,
+          "first_success": {
+            "total_ms": 685.5,
+            "phases_ms": {
+              "source": 41.179,
+              "decode": 523.682,
+              "inference": 64.752,
+              "artifacts": 21.374,
+              "persistence": 28.186,
+              "jpeg": 6.323
+            }
+          },
+          "total": {
+            "p50_ms": 476.649,
+            "p95_ms": 685.5,
+            "max_ms": 685.5
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.165,
+              "p95_ms": 41.179,
+              "max_ms": 41.179
+            },
+            "decode": {
+              "p50_ms": 238.055,
+              "p95_ms": 523.682,
+              "max_ms": 523.682
+            },
+            "inference": {
+              "p50_ms": 54.958,
+              "p95_ms": 64.752,
+              "max_ms": 64.752
+            },
+            "artifacts": {
+              "p50_ms": 20.847,
+              "p95_ms": 21.374,
+              "max_ms": 21.374
+            },
+            "persistence": {
+              "p50_ms": 26.031,
+              "p95_ms": 148.147,
+              "max_ms": 148.147
+            },
+            "jpeg": {
+              "p50_ms": 6.219,
+              "p95_ms": 6.396,
+              "max_ms": 6.396
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-09",
+        "status": "processing",
+        "frames": 4,
+        "last_frame_at": 1792304085.6817045,
+        "last_event_at": 1792304085.6817045,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 4,
+        "failed_attempts": 0,
+        "budget_overruns": 1,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "seek",
+        "decode_grabbed_frames": 1,
+        "decode_position_verified": true,
+        "latency_ms": 103.6,
+        "artifact_capture_ms": 17.4,
+        "artifact_capture": {
+          "image_attempts": 2,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-09:2:capture-1",
+        "frame_id": 39,
+        "source_time_seconds": 2.1666666666666665,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 300.527,
+          "phases_ms": {
+            "source": 13.365,
+            "decode": 183.526,
+            "inference": 55.312,
+            "artifacts": 17.435,
+            "persistence": 25.574,
+            "jpeg": 5.312
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 2.85,
+        "processed_fps": 0.161,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 221,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 4,
+          "first_success": {
+            "total_ms": 667.646,
+            "phases_ms": {
+              "source": 29.741,
+              "decode": 510.671,
+              "inference": 70.112,
+              "artifacts": 20.511,
+              "persistence": 31.057,
+              "jpeg": 5.551
+            }
+          },
+          "total": {
+            "p50_ms": 329.482,
+            "p95_ms": 667.646,
+            "max_ms": 667.646
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.15,
+              "p95_ms": 29.741,
+              "max_ms": 29.741
+            },
+            "decode": {
+              "p50_ms": 211.713,
+              "p95_ms": 510.671,
+              "max_ms": 510.671
+            },
+            "inference": {
+              "p50_ms": 59.125,
+              "p95_ms": 70.112,
+              "max_ms": 70.112
+            },
+            "artifacts": {
+              "p50_ms": 17.435,
+              "p95_ms": 20.511,
+              "max_ms": 20.511
+            },
+            "persistence": {
+              "p50_ms": 26.781,
+              "p95_ms": 33.811,
+              "max_ms": 33.811
+            },
+            "jpeg": {
+              "p50_ms": 5.314,
+              "p95_ms": 5.652,
+              "max_ms": 5.652
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1884280912,
+          "limit_bytes": 2147483648
+        }
+      }
+    ],
+    "inference_branches": {
+      "vehicle_detection_enabled": true,
+      "plate_recognition_enabled": true
+    },
+    "vehicle_model_rollout": {
+      "mode": "stable_only",
+      "stable": {
+        "checkpoint": "yolov8n.pt",
+        "expected_sha256": null,
+        "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+        "loaded": true,
+        "compatibility": {
+          "task": "detect",
+          "class_map_status": "compatible",
+          "preflight_status": "passed",
+          "preflight_input": "synthetic_640x640_bgr",
+          "required_class_ids": [
+            2,
+            3,
+            5,
+            7
+          ]
+        }
+      },
+      "rollback": "remove the canary environment settings and restart the API"
+    },
+    "database_schema": 15,
+    "scope": "single API process; run uvicorn with one worker"
+  },
+  "last_health": {
+    "processing_enabled": true,
+    "cameras": [
+      {
+        "camera_id": "CAM-01",
+        "status": "processing",
+        "frames": 18,
+        "last_frame_at": 1792304146.1941245,
+        "last_event_at": 1792304137.2097573,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 18,
+        "failed_attempts": 0,
+        "budget_overruns": 1,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 112,
+        "decode_position_verified": true,
+        "latency_ms": 35.6,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-01:2:capture-1",
+        "frame_id": 380,
+        "source_time_seconds": 15.200000000000001,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 63.145,
+          "phases_ms": {
+            "source": 0.185,
+            "decode": 27.388,
+            "inference": 33.311,
+            "artifacts": 0.01,
+            "persistence": 0.083,
+            "jpeg": 2.166
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 0.34,
+        "processed_fps": 0.217,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 18,
+          "first_success": {
+            "total_ms": 3789.482,
+            "phases_ms": {
+              "source": 1738.772,
+              "decode": 49.943,
+              "inference": 1996.383,
+              "artifacts": 0.01,
+              "persistence": 0.124,
+              "jpeg": 4.247
+            }
+          },
+          "total": {
+            "p50_ms": 79.946,
+            "p95_ms": 3789.482,
+            "max_ms": 3789.482
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.183,
+              "p95_ms": 1738.772,
+              "max_ms": 1738.772
+            },
+            "decode": {
+              "p50_ms": 37.774,
+              "p95_ms": 53.001,
+              "max_ms": 53.001
+            },
+            "inference": {
+              "p50_ms": 37.802,
+              "p95_ms": 1996.383,
+              "max_ms": 1996.383
+            },
+            "artifacts": {
+              "p50_ms": 0.01,
+              "p95_ms": 15.048,
+              "max_ms": 15.048
+            },
+            "persistence": {
+              "p50_ms": 0.088,
+              "p95_ms": 29.415,
+              "max_ms": 29.415
+            },
+            "jpeg": {
+              "p50_ms": 2.171,
+              "p95_ms": 4.247,
+              "max_ms": 4.247
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-02",
+        "status": "processing",
+        "frames": 17,
+        "last_frame_at": 1792304142.1877003,
+        "last_event_at": 1792304137.7137363,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 17,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 113,
+        "decode_position_verified": true,
+        "latency_ms": 35.7,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-02:2:capture-1",
+        "frame_id": 425,
+        "source_time_seconds": 17.0,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 57.912,
+          "phases_ms": {
+            "source": 0.126,
+            "decode": 22.037,
+            "inference": 33.47,
+            "artifacts": 0.009,
+            "persistence": 0.079,
+            "jpeg": 2.19
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 4.34,
+        "processed_fps": 0.205,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 17,
+          "first_success": {
+            "total_ms": 195.389,
+            "phases_ms": {
+              "source": 28.518,
+              "decode": 50.56,
+              "inference": 65.92,
+              "artifacts": 13.598,
+              "persistence": 34.045,
+              "jpeg": 2.745
+            }
+          },
+          "total": {
+            "p50_ms": 83.191,
+            "p95_ms": 246.643,
+            "max_ms": 246.643
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.14,
+              "p95_ms": 28.518,
+              "max_ms": 28.518
+            },
+            "decode": {
+              "p50_ms": 31.377,
+              "p95_ms": 65.14,
+              "max_ms": 65.14
+            },
+            "inference": {
+              "p50_ms": 35.647,
+              "p95_ms": 65.92,
+              "max_ms": 65.92
+            },
+            "artifacts": {
+              "p50_ms": 0.011,
+              "p95_ms": 15.499,
+              "max_ms": 15.499
+            },
+            "persistence": {
+              "p50_ms": 0.093,
+              "p95_ms": 129.339,
+              "max_ms": 129.339
+            },
+            "jpeg": {
+              "p50_ms": 2.256,
+              "p95_ms": 3.222,
+              "max_ms": 3.222
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-03",
+        "status": "processing",
+        "frames": 17,
+        "last_frame_at": 1792304142.7124453,
+        "last_event_at": 1792304138.216432,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 17,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 113,
+        "decode_position_verified": true,
+        "latency_ms": 35.7,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-03:2:capture-1",
+        "frame_id": 512,
+        "source_time_seconds": 20.48,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 82.487,
+          "phases_ms": {
+            "source": 0.156,
+            "decode": 46.606,
+            "inference": 33.484,
+            "artifacts": 0.009,
+            "persistence": 0.081,
+            "jpeg": 2.149
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 3.82,
+        "processed_fps": 0.205,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 17,
+          "first_success": {
+            "total_ms": 190.541,
+            "phases_ms": {
+              "source": 26.251,
+              "decode": 125.987,
+              "inference": 35.956,
+              "artifacts": 0.004,
+              "persistence": 0.082,
+              "jpeg": 2.258
+            }
+          },
+          "total": {
+            "p50_ms": 81.836,
+            "p95_ms": 190.541,
+            "max_ms": 190.541
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.155,
+              "p95_ms": 26.251,
+              "max_ms": 26.251
+            },
+            "decode": {
+              "p50_ms": 39.308,
+              "p95_ms": 125.987,
+              "max_ms": 125.987
+            },
+            "inference": {
+              "p50_ms": 35.996,
+              "p95_ms": 52.29,
+              "max_ms": 52.29
+            },
+            "artifacts": {
+              "p50_ms": 0.009,
+              "p95_ms": 15.672,
+              "max_ms": 15.672
+            },
+            "persistence": {
+              "p50_ms": 0.085,
+              "p95_ms": 38.406,
+              "max_ms": 38.406
+            },
+            "jpeg": {
+              "p50_ms": 2.305,
+              "p95_ms": 2.732,
+              "max_ms": 2.732
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-04",
+        "status": "processing",
+        "frames": 17,
+        "last_frame_at": 1792304143.1932313,
+        "last_event_at": 1792304123.6095674,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 17,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 113,
+        "decode_position_verified": true,
+        "latency_ms": 35.5,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-04:2:capture-1",
+        "frame_id": 673,
+        "source_time_seconds": 26.92,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 63.223,
+          "phases_ms": {
+            "source": 0.126,
+            "decode": 27.637,
+            "inference": 33.196,
+            "artifacts": 0.01,
+            "persistence": 0.08,
+            "jpeg": 2.173
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 3.34,
+        "processed_fps": 0.205,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 17,
+          "first_success": {
+            "total_ms": 101.349,
+            "phases_ms": {
+              "source": 14.926,
+              "decode": 48.566,
+              "inference": 35.224,
+              "artifacts": 0.005,
+              "persistence": 0.079,
+              "jpeg": 2.548
+            }
+          },
+          "total": {
+            "p50_ms": 89.575,
+            "p95_ms": 117.036,
+            "max_ms": 117.036
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.158,
+              "p95_ms": 14.926,
+              "max_ms": 14.926
+            },
+            "decode": {
+              "p50_ms": 35.146,
+              "p95_ms": 60.219,
+              "max_ms": 60.219
+            },
+            "inference": {
+              "p50_ms": 34.313,
+              "p95_ms": 43.874,
+              "max_ms": 43.874
+            },
+            "artifacts": {
+              "p50_ms": 0.01,
+              "p95_ms": 15.009,
+              "max_ms": 15.009
+            },
+            "persistence": {
+              "p50_ms": 0.088,
+              "p95_ms": 30.035,
+              "max_ms": 30.035
+            },
+            "jpeg": {
+              "p50_ms": 2.216,
+              "p95_ms": 2.621,
+              "max_ms": 2.621
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-05",
+        "status": "processing",
+        "frames": 17,
+        "last_frame_at": 1792304143.7060657,
+        "last_event_at": 1792304143.7060657,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 17,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 113,
+        "decode_position_verified": true,
+        "latency_ms": 78.6,
+        "artifact_capture_ms": 14.0,
+        "artifact_capture": {
+          "image_attempts": 2,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-05:2:capture-1",
+        "frame_id": 788,
+        "source_time_seconds": 31.52,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 116.447,
+          "phases_ms": {
+            "source": 0.127,
+            "decode": 37.706,
+            "inference": 35.735,
+            "artifacts": 13.996,
+            "persistence": 26.683,
+            "jpeg": 2.198
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 2.83,
+        "processed_fps": 0.205,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 17,
+          "first_success": {
+            "total_ms": 275.491,
+            "phases_ms": {
+              "source": 23.198,
+              "decode": 78.875,
+              "inference": 35.806,
+              "artifacts": 4.961,
+              "persistence": 130.395,
+              "jpeg": 2.253
+            }
+          },
+          "total": {
+            "p50_ms": 116.796,
+            "p95_ms": 275.491,
+            "max_ms": 275.491
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.142,
+              "p95_ms": 23.198,
+              "max_ms": 23.198
+            },
+            "decode": {
+              "p50_ms": 40.887,
+              "p95_ms": 78.875,
+              "max_ms": 78.875
+            },
+            "inference": {
+              "p50_ms": 34.796,
+              "p95_ms": 42.612,
+              "max_ms": 42.612
+            },
+            "artifacts": {
+              "p50_ms": 14.231,
+              "p95_ms": 16.032,
+              "max_ms": 16.032
+            },
+            "persistence": {
+              "p50_ms": 27.248,
+              "p95_ms": 139.828,
+              "max_ms": 139.828
+            },
+            "jpeg": {
+              "p50_ms": 2.259,
+              "p95_ms": 2.822,
+              "max_ms": 2.822
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-06",
+        "status": "processing",
+        "frames": 17,
+        "last_frame_at": 1792304144.188538,
+        "last_event_at": null,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 17,
+        "failed_attempts": 0,
+        "budget_overruns": 0,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 113,
+        "decode_position_verified": true,
+        "latency_ms": 35.0,
+        "artifact_capture_ms": 0.0,
+        "artifact_capture": {
+          "image_attempts": 0,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-06:1:capture-1",
+        "frame_id": 907,
+        "source_time_seconds": 36.28,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 58.089,
+          "phases_ms": {
+            "source": 0.127,
+            "decode": 22.91,
+            "inference": 32.838,
+            "artifacts": 0.009,
+            "persistence": 0.077,
+            "jpeg": 2.126
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 2.34,
+        "processed_fps": 0.205,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 17,
+          "first_success": {
+            "total_ms": 108.958,
+            "phases_ms": {
+              "source": 14.805,
+              "decode": 48.272,
+              "inference": 43.433,
+              "artifacts": 0.008,
+              "persistence": 0.128,
+              "jpeg": 2.31
+            }
+          },
+          "total": {
+            "p50_ms": 67.525,
+            "p95_ms": 108.958,
+            "max_ms": 108.958
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.139,
+              "p95_ms": 14.805,
+              "max_ms": 14.805
+            },
+            "decode": {
+              "p50_ms": 30.39,
+              "p95_ms": 54.293,
+              "max_ms": 54.293
+            },
+            "inference": {
+              "p50_ms": 33.622,
+              "p95_ms": 43.433,
+              "max_ms": 43.433
+            },
+            "artifacts": {
+              "p50_ms": 0.009,
+              "p95_ms": 0.013,
+              "max_ms": 0.013
+            },
+            "persistence": {
+              "p50_ms": 0.089,
+              "p95_ms": 0.128,
+              "max_ms": 0.128
+            },
+            "jpeg": {
+              "p50_ms": 2.31,
+              "p95_ms": 2.473,
+              "max_ms": 2.473
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-07",
+        "status": "processing",
+        "frames": 17,
+        "last_frame_at": 1792304144.9443343,
+        "last_event_at": 1792304144.9443343,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 17,
+        "failed_attempts": 0,
+        "budget_overruns": 1,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 113,
+        "decode_position_verified": true,
+        "latency_ms": 118.4,
+        "artifact_capture_ms": 24.7,
+        "artifact_capture": {
+          "image_attempts": 6,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-07:2:capture-1",
+        "frame_id": 240,
+        "source_time_seconds": 9.6,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 370.638,
+          "phases_ms": {
+            "source": 0.095,
+            "decode": 252.131,
+            "inference": 59.197,
+            "artifacts": 24.676,
+            "persistence": 27.938,
+            "jpeg": 6.599
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 1.59,
+        "processed_fps": 0.205,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 221,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 17,
+          "first_success": {
+            "total_ms": 897.01,
+            "phases_ms": {
+              "source": 76.015,
+              "decode": 409.601,
+              "inference": 348.956,
+              "artifacts": 9.423,
+              "persistence": 45.939,
+              "jpeg": 7.073
+            }
+          },
+          "total": {
+            "p50_ms": 359.837,
+            "p95_ms": 897.01,
+            "max_ms": 897.01
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.111,
+              "p95_ms": 76.015,
+              "max_ms": 76.015
+            },
+            "decode": {
+              "p50_ms": 237.388,
+              "p95_ms": 409.601,
+              "max_ms": 409.601
+            },
+            "inference": {
+              "p50_ms": 58.144,
+              "p95_ms": 348.956,
+              "max_ms": 348.956
+            },
+            "artifacts": {
+              "p50_ms": 21.73,
+              "p95_ms": 26.871,
+              "max_ms": 26.871
+            },
+            "persistence": {
+              "p50_ms": 31.167,
+              "p95_ms": 120.37,
+              "max_ms": 120.37
+            },
+            "jpeg": {
+              "p50_ms": 6.689,
+              "p95_ms": 7.587,
+              "max_ms": 7.587
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-08",
+        "status": "processing",
+        "frames": 17,
+        "last_frame_at": 1792304145.4348047,
+        "last_event_at": 1792304145.4348047,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 17,
+        "failed_attempts": 0,
+        "budget_overruns": 5,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "forward",
+        "decode_grabbed_frames": 113,
+        "decode_position_verified": true,
+        "latency_ms": 116.3,
+        "artifact_capture_ms": 21.7,
+        "artifact_capture": {
+          "image_attempts": 7,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-08:4:capture-1",
+        "frame_id": 427,
+        "source_time_seconds": 17.080000000000005,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 361.845,
+          "phases_ms": {
+            "source": 0.16,
+            "decode": 245.326,
+            "inference": 56.301,
+            "artifacts": 21.689,
+            "persistence": 31.804,
+            "jpeg": 6.563
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 1.1,
+        "processed_fps": 0.205,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 128,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 17,
+          "first_success": {
+            "total_ms": 685.5,
+            "phases_ms": {
+              "source": 41.179,
+              "decode": 523.682,
+              "inference": 64.752,
+              "artifacts": 21.374,
+              "persistence": 28.186,
+              "jpeg": 6.323
+            }
+          },
+          "total": {
+            "p50_ms": 382.279,
+            "p95_ms": 2010.666,
+            "max_ms": 2010.666
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.16,
+              "p95_ms": 41.179,
+              "max_ms": 41.179
+            },
+            "decode": {
+              "p50_ms": 246.606,
+              "p95_ms": 523.682,
+              "max_ms": 523.682
+            },
+            "inference": {
+              "p50_ms": 56.301,
+              "p95_ms": 79.631,
+              "max_ms": 79.631
+            },
+            "artifacts": {
+              "p50_ms": 20.363,
+              "p95_ms": 21.95,
+              "max_ms": 21.95
+            },
+            "persistence": {
+              "p50_ms": 28.437,
+              "p95_ms": 1682.352,
+              "max_ms": 1682.352
+            },
+            "jpeg": {
+              "p50_ms": 6.375,
+              "p95_ms": 8.934,
+              "max_ms": 8.934
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      },
+      {
+        "camera_id": "CAM-09",
+        "status": "processing",
+        "frames": 17,
+        "last_frame_at": 1792304145.9050877,
+        "last_event_at": 1792304145.9050877,
+        "error": null,
+        "source_available": true,
+        "queue_depth": 0,
+        "source_mode": "recorded",
+        "time_basis": "replay_clock",
+        "attempts": 17,
+        "failed_attempts": 0,
+        "budget_overruns": 1,
+        "missing_source_checks": 0,
+        "retry_backoff_checks": 0,
+        "decode_mode": "seek",
+        "decode_grabbed_frames": 1,
+        "decode_position_verified": true,
+        "latency_ms": 199.0,
+        "artifact_capture_ms": 17.9,
+        "artifact_capture": {
+          "image_attempts": 2,
+          "image_failures": 0,
+          "incomplete_reads": 0,
+          "storage_budget_failures": 0
+        },
+        "session_id": "c01cea27d85a40188f78e653648a4ea2:CAM-09:4:capture-1",
+        "frame_id": 43,
+        "source_time_seconds": 2.388888888888889,
+        "source_time_basis": "decoder_reported_position_msec",
+        "last_attempt": {
+          "total_ms": 414.34,
+          "phases_ms": {
+            "source": 12.68,
+            "decode": 202.65,
+            "inference": 56.629,
+            "artifacts": 17.897,
+            "persistence": 118.767,
+            "jpeg": 5.715
+          },
+          "succeeded": true
+        },
+        "frame_age_seconds": 0.63,
+        "processed_fps": 0.205,
+        "inference_owner": "single-process round-robin",
+        "sampling_budget_fps": 2.0,
+        "processor_run_id": "c01cea27d85a40188f78e653648a4ea2",
+        "forward_decode_max_frames": 221,
+        "recorded_decode_threads": 2,
+        "timing": {
+          "window_capacity": 64,
+          "successful_samples": 17,
+          "first_success": {
+            "total_ms": 667.646,
+            "phases_ms": {
+              "source": 29.741,
+              "decode": 510.671,
+              "inference": 70.112,
+              "artifacts": 20.511,
+              "persistence": 31.057,
+              "jpeg": 5.551
+            }
+          },
+          "total": {
+            "p50_ms": 340.216,
+            "p95_ms": 667.646,
+            "max_ms": 667.646
+          },
+          "phases": {
+            "source": {
+              "p50_ms": 0.118,
+              "p95_ms": 29.741,
+              "max_ms": 29.741
+            },
+            "decode": {
+              "p50_ms": 220.03,
+              "p95_ms": 510.671,
+              "max_ms": 510.671
+            },
+            "inference": {
+              "p50_ms": 59.125,
+              "p95_ms": 84.981,
+              "max_ms": 84.981
+            },
+            "artifacts": {
+              "p50_ms": 19.536,
+              "p95_ms": 28.917,
+              "max_ms": 28.917
+            },
+            "persistence": {
+              "p50_ms": 29.656,
+              "p95_ms": 120.97,
+              "max_ms": 120.97
+            },
+            "jpeg": {
+              "p50_ms": 5.636,
+              "p95_ms": 6.312,
+              "max_ms": 6.312
+            }
+          },
+          "scope": "Recent successful sampled attempts; first success is per camera, not an independently cold model run."
+        },
+        "artifact_storage": {
+          "used_bytes": 1885228607,
+          "limit_bytes": 2147483648
+        }
+      }
+    ],
+    "inference_branches": {
+      "vehicle_detection_enabled": true,
+      "plate_recognition_enabled": true
+    },
+    "vehicle_model_rollout": {
+      "mode": "stable_only",
+      "stable": {
+        "checkpoint": "yolov8n.pt",
+        "expected_sha256": null,
+        "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+        "loaded": true,
+        "compatibility": {
+          "task": "detect",
+          "class_map_status": "compatible",
+          "preflight_status": "passed",
+          "preflight_input": "synthetic_640x640_bgr",
+          "required_class_ids": [
+            2,
+            3,
+            5,
+            7
+          ]
+        }
+      },
+      "rollback": "remove the canary environment settings and restart the API"
+    },
+    "database_schema": 15,
+    "scope": "single API process; run uvicorn with one worker"
+  },
+  "samples": [
+    {
+      "elapsed_seconds": 2.013,
+      "health_latency_ms": 3.152,
+      "wall_time_epoch": 1792304090.5340943,
+      "frames": {
+        "CAM-01": 6,
+        "CAM-02": 5,
+        "CAM-03": 5,
+        "CAM-04": 5,
+        "CAM-05": 5,
+        "CAM-06": 5,
+        "CAM-07": 5,
+        "CAM-08": 5,
+        "CAM-09": 5
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.01,
+        "CAM-02": 4.02,
+        "CAM-03": 3.53,
+        "CAM-04": 3.03,
+        "CAM-05": 2.52,
+        "CAM-06": 2.01,
+        "CAM-07": 1.32,
+        "CAM-08": 0.75,
+        "CAM-09": 0.36
+      },
+      "cpu_percent": 150.241,
+      "rss_mib": 793.438
+    },
+    {
+      "elapsed_seconds": 4.013,
+      "health_latency_ms": 3.239,
+      "wall_time_epoch": 1792304092.5341992,
+      "frames": {
+        "CAM-01": 6,
+        "CAM-02": 6,
+        "CAM-03": 6,
+        "CAM-04": 6,
+        "CAM-05": 6,
+        "CAM-06": 5,
+        "CAM-07": 5,
+        "CAM-08": 5,
+        "CAM-09": 5
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.01,
+        "CAM-02": 1.54,
+        "CAM-03": 1.04,
+        "CAM-04": 0.51,
+        "CAM-05": 0.04,
+        "CAM-06": 4.01,
+        "CAM-07": 3.32,
+        "CAM-08": 2.75,
+        "CAM-09": 2.36
+      },
+      "cpu_percent": 34.0,
+      "rss_mib": 793.438
+    },
+    {
+      "elapsed_seconds": 6.013,
+      "health_latency_ms": 2.803,
+      "wall_time_epoch": 1792304094.5337296,
+      "frames": {
+        "CAM-01": 6,
+        "CAM-02": 6,
+        "CAM-03": 6,
+        "CAM-04": 6,
+        "CAM-05": 6,
+        "CAM-06": 6,
+        "CAM-07": 6,
+        "CAM-08": 6,
+        "CAM-09": 5
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 4.01,
+        "CAM-02": 3.54,
+        "CAM-03": 3.04,
+        "CAM-04": 2.51,
+        "CAM-05": 2.04,
+        "CAM-06": 1.55,
+        "CAM-07": 0.79,
+        "CAM-08": 0.31,
+        "CAM-09": 4.36
+      },
+      "cpu_percent": 110.524,
+      "rss_mib": 794.18
+    },
+    {
+      "elapsed_seconds": 8.014,
+      "health_latency_ms": 4.176,
+      "wall_time_epoch": 1792304096.5352297,
+      "frames": {
+        "CAM-01": 7,
+        "CAM-02": 7,
+        "CAM-03": 7,
+        "CAM-04": 7,
+        "CAM-05": 6,
+        "CAM-06": 6,
+        "CAM-07": 6,
+        "CAM-08": 6,
+        "CAM-09": 6
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.54,
+        "CAM-02": 1.05,
+        "CAM-03": 0.54,
+        "CAM-04": 0.03,
+        "CAM-05": 4.04,
+        "CAM-06": 3.55,
+        "CAM-07": 2.79,
+        "CAM-08": 2.31,
+        "CAM-09": 1.86
+      },
+      "cpu_percent": 69.948,
+      "rss_mib": 794.426
+    },
+    {
+      "elapsed_seconds": 10.013,
+      "health_latency_ms": 3.709,
+      "wall_time_epoch": 1792304098.5346463,
+      "frames": {
+        "CAM-01": 7,
+        "CAM-02": 7,
+        "CAM-03": 7,
+        "CAM-04": 7,
+        "CAM-05": 7,
+        "CAM-06": 7,
+        "CAM-07": 7,
+        "CAM-08": 6,
+        "CAM-09": 6
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.54,
+        "CAM-02": 3.05,
+        "CAM-03": 2.54,
+        "CAM-04": 2.03,
+        "CAM-05": 1.51,
+        "CAM-06": 1.03,
+        "CAM-07": 0.28,
+        "CAM-08": 4.31,
+        "CAM-09": 3.85
+      },
+      "cpu_percent": 66.519,
+      "rss_mib": 789.996
+    },
+    {
+      "elapsed_seconds": 12.014,
+      "health_latency_ms": 4.644,
+      "wall_time_epoch": 1792304100.5355875,
+      "frames": {
+        "CAM-01": 8,
+        "CAM-02": 8,
+        "CAM-03": 7,
+        "CAM-04": 7,
+        "CAM-05": 7,
+        "CAM-06": 7,
+        "CAM-07": 7,
+        "CAM-08": 7,
+        "CAM-09": 7
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "loading",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.0,
+        "CAM-02": 0.5,
+        "CAM-03": 4.54,
+        "CAM-04": 4.03,
+        "CAM-05": 3.51,
+        "CAM-06": 3.03,
+        "CAM-07": 2.28,
+        "CAM-08": 1.81,
+        "CAM-09": 1.3
+      },
+      "cpu_percent": 160.427,
+      "rss_mib": 796.129
+    },
+    {
+      "elapsed_seconds": 14.014,
+      "health_latency_ms": 4.445,
+      "wall_time_epoch": 1792304102.5353904,
+      "frames": {
+        "CAM-01": 8,
+        "CAM-02": 8,
+        "CAM-03": 8,
+        "CAM-04": 8,
+        "CAM-05": 8,
+        "CAM-06": 8,
+        "CAM-07": 7,
+        "CAM-08": 7,
+        "CAM-09": 7
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.0,
+        "CAM-02": 2.5,
+        "CAM-03": 1.97,
+        "CAM-04": 1.51,
+        "CAM-05": 1.04,
+        "CAM-06": 0.53,
+        "CAM-07": 4.28,
+        "CAM-08": 3.81,
+        "CAM-09": 3.3
+      },
+      "cpu_percent": 35.003,
+      "rss_mib": 796.129
+    },
+    {
+      "elapsed_seconds": 16.021,
+      "health_latency_ms": 11.268,
+      "wall_time_epoch": 1792304104.5422075,
+      "frames": {
+        "CAM-01": 9,
+        "CAM-02": 8,
+        "CAM-03": 8,
+        "CAM-04": 8,
+        "CAM-05": 8,
+        "CAM-06": 8,
+        "CAM-07": 8,
+        "CAM-08": 8,
+        "CAM-09": 8
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "loading",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.51,
+        "CAM-02": 4.5,
+        "CAM-03": 3.98,
+        "CAM-04": 3.51,
+        "CAM-05": 3.04,
+        "CAM-06": 2.54,
+        "CAM-07": 1.81,
+        "CAM-08": 1.3,
+        "CAM-09": 0.8
+      },
+      "cpu_percent": 167.433,
+      "rss_mib": 796.133
+    },
+    {
+      "elapsed_seconds": 18.013,
+      "health_latency_ms": 3.331,
+      "wall_time_epoch": 1792304106.534514,
+      "frames": {
+        "CAM-01": 9,
+        "CAM-02": 9,
+        "CAM-03": 9,
+        "CAM-04": 9,
+        "CAM-05": 9,
+        "CAM-06": 9,
+        "CAM-07": 8,
+        "CAM-08": 8,
+        "CAM-09": 8
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.5,
+        "CAM-02": 2.04,
+        "CAM-03": 1.52,
+        "CAM-04": 1.03,
+        "CAM-05": 0.53,
+        "CAM-06": 0.04,
+        "CAM-07": 3.81,
+        "CAM-08": 3.29,
+        "CAM-09": 2.8
+      },
+      "cpu_percent": 35.637,
+      "rss_mib": 796.133
+    },
+    {
+      "elapsed_seconds": 20.013,
+      "health_latency_ms": 3.182,
+      "wall_time_epoch": 1792304108.5342193,
+      "frames": {
+        "CAM-01": 9,
+        "CAM-02": 9,
+        "CAM-03": 9,
+        "CAM-04": 9,
+        "CAM-05": 9,
+        "CAM-06": 9,
+        "CAM-07": 9,
+        "CAM-08": 9,
+        "CAM-09": 9
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 4.5,
+        "CAM-02": 4.04,
+        "CAM-03": 3.52,
+        "CAM-04": 3.03,
+        "CAM-05": 2.53,
+        "CAM-06": 2.04,
+        "CAM-07": 1.28,
+        "CAM-08": 0.53,
+        "CAM-09": 0.23
+      },
+      "cpu_percent": 166.526,
+      "rss_mib": 784.09
+    },
+    {
+      "elapsed_seconds": 22.013,
+      "health_latency_ms": 3.199,
+      "wall_time_epoch": 1792304110.5341778,
+      "frames": {
+        "CAM-01": 10,
+        "CAM-02": 10,
+        "CAM-03": 10,
+        "CAM-04": 10,
+        "CAM-05": 9,
+        "CAM-06": 9,
+        "CAM-07": 9,
+        "CAM-08": 9,
+        "CAM-09": 9
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.91,
+        "CAM-02": 1.44,
+        "CAM-03": 0.9,
+        "CAM-04": 0.43,
+        "CAM-05": 4.53,
+        "CAM-06": 4.04,
+        "CAM-07": 3.28,
+        "CAM-08": 2.53,
+        "CAM-09": 2.23
+      },
+      "cpu_percent": 51.5,
+      "rss_mib": 793.793
+    },
+    {
+      "elapsed_seconds": 24.013,
+      "health_latency_ms": 3.515,
+      "wall_time_epoch": 1792304112.5344567,
+      "frames": {
+        "CAM-01": 10,
+        "CAM-02": 10,
+        "CAM-03": 10,
+        "CAM-04": 10,
+        "CAM-05": 10,
+        "CAM-06": 10,
+        "CAM-07": 10,
+        "CAM-08": 9,
+        "CAM-09": 9
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "loading",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.91,
+        "CAM-02": 3.44,
+        "CAM-03": 2.9,
+        "CAM-04": 2.43,
+        "CAM-05": 1.9,
+        "CAM-06": 1.42,
+        "CAM-07": 0.68,
+        "CAM-08": 4.53,
+        "CAM-09": 4.23
+      },
+      "cpu_percent": 115.484,
+      "rss_mib": 812.266
+    },
+    {
+      "elapsed_seconds": 26.013,
+      "health_latency_ms": 2.98,
+      "wall_time_epoch": 1792304114.534146,
+      "frames": {
+        "CAM-01": 11,
+        "CAM-02": 11,
+        "CAM-03": 11,
+        "CAM-04": 10,
+        "CAM-05": 10,
+        "CAM-06": 10,
+        "CAM-07": 10,
+        "CAM-08": 10,
+        "CAM-09": 10
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.4,
+        "CAM-02": 0.91,
+        "CAM-03": 0.41,
+        "CAM-04": 4.43,
+        "CAM-05": 3.9,
+        "CAM-06": 3.42,
+        "CAM-07": 2.68,
+        "CAM-08": 2.16,
+        "CAM-09": 1.7
+      },
+      "cpu_percent": 112.521,
+      "rss_mib": 799.16
+    },
+    {
+      "elapsed_seconds": 28.013,
+      "health_latency_ms": 3.041,
+      "wall_time_epoch": 1792304116.533976,
+      "frames": {
+        "CAM-01": 11,
+        "CAM-02": 11,
+        "CAM-03": 11,
+        "CAM-04": 11,
+        "CAM-05": 11,
+        "CAM-06": 11,
+        "CAM-07": 11,
+        "CAM-08": 10,
+        "CAM-09": 10
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.4,
+        "CAM-02": 2.91,
+        "CAM-03": 2.41,
+        "CAM-04": 1.92,
+        "CAM-05": 1.4,
+        "CAM-06": 0.93,
+        "CAM-07": 0.23,
+        "CAM-08": 4.16,
+        "CAM-09": 3.7
+      },
+      "cpu_percent": 55.505,
+      "rss_mib": 793.578
+    },
+    {
+      "elapsed_seconds": 30.013,
+      "health_latency_ms": 3.497,
+      "wall_time_epoch": 1792304118.5344322,
+      "frames": {
+        "CAM-01": 12,
+        "CAM-02": 12,
+        "CAM-03": 11,
+        "CAM-04": 11,
+        "CAM-05": 11,
+        "CAM-06": 11,
+        "CAM-07": 11,
+        "CAM-08": 11,
+        "CAM-09": 11
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.91,
+        "CAM-02": 0.43,
+        "CAM-03": 4.41,
+        "CAM-04": 3.92,
+        "CAM-05": 3.4,
+        "CAM-06": 2.93,
+        "CAM-07": 2.23,
+        "CAM-08": 1.72,
+        "CAM-09": 1.14
+      },
+      "cpu_percent": 127.467,
+      "rss_mib": 802.145
+    },
+    {
+      "elapsed_seconds": 32.014,
+      "health_latency_ms": 3.675,
+      "wall_time_epoch": 1792304120.5347526,
+      "frames": {
+        "CAM-01": 12,
+        "CAM-02": 12,
+        "CAM-03": 12,
+        "CAM-04": 12,
+        "CAM-05": 12,
+        "CAM-06": 12,
+        "CAM-07": 11,
+        "CAM-08": 11,
+        "CAM-09": 11
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.91,
+        "CAM-02": 2.43,
+        "CAM-03": 1.91,
+        "CAM-04": 1.41,
+        "CAM-05": 0.91,
+        "CAM-06": 0.41,
+        "CAM-07": 4.23,
+        "CAM-08": 3.72,
+        "CAM-09": 3.14
+      },
+      "cpu_percent": 38.494,
+      "rss_mib": 802.27
+    },
+    {
+      "elapsed_seconds": 34.012,
+      "health_latency_ms": 2.769,
+      "wall_time_epoch": 1792304122.5337017,
+      "frames": {
+        "CAM-01": 13,
+        "CAM-02": 12,
+        "CAM-03": 12,
+        "CAM-04": 12,
+        "CAM-05": 12,
+        "CAM-06": 12,
+        "CAM-07": 12,
+        "CAM-08": 12,
+        "CAM-09": 12
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.43,
+        "CAM-02": 4.43,
+        "CAM-03": 3.91,
+        "CAM-04": 3.41,
+        "CAM-05": 2.91,
+        "CAM-06": 2.41,
+        "CAM-07": 1.74,
+        "CAM-08": 1.17,
+        "CAM-09": 0.74
+      },
+      "cpu_percent": 173.594,
+      "rss_mib": 790.07
+    },
+    {
+      "elapsed_seconds": 36.013,
+      "health_latency_ms": 2.79,
+      "wall_time_epoch": 1792304124.5339289,
+      "frames": {
+        "CAM-01": 13,
+        "CAM-02": 13,
+        "CAM-03": 13,
+        "CAM-04": 13,
+        "CAM-05": 13,
+        "CAM-06": 12,
+        "CAM-07": 12,
+        "CAM-08": 12,
+        "CAM-09": 12
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.43,
+        "CAM-02": 1.89,
+        "CAM-03": 1.42,
+        "CAM-04": 0.92,
+        "CAM-05": 0.41,
+        "CAM-06": 4.41,
+        "CAM-07": 3.74,
+        "CAM-08": 3.17,
+        "CAM-09": 2.74
+      },
+      "cpu_percent": 29.497,
+      "rss_mib": 798.223
+    },
+    {
+      "elapsed_seconds": 38.013,
+      "health_latency_ms": 2.809,
+      "wall_time_epoch": 1792304126.5338423,
+      "frames": {
+        "CAM-01": 13,
+        "CAM-02": 13,
+        "CAM-03": 13,
+        "CAM-04": 13,
+        "CAM-05": 13,
+        "CAM-06": 13,
+        "CAM-07": 13,
+        "CAM-08": 12,
+        "CAM-09": 12
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "loading",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 4.43,
+        "CAM-02": 3.89,
+        "CAM-03": 3.42,
+        "CAM-04": 2.92,
+        "CAM-05": 2.41,
+        "CAM-06": 1.93,
+        "CAM-07": 1.2,
+        "CAM-08": 5.17,
+        "CAM-09": 4.74
+      },
+      "cpu_percent": 153.006,
+      "rss_mib": 814.445
+    },
+    {
+      "elapsed_seconds": 40.014,
+      "health_latency_ms": 3.938,
+      "wall_time_epoch": 1792304128.5348682,
+      "frames": {
+        "CAM-01": 14,
+        "CAM-02": 13,
+        "CAM-03": 13,
+        "CAM-04": 13,
+        "CAM-05": 13,
+        "CAM-06": 13,
+        "CAM-07": 13,
+        "CAM-08": 13,
+        "CAM-09": 13
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.41,
+        "CAM-02": 5.89,
+        "CAM-03": 5.42,
+        "CAM-04": 4.92,
+        "CAM-05": 4.41,
+        "CAM-06": 3.93,
+        "CAM-07": 3.2,
+        "CAM-08": 2.68,
+        "CAM-09": 0.65
+      },
+      "cpu_percent": 139.427,
+      "rss_mib": 802.484
+    },
+    {
+      "elapsed_seconds": 42.013,
+      "health_latency_ms": 3.417,
+      "wall_time_epoch": 1792304130.534653,
+      "frames": {
+        "CAM-01": 14,
+        "CAM-02": 14,
+        "CAM-03": 14,
+        "CAM-04": 14,
+        "CAM-05": 14,
+        "CAM-06": 13,
+        "CAM-07": 13,
+        "CAM-08": 13,
+        "CAM-09": 13
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.41,
+        "CAM-02": 1.9,
+        "CAM-03": 1.39,
+        "CAM-04": 0.9,
+        "CAM-05": 0.37,
+        "CAM-06": 5.93,
+        "CAM-07": 5.2,
+        "CAM-08": 4.68,
+        "CAM-09": 2.65
+      },
+      "cpu_percent": 32.004,
+      "rss_mib": 802.484
+    },
+    {
+      "elapsed_seconds": 44.014,
+      "health_latency_ms": 3.927,
+      "wall_time_epoch": 1792304132.5348723,
+      "frames": {
+        "CAM-01": 14,
+        "CAM-02": 14,
+        "CAM-03": 14,
+        "CAM-04": 14,
+        "CAM-05": 14,
+        "CAM-06": 14,
+        "CAM-07": 14,
+        "CAM-08": 14,
+        "CAM-09": 14
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 4.41,
+        "CAM-02": 3.9,
+        "CAM-03": 3.39,
+        "CAM-04": 2.9,
+        "CAM-05": 2.37,
+        "CAM-06": 1.91,
+        "CAM-07": 1.12,
+        "CAM-08": 0.46,
+        "CAM-09": 0.12
+      },
+      "cpu_percent": 186.479,
+      "rss_mib": 788.578
+    },
+    {
+      "elapsed_seconds": 46.013,
+      "health_latency_ms": 2.921,
+      "wall_time_epoch": 1792304134.5340073,
+      "frames": {
+        "CAM-01": 15,
+        "CAM-02": 15,
+        "CAM-03": 15,
+        "CAM-04": 15,
+        "CAM-05": 14,
+        "CAM-06": 14,
+        "CAM-07": 14,
+        "CAM-08": 14,
+        "CAM-09": 14
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.83,
+        "CAM-02": 1.35,
+        "CAM-03": 0.82,
+        "CAM-04": 0.34,
+        "CAM-05": 4.37,
+        "CAM-06": 3.91,
+        "CAM-07": 3.12,
+        "CAM-08": 2.46,
+        "CAM-09": 2.12
+      },
+      "cpu_percent": 62.027,
+      "rss_mib": 802.797
+    },
+    {
+      "elapsed_seconds": 48.014,
+      "health_latency_ms": 4.33,
+      "wall_time_epoch": 1792304136.5353754,
+      "frames": {
+        "CAM-01": 15,
+        "CAM-02": 15,
+        "CAM-03": 15,
+        "CAM-04": 15,
+        "CAM-05": 15,
+        "CAM-06": 15,
+        "CAM-07": 15,
+        "CAM-08": 15,
+        "CAM-09": 14
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.83,
+        "CAM-02": 3.35,
+        "CAM-03": 2.82,
+        "CAM-04": 2.34,
+        "CAM-05": 1.83,
+        "CAM-06": 1.35,
+        "CAM-07": 0.79,
+        "CAM-08": 0.1,
+        "CAM-09": 4.12
+      },
+      "cpu_percent": 88.438,
+      "rss_mib": 799.637
+    },
+    {
+      "elapsed_seconds": 50.013,
+      "health_latency_ms": 3.362,
+      "wall_time_epoch": 1792304138.5343351,
+      "frames": {
+        "CAM-01": 16,
+        "CAM-02": 16,
+        "CAM-03": 16,
+        "CAM-04": 15,
+        "CAM-05": 15,
+        "CAM-06": 15,
+        "CAM-07": 15,
+        "CAM-08": 15,
+        "CAM-09": 15
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 1.32,
+        "CAM-02": 0.82,
+        "CAM-03": 0.32,
+        "CAM-04": 4.34,
+        "CAM-05": 3.83,
+        "CAM-06": 3.35,
+        "CAM-07": 2.79,
+        "CAM-08": 2.1,
+        "CAM-09": 1.62
+      },
+      "cpu_percent": 122.566,
+      "rss_mib": 798.52
+    },
+    {
+      "elapsed_seconds": 52.013,
+      "health_latency_ms": 3.285,
+      "wall_time_epoch": 1792304140.5343373,
+      "frames": {
+        "CAM-01": 16,
+        "CAM-02": 16,
+        "CAM-03": 16,
+        "CAM-04": 16,
+        "CAM-05": 16,
+        "CAM-06": 16,
+        "CAM-07": 16,
+        "CAM-08": 15,
+        "CAM-09": 15
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 3.32,
+        "CAM-02": 2.82,
+        "CAM-03": 2.32,
+        "CAM-04": 1.83,
+        "CAM-05": 1.34,
+        "CAM-06": 0.83,
+        "CAM-07": 0.16,
+        "CAM-08": 4.1,
+        "CAM-09": 3.62
+      },
+      "cpu_percent": 57.5,
+      "rss_mib": 812.527
+    },
+    {
+      "elapsed_seconds": 54.013,
+      "health_latency_ms": 2.896,
+      "wall_time_epoch": 1792304142.5340328,
+      "frames": {
+        "CAM-01": 17,
+        "CAM-02": 17,
+        "CAM-03": 16,
+        "CAM-04": 16,
+        "CAM-05": 16,
+        "CAM-06": 16,
+        "CAM-07": 16,
+        "CAM-08": 16,
+        "CAM-09": 16
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.81,
+        "CAM-02": 0.34,
+        "CAM-03": 4.32,
+        "CAM-04": 3.83,
+        "CAM-05": 3.34,
+        "CAM-06": 2.83,
+        "CAM-07": 2.16,
+        "CAM-08": 1.62,
+        "CAM-09": 1.12
+      },
+      "cpu_percent": 151.523,
+      "rss_mib": 799.066
+    },
+    {
+      "elapsed_seconds": 56.013,
+      "health_latency_ms": 3.017,
+      "wall_time_epoch": 1792304144.534097,
+      "frames": {
+        "CAM-01": 17,
+        "CAM-02": 17,
+        "CAM-03": 17,
+        "CAM-04": 17,
+        "CAM-05": 17,
+        "CAM-06": 17,
+        "CAM-07": 16,
+        "CAM-08": 16,
+        "CAM-09": 16
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 2.81,
+        "CAM-02": 2.34,
+        "CAM-03": 1.82,
+        "CAM-04": 1.34,
+        "CAM-05": 0.83,
+        "CAM-06": 0.34,
+        "CAM-07": 4.15,
+        "CAM-08": 3.62,
+        "CAM-09": 3.12
+      },
+      "cpu_percent": 28.999,
+      "rss_mib": 799.066
+    },
+    {
+      "elapsed_seconds": 58.013,
+      "health_latency_ms": 2.838,
+      "wall_time_epoch": 1792304146.5339098,
+      "frames": {
+        "CAM-01": 18,
+        "CAM-02": 17,
+        "CAM-03": 17,
+        "CAM-04": 17,
+        "CAM-05": 17,
+        "CAM-06": 17,
+        "CAM-07": 17,
+        "CAM-08": 17,
+        "CAM-09": 17
+      },
+      "statuses": {
+        "CAM-01": "processing",
+        "CAM-02": "processing",
+        "CAM-03": "processing",
+        "CAM-04": "processing",
+        "CAM-05": "processing",
+        "CAM-06": "processing",
+        "CAM-07": "processing",
+        "CAM-08": "processing",
+        "CAM-09": "processing"
+      },
+      "frame_ages_seconds": {
+        "CAM-01": 0.34,
+        "CAM-02": 4.34,
+        "CAM-03": 3.82,
+        "CAM-04": 3.34,
+        "CAM-05": 2.83,
+        "CAM-06": 2.34,
+        "CAM-07": 1.59,
+        "CAM-08": 1.1,
+        "CAM-09": 0.63
+      },
+      "cpu_percent": 180.517,
+      "rss_mib": 790.215
+    }
+  ],
+  "limitations": [
+    "Timing windows contain at most 64 successful attempts per camera; failures have separate counters and last-attempt timing.",
+    "First-success timing is per camera and can include source/model initialization; it is not a controlled cold-start benchmark.",
+    "Budget overruns mean a processing attempt exceeded its scheduled interval; they are not source frames or browser playback drops.",
+    "Sparse replay sampling intentionally skips source frames. VFR/capture drops, INP/LCP/CLS and real plate accuracy are unmeasured.",
+    "CPU percent uses process CPU seconds and can exceed 100%; memory is RSS, not peak resident usage. API restart can invalidate counters."
+  ]
+}

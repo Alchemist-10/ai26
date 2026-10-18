@@ -63,8 +63,8 @@ class Authentication(unittest.TestCase):
                     self.assertEqual(service.user_count(), 1)
                     self.assertIsNotNone(service.login("admin", "Bootstrap-Correct-Horse-42", "testhost")[0])
                     self.assertIsNone(service.login("admin", "Different-Correct-Horse-42", "otherhost")[0])
-                self.assertEqual(repository.schema_version, 14)
-                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 14)
+                self.assertEqual(repository.schema_version, 15)
+                self.assertEqual(repository.db.execute("PRAGMA user_version").fetchone()[0], 15)
             finally:
                 repository.close()
 

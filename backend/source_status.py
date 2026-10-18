@@ -32,6 +32,20 @@ def release_summary(manifest):
     result['uploader_authenticated'] = manifest.get('uploader_authenticated') is True
     result['authenticated_uploader'] = text(manifest.get('authenticated_uploader'), 100) if result['uploader_authenticated'] else None
     result['imported_at'] = number(manifest.get('imported_at'))
+    provenance = manifest.get('source_provenance')
+    if not isinstance(provenance, dict): provenance = {}
+    status = provenance.get('status')
+    if status not in {'operator_claimed', 'not_provided'}: status = 'not_provided'
+    result['source_provenance'] = {
+        'status': status,
+        'verified': False,
+        'archive_creator': text(provenance.get('archive_creator'), 200),
+        'export_system': text(provenance.get('export_system'), 200),
+        'external_camera_id': text(provenance.get('external_camera_id'), 100),
+        'recording_timezone': text(provenance.get('recording_timezone'), 64) or 'unknown',
+        'authorization_basis': text(provenance.get('authorization_basis'), 500),
+        'retention_note': text(provenance.get('retention_note'), 500),
+    }
     clock = validate_recording_clock(manifest.get('recording_clock'))
     result['recording_clock'] = ({'start_utc': clock['start_utc'],
                                   'uncertainty_seconds': clock['uncertainty_seconds'],

@@ -57,7 +57,8 @@ uv run run.py
 | `AI26_VEHICLE_DETECTION_ENABLED` | `1` | Set `0` to skip the YOLO vehicle/person branch; restart the API to apply. Privacy mode requires this branch for sampled person pixelation. |
 | `AI26_PLATE_RECOGNITION_ENABLED` | `1` | Set `0` to skip plate detection/OCR while leaving vehicle detection available; restart the API to apply. |
 | `AI26_TOTAL_INFERENCE_FPS` | `2` | Total scheduled sampling budget, clamped 0.1–10 |
-| `AI26_FORWARD_DECODE_MAX_FRAMES` | `128` | Maximum explicit forward grab calls per sample, clamped 0–128; 0 uses seeking |
+| `AI26_FORWARD_DECODE_MAX_FRAMES` | `128` | Global maximum explicit forward grab calls, clamped 0–128; 0 forces seeking. Exact hash-matched CAM-07/09 originals use a measured 221-call bound unless this variable is explicitly set; all other sources remain at the global bound. |
+| `AI26_RECORDED_DECODE_THREADS` | `2` | FFmpeg decode threads for recorded sources, clamped 1–4; restart the API to apply |
 | `AI26_TIMEZONE` | `Asia/Kolkata` | Calendar/time interpretation for query intents |
 
 Sampling is sequential and skips through recorded clips using elapsed replay
@@ -124,6 +125,21 @@ npm run lint
 npm run build
 ```
 
+For a local reviewed-crop comparison, first have a reviewer fill the ignored
+`backend/data/review/.../groundtruth-template.json` files, then run:
+
+```bash
+python backend/evaluate_review.py \
+  --database backend/data/ai26.sqlite3 \
+  backend/data/review/cam07-09-groundtruth-template.json \
+  backend/data/review/followup/groundtruth-template.json
+```
+
+The command verifies crop hashes and exact source/session/frame/crop references.
+It prints aggregate match, mismatch and pipeline-rejection counts only; reviewed
+plate strings remain in the local ignored files. A small selected crop set is not
+a held-out accuracy evaluation.
+
 Tests disable background inference and use temporary databases and deterministic
 fixtures. The evaluation example is explicitly synthetic; its metrics prove the
 metric implementation, not real detector/OCR accuracy. See `evaluation/README.md`
@@ -155,9 +171,11 @@ recorded playback; choose **Sampled detections** for shared inference overlays a
 its measured sampling FPS. Only one video plays, and hidden pages pause media and
 polling. The source video and inference sample positions may differ after seeking.
 
-`AI26_CPU_THREADS=2` is the desktop default (range 1–8). The processor uses one
-FFmpeg decode thread per source and retains the total sampling budget configured
-by `AI26_TOTAL_INFERENCE_FPS`. Changing this budget trades CPU and temporal coverage;
+`AI26_CPU_THREADS=2` is the desktop default (range 1–8). Recorded-video decoders
+use two FFmpeg threads by default (bounded by `AI26_RECORDED_DECODE_THREADS`, 1–4);
+live capture retains its single-thread decoder. The processor retains the total
+sampling budget configured by `AI26_TOTAL_INFERENCE_FPS`. Changing these budgets
+trades CPU and temporal coverage;
 benchmark on the target machine before claiming throughput or detection accuracy.
 
 ## Runtime profiling

@@ -45,8 +45,11 @@ local time. Viewing history does not change the editing baseline or draft. The
 configuration response does not include audit reviewer/reason; the page does not
 invent those values or present an authenticated history.
 
-Label confirmation records a local assertion. Repository defaults may already
-carry a confirmed flag, so history exposes their actual metadata source.
+Label confirmation records a local assertion. Repository defaults keep
+CAM-07–09 unconfirmed because their on-video junction labels have not been tied
+to an independently verified source export or site survey. A schema migration
+adds an unconfirmed revision only when the old default is still current and
+preserves any later operator revision.
 Coordinates, recording clocks and travel-time constraints remain uncalibrated.
 Reviewer identity is unauthenticated. This is a local prototype metadata editor,
 separate from the source upload/import workflow, authorization or an independent survey workflow.

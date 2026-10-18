@@ -28,10 +28,13 @@ class ImportChecks(unittest.TestCase):
         self.addCleanup(self.storage.stop)
         self.addCleanup(self.repository.close)
 
-    def observation(self, camera, ts):
-        return {"camera_id": camera, "kind": "plate", "plate": "KL07AB1234",
+    def observation(self, camera, ts, time_basis=None):
+        result = {"camera_id": camera, "kind": "plate", "plate": "KL07AB1234",
                 "plate_norm": "KL07AB1234", "plate_raw": "KL 07 AB 1234",
                 "confidence": 0.9, "bbox": [1, 2, 3, 4], "ts": ts}
+        if time_basis is not None:
+            result["time_basis"] = time_basis
+        return result
 
     def test_plate_normalization_and_repairs(self):
         self.assertEqual(normalize_plate("kl 07 ab 1234")["plate_norm"], "KL07AB1234")
@@ -82,22 +85,31 @@ class ImportChecks(unittest.TestCase):
 
     def test_trajectory_rejects_impossible_travel(self):
         now = time.time()
-        for camera in ('CAM-07','CAM-08'):
+        for camera in ('CAM-07','CAM-08','CAM-09'):
             config=self.repository.camera_configuration(camera)
             self.repository.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
                 'reviewer':'fixture','reason':'configure accepted-link test'},now)
         self.repository.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
             'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'reachable test pair'},now)
-        good = events.build_trajectory([self.observation("CAM-07", now - 120), self.observation("CAM-08", now)])
+        self.repository.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-09',
+            'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'impossible travel test pair'},now)
+        good = events.build_trajectory([self.observation("CAM-07", now - 120, 'synchronized_capture_clock'),
+                                        self.observation("CAM-08", now, 'synchronized_capture_clock')])
         self.assertEqual(good["status"], "candidate")
         self.assertEqual(len(good["accepted_links"]), 1)
-        bad = events.build_trajectory([self.observation("CAM-07", now - 1), self.observation("CAM-09", now)])
+        bad = events.build_trajectory([self.observation("CAM-07", now - 1, 'synchronized_capture_clock'),
+                                       self.observation("CAM-09", now, 'synchronized_capture_clock')])
         self.assertEqual(bad["status"], "review_required")
         self.assertIn("impossible travel", bad["rejected_links"][0]["reason"])
 
     def test_alerts_queries_evidence_share_observations(self):
         now = time.time()
-        events.add_events([self.observation("CAM-07", now - 1), self.observation("CAM-09", now)])
+        for camera in ('CAM-07','CAM-09'):
+            config=self.repository.camera_configuration(camera)
+            self.repository.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
+                'reviewer':'fixture','reason':'configure deterministic route-alert fixture'},now)
+        events.add_events([self.observation("CAM-07", now - 1, 'synchronized_capture_clock'),
+                           self.observation("CAM-09", now, 'synchronized_capture_clock')])
         self.assertEqual(len(events.get_events(plate="kl 07 ab 1234")), 2)
         self.assertEqual(len(events.get_events(camera_id="CAM-07")), 1)
         self.assertEqual(events.stats()["total_events"], 2)

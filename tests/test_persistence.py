@@ -55,6 +55,32 @@ class Persistence(unittest.TestCase):
         audit=self.repo.db.execute("SELECT data FROM audit WHERE action='camera_configuration'").fetchone()
         self.assertEqual(json.loads(audit[0])['reviewer'],'Local tester')
 
+    def test_location_defaults_are_unconfirmed_and_migration_preserves_operator_revision(self):
+        for camera in ('CAM-07','CAM-08','CAM-09'):
+            self.assertFalse(self.repo.camera_configuration(camera)['location_confirmed'])
+
+        cam07=self.repo.camera_configuration('CAM-07',1)
+        cam07['location_confirmed']=True
+        self.repo.db.execute('UPDATE camera_catalog SET data=? WHERE camera=? AND revision=1',
+                             (canonical_json(cam07),'CAM-07'))
+        cam08=self.repo.camera_configuration('CAM-08')
+        cam08.update(revision=2,location_confirmed=True,metadata_source='local operator entry')
+        self.repo.db.execute('INSERT INTO camera_catalog VALUES(?,?,?)',
+                             ('CAM-08',2,canonical_json(cam08)))
+        self.repo.db.execute('PRAGMA user_version=14')
+        self.repo.db.commit()
+        self.repo.close()
+        self.repo=Repository(self.path)
+
+        migrated=self.repo.camera_configuration('CAM-07')
+        self.assertEqual(migrated['revision'],2)
+        self.assertFalse(migrated['location_confirmed'])
+        self.assertEqual(migrated['metadata_source'],'repository defaults; overlay is unverified')
+        self.assertTrue(self.repo.camera_configuration('CAM-07',1)['location_confirmed'])
+        self.assertTrue(self.repo.camera_configuration('CAM-08')['location_confirmed'])
+        self.assertEqual(self.repo.camera_configuration('CAM-08')['revision'],2)
+        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],15)
+
     def test_concurrent_stale_edit_rejected_without_revision_or_audit(self):
         other=Repository(self.path)
         self.addCleanup(other.close)
@@ -97,18 +123,31 @@ class Persistence(unittest.TestCase):
         self.edit('CAM-07',location='New coordinates revision')
         self.assertFalse(self.client.get('/api/camera-pair-constraints').json()[0]['current_locations_valid'])
 
+    def test_camera_pair_constraint_rejects_confirmed_locations_without_coordinates(self):
+        self.edit('CAM-07',location_confirmed=True)
+        self.edit('CAM-08',location_confirmed=True)
+        config=self.repo.camera_configuration('CAM-07')
+        self.repo.update_camera('CAM-07',{**config,'expected_revision':config['revision'],'lat':None,
+            'reviewer':'fixture','reason':'exercise missing-coordinate guard'},self.now)
+        with self.assertRaisesRegex(ValueError,'need coordinates'):
+            self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+                'min_travel_seconds':20,'max_travel_seconds':900,'enabled':True,
+                'reviewer':'fixture','reason':'must reject incomplete calibration'},self.now)
+
     def test_catalog_and_named_queries_use_persisted_metadata(self):
-        self.edit(location='Fixture East')
+        self.edit(location='Fixture East',location_confirmed=True)
         catalog=self.client.get('/api/cameras').json()
         self.assertEqual(next(c for c in catalog if c['id']=='CAM-07')['location'],'Fixture East')
         self.ingest_pair()
         self.assertIn('CAM-07',nlquery.answer('plates at Fixture East')['text'])
-        self.edit('CAM-08',location='Fixture East')
+        self.edit('CAM-08',location='Fixture East',location_confirmed=True)
         self.assertEqual(nlquery.answer('plates at Fixture East')['status'],'invalid')
         self.assertEqual(nlquery.answer('plates at CAM-07 Fixture East')['status'],'supported')
 
     def test_observation_snapshot_and_link_do_not_change_on_edit_or_retry(self):
         self.ingest_pair(time_basis='replay_clock')
+        for camera in ('CAM-07','CAM-08'):
+            self.edit(camera,location_confirmed=True)
         self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
             'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'snapshot test'},self.now)
         original=self.route()
@@ -180,8 +219,8 @@ class Persistence(unittest.TestCase):
         db=sqlite3.connect(self.path)
         db.executescript('DROP TABLE camera_catalog; DROP TABLE journey_links; DROP INDEX alert_escalation_scope_ts; ALTER TABLE alerts DROP COLUMN scope_case_id; ALTER TABLE audit DROP COLUMN record_hash; ALTER TABLE audit DROP COLUMN previous_hash; ALTER TABLE user_mfa DROP COLUMN last_used_counter; PRAGMA user_version=2;');db.close()
         self.repo=Repository(self.path)
-        self.assertEqual(self.repo.schema_version,14)
-        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],14)
+        self.assertEqual(self.repo.schema_version,15)
+        self.assertEqual(self.repo.db.execute('PRAGMA user_version').fetchone()[0],15)
         self.assertEqual(self.repo.verify_audit_chain()['status'],'valid')
         self.assertEqual(len(self.repo.observations()),2)
         self.assertEqual(self.repo.report(report['report_id'],self.now+1),report)
@@ -192,7 +231,7 @@ class Persistence(unittest.TestCase):
 
     def test_future_schema_refused(self):
         path=Path(self.folder.name)/'future.sqlite3';db=sqlite3.connect(path)
-        db.execute('PRAGMA user_version=15');db.close()
+        db.execute('PRAGMA user_version=16');db.close()
         with self.assertRaisesRegex(RuntimeError,'newer'):
             Repository(path)
 
@@ -205,7 +244,7 @@ class Persistence(unittest.TestCase):
         db.executescript("DROP INDEX alert_escalation_scope_ts; ALTER TABLE alerts DROP COLUMN scope_case_id; ALTER TABLE user_mfa DROP COLUMN last_used_counter; PRAGMA user_version=11;")
         db.close()
         self.repo=Repository(self.path)
-        self.assertEqual(self.repo.schema_version,14)
+        self.assertEqual(self.repo.schema_version,15)
         migrated=self.repo.db.execute("SELECT secret_ciphertext,enabled,recovery_hashes,last_used_counter FROM user_mfa WHERE username='fixture'").fetchone()
         self.assertEqual(bytes(migrated["secret_ciphertext"]),b"encrypted")
         self.assertEqual(migrated["enabled"],1)
@@ -225,8 +264,8 @@ class Persistence(unittest.TestCase):
         migrated=Repository(self.path)
         try:
             row=migrated.db.execute("SELECT state,review,scope_case_id FROM alerts WHERE id='legacy-case-queue'").fetchone()
-            self.assertEqual(migrated.schema_version,14)
-            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],14)
+            self.assertEqual(migrated.schema_version,15)
+            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],15)
             self.assertEqual(row['state'],'escalated')
             self.assertIsNone(row['scope_case_id'])
             self.assertEqual(json.loads(row['review'])[-1]['escalation_target'],'Duty desk')
@@ -252,8 +291,8 @@ class Persistence(unittest.TestCase):
                 'reviewer':'fixture','reason':'configure deterministic pair fixture'},self.now)
         self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
             'min_travel_seconds':120,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'bounded fixture window'},self.now)
-        for name,gap,time_basis,key,status in [('baseline',120,'manual','accepted_links','accepted'),
-                    ('impossible',1,'manual','rejected_links','rejected'),
+        for name,gap,time_basis,key,status in [('baseline',120,'synchronized_capture_clock','accepted_links','accepted'),
+                    ('impossible',1,'synchronized_capture_clock','rejected_links','rejected'),
                     ('replay',120,'replay_clock','candidate_links','candidate')]:
             plate={'baseline':'KL07AB1234','impossible':'TN22ZZ0007','replay':'KA01AA1234'}[name]
             for camera,ts in [('CAM-07',self.now-gap),('CAM-08',self.now)]:

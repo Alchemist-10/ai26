@@ -77,6 +77,18 @@ class Reliability(unittest.TestCase):
         self.assertEqual(events.stats()['vehicle_passages'],1)
         self.assertEqual(events.derive_alerts(),[])
 
+    def test_traffic_metrics_keep_unmeasured_values_null_instead_of_zero(self):
+        empty=events.stats(since=self.now-10,until=self.now+1)
+        self.assertEqual(empty['metrics']['camera_local_tracked_passages']['value'],0)
+        for name in ('globally_unique_vehicles','occupancy_percent','density_vehicles_per_km','physical_speed_kmh'):
+            with self.subTest(metric=name):
+                self.assertIsNone(empty['metrics'][name]['value'])
+                self.assertEqual(empty['metrics'][name]['status'],'not_measured')
+        events.add_events([self.vehicle(self.now,frame_id=1)])
+        populated=events.stats(since=self.now-10,until=self.now+1)
+        self.assertEqual(populated['metrics']['camera_local_tracked_passages']['value'],1)
+        self.assertIsNone(populated['metrics']['globally_unique_vehicles']['value'])
+
     def test_plate_votes_isolated_and_conflicts_abstain(self):
         fusion=PlateConsensus()
         for _ in range(3): result=fusion.read('CAM-07',1,'KL07AB1234')
@@ -109,7 +121,9 @@ class Reliability(unittest.TestCase):
             'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'reachable'},self.now)
         self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-08','to_camera_id':'CAM-09',
             'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':False,'reviewer':'fixture','reason':'disconnected'},self.now)
-        result=events.build_trajectory([self.plate(ts=self.now-121),self.plate('CAM-08',self.now-1),self.plate('CAM-09')])
+        result=events.build_trajectory([self.plate(ts=self.now-121,time_basis='synchronized_capture_clock'),
+            self.plate('CAM-08',self.now-1,time_basis='synchronized_capture_clock'),
+            self.plate('CAM-09',time_basis='synchronized_capture_clock')])
         self.assertEqual(len(result['accepted_links']),1)
         self.assertEqual(len(result['rejected_links']),1)
         self.assertEqual(result['status'],'review_required')
@@ -119,6 +133,14 @@ class Reliability(unittest.TestCase):
         self.assertEqual(result['accepted_links'],[])
         self.assertEqual(len(result['candidate_links']),1)
         self.assertIsNone(result['candidate_links'][0]['implied_speed_kmh'])
+
+    def test_unconfirmed_placeholder_coordinates_are_not_exposed_as_distance(self):
+        result=events.build_trajectory([self.plate(ts=self.now-120),self.plate('CAM-08',self.now)])
+        self.assertEqual(len(result['candidate_links']),1)
+        self.assertIsNone(result['candidate_links'][0]['distance_km'])
+        self.assertIsNone(result['candidate_links'][0]['implied_speed_kmh'])
+        self.assertTrue(all(hop['lat'] is None and hop['lon'] is None
+                            for hop in result['observations']))
 
     def test_live_arrival_clock_is_not_physical_cross_camera_travel_time(self):
         for camera in ('CAM-07','CAM-08'):
@@ -139,9 +161,33 @@ class Reliability(unittest.TestCase):
         self.assertEqual(link['time_bases'],['capture_arrival_clock','capture_arrival_clock'])
         self.assertIn('synchronized capture-time calibration unavailable',link['reason'])
 
+    def test_unknown_manual_and_missing_clock_bases_abstain_even_with_a_route_window(self):
+        for camera in ('CAM-07','CAM-08'):
+            config=self.repo.camera_configuration(camera)
+            self.repo.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
+                'reviewer':'fixture','reason':'configure clock-basis abstention fixture'},self.now)
+        self.repo.put_camera_pair_constraint({'from_camera_id':'CAM-07','to_camera_id':'CAM-08',
+            'min_travel_seconds':0,'max_travel_seconds':3600,'enabled':True,'reviewer':'fixture','reason':'fixture only'},self.now)
+        for basis in ('manual','unknown_timestamp_basis',None):
+            first=self.plate(ts=self.now-120)
+            second=self.plate('CAM-08',self.now)
+            if basis is not None:
+                first['time_basis']=basis
+                second['time_basis']=basis
+            result=events.build_trajectory([first,second])
+            self.assertEqual(result['accepted_links'],[],basis)
+            self.assertEqual(len(result['candidate_links']),1,basis)
+            self.assertEqual(result['candidate_links'][0]['time_bases'],
+                             [basis or 'unspecified',basis or 'unspecified'])
+            self.assertIsNone(result['candidate_links'][0]['implied_speed_kmh'])
+
     def test_unconfigured_pair_stays_candidate_and_constraint_window_is_enforced(self):
-        first=self.plate(ts=self.now-120)
-        second=self.plate('CAM-08',self.now)
+        first=self.plate(ts=self.now-120,time_basis='synchronized_capture_clock')
+        second=self.plate('CAM-08',self.now,time_basis='synchronized_capture_clock')
+        for camera in ('CAM-07','CAM-08'):
+            config=self.repo.camera_configuration(camera)
+            self.repo.update_camera(camera,{**config,'expected_revision':config['revision'],'location_confirmed':True,
+                'reviewer':'fixture','reason':'test missing route window after location confirmation'},self.now)
         missing=events.build_trajectory([first,second])
         self.assertEqual(missing['accepted_links'],[])
         self.assertIn('window is missing',missing['candidate_links'][0]['reason'])
@@ -264,6 +310,7 @@ class Reliability(unittest.TestCase):
         camera={'camera_id':'CAM-01','status':'error"\ncheck','frames':7,'attempts':4,'failed_attempts':2,
                 'budget_overruns':1,'missing_source_checks':3,'retry_backoff_checks':4,'source_available':False,
                 'processed_fps':.5,'frame_age_seconds':None,'queue_depth':0,'sampling_budget_fps':2,
+                'artifact_storage':{'used_bytes':900,'limit_bytes':1000},
                 'timing':{'total':{'p50_ms':10,'p95_ms':30,'max_ms':40},
                           'phases':{'decode':{'p50_ms':2,'p95_ms':5,'max_ms':7}}}}
         with patch.object(main.processor,'health',return_value=[camera]), \
@@ -275,6 +322,9 @@ class Reliability(unittest.TestCase):
         self.assertIn('ai26_camera_frames_total{camera_id="CAM-01"} 7',body)
         self.assertIn('ai26_camera_failed_attempts_total{camera_id="CAM-01"} 2',body)
         self.assertIn('ai26_camera_status{camera_id="CAM-01",status="error\\\"\\ncheck"} 1',body)
+        self.assertIn('ai26_artifact_storage_used_bytes 900',body)
+        self.assertIn('ai26_artifact_storage_limit_bytes 1000',body)
+        self.assertIn('ai26_artifact_storage_utilization_ratio 0.9',body)
         self.assertIn('ai26_camera_sample_duration_ms{camera_id="CAM-01",quantile="0.95"} 30',body)
         self.assertIn('ai26_camera_phase_duration_ms{camera_id="CAM-01",phase="decode",quantile="0.5"} 2',body)
         self.assertNotIn('frame_age_seconds{camera_id="CAM-01"}',body)
@@ -357,9 +407,9 @@ class Reliability(unittest.TestCase):
         db.execute('PRAGMA user_version=1');db.commit();db.close()
         migrated=Repository(path)
         try:
-            self.assertEqual(migrated.schema_version,14)
+            self.assertEqual(migrated.schema_version,15)
             self.assertEqual(migrated.protected_artifacts(self.now),{'a'*64})
-            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],14)
+            self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],15)
         finally: migrated.close()
 
     def test_retention_lifespan_runs_without_inference(self):

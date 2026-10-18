@@ -28,6 +28,22 @@ def _branch_switch(name):
 VEHICLE_DETECTION_ENABLED=_branch_switch('AI26_VEHICLE_DETECTION_ENABLED')
 PLATE_RECOGNITION_ENABLED=_branch_switch('AI26_PLATE_RECOGNITION_ENABLED')
 
+# Paired CAM-07–09 diagnostics matched decoded pixels. Forward grabs stayed
+# faster through 220-frame gaps on CAM-07/09, while CAM-08 seeks won at 200/220.
+# Bind the larger bound to the exact source bytes so a later replacement falls
+# back to the conservative global limit until it is measured too.
+SOURCE_FORWARD_DECODE_LIMITS = {
+    ('CAM-07', '661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689'): 221,
+    ('CAM-09', 'e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341'): 221,
+}
+
+
+def forward_decode_limit_for(camera_id, source_sha256, default_limit, override=False):
+    """Use source-specific measured bounds only when no global override is set."""
+    if override:
+        return default_limit
+    return SOURCE_FORWARD_DECODE_LIMITS.get((camera_id, source_sha256), default_limit)
+
 def inference_branches():
     return {'vehicle_detection_enabled':VEHICLE_DETECTION_ENABLED,
             'plate_recognition_enabled':PLATE_RECOGNITION_ENABLED}
@@ -115,11 +131,15 @@ class Processor:
         self.epochs = {}
         self.retry_at = {}
         self.source_hashes = {}
+        self.source_forward_decode_limits = {}
         self.capture_generation = {}
         self.live_reader_generation = {}
         self.last_traffic_sample_identity = {}
         self.decode_next = {}
-        self.forward_decode_limit = max(0,min(128,int(os.environ.get('AI26_FORWARD_DECODE_MAX_FRAMES','128'))))
+        override = os.environ.get('AI26_FORWARD_DECODE_MAX_FRAMES')
+        self.forward_decode_override = override is not None
+        self.forward_decode_limit = max(0,min(128,int(override if override is not None else '128')))
+        self.decode_threads = max(1,min(4,int(os.environ.get('AI26_RECORDED_DECODE_THREADS','2'))))
         self.owner_file = None
 
     def start(self):
@@ -160,7 +180,9 @@ class Processor:
                      'processed_fps':round(s['frames']/max(elapsed,1),3),
                      'inference_owner':'single-process round-robin', 'sampling_budget_fps':self.rate,
                      'processor_run_id':self.run_id,
-                     'forward_decode_max_frames':self.forward_decode_limit,
+                     'forward_decode_max_frames':self.source_forward_decode_limits.get(
+                         s['camera_id'],self.forward_decode_limit),
+                     'recorded_decode_threads':self.decode_threads,
                      'timing':self.timing_summary(s['camera_id']),
                      'artifact_storage':storage_usage()}
                     for s in self.state.values()]
@@ -206,7 +228,8 @@ class Processor:
         previous=self.decode_next.pop(camera,None)
         position=cap.get(cv2.CAP_PROP_POS_FRAMES)
         gap=target-previous if previous is not None else None
-        forward=(self.forward_decode_limit>0 and gap is not None and 0<=gap<self.forward_decode_limit
+        limit=self.source_forward_decode_limits.get(camera,self.forward_decode_limit)
+        forward=(limit>0 and gap is not None and 0<=gap<limit
                  and math.isfinite(position) and abs(position-previous)<.01)
         self._set(camera,decode_mode='forward' if forward else 'seek',decode_grabbed_frames=gap+1 if forward else 1,decode_position_verified=None)
         if forward:
@@ -267,11 +290,15 @@ class Processor:
             reopened = False
             if camera_id not in self.captures:
                 self.decode_next.pop(camera_id,None)
-                cap=cv2.VideoCapture(str(path),cv2.CAP_FFMPEG,[cv2.CAP_PROP_N_THREADS,1])
+                cap=cv2.VideoCapture(str(path),cv2.CAP_FFMPEG,
+                                     [cv2.CAP_PROP_N_THREADS,self.decode_threads])
                 if not cap.isOpened(): cap.release(); raise RuntimeError('Source could not be opened')
                 self.captures[camera_id]=cap
                 with path.open('rb') as source_file:
                     self.source_hashes[camera_id]=hashlib.file_digest(source_file,'sha256').hexdigest()
+                self.source_forward_decode_limits[camera_id]=forward_decode_limit_for(
+                    camera_id,self.source_hashes[camera_id],self.forward_decode_limit,
+                    override=self.forward_decode_override)
                 generation = self.capture_generation.get(camera_id, 0) + 1
                 self.capture_generation[camera_id] = generation
                 reopened = generation > 1

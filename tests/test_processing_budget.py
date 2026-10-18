@@ -70,9 +70,11 @@ class Budget(unittest.TestCase):
             p.annotator=annotate
             cap=SimpleNamespace(isOpened=lambda:True,get=lambda k:25 if k==processing.cv2.CAP_PROP_FPS else 1000,set=lambda *args:True,
                                 read=lambda:(True,np.zeros((20,20,3),dtype=np.uint8)),release=Mock())
-            with patch.object(processing.cv2,'VideoCapture',return_value=cap),patch.object(processing,'store',Mock()),patch.object(processing,'add_events',return_value=0),patch.object(processing.time,'monotonic',side_effect=clock.monotonic):
+            with patch.object(processing.cv2,'VideoCapture',return_value=cap) as capture_factory,patch.object(processing,'store',Mock()),patch.object(processing,'add_events',return_value=0),patch.object(processing.time,'monotonic',side_effect=clock.monotonic):
                 self.assertTrue(p.step(p.cameras[0]));p.annotator=Mock(side_effect=OSError('Synthetic failure'))
                 with self.assertLogs(processing.log,level='ERROR'):self.assertTrue(p.step(p.cameras[0]))
+            self.assertEqual(capture_factory.call_args_list[0].args[2],
+                             [processing.cv2.CAP_PROP_N_THREADS,2])
             for _ in range(4):h=p.health()[0]
             self.assertEqual(h['frames'],1);self.assertEqual(h['attempts'],2);self.assertEqual(h['failed_attempts'],1);self.assertEqual(h['budget_overruns'],1)
             self.assertEqual(h['timing']['successful_samples'],1);self.assertEqual(h['timing']['first_success']['phases_ms']['inference'],600)
@@ -87,6 +89,12 @@ class Budget(unittest.TestCase):
         p=self.processor([1]);p.state['CAM-01']['frames']=10;p.started_monotonic=100
         with patch.object(processing.time,'monotonic',return_value=105),patch.object(processing.time,'time',return_value=p.started-100):
             self.assertEqual(p.health()[0]['processed_fps'],2)
+    def test_recorded_decode_threads_are_bounded_and_reported(self):
+        with patch.dict(os.environ,{'AI26_RECORDED_DECODE_THREADS':'9'}):
+            self.assertEqual(self.processor([1]).decode_threads,4)
+        with patch.dict(os.environ,{'AI26_RECORDED_DECODE_THREADS':'0'}):
+            self.assertEqual(self.processor([1]).decode_threads,1)
+        self.assertEqual(self.processor([1]).health()[0]['recorded_decode_threads'],2)
 
 
 class RuntimeProfile(unittest.TestCase):
@@ -160,6 +168,25 @@ class RuntimeProfile(unittest.TestCase):
         quality=profiler.assess_profile_quality(continuous,2,0,True)
         self.assertTrue(quality['steady_state_rate_valid'])
         self.assertEqual(quality['max_sample_gap_seconds'],2.0)
+
+        camera_frames=[
+            {'elapsed_seconds':1.0,'wall_time_epoch':1001.0,'frames':{'CAM-01':10},
+             'frame_ages_seconds':{'CAM-01':9.0}},
+            {'elapsed_seconds':2.0,'wall_time_epoch':1002.0,'frames':{'CAM-01':11},
+             'frame_ages_seconds':{'CAM-01':0.0}},
+        ]
+        quality=profiler.assess_profile_quality(camera_frames,1,0,True)
+        self.assertTrue(quality['steady_state_rate_valid'])
+
+        wall_jump=[
+            {'elapsed_seconds':1.0,'wall_time_epoch':1001.0,'frames':{'CAM-01':10},
+             'frame_ages_seconds':{'CAM-01':1.0}},
+            {'elapsed_seconds':2.0,'wall_time_epoch':1022.0,'frames':{'CAM-01':10},
+             'frame_ages_seconds':{'CAM-01':22.0}},
+        ]
+        quality=profiler.assess_profile_quality(wall_jump,1,0,True)
+        self.assertEqual({item['kind'] for item in quality['steady_state_rate_invalid_reasons']},
+                         {'host_wall_clock_discontinuity','frame_age_clock_discontinuity'})
 
         interrupted=[
             {'elapsed_seconds':184.0,'frame_ages_seconds':{'CAM-01':1.4}},

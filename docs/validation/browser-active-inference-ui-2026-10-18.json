@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-10-18T06:10:07Z",
+  "scope": "Isolated headless Chromium page-load and camera-wall filter responsiveness while the local nine-source inference process was active; no media view was selected.",
+  "host": {
+    "platform": "Linux",
+    "browser": "Chromium 152.0.7977.82",
+    "automation": "Playwright 1.64.1",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "application_url": "http://127.0.0.1:5174/"
+  },
+  "inference_health_post_check": {
+    "configured_sources": 9,
+    "available_sources": 9,
+    "processing_sources": 9,
+    "failed_attempts_total": 0,
+    "processor_run_id": "59b71448c5ae4ed78e020ac076bde95c"
+  },
+  "browser_sample": {
+    "dom_content_loaded_ms": 448,
+    "largest_contentful_paint_ms": 1100,
+    "cumulative_layout_shift": 0.0012,
+    "long_task_count": 2,
+    "long_task_max_ms": 69,
+    "event_timing_interactions": 13,
+    "event_timing_interaction_durations_ms": [
+      16,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      48,
+      48,
+      48,
+      56,
+      64,
+      64
+    ],
+    "event_timing_p50_ms": 40,
+    "event_timing_p95_ms": 64,
+    "camera_filter_action_to_expected_dom_state_ms": [
+      61,
+      72,
+      77,
+      87,
+      88,
+      94,
+      97,
+      98,
+      102,
+      110,
+      113,
+      122
+    ],
+    "camera_filter_median_ms": 94,
+    "camera_filter_p95_ms": 122,
+    "resource_count": 72,
+    "resource_transfer_bytes": 559202,
+    "loaded_preview_images": 9,
+    "video_requests": 0,
+    "dom_node_count": 266
+  },
+  "mobile_sized_browser_sample": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "dom_content_loaded_ms": 438,
+    "largest_contentful_paint_ms": 708,
+    "cumulative_layout_shift": 0.0,
+    "long_task_count": 1,
+    "long_task_max_ms": 82,
+    "event_timing_interactions": 12,
+    "event_timing_p50_ms": 64,
+    "event_timing_p95_ms": 72,
+    "camera_filter_action_to_expected_dom_state_ms": [
+      95,
+      101,
+      111,
+      111,
+      113,
+      114,
+      123,
+      125,
+      131,
+      135,
+      143,
+      198
+    ],
+    "camera_filter_median_ms": 114,
+    "camera_filter_p95_ms": 198,
+    "resource_count": 54,
+    "resource_transfer_bytes": 241549,
+    "loaded_preview_images": 9,
+    "video_requests": 0,
+    "dom_node_count": 266,
+    "document_scroll_width": 390,
+    "viewport_width": 390
+  },
+  "limitations": [
+    "One local headless-browser run on one host and viewport; it is not a physical-device, throttled-network or production-browser result.",
+    "DOM-state response timing includes automation overhead and is not click-to-paint.",
+    "Event Timing samples are sparse and are not a production INP distribution.",
+    "No media feed was selected, so video playback frame drops were not measured.",
+    "A 12-second settled sample does not establish sustained browser performance or long-duration inference reliability."
+  ]
+}

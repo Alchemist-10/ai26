@@ -36,3 +36,12 @@ groups:
         annotations:
           summary: AI26 camera processing is repeatedly failing
           description: A camera has recorded at least three failed processing attempts in five minutes.
+
+      - alert: AI26ArtifactStorageNearCapacity
+        expr: ai26_artifact_storage_utilization_ratio >= 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: AI26 sampled-read image storage is nearly full
+          description: Managed evidence images have used at least 90% of the configured storage budget for two minutes. New image capture may be incomplete until capacity is increased or retention cleanup runs.

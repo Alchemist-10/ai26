@@ -152,8 +152,9 @@ identity provider, or camera/NVR credentials; configure those separately before
 allowing remote access.
 
 The backend exposes Prometheus text metrics at `/api/metrics`. It reports bounded
-per-camera health and recent processor timing summaries without event, plate, or
-person data. When the authentication overlay is enabled, only administrator
+per-camera health, recent processor timing summaries, and managed evidence-image
+storage use/capacity without event, plate, or person data. The starter alert rules
+warn when evidence-image storage stays at or above 90% for two minutes. When the authentication overlay is enabled, only administrator
 sessions can scrape this endpoint. For unattended scraping, set
 `AI26_METRICS_TOKEN_FILE` to a protected file containing at least 32 random
 ASCII characters; a matching bearer token then grants access to this route only.

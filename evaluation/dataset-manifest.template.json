@@ -11,15 +11,15 @@
   "missing_inputs": [
     {
       "camera_id": "CAM-07",
-      "reason": "Readable plate footage and original capture metadata have not been supplied."
+      "reason": "A candidate clip is locally available, but source authorization, origin and original recording clock are unverified; no independent vehicle/session split with complete readable and negative labels is available for held-out evaluation."
     },
     {
       "camera_id": "CAM-08",
-      "reason": "Readable plate footage and original capture metadata have not been supplied."
+      "reason": "A candidate clip is locally available, but source authorization, origin and original recording clock are unverified; no independent vehicle/session split with complete readable and negative labels is available for held-out evaluation."
     },
     {
       "camera_id": "CAM-09",
-      "reason": "Readable plate footage and original capture metadata have not been supplied."
+      "reason": "A candidate clip is locally available, but source authorization, origin and original recording clock are unverified; no independent vehicle/session split with complete readable and negative labels is available for held-out evaluation."
     }
   ]
 }

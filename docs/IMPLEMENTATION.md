@@ -37,7 +37,7 @@
 
 `schemas.py` validates finite timestamps/confidence, ordered boxes, query strings
 and rule configuration. Invalid requests return a consistent JSON error envelope.
-SQLite schema version 14 has users, per-case and case-to-camera grants, hashed authentication sessions, encrypted TOTP enrollment, one-use recovery-code hashes and TOTP replay counters,
+SQLite schema version 15 has users, per-case and case-to-camera grants, hashed authentication sessions, encrypted TOTP enrollment, one-use recovery-code hashes and TOTP replay counters,
 atomic authentication-attempt limits, observations, passages, alerts, reports, settings, hash-chained audit,
 report artifact leases, camera revisions, directed camera-pair travel constraints and immutable
 queried journey-link decisions, plus 90-day live-source traffic buckets. Existing
@@ -83,10 +83,12 @@ capture-arrival clocks cannot support physical travel-time inference; those
 links remain unresolved candidates with null speed until synchronized capture
 clocks are available. The claimed offset uses frame index divided by reported
 FPS and is approximate for variable-frame-rate sources. For manual observations
-with confirmed location labels, the baseline uses exact plate equality and a
-fixed straight-line speed gate; coordinates and clocks remain unvalidated, and
-an accepted link does not prove identity. Rejected links and mixed routes require
-review, with null speed for equal/nonpositive timestamps.
+or legacy data, an unknown time basis now stays unresolved even when a route
+window exists. Only an explicit `synchronized_capture_clock` basis can pass the
+clock gate; no current runtime source emits it. Location coordinates and travel
+windows still require independent validation, and an accepted link would remain
+a candidate association rather than proof of identity. Rejected links and mixed
+routes require review, with null speed for equal/nonpositive timestamps.
 
 ## API
 

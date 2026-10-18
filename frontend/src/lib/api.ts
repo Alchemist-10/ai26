@@ -103,6 +103,16 @@ export interface SourceRelease {
   uploader_authenticated: boolean
   authenticated_uploader: string | null
   recording_clock: { start_utc: string; uncertainty_seconds: number | null; provenance: "operator_claimed"; status: "unverified" } | null
+  source_provenance: {
+    status: "operator_claimed" | "not_provided"
+    verified: false
+    archive_creator: string | null
+    export_system: string | null
+    external_camera_id: string | null
+    recording_timezone: string
+    authorization_basis: string | null
+    retention_note: string | null
+  }
   original: SourceFileMetadata
   playback: SourceFileMetadata
 }
@@ -139,8 +149,16 @@ export interface SourcePreparation {
   error: string | null
   release: SourceRelease | null
 }
-export function prepareCameraSource(cameraId: string, file: File, reviewer: string, reason: string, replace: boolean, recordingStartUTC: string, uncertaintySeconds: number | undefined, signal: AbortSignal): Promise<SourcePreparation> {
-  const metadata = JSON.stringify({filename:file.name,bytes:file.size,reviewer,reason,replace,recording_start_utc:recordingStartUTC || undefined,clock_uncertainty_seconds:uncertaintySeconds})
+export interface SourceProvenanceClaims {
+  archive_creator: string
+  export_system: string
+  external_camera_id: string
+  recording_timezone: string
+  authorization_basis: string
+  retention_note: string
+}
+export function prepareCameraSource(cameraId: string, file: File, reviewer: string, reason: string, replace: boolean, recordingStartUTC: string, uncertaintySeconds: number | undefined, provenance: SourceProvenanceClaims, signal: AbortSignal): Promise<SourcePreparation> {
+  const metadata = JSON.stringify({filename:file.name,bytes:file.size,reviewer,reason,replace,recording_start_utc:recordingStartUTC || undefined,clock_uncertainty_seconds:uncertaintySeconds,...provenance})
   const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(metadata)))
   if (encoded.length > 8192) return Promise.reject(new Error("Upload details are too long. Shorten the filename or reason."))
   return requestJson(`/api/cameras/${encodeURIComponent(cameraId)}/source/prepare`, {
@@ -212,6 +230,13 @@ export interface Stats {
   per_camera: Record<string, number>
   busiest_camera: string | null
   avg_confidence: number
+  metrics: {
+    camera_local_tracked_passages: { value: number; unit: "passages"; status: "sampled_unvalidated"; scope: string }
+    globally_unique_vehicles: { value: null; unit: "vehicles"; status: "not_measured"; reason: string }
+    occupancy_percent: { value: null; unit: "percent"; status: "not_measured"; reason: string }
+    density_vehicles_per_km: { value: null; unit: "vehicles/km"; status: "not_measured"; reason: string }
+    physical_speed_kmh: { value: null; unit: "km/h"; status: "not_measured"; reason: string }
+  }
 }
 
 export interface TrafficBaseline {
@@ -243,8 +268,8 @@ export interface TrajectoryHop {
   camera_id: string
   location: string
   location_confirmed: boolean
-  lat: number
-  lon: number
+  lat: number | null
+  lon: number | null
   ts: number
   confidence: number
   plate?: string
@@ -258,7 +283,7 @@ export interface TrajectoryLink {
   to_camera_id: string
   from_ts: number
   to_ts: number
-  distance_km: number
+  distance_km: number | null
   elapsed_seconds: number
   implied_speed_kmh: number | null
   reason?: string

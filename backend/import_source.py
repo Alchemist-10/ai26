@@ -14,12 +14,44 @@ import tempfile
 import time
 import uuid
 from fractions import Fraction
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from cameras import CAMERAS_BY_ID, camera_source
 from source_catalog import DATA_ROOT, SOURCE_ROOT, file_digest, load_source
 from source_clock import normalize_recording_clock
 
 DEFAULT_MAX_BYTES = 1024**3
+SOURCE_PROVENANCE_LIMITS = {
+    'archive_creator':200,'export_system':200,'external_camera_id':100,
+    'authorization_basis':500,'retention_note':500,
+}
+
+
+def normalize_source_provenance(*, archive_creator=None, export_system=None, external_camera_id=None,
+                                recording_timezone='unknown', authorization_basis=None, retention_note=None):
+    values={'archive_creator':archive_creator,'export_system':export_system,
+            'external_camera_id':external_camera_id,'authorization_basis':authorization_basis,
+            'retention_note':retention_note}
+    normalized={}
+    for key,value in values.items():
+        if value is None:
+            normalized[key]=None
+            continue
+        if not isinstance(value,str) or len(value.strip())>SOURCE_PROVENANCE_LIMITS[key]:
+            raise ValueError(f'{key.replace("_"," ").capitalize()} must be text within its length limit')
+        normalized[key]=value.strip() or None
+    if not isinstance(recording_timezone,str) or len(recording_timezone.strip())>64:
+        raise ValueError('Recording timezone must be an IANA timezone or unknown')
+    timezone=recording_timezone.strip()
+    if timezone.lower()=='unknown':
+        normalized['recording_timezone']='unknown'
+    else:
+        try: ZoneInfo(timezone)
+        except (ZoneInfoNotFoundError,ValueError) as error:
+            raise ValueError('Enter a valid IANA recording timezone or unknown') from error
+        normalized['recording_timezone']=timezone
+    supplied=any(value is not None for key,value in normalized.items() if key!='recording_timezone')
+    return {**normalized,'status':'operator_claimed' if supplied else 'not_provided','verified':False}
 
 
 def ffmpeg_version():
@@ -98,12 +130,17 @@ def inspect_source(source, max_bytes):
 
 def import_source(camera, source, reviewer=None, reason=None, *, replace=False, check=False, prepare=False,
                   source_root=SOURCE_ROOT, data_root=DATA_ROOT, max_bytes=DEFAULT_MAX_BYTES, timeout=600,
-                  recording_start_utc=None, clock_uncertainty_seconds=None):
+                  recording_start_utc=None, clock_uncertainty_seconds=None, archive_creator=None,
+                  export_system=None, external_camera_id=None, recording_timezone='unknown',
+                  authorization_basis=None, retention_note=None):
     if camera not in CAMERAS_BY_ID: raise ValueError('Unknown camera; choose an existing catalog ID')
     if not check and (not isinstance(reviewer,str) or not 1 <= len(reviewer.strip()) <= 100 or not isinstance(reason,str) or not 1 <= len(reason.strip()) <= 1000):
         raise ValueError('Enter a reviewer name (1–100) and reason (1–1000), excluding surrounding spaces')
     if not math.isfinite(timeout) or not 0 < timeout <= 3600: raise ValueError('Conversion timeout must be between 0 and 3600 seconds')
     recording_clock = normalize_recording_clock(recording_start_utc, clock_uncertainty_seconds)
+    source_provenance=normalize_source_provenance(archive_creator=archive_creator,export_system=export_system,
+        external_camera_id=external_camera_id,recording_timezone=recording_timezone,
+        authorization_basis=authorization_basis,retention_note=retention_note)
     source, metadata = inspect_source(source, max_bytes)
     if check:
         return {'check_only':True,'camera_id':camera,'bytes':source.stat().st_size,'sha256':file_digest(source),
@@ -154,6 +191,7 @@ def import_source(camera, source, reviewer=None, reason=None, *, replace=False, 
                       'prepared_without_activation':prepare,
                       'reviewer':reviewer.strip(),'reason':reason.strip(),'time_basis':'replay_clock',
                       'scope':'Local operator import; content, location and original clocks unverified',
+                      'source_provenance':source_provenance,
                       'conversion':{'recipe':'h264-preview-v1','ffmpeg_version':tool_version,
                                     'importer_sha256':file_digest(Path(__file__)), 'threads':1,'crf':23,'preset':'fast'},
                       'original':{'file':original.name,'bytes':original.stat().st_size,'sha256':file_digest(original),'video':original_video},
@@ -187,11 +225,19 @@ def main(argv=None):
     parser.add_argument('--prepare',action='store_true',help='Prepare a retained release without changing active.json; processing may continue')
     parser.add_argument('--recording-start-utc',help='Operator-claimed original recording start, ISO-8601 with timezone')
     parser.add_argument('--clock-uncertainty-seconds',type=float,help='Operator estimate of recording-clock uncertainty (0–86400 seconds)')
+    parser.add_argument('--archive-creator',help='Operator-claimed person or organization that created/provided the archive')
+    parser.add_argument('--export-system',help='Operator-claimed camera/NVR/export software')
+    parser.add_argument('--external-camera-id',help='Camera identifier shown by the recording system')
+    parser.add_argument('--recording-timezone',default='unknown',help='Operator-claimed IANA source timezone, or unknown')
+    parser.add_argument('--authorization-basis',help='Operator-claimed basis for storing and processing the footage')
+    parser.add_argument('--retention-note',help='Operator-claimed retention or deletion terms; does not configure automatic deletion')
     parser.add_argument('--max-bytes',type=int,default=DEFAULT_MAX_BYTES);parser.add_argument('--timeout',type=float,default=600)
     args=parser.parse_args(argv)
     try:
         result=import_source(args.camera,args.file,args.reviewer,args.reason,replace=args.replace,check=args.check,prepare=args.prepare,max_bytes=args.max_bytes,timeout=args.timeout,
-                             recording_start_utc=args.recording_start_utc,clock_uncertainty_seconds=args.clock_uncertainty_seconds)
+                             recording_start_utc=args.recording_start_utc,clock_uncertainty_seconds=args.clock_uncertainty_seconds,
+                             archive_creator=args.archive_creator,export_system=args.export_system,external_camera_id=args.external_camera_id,
+                             recording_timezone=args.recording_timezone,authorization_basis=args.authorization_basis,retention_note=args.retention_note)
     except (OSError,ValueError,subprocess.SubprocessError) as error:
         detail=error.stderr[-1500:] if isinstance(error,subprocess.CalledProcessError) and error.stderr else str(error)
         print(f'Import failed: {detail}',file=sys.stderr);return 1

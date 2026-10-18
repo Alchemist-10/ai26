@@ -101,10 +101,29 @@ def assess_profile_quality(samples, interval, health_failures, counter_window_va
                     anomalies.append({'kind':'long_sample_gap','from_elapsed_seconds':previous_elapsed,
                                       'to_elapsed_seconds':elapsed,'gap_seconds':round(gap,3),
                                       'expected_interval_seconds':interval})
+                previous_wall=previous.get('wall_time_epoch')
+                current_wall=sample.get('wall_time_epoch')
+                if (isinstance(previous_wall,(int,float)) and math.isfinite(previous_wall)
+                        and isinstance(current_wall,(int,float)) and math.isfinite(current_wall)):
+                    wall_discrepancy=(current_wall-previous_wall)-gap
+                    if abs(wall_discrepancy)>max(10.0,interval*5):
+                        anomalies.append({'kind':'host_wall_clock_discontinuity',
+                                          'from_elapsed_seconds':previous_elapsed,
+                                          'to_elapsed_seconds':elapsed,'sample_gap_seconds':round(gap,3),
+                                          'wall_clock_discrepancy_seconds':round(wall_discrepancy,3)})
                 before_ages=previous.get('frame_ages_seconds',{})
                 current_ages=sample.get('frame_ages_seconds',{})
+                before_frames=previous.get('frames',{})
+                current_frames=sample.get('frames',{})
                 if isinstance(before_ages,dict) and isinstance(current_ages,dict):
                     for camera_id in sorted(set(before_ages)&set(current_ages)):
+                        # A newly processed frame resets its age by design. Only use
+                        # age drift as a clock signal when that camera had no new frame.
+                        before_count=before_frames.get(camera_id) if isinstance(before_frames,dict) else None
+                        current_count=current_frames.get(camera_id) if isinstance(current_frames,dict) else None
+                        if (type(before_count) is int and type(current_count) is int
+                                and current_count>before_count):
+                            continue
                         before_age=before_ages[camera_id];current_age=current_ages[camera_id]
                         if (isinstance(before_age,(int,float)) and math.isfinite(before_age)
                                 and isinstance(current_age,(int,float)) and math.isfinite(current_age)):
@@ -139,6 +158,7 @@ def profile(origin, duration, interval, pid=None, cookie_header=None):
         try:
             health=get_health();last=health;last_at=time.monotonic()
             sample={'elapsed_seconds':round(last_at-started,3),'health_latency_ms':round((last_at-began)*1000,3),
+                    'wall_time_epoch':time.time(),
                     'frames':{c['camera_id']:c['frames'] for c in health['cameras']},
                     'statuses':{c['camera_id']:c.get('status') for c in health['cameras']},
                     'frame_ages_seconds':{c['camera_id']:c.get('frame_age_seconds') for c in health['cameras']}}

@@ -72,13 +72,22 @@ class Preparation(unittest.TestCase):
         value={**META,'reviewer':'测试者'}
         encode=lambda val:base64.b64encode(json.dumps(val).encode()).decode()
         self.assertEqual(parse_metadata(encode(value))['reviewer'],'测试者')
+        provenance={**META,'archive_creator':' Transit Ops ','export_system':'NVR-X',
+                    'external_camera_id':'Gate 7','recording_timezone':'Asia/Kolkata',
+                    'authorization_basis':'Research authorization','retention_note':'Delete after review'}
+        parsed=parse_metadata(encode(provenance))
+        self.assertEqual(parsed['archive_creator'],'Transit Ops')
+        self.assertEqual(parsed['recording_timezone'],'Asia/Kolkata')
+        self.assertEqual(parsed['retention_note'],'Delete after review')
         clock={**META,'recording_start_utc':'2026-10-14T12:00:00+05:30','clock_uncertainty_seconds':1.5}
         self.assertEqual(parse_metadata(encode(clock))['recording_start_utc'],clock['recording_start_utc'])
         for value in ({**META,'bytes':True},{**META,'bytes':MAX_UPLOAD_BYTES+1},{**META,'reviewer':' '},{**META,'replace':'false'},{**META,'extra':'field'}):
             with self.assertRaises(ValueError):parse_metadata(encode(value))
         for value in ({**META,'recording_start_utc':'2026-10-14T12:00:00'},
                       {**META,'clock_uncertainty_seconds':2},
-                      {**META,'recording_start_utc':'2026-10-14T12:00:00Z','clock_uncertainty_seconds':True}):
+                      {**META,'recording_start_utc':'2026-10-14T12:00:00Z','clock_uncertainty_seconds':True},
+                      {**META,'recording_timezone':'Mars/Olympus'},
+                      {**META,'archive_creator':'x'*201}):
             with self.assertRaises(ValueError):parse_metadata(encode(value))
         for value in ('invalid','x'*8193,None):
             with self.assertRaises(ValueError):parse_metadata(value)

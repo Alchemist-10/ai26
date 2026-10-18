@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "scope": "Read-only production Processor.decode_frame contract check on active managed originals; no inference or OCR",
+  "conditions": {
+    "prime_frame": 100,
+    "target_frame": 321,
+    "gap_from_verified_next_position": 220,
+    "decode_threads": 2,
+    "pixel_hash": "SHA-256 of decoded raw frame bytes",
+    "timings": "Exploratory only; warm forward reader compared with a newly opened seek reader, so no performance conclusion is drawn"
+  },
+  "cases": [
+    {
+      "camera_id": "CAM-07",
+      "source_sha256": "661be1e99aa302d161dfc9ccd1e83cfe7fe0811e40f6305ec97aa480b7a3b689",
+      "configured_limit": 221,
+      "selected_mode": "forward",
+      "grabbed_frames": 221,
+      "position_verified": true,
+      "next_position": 322,
+      "pixels_match_seek": true,
+      "frame_sha256": "6672af8a6fc6caaf61da7d42585fc77cdffeacb58a79ce5b39a3ef61aadf3eff"
+    },
+    {
+      "camera_id": "CAM-08",
+      "source_sha256": "348d6ea0468d067c753c3d1f962fa2d4adaefef4e5a6372f98c587f822614b3d",
+      "configured_limit": 128,
+      "selected_mode": "seek",
+      "grabbed_frames": 1,
+      "position_verified": true,
+      "next_position": 322,
+      "pixels_match_seek": true,
+      "frame_sha256": "33ec56a567316015d363d27127762fbdca73ef9bbcaed2f0a179eb39075a7446"
+    },
+    {
+      "camera_id": "CAM-09",
+      "source_sha256": "e30b35701c0962bd22b96acdf8096f1d440f5c21f10978d8e8bb858a4783f341",
+      "configured_limit": 221,
+      "selected_mode": "forward",
+      "grabbed_frames": 221,
+      "position_verified": true,
+      "next_position": 322,
+      "pixels_match_seek": true,
+      "frame_sha256": "91d1695ed7e01e864148bdceea995f27cd83a251575673f865c19ab6e3f61b56"
+    }
+  ],
+  "result": "The running implementation selected the expected per-source path and produced the same target pixels as seek/read for all three supplied originals. This is a decoder contract check, not an end-to-end throughput result or OCR validation."
+}

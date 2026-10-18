@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from bisect import bisect_left, bisect_right
-from math import asin, cos, radians, sin, sqrt
+from math import asin, cos, isfinite, radians, sin, sqrt
 from collections import Counter
 from statistics import mean, median
 from zoneinfo import ZoneInfo
@@ -22,7 +22,8 @@ from retention_policy import settings as retention_settings
 MAX_EVENTS = 5000
 WINDOW_SECONDS = 300
 MAX_TRAVEL_SPEED_KMH = 160
-LINK_ALGORITHM_VERSION = 'exact-plate-pair-constraints-v3'
+LINK_ALGORITHM_VERSION = 'exact-plate-pair-constraints-v4'
+SYNCHRONIZED_CAPTURE_TIME_BASIS = 'synchronized_capture_clock'
 store = Repository(Path(os.environ.get('AI26_DATA_ROOT', Path(__file__).parent / 'data')) / 'ai26.sqlite3')
 DEFAULT_RULES = {'watchlist': {'KL07AB1234': 'Local example watchlist entry; human review required'},
                  'watchlist_conditions': {}, 'restricted_cameras': ['CAM-09'],
@@ -66,15 +67,24 @@ def _distance_km(first, second):
     return 6371 * 2 * asin(min(1, sqrt(h)))
 
 
+def _confirmed_coordinates(camera):
+    lat, lon = camera.get('lat'), camera.get('lon')
+    return (camera.get('location_confirmed') is True and
+            type(lat) in (int, float) and type(lon) in (int, float) and
+            isfinite(lat) and isfinite(lon) and -90 <= lat <= 90 and -180 <= lon <= 180)
+
+
 def build_trajectory(observations):
     ordered = sorted(observations, key=lambda e: (e['ts'], e.get('event_id','')))
     catalog = {c['id']:c for c in store.camera_catalog()}
     hops = []
     for event in ordered:
         camera = event.get('camera_configuration') or catalog.get(event['camera_id'], {})
+        coordinates_confirmed = _confirmed_coordinates(camera)
         hops.append({**event, 'location': camera.get('location', 'Unknown'),
                      'location_confirmed': camera.get('location_confirmed', False),
-                     'lat': camera.get('lat'), 'lon': camera.get('lon'),
+                     'lat': camera.get('lat') if coordinates_confirmed else None,
+                     'lon': camera.get('lon') if coordinates_confirmed else None,
                      'camera_configuration':camera,
                      'metadata_basis':'observation_snapshot' if event.get('camera_configuration') else 'current_catalog_legacy',
                      'repairs': event.get('repairs', [])})
@@ -82,15 +92,16 @@ def build_trajectory(observations):
     for first, second in zip(hops, hops[1:]):
         if first['camera_id'] == second['camera_id']: continue
         elapsed = second['ts'] - first['ts']
-        distance = _distance_km(first, second)
-        speed = distance * 3600 / elapsed if elapsed > 0 else None
+        locations_calibrated = _confirmed_coordinates(first['camera_configuration']) and _confirmed_coordinates(second['camera_configuration'])
+        distance = _distance_km(first, second) if locations_calibrated else None
+        speed = distance * 3600 / elapsed if distance is not None and elapsed > 0 else None
         pair_constraint=store.camera_pair_constraint(first['camera_id'],second['camera_id'])
         constraint_matches=bool(pair_constraint and
             pair_constraint['from_revision']==first['camera_configuration']['revision'] and
             pair_constraint['to_revision']==second['camera_configuration']['revision'])
         pair_snapshot={**pair_constraint,'matches_observation_revisions':constraint_matches} if pair_constraint else None
         link = {'from_camera_id': first['camera_id'], 'to_camera_id': second['camera_id'],
-                'from_ts': first['ts'], 'to_ts': second['ts'], 'distance_km': round(distance, 3),
+                'from_ts': first['ts'], 'to_ts': second['ts'], 'distance_km': round(distance, 3) if distance is not None else None,
                 'elapsed_seconds': round(elapsed, 3), 'implied_speed_kmh': round(speed, 1) if speed is not None else None,
                 'from_passage_id': first.get('passage_id'), 'to_passage_id': second.get('passage_id'), 'method': 'exact_plate',
                 'supporting_event_ids':[first.get('event_id'),second.get('event_id')],
@@ -98,11 +109,13 @@ def build_trajectory(observations):
                 'camera_configurations':[first['camera_configuration'],second['camera_configuration']],
                 'camera_pair_constraint':pair_snapshot,
                 'metadata_basis':[first['metadata_basis'],second['metadata_basis']],
-                'time_bases':[first.get('time_basis','unspecified'),second.get('time_basis','unspecified')],
+                'time_bases':[first.get('time_basis') or 'unspecified',second.get('time_basis') or 'unspecified'],
                 'identity_verified':False}
-        # Replay position and reader-arrival times are not synchronized capture clocks.
-        uncalibrated = not first['location_confirmed'] or not second['location_confirmed'] or any(
-            e.get('time_basis') in ('replay_clock', 'capture_arrival_clock') for e in (first, second))
+        # Only a future explicitly calibrated capture-clock basis can support route timing.
+        # Replay, arrival, manual, legacy and unknown timestamp bases all abstain.
+        clocks_calibrated = all(e.get('time_basis') == SYNCHRONIZED_CAPTURE_TIME_BASIS
+                                for e in (first, second))
+        uncalibrated = not locations_calibrated or not clocks_calibrated
         if elapsed <= 0:
             rejected.append({**link, 'reason': 'nonpositive elapsed time; transition cannot be established'})
         elif uncalibrated:
@@ -285,8 +298,26 @@ def stats(since=None, until=None,camera_ids=None):
     start = now-WINDOW_SECONDS if since is None else since
     end = now if until is None else until
     # Aggregate across all rows, not the paginated raw-read API limit.
-    return {**store.statistics(start,end,now,camera_ids=camera_ids), 'interval':{'since':start,'until':end},
-            'metric':'camera-local tracked passages, not globally unique vehicles', 'coverage':'sampled recorded inputs'}
+    result=store.statistics(start,end,now,camera_ids=camera_ids)
+    return {**result, 'interval':{'since':start,'until':end},
+            'metric':'camera-local tracked passages, not globally unique vehicles', 'coverage':'sampled recorded inputs',
+            'metrics':{
+                'camera_local_tracked_passages':{
+                    'value':result['vehicle_passages'],'unit':'passages','status':'sampled_unvalidated',
+                    'scope':'deduplicated local track passages; count accuracy is unmeasured'},
+                'globally_unique_vehicles':{
+                    'value':None,'unit':'vehicles','status':'not_measured',
+                    'reason':'Cross-camera identity is not verified; passage counts cannot be summed as unique vehicles.'},
+                'occupancy_percent':{
+                    'value':None,'unit':'percent','status':'not_measured',
+                    'reason':'No calibrated lane geometry or road-area denominator is configured.'},
+                'density_vehicles_per_km':{
+                    'value':None,'unit':'vehicles/km','status':'not_measured',
+                    'reason':'No calibrated road segment, lane length, or globally deduplicated vehicle count is available.'},
+                'physical_speed_kmh':{
+                    'value':None,'unit':'km/h','status':'not_measured',
+                    'reason':'Route distance and synchronized capture clocks are not independently calibrated.'},
+            }}
 
 
 def flows(since=None, until=None,camera_ids=None):

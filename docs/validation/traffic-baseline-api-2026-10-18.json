@@ -1,0 +1,17 @@
+{
+  "captured_at_utc": "2026-10-18T05:34:18+00:00",
+  "endpoint": "/api/traffic/baselines?days=28",
+  "timezone": "Asia/Kolkata",
+  "scope": "Live-source camera-local tracked vehicle passages; one sample per local passage",
+  "camera_count": 9,
+  "statuses": {
+    "no_live_history": 9
+  },
+  "all_latest_passages_null": true,
+  "all_comparable_history_counts_zero": true,
+  "interpretation": "The running local instance has no qualifying live-source history. Its currently active recorded/replay clips are not eligible as live traffic history.",
+  "limitations": [
+    "This is one read-only snapshot of the local API, not evidence of sustained live capture or historical baseline accuracy.",
+    "It does not establish independent passage-count accuracy, physical road-segment volume, speed, or zero traffic."
+  ]
+}

@@ -4,11 +4,11 @@ from pathlib import Path
 FOOTAGE_ROOT = Path(os.environ.get("AI26_FOOTAGE_ROOT", str(Path(__file__).parent / "data" / "footage")))
 PLAYBACK_ROOT = Path(__file__).parent / "static" / "playback"
 
-# Location comes only from what the footage itself proves: the plate-corridor clips have
-# a real junction name burned into the on-screen overlay by the NVR/PTZ unit — that's a
-# verified location. The grey-Tata clips only burn in a camera model string ("VIGI C330"),
-# no place name, and ffprobe confirms no GPS/EXIF tags on any of these files — so those six
-# are honestly unconfirmed, clustered near one real anchor point instead of invented names.
+# The plate clips contain junction names in their own overlays. CAM-07–09 include public
+# junction-level reference points, but the exact camera pole is not surveyed, so defaults
+# stay unconfirmed until an operator reviews them. Clock and route calibration also remain
+# unverified. The grey-Tata clips have no place name or GPS/EXIF; their coordinates are
+# display-only placeholders.
 UNCONFIRMED_ANCHOR = (9.9736, 76.2870)  # Kochi city centroid, not a claimed exact site
 
 CAMERAS = [
@@ -66,32 +66,31 @@ CAMERAS = [
         "lon": UNCONFIRMED_ANCHOR[1] - 0.006,
         "path": str(FOOTAGE_ROOT / "grey-tata-videos" / "VIGI NVR1016H(UN)(008)_6C-A8_20260914174845-20260914174957_0_1789573469522.mp4"),
     },
-    # plate-recognition corridor — location read directly off the burned-in PTZ overlay text
     {
         "id": "CAM-07",
         "kind": "plate",
-        "location": "Subhash Chandra Bose Jn",
-        "location_confirmed": True,
-        "lat": 9.9680,
-        "lon": 76.2810,
+        "location": "Subhash Chandra Bose Junction, Ponnurunni, Vyttila (junction reference)",
+        "location_confirmed": False,
+        "lat": 9.9690984,
+        "lon": 76.3177064,
         "path": str(FOOTAGE_ROOT / "numberplate-vids" / "clip 4.mp4"),
     },
     {
         "id": "CAM-08",
         "kind": "plate",
-        "location": "Kathrikkadavu Junction",
-        "location_confirmed": True,
-        "lat": 9.9846,
-        "lon": 76.2932,
+        "location": "Kathrikkadavu Junction, Kochi (junction reference)",
+        "location_confirmed": False,
+        "lat": 9.9839,
+        "lon": 76.29564,
         "path": str(FOOTAGE_ROOT / "numberplate-vids" / "clip_2_00_25-00_50.mp4"),
     },
     {
         "id": "CAM-09",
         "kind": "plate",
-        "location": "Petta Junction",
-        "location_confirmed": True,
-        "lat": 9.9430,
-        "lon": 76.3487,
+        "location": "Petta Junction, Tripunithura (junction reference)",
+        "location_confirmed": False,
+        "lat": 9.951282,
+        "lon": 76.331369,
         "path": str(FOOTAGE_ROOT / "numberplate-vids" / "clip_2_00_30-01_00.mp4"),
     },
 ]

@@ -64,13 +64,13 @@ def validate_manifest(path: Path) -> dict[str, Any]:
         raise ManifestError(f"cannot read JSON manifest: {error}") from error
     if not isinstance(document, dict):
         raise ManifestError("manifest root must be an object")
-    if document.get("schema_version") != 1:
+    if type(document.get("schema_version")) is not int or document["schema_version"] != 1:
         raise ManifestError("schema_version must be 1")
     dataset_id = _text(document.get("dataset_id"), "dataset_id")
     dimensions = _array(document.get("split_dimensions"), "split_dimensions")
     if (not dimensions or any(not isinstance(d, str) or d not in DIMENSIONS for d in dimensions)
-            or len(set(dimensions)) != len(dimensions)):
-        raise ManifestError(f"split_dimensions must contain unique values from {sorted(DIMENSIONS)}")
+            or len(set(dimensions)) != len(dimensions) or set(dimensions) != DIMENSIONS):
+        raise ManifestError(f"split_dimensions must contain every required dimension exactly once: {sorted(DIMENSIONS)}")
 
     root = path.resolve().parent
     clips = _array(document.get("clips"), "clips")

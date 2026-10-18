@@ -1,7 +1,7 @@
 import { usePolling } from "@/hooks/usePolling"
 import { useMemo, useState } from "react"
 import { FileText, Search } from "lucide-react"
-import { createEvidenceReport, getTrajectory, scopedResourceUrl, type Camera, type EvidenceReport, type Trajectory } from "@/lib/api"
+import { createEvidenceReport, getTrajectory, scopedResourceUrl, type Camera, type EvidenceReport, type Trajectory, type TrajectoryHop } from "@/lib/api"
 import { EvidenceTimeline } from "@/components/panels/EvidenceTimeline"
 import { OsmMap, type MapLine } from "@/components/OsmMap"
 import { DEMO_PLATE } from "@/lib/demo"
@@ -10,6 +10,11 @@ const button = "rounded-md border border-zinc-700 px-3 py-2 text-sm hover:bg-zin
 const field = "min-w-0 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-base text-white"
 
 type Investigation = { plate: string; since: string; until: string }
+
+function hasConfirmedPosition(hop: TrajectoryHop): hop is TrajectoryHop & {lat:number;lon:number} {
+  return hop.location_confirmed && typeof hop.lat === "number" && Number.isFinite(hop.lat) &&
+    typeof hop.lon === "number" && Number.isFinite(hop.lon)
+}
 
 function Results({ query }: { query: Investigation }) {
   const [trajectory, setTrajectory] = useState<Trajectory | null>(null)
@@ -46,7 +51,7 @@ function Results({ query }: { query: Investigation }) {
       for (const [i, link] of links.entries()) {
         const a = hops.find((h) => h.camera_id === link.from_camera_id && h.ts === link.from_ts)
         const b = hops.find((h) => h.camera_id === link.to_camera_id && h.ts === link.to_ts)
-        if (a && b && a.location_confirmed && b.location_confirmed && [a.lat,a.lon,b.lat,b.lon].every(Number.isFinite)) lines.push({id:`${state}-${i}`,points:[[a.lat,a.lon],[b.lat,b.lon]],color:state === "accepted" ? "#38d1c2" : state === "rejected" ? "#ff5c72" : "#ffb545",dashed:state !== "accepted",width:3})
+        if (a && b && hasConfirmedPosition(a) && hasConfirmedPosition(b)) lines.push({id:`${state}-${i}`,points:[[a.lat,a.lon],[b.lat,b.lon]],color:state === "accepted" ? "#38d1c2" : state === "rejected" ? "#ff5c72" : "#ffb545",dashed:state !== "accepted",width:3})
       }
     }
   }
@@ -61,7 +66,7 @@ function Results({ query }: { query: Investigation }) {
       {report.image_review_candidates && <div className="mt-4 border-t border-zinc-800 pt-3"><h3 className="font-medium">Image review shortlist</h3><p className="mt-1 text-xs text-zinc-400">Highest-scoring three crops · heuristic only, not OCR accuracy. All raw images remain in the report.</p>{topImageCandidates.length > 0 ? <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">{topImageCandidates.map((candidate,index)=><li key={candidate.crop_sha256} className="min-w-0"><a className="block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400" href={scopedResourceUrl(`/api/artifacts/${candidate.crop_sha256}`)} target="_blank" rel="noreferrer" aria-label={`Open image review candidate ${index+1}`}><img src={scopedResourceUrl(`/api/artifacts/${candidate.crop_sha256}`)} alt={`Plate crop review candidate ${index+1}`} loading="lazy" decoding="async" width="240" height="96" className="h-24 w-full rounded-sm border border-zinc-800 bg-zinc-950 object-contain" /><span className="mt-1 block text-xs text-zinc-300">Candidate {index+1} · heuristic {candidate.score.toFixed(2)}</span><span className="block truncate font-mono text-[10px] text-zinc-500">{candidate.crop_sha256}</span></a></li>)}</ul> : <p className="mt-2 text-xs text-zinc-400">No current stored plate crops were available to rank.</p>}</div>}
     </div>}
     {!!hops.length && <div className="grid gap-4 lg:grid-cols-2">
-      <div><div className="h-80 overflow-hidden rounded border border-zinc-700"><OsmMap points={hops.filter(h=>h.location_confirmed&&[h.lat,h.lon].every(Number.isFinite)).map((h,i)=>({id:`${h.camera_id}-${i}`,lat:h.lat,lon:h.lon,label:h.camera_id,detail:h.location}))} lines={lines} className="h-full w-full" /></div><p className="mt-2 text-xs text-zinc-400">Only confirmed locations and transitions are plotted. Unconfirmed observations remain listed with their camera IDs and timestamp.</p></div>
+      <div><div className="h-80 overflow-hidden rounded border border-zinc-700"><OsmMap points={hops.filter(hasConfirmedPosition).map((h,i)=>({id:`${h.camera_id}-${i}`,lat:h.lat,lon:h.lon,label:h.camera_id,detail:h.location}))} lines={lines} className="h-full w-full" /></div><p className="mt-2 text-xs text-zinc-400">Only confirmed locations and transitions are plotted. Unconfirmed observations remain listed with their camera IDs and timestamp.</p></div>
       <div className="space-y-3"><p className="text-sm text-zinc-400">Solid teal: travel-gated candidates. Dashed amber: unresolved calibration. Dashed red: rejected transitions.</p>
         {hops.map((h,i)=><div key={`${h.camera_id}-${h.ts}-${i}`} className="border-b border-zinc-800 pb-3"><p>{h.camera_id} · {new Date(h.ts*1000).toLocaleString()}</p><p className="text-sm text-zinc-400">{h.location_confirmed?h.location:"Location unconfirmed"} · OCR confidence {Math.round(h.confidence*100)}%</p><p className="text-sm">Raw: {h.plate_raw ?? "unavailable"} · canonical: {h.plate}</p><p className="text-xs text-zinc-400">{h.time_basis === "replay_clock" ? "Replay clock; original capture time unknown" : "Provided observation timestamp"}</p></div>)}
         {[...trajectory!.rejected_links,...trajectory!.candidate_links].map((l,i)=><p key={i} className="text-sm text-amber-200">{l.from_camera_id} → {l.to_camera_id}: {l.reason}</p>)}

@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-10-16T07:44:27+00:00",
+  "source_scope": "Current active managed release only; persisted local observations, including replay loops.",
+  "cameras": {
+    "CAM-07": {
+      "active_source_available": true,
+      "plate_read_observations": 9,
+      "format_valid_read_observations": 0,
+      "local_track_groups": 9,
+      "track_groups_with_format_valid_read": 0
+    },
+    "CAM-08": {
+      "active_source_available": true,
+      "plate_read_observations": 44,
+      "format_valid_read_observations": 4,
+      "local_track_groups": 43,
+      "track_groups_with_format_valid_read": 4
+    },
+    "CAM-09": {
+      "active_source_available": true,
+      "plate_read_observations": 110,
+      "format_valid_read_observations": 24,
+      "local_track_groups": 110,
+      "track_groups_with_format_valid_read": 24
+    }
+  },
+  "visual_review": {
+    "candidate_crops_spot_checked": 9,
+    "human_reviewed_samples": 9,
+    "readable_samples_with_exact_transcription": 3,
+    "unreadable_samples": 5,
+    "uncertain_samples": 1,
+    "readable_samples_compared_to_stored_raw_output": 3,
+    "exact_raw_output_matches": 0,
+    "raw_output_mismatches": 3,
+    "comparison_method": "Matched the locally reviewed crop to its persisted plate-read observation using camera, session, frame, and crop bounding box; compared canonicalized character strings.",
+    "review_scope": "One selected crop per camera-local tracker identifier in the sampled set. Replay-loop and physical-vehicle independence are not established.",
+    "local_review_packet": "backend/data/review/cam07-09-groundtruth-template.json (git-ignored; contains reviewer transcriptions and crop/source metadata)",
+    "plate_values_or_images_in_report": false
+  },
+  "accuracy_claim_allowed": false,
+  "limitations": [
+    "Three readable crop labels were compared and all three persisted raw OCR strings differed from the reviewer transcription; this tiny selected set is not a representative accuracy estimate.",
+    "Format validity is not correctness.",
+    "Five unreadable and one uncertain crop were excluded from exact-string comparison.",
+    "Track groups are application-generated and may split one physical vehicle.",
+    "Counts include repeated reads across replay loops.",
+    "No readable negatives, detector misses, independent vehicle/session splits, or held-out labels are measured."
+  ],
+  "offline_preprocessing_probe": {
+    "purpose": "Check whether simple crop transforms or additional frame context recover exact OCR on the three reviewed readable crops.",
+    "preprocessing_variants": [
+      "original",
+      "upscale_3x",
+      "CLAHE",
+      "CLAHE_upscale_3x",
+      "sharpen_upscale_3x",
+      "Otsu_threshold",
+      "inverted_Otsu_threshold"
+    ],
+    "frame_context_margins_percent": [
+      0,
+      3,
+      6,
+      10,
+      15,
+      20
+    ],
+    "exact_match_counts_by_preprocessing_variant": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "exact_match_counts_by_context_margin": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "sample_count": 3,
+    "result": "No tested variant produced an exact match on this three-crop set. No preprocessing change was promoted to the live pipeline.",
+    "limitations": [
+      "Exploratory, selected crops only; these counts do not estimate general OCR accuracy.",
+      "Higher OCR confidence on transformed images did not establish correctness."
+    ]
+  },
+  "followup_review": {
+    "candidate_crops_prepared": 12,
+    "human_reviewed_samples": 12,
+    "readable_samples_with_exact_transcription": 1,
+    "unreadable_samples": 11,
+    "uncertain_samples": 0,
+    "pending_review_samples": 0,
+    "readable_samples_compared_to_stored_raw_output": 1,
+    "exact_raw_output_matches": 0,
+    "raw_output_mismatches": 1,
+    "comparison_method": "Matched the reviewed crop to its persisted plate-read observation using camera, session, frame, and bounding box; compared canonicalized character strings.",
+    "selection_scope": "Four additional candidate crops per camera, selected from active-source observations by the existing unvalidated image-review heuristic, excluding earlier reviewed crop hashes and spacing selected offsets by at least two seconds.",
+    "plate_values_or_images_in_report": false,
+    "limitation": "This one reviewed follow-up crop is not representative and does not estimate OCR accuracy."
+  }
+}
