@@ -1,9 +1,7 @@
 ---
-import "@fontsource/noto-sans/400.css";
-import "@fontsource/noto-sans/500.css";
-import "@fontsource/noto-sans/700.css";
-import "@fontsource/noto-sans-mono/400.css";
-import "../styles/global.css";
+import "@fontsource-variable/geist";
+import "@fontsource-variable/geist-mono";
+import "../styles/site.css";
 const REPO = "https://github.com/moneytosms/ai26";
 
 interface Props {
@@ -13,6 +11,13 @@ interface Props {
 const { title, description } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const nav = [
+  ["Product", "#product"],
+  ["Pipeline", "#pipeline"],
+  ["Results", "#results"],
+  ["Limits", "#limits"],
+  ["FAQ", "#faq"],
+];
 ---
 
 <!doctype html>
@@ -28,10 +33,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta name="theme-color" content="#f5fafa" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0b141a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#0b0f13" />
     <script is:inline>
-      // Apply a saved theme before first paint. No saved choice: follow the OS.
+      // Saved theme before first paint. No saved choice: dark.
       try {
         const t = localStorage.getItem("sakshi-theme");
         if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
@@ -39,152 +43,89 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       document.documentElement.classList.add("js");
     </script>
   </head>
-  <body>
+  <body class="min-h-dvh antialiased">
     <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header glass">
-      <div class="site-header__inner">
-        <a class="brand" href={`${base}/`} aria-label="Sakshi home">
-          <span class="brand__mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <header class="glass sticky top-0 z-50 border-x-0 border-t-0 shadow-none">
+      <div class="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
+        <a class="flex items-center gap-2.5 font-semibold tracking-tight text-fg no-underline hover:text-fg" href={`${base}/`} aria-label="Sakshi home">
+          <span class="grid size-7 place-items-center rounded-lg bg-primary text-primary-fg shadow-[0_0_20px_var(--glow)]" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" /><circle cx="12" cy="12" r="2.5" fill="currentColor" />
             </svg>
           </span>
           <span>Sakshi</span>
         </a>
-        <nav aria-label="Primary" class="site-nav">
-          <a href={`${base}/#story`}>Story</a>
-          <a href={`${base}/present`}><span class="nav-long">Presentation</span><span class="nav-short">Slides</span></a>
-          <a href={REPO} rel="noopener">Source</a>
-          <button class="theme-toggle" type="button" aria-label="Switch colour theme" data-theme-toggle>
-            <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
-            <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
-          </button>
+        <nav aria-label="Sections" class="ml-6 hidden items-center gap-1 md:flex">
+          {nav.map(([label, href]) => (
+            <a class="rounded-md px-3 py-1.5 text-sm text-muted-fg no-underline transition-colors hover:bg-muted hover:text-fg" href={`${base}/${href}`}>{label}</a>
+          ))}
         </nav>
+        <div class="ml-auto flex items-center gap-1.5">
+          <a class="rounded-md px-3 py-1.5 text-sm font-medium text-fg no-underline transition-colors hover:bg-muted hover:text-fg" href={`${base}/present`}>Slides</a>
+          <a class="grid size-9 place-items-center rounded-md text-muted-fg transition-colors hover:bg-muted hover:text-fg" href={REPO} rel="noopener" aria-label="Source on GitHub">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.7 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z" /></svg>
+          </a>
+          <button class="theme-toggle grid size-9 cursor-pointer place-items-center rounded-md border border-line bg-transparent text-fg transition-colors hover:bg-muted" type="button" aria-label="Switch colour theme" data-theme-toggle>
+            <svg class="i-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            <svg class="i-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+          </button>
+        </div>
       </div>
     </header>
 
-    <main id="main" tabindex="-1">
+    <main id="main" tabindex="-1" class="overflow-x-clip focus:outline-none">
       <slot />
     </main>
 
-    <footer class="site-footer">
-      <div class="site-footer__inner">
-        <p>
-          Sakshi is an academic project. Plates and vehicles drawn on this site are synthetic; no plate string or
-          private frame from the project footage is reproduced here.
-        </p>
-        <p class="site-footer__links">
-          <a href={`${base}/present`}>Slides</a>
-          <a href={REPO}>Source on GitHub</a>
-        </p>
+    <footer class="mt-28 border-t border-line">
+      <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.6fr_1fr_1fr]">
+        <div class="max-w-sm">
+          <p class="flex items-center gap-2 font-semibold tracking-tight">
+            <span class="size-2 rounded-full bg-primary"></span> Sakshi
+          </p>
+          <p class="mt-3 text-sm text-muted-fg">
+            An academic coursework project, not a product. Screenshots show the app running on the team's recorded
+            footage; plate strings drawn on this site are synthetic.
+          </p>
+        </div>
+        <div>
+          <p class="text-sm font-medium">Project</p>
+          <ul class="mt-3 space-y-2 text-sm">
+            <li><a class="text-muted-fg no-underline hover:text-fg" href={`${base}/present`}>Slides</a></li>
+            <li><a class="text-muted-fg no-underline hover:text-fg" href={`${REPO}/blob/main/report/report.md`}>Report</a></li>
+            <li><a class="text-muted-fg no-underline hover:text-fg" href={REPO}>Source on GitHub</a></li>
+            <li><a class="text-muted-fg no-underline hover:text-fg" href={`${REPO}/blob/main/docs/IMPLEMENTATION.md`}>Implementation notes</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-sm font-medium">Course</p>
+          <p class="mt-3 text-sm text-muted-fg">CSE311 Artificial Intelligence, mini project. Department of CSE, IIIT Kottayam.</p>
+        </div>
       </div>
     </footer>
 
     <script>
       const root = document.documentElement;
       document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
-        const dark = root.dataset.theme
-          ? root.dataset.theme === "dark"
-          : matchMedia("(prefers-color-scheme: dark)").matches;
-        const next = dark ? "light" : "dark";
+        const next = root.dataset.theme === "light" ? "dark" : "light";
         root.dataset.theme = next;
         try { localStorage.setItem("sakshi-theme", next); } catch {}
       });
+      // Spotlight cards: feed the pointer position to CSS.
+      document.addEventListener("pointermove", (e) => {
+        const el = (e.target as Element | null)?.closest<HTMLElement>(".spotlight");
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+        el.style.setProperty("--my", `${e.clientY - r.top}px`);
+      }, { passive: true });
     </script>
   </body>
 </html>
 
 <style>
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    border-width: 0 0 1px;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  .site-header__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    max-width: calc(var(--wide) + var(--content-start));
-    margin: 0 auto;
-    padding: 0.7rem var(--gutter);
-  }
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    color: var(--foreground);
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-decoration: none;
-  }
-  .brand:hover { color: var(--foreground); }
-  .brand__mark {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--primary);
-    color: var(--primary-foreground);
-    box-shadow: 0 8px 16px -8px var(--shadow-ink);
-  }
-  .site-nav { display: flex; align-items: center; gap: 0.25rem; }
-  .site-nav a {
-    padding: 0.5rem 0.7rem;
-    border-radius: 999px;
-    color: var(--muted-foreground);
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 500;
-  }
-  .site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--foreground); background: var(--muted); }
-  .theme-toggle {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    margin-left: 0.25rem;
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    background: var(--card);
-    color: var(--foreground);
-    cursor: pointer;
-  }
-  .i-moon { display: none; }
+  .i-sun { display: none; }
+  :global(:root[data-theme="light"]) .i-sun { display: block; }
+  :global(:root[data-theme="light"]) .i-moon { display: none; }
   :global(html:not(.js)) .theme-toggle { display: none; }
-  :global(:root[data-theme="dark"]) .i-sun { display: none; }
-  :global(:root[data-theme="dark"]) .i-moon { display: block; }
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme="light"])) .i-sun { display: none; }
-    :global(:root:not([data-theme="light"])) .i-moon { display: block; }
-  }
-  main:focus { outline: none; }
-  .site-footer {
-    border-top: 1px solid var(--border);
-    margin-top: 6rem;
-    padding: 2.5rem var(--gutter);
-    color: var(--muted-foreground);
-    font-size: 0.92rem;
-  }
-  .site-footer__inner {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 1rem 2rem;
-    max-width: calc(var(--wide) + var(--content-start));
-    margin: 0 auto;
-  }
-  .site-footer__inner p { max-width: 60ch; }
-  .site-footer__links { display: flex; gap: 1.25rem; }
-  .nav-short { display: none; }
-  @media (max-width: 480px) {
-    .site-nav a[href^="http"] { display: none; }
-    .nav-long { display: none; }
-    .nav-short { display: inline; }
-    .site-nav a { padding: 0.5rem 0.55rem; }
-  }
 </style>

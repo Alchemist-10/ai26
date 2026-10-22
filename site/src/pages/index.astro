@@ -1,376 +1,564 @@
 ---
-// Sakshi story page. Every number here comes from report/report.md or the
-// repo itself (checked 2026-10-22): 47 test files / 442 tests in tests/,
-// 55 API routes in backend/, replay and benchmark figures from the report.
+// Sakshi landing page. Measured numbers come from report/report.md (replay
+// profile of 18 Oct 2026, detector benchmark of 14 Oct 2026, crop review);
+// repo counts were checked on 22 Oct 2026 (47 test files / 442 tests in tests/,
+// 55 API routes in backend/). Projections are labelled as estimates.
+import { Picture, getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import Base from "../layouts/Base.astro";
-import Spine from "../components/Spine.astro";
-import Chapter from "../components/Chapter.astro";
+import BrowserFrame from "../components/BrowserFrame.astro";
+import PhoneFrame from "../components/PhoneFrame.astro";
+import Clip from "../components/Clip.astro";
+import Marquee from "../components/Marquee.astro";
+import SectionHead from "../components/SectionHead.astro";
+import Icon from "../components/Icon.astro";
+import Stats from "../islands/Stats.tsx";
+import PipelineBeam from "../islands/PipelineBeam.tsx";
+import ScreenTabs, { type Shot } from "../islands/ScreenTabs.tsx";
+import ConsensusDemo from "../islands/ConsensusDemo.tsx";
+import Terminal from "../islands/Terminal.tsx";
+import { screen, clip } from "../lib/media";
+
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const REPO = "https://github.com/moneytosms/ai26";
+const REPORT = `${REPO}/blob/main/report/report.md`;
+const widths = (img: ImageMetadata) => [640, 1100, 1600, 2200].filter((w) => w <= img.width);
 
-const pipeline = [
-  ["Sources", "Recorded clips or RTSP", 20],
-  ["Scheduler", "One global frame budget", 150],
-  ["YOLOv8n", "Vehicles (and people, for masking)", 280],
-  ["Tracker", "Camera-local motion + box", 410],
-  ["Plate OCR", "Detector, then MobileViT-v2", 540],
-  ["Consensus", "3 reads or abstain", 670],
-  ["SQLite", "Observations, audit, provenance", 800],
-  ["Dashboard", "FastAPI + React", 930],
+const hero = screen("dashboard-overview");
+const phone = screen("mobile-overview");
+
+// Product tour. Only screens that exist are shown.
+const tour = [
+  ["timeline", "Timeline", "/timeline", "A per-camera log of real YOLOv8 vehicle detections with track and model confidence. Confidence is shown, never presented as accuracy."],
+  ["query", "Ask the grid", "/query", "A deterministic query engine for plates, cameras, classes and alerts. No language model and no generated SQL; unsupported questions are rejected."],
+  ["investigation", "Alerts", "/alerts", "Watchlist, zone, camera-transition and dwell alerts with a durable escalation queue. An alert is a prompt for review, not a finding."],
+  ["congestion", "Activity", "/activity", "Camera-local passage counts on a city map. Unique vehicles, occupancy and speed are labelled as not measured until calibration exists."],
+  ["camera-settings", "Cameras", "/settings", "Source inspection, ONVIF discovery and audited metadata revisions. Calibration stays marked unverified until someone verifies it."],
+] as const;
+
+const shots: Shot[] = [];
+for (const [id, label, path, caption] of tour) {
+  const img = screen(id);
+  if (!img) continue;
+  const w = widths(img);
+  const [avif, webp, fallback] = await Promise.all([
+    getImage({ src: img, format: "avif", widths: w, sizes: "100vw" }),
+    getImage({ src: img, format: "webp", widths: w, sizes: "100vw" }),
+    getImage({ src: img, format: "jpg", width: Math.min(1600, img.width) }),
+  ]);
+  shots.push({
+    id, label, path, caption,
+    img: { src: fallback.src, avif: avif.srcSet.attribute, webp: webp.srcSet.attribute, width: img.width, height: img.height, alt: `Sakshi ${label.toLowerCase()} screen` },
+  });
+}
+
+const stats = [
+  { value: 0, label: "failed inferences", note: "prototype replay, 349 sampled frames" },
+  { value: 3, label: "agreeing reads", note: "before a plate becomes an identity" },
+  { value: 41, suffix: "%", label: "faster detector", note: "INT8 vs FP32 ONNX, model-forward" },
+  { value: 442, label: "automated tests", note: "across 47 test files" },
+  { value: 55, label: "API routes", note: "FastAPI, typed contracts" },
 ];
 
-const can = [
-  ["Watch every camera", "One background processor samples all sources. More browser tabs never add inference workers."],
-  ["Search observations", "Bounded plate, camera, class and date queries. Fixed rules, no language model, no registry lookup."],
-  ["Review candidates", "Accepted, rejected and unresolved journey candidates stay distinct. Review history is kept."],
-  ["Set local rules", "Watchlists, zone sightings, dwell timers, and an alert queue with reassignment and audit."],
-  ["Export evidence", "Immutable JSON reports, hash-checked frame and crop ZIPs, print views, optional signing."],
-  ["Onboard footage", "Upload a recording, validate it, activate it on restart, roll back to the retained parent."],
+const capabilities = [
+  "YOLOv8n vehicle detection", "MobileViT-v2 plate OCR", "3-read plate consensus", "Abstains on conflict",
+  "One global frame budget", "Camera-local tracking", "Cross-camera journey candidates", "Watchlists and zone rules",
+  "Dwell timers", "Durable escalation queue", "Bounded query grammar", "Privacy pixelation",
+];
+const stack = [
+  "SHA-256 frame and crop derivatives", "Hash-chained audit log", "Optional Ed25519 report signing", "Model digests on every read",
+  "TOTP multi-factor login", "Role and case scopes", "ONNX Runtime INT8", "FastAPI", "SQLite WAL", "React + TypeScript",
+  "Prometheus metrics", "Docker Compose", "ONVIF discovery", "RTSP or recorded sources",
 ];
 
-const limits = [
-  ["No held-out accuracy", "No independent labelled split exists yet. Detector precision and exact-plate accuracy are unknown."],
-  ["Replay time is not capture time", "Clips carry replay timestamps, so speed, travel time and city-wide counts cannot be inferred."],
-  ["Links are candidates", "Track IDs are camera-local. Cross-camera journeys stay unresolved until clocks and routes are verified."],
-  ["Not a surveillance product", "No production security, legal or privacy assessment. An alert is a prompt for review, not a finding."],
+const steps = [
+  {
+    clip: "manim-scheduler", eyebrow: "01 · Schedule", title: "One budget for the whole network",
+    body: "A single scheduler cycles across every available camera under one global frame budget. Offline sources use no slot, and viewers read cached frames, so adding screens never adds inference. The design partitions by camera: add cameras, add workers.",
+  },
+  {
+    clip: "manim-tracking", eyebrow: "02 · Detect and track", title: "Boxes become tracks, cautiously",
+    body: "YOLOv8n finds cars, motorcycles, buses and trucks in a 640 × 640 input. A camera-local tracker scores 0.75 × distance + 0.20 × (1 − IoU) + 0.05 × area change, and retires tracks when two matches are nearly tied.",
+  },
+  {
+    clip: "manim-consensus", eyebrow: "03 · Read and agree", title: "Three agreeing reads, or no identity",
+    body: "A plate detector and a MobileViT-v2 OCR model propose text. Reads below 0.35 confidence or outside the registration format stay in history only. A plate is supported after three consistent reads in an eight-read window; conflicts abstain.",
+  },
+  {
+    clip: "manim-pipeline", eyebrow: "04 · Store and prove", title: "Every observation keeps its receipts",
+    body: "Reads land in a write-ahead SQLite store with camera, session, frame position and model digests. Frames and crops are kept as SHA-256-referenced JPEGs, audits are hash-chained, and evidence reports can be Ed25519-signed.",
+  },
+];
+
+const runtimes = [
+  { name: "PyTorch FP32", median: 92.834, p95: 98.743, size: "6.55 MB" },
+  { name: "ONNX Runtime FP32", median: 95.309, p95: 101.24, size: "12.82 MB" },
+  { name: "ONNX Runtime INT8", median: 55.782, p95: 58.306, size: "3.60 MB", best: true },
 ];
 
 const scenarios = [
-  ["A", "Measured CPU, FP32", 1.17, true],
-  ["B", "INT8 detector, same host", 1.22, false],
-  ["C", "Four CPU hosts, INT8", 4.9, false],
-  ["D", "One GPU worker (assumed 10x)", 11.7, false],
+  { id: "A", name: "Prototype, as measured", fps: 1.17, cams: "about 1", measured: true },
+  { id: "B", name: "INT8 detector swapped in", fps: 1.22, cams: "about 1" },
+  { id: "C", name: "Four workers, split by camera", fps: 4.9, cams: "about 4" },
+  { id: "D", name: "Accelerated worker (assumed 10×)", fps: 11.7, cams: "about 11" },
+];
+
+const faq = [
+  ["Is Sakshi a product?", "No. It is a coursework prototype for CSE311 Artificial Intelligence at IIIT Kottayam. It is designed for city-scale camera networks and has been implemented and exercised on the sample footage available to the team."],
+  ["How does it scale to a whole city?", "Inference is owned by one scheduler with a global frame budget, and browsers only read cached output, so viewers never multiply the work. Because the processor keeps no state between frames beyond per-camera tracks, cameras can be partitioned across workers. Multi-worker throughput is a projection today, labelled as such above."],
+  ["How accurate is the plate reading?", "Not yet measured. Accuracy needs an authorised, labelled, held-out dataset that is independent by vehicle, camera and session; until it exists Sakshi makes no accuracy claim. What is measured: in a small crop review, every mismatched read was rejected by the gates."],
+  ["Can it follow a vehicle across cameras?", "It proposes candidate journeys that must pass route and time constraints, and shows them as accepted, rejected or unresolved for review. They become physical travel times only once camera clocks are synchronised and locations are verified."],
+  ["Is there an LLM behind the query box?", "No. Queries use a bounded grammar for plate, camera, class and time. There is no language model, no generated SQL and no external registration lookup, and anything outside the grammar is rejected explicitly."],
+  ["What does a hash or signature prove?", "That stored report bytes have not changed since they were written, and with Ed25519, who signed them. It does not prove the scene or the OCR text is true, which is why raw reads and model digests travel with every report."],
+  ["What about privacy?", "Privacy mode pixelates sampled people and plates and disables raw playback. Optional authentication adds roles, camera and case scopes, CSRF protection, TOTP login and access audits. A real deployment would still need a legal basis, retention limits and human review."],
 ] as const;
+
+const team = ["A S Sri Dathan", "Akshay V.S", "Bharadwaj B Chand", "Shivansh Neekhra", "Srimoneyshankar Ajith"];
 ---
 
 <Base
-  title="Sakshi, a witness for recorded traffic"
-  description="Sakshi turns multi-camera traffic footage into reviewable, auditable vehicle observations, and keeps every uncertain plate read uncertain."
+  title="Sakshi · Citywide vehicle analytics you can audit"
+  description="Sakshi turns a city's camera network into searchable, auditable vehicle observations: detection, plate reading, tracking and cross-camera journeys, with uncertain reads kept uncertain."
 >
-  <section class="hero" aria-labelledby="hero-title">
-    <svg class="hero__trace" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true">
-      <path data-hero-trace d="M0 100 H220 V60 H300 V100 H560 V40 H680 V100 H900 V70 H960 V100 H1200" />
-    </svg>
-
-    <div class="hero__grid">
-      <div class="hero__copy">
-        <p class="hero__kicker">Sakshi, Sanskrit for <em>witness</em></p>
-        <h1 id="hero-title" class="hero__title">Hours of footage in. Evidence you can check out.</h1>
-        <p class="hero__lede">
-          Sakshi watches several traffic cameras at once, detects vehicles, reads plates, and stores every
-          observation with how it was made. When the model is unsure, Sakshi says so instead of guessing.
-        </p>
-        <div class="hero__actions">
-          <a class="btn btn-primary" href={`${base}/present`}>Open the slides</a>
-          <a class="btn" href="#story">Follow the story</a>
-        </div>
-        <p class="hero__facts">
-          9 cameras in the latest replay. 349 frames, 0 failed inferences. 442 tests. Accuracy not yet claimed,
-          because nobody has labelled a held-out set.
-        </p>
+  <!-- HERO -->
+  <section class="aurora relative isolate pt-16 sm:pt-24" aria-labelledby="hero-title">
+    <div class="bg-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="mx-auto max-w-6xl px-4 text-center sm:px-6">
+      <a href={REPORT} class="group inline-flex items-center gap-2 rounded-full border border-line bg-card/60 py-1 pr-3 pl-1 text-xs no-underline backdrop-blur hover:border-primary/40">
+        <span class="rounded-full bg-primary-soft px-2 py-0.5 font-medium text-primary">Prototype</span>
+        <span class="shiny font-medium">Read the project report</span>
+        <Icon name="arrow" size={13} class="text-muted-fg transition-transform group-hover:translate-x-0.5" />
+      </a>
+      <h1 id="hero-title" class="mx-auto mt-7 max-w-4xl text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.045em] sm:text-7xl">
+        <span class="text-gradient">Every camera in the city.</span><br />
+        <span class="text-gradient-primary">One honest witness.</span>
+      </h1>
+      <p class="mx-auto mt-6 max-w-2xl text-base text-muted-fg sm:text-lg">
+        Sakshi, Sanskrit for <em>witness</em>, turns a city's camera network into searchable vehicle observations:
+        detection, plate reading, tracking and cross-camera journeys. Every read keeps its provenance, and an
+        uncertain plate stays uncertain.
+      </p>
+      <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a href={`${base}/present`} class="inline-flex h-11 items-center gap-2 rounded-full bg-fg px-6 text-sm font-medium text-bg no-underline shadow-[0_0_0_1px_var(--border),0_8px_30px_-8px_var(--glow)] transition hover:opacity-90 hover:text-bg">
+          View the slides <Icon name="arrow" size={15} />
+        </a>
+        <a href={REPO} class="inline-flex h-11 items-center gap-2 rounded-full border border-line bg-card/60 px-6 text-sm font-medium text-fg no-underline backdrop-blur transition hover:border-primary/40 hover:text-fg">
+          Explore the source
+        </a>
       </div>
+      <p class="mt-5 text-xs text-muted-fg">Coursework prototype, built and tested on the sample footage available to the team.</p>
+    </div>
 
-      <figure class="hero__cam glass" aria-label="Illustration: a camera frame detects a car, reads its plate three times, and abstains on a conflict">
-        <figcaption class="cam__head">
-          <span><span class="rec" aria-hidden="true"></span>CAM-03, replay</span>
-          <span class="muted">synthetic plate</span>
-        </figcaption>
-        <svg class="cam__view" viewBox="0 0 480 220" aria-hidden="true">
-          <rect class="v-road" x="0" y="120" width="480" height="100" />
-          <path class="v-lane" d="M0 170 H480" />
-          <g class="v-car">
-            <path class="v-body" d="M0 52 V30 Q0 20 12 18 L50 14 L76 -4 H150 L176 14 L208 18 Q220 20 220 32 V52 Z" />
-            <path class="v-glass" d="M84 0 H144 L164 14 H70 Z" />
-            <circle class="v-wheel" cx="52" cy="54" r="15" /><circle class="v-wheel" cx="172" cy="54" r="15" />
-            <rect class="v-plate" x="190" y="34" width="26" height="10" rx="2" />
-            <rect class="v-box" x="-8" y="-12" width="236" height="84" />
-            <g class="v-tag"><rect x="-8" y="-34" width="92" height="22" rx="4" /><text x="0" y="-18">car 0.91</text></g>
-          </g>
-          <path class="v-scan" d="M0 0 H480" />
-          <path class="v-corner" d="M14 40 V14 H40 M440 14 H466 V40 M466 180 V206 H440 M40 206 H14 V180" />
-        </svg>
-        <ol class="reads">
-          <li class="read ok"><span>read 1</span><code>KA01AB1234</code><b>agree</b></li>
-          <li class="read ok"><span>read 2</span><code>KA01AB1234</code><b>agree</b></li>
-          <li class="read bad"><span>read 3</span><code>KA01A<mark>8</mark>1234</code><b>conflict</b></li>
-        </ol>
-        <p class="verdict">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l10 18H2z" stroke-linejoin="round" /><path d="M12 10v5M12 18v.5" stroke-linecap="round" /></svg>
-          <span><strong>Abstained.</strong> Conflicting reads never become an identity. All three stay on file for review.</span>
-        </p>
-      </figure>
+    <div class="relative mx-auto mt-16 max-w-6xl px-4 sm:mt-20 sm:px-6">
+      <div class="tilt-in relative rounded-xl">
+        <div class="absolute -inset-x-10 -top-10 bottom-1/3 -z-10 rounded-[3rem] bg-[radial-gradient(closest-side,var(--glow),transparent)] blur-2xl" aria-hidden="true"></div>
+        <BrowserFrame url="localhost:5174 · camera wall">
+          {hero ? (
+            <Picture src={hero} formats={["avif", "webp"]} widths={widths(hero)} sizes="(min-width: 1152px) 1100px, 100vw" alt="Sakshi camera wall: six sampled camera feeds with a focused view showing a detected car" fallbackFormat="jpg" loading="eager" fetchpriority="high" pictureAttributes={{ class: "block aspect-[16/9] overflow-hidden" }} class="block h-full w-full object-cover object-top" />
+          ) : (
+            <div class="grid aspect-[16/10] place-items-center bg-black text-sm text-white/40">Dashboard preview</div>
+          )}
+        </BrowserFrame>
+        <span class="border-beam" style="--beam-duration: 10s" aria-hidden="true"></span>
+        <div class="pointer-events-none absolute inset-x-[-1px] bottom-[-1px] h-2/5 bg-linear-to-t from-bg via-bg/70 to-transparent" aria-hidden="true"></div>
+        <ul class="pointer-events-none absolute inset-0 m-0 hidden list-none p-0 lg:block" aria-hidden="true">
+          <li class="glass absolute top-[22%] -left-8 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium"><span class="grid size-6 place-items-center rounded-md bg-critical-surface text-critical"><Icon name="x" size={13} /></span>Conflicting reads abstain</li>
+          <li class="glass absolute top-[48%] -right-8 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium"><span class="grid size-6 place-items-center rounded-md bg-primary-soft text-primary"><Icon name="hash" size={13} /></span>Model digest on every read</li>
+          <li class="glass absolute bottom-[14%] -left-6 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium"><span class="grid size-6 place-items-center rounded-md bg-ok-surface text-ok"><Icon name="layers" size={13} /></span>Viewers add no inference</li>
+        </ul>
+      </div>
     </div>
   </section>
 
-  <div class="story" id="story">
-    <Spine />
+  <!-- STATS + MARQUEE -->
+  <section class="mx-auto mt-20 max-w-6xl px-4 sm:px-6" aria-label="Key numbers">
+    <Stats client:visible stats={stats} />
+    <p class="mt-3 text-center text-xs text-muted-fg">Execution measurements from the project report. Recognition accuracy is not claimed yet.</p>
+  </section>
 
-    <Chapter id="problem" n={1} title="Cameras record everything. Investigators need a few rows." lede="A day of video from nine cameras is mostly empty road. The useful part is small: a vehicle class, a possible plate, a camera, a time.">
-      <p>
-        Searching recordings by hand is slow and hard to repeat. A detector finds a car in one frame, but the real
-        questions span many frames: was it the same car, which plate, and how sure are we? Plate OCR misreads small or
-        blurred plates, and a replay timestamp is easy to mistake for the moment of capture.
-      </p>
-      <p>
-        Sakshi handles that whole workflow, not just the detection. It keeps raw reads, records which model made
-        them, marks uncertain identities, and keeps what was <em>measured</em> apart from what was not.
-      </p>
-    </Chapter>
+  <section class="mt-16 space-y-3" aria-label="Capabilities">
+    <Marquee items={capabilities} />
+    <Marquee items={stack} reverse duration="56s" />
+  </section>
 
-    <Chapter id="pipeline" n={2} title="One frame through the pipeline" lede="Learned models where rules are weak, plain deterministic code everywhere else." wide>
-      <figure class="pipe surface" data-draw-root>
-        <svg viewBox="0 0 1060 210" role="img" aria-label="Pipeline: sources, scheduler, YOLOv8n detector, tracker, plate OCR, consensus, SQLite, dashboard">
-          <path class="pipe__wire" data-draw="1.8" d="M80 70 H990" />
-          <path class="pipe__wire pipe__wire--back" data-draw="1.4" d="M860 110 V170 H340 V110" />
-          <text class="pipe__note" x="600" y="196" text-anchor="middle">review, rules and queries read the same store</text>
-          {pipeline.map(([t, d, x], i) => (
-            <g class:list={["pipe__node", { "pipe__node--ai": i === 2 || i === 4 }]}>
-              <rect x={x as number} y="30" width="112" height="80" rx="12" />
-              <text x={(x as number) + 56} y="64" text-anchor="middle" class="pipe__t">{t}</text>
-              <foreignObject x={(x as number) + 4} y="72" width="104" height="36"><p class="pipe__d">{d}</p></foreignObject>
-            </g>
+  <!-- BENTO -->
+  <section id="product" class="mx-auto max-w-6xl scroll-mt-20 px-4 pt-28 sm:px-6 sm:pt-36" aria-labelledby="product-title">
+    <SectionHead id="product-title" eyebrow="Product" title="From raw footage to a case file you can check" lede="Detection, tracking, plate reading, rules, queries and evidence in one system, built so that a weak prediction never quietly turns into a fact." />
+
+    <div class="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+      <article class="spotlight reveal overflow-hidden rounded-2xl border border-line bg-card md:col-span-2 lg:col-span-4 lg:row-span-2">
+        <div class="p-6 sm:p-8">
+          <p class="flex items-center gap-2 text-sm font-medium text-primary"><Icon name="video" size={16} /> Camera wall</p>
+          <h3 class="mt-3 text-xl font-semibold tracking-tight sm:text-2xl">Watch the network, not a single feed</h3>
+          <p class="mt-2 max-w-lg text-sm text-muted-fg">Every source on one wall with live availability. Missing cameras are labelled, never silently hidden, and detections are drawn on frames from the shared processor.</p>
+        </div>
+        <div class="relative mx-6 -mb-px overflow-hidden rounded-t-xl border border-b-0 border-line sm:mx-8">
+          <Clip name="app-live" label="Screen recording of the Sakshi camera wall" width={1280} height={800}>
+            <div slot="fallback" class="grid aspect-[16/10] place-items-center bg-black text-sm text-white/40">Camera wall</div>
+          </Clip>
+        </div>
+      </article>
+
+      <article class="spotlight reveal rounded-2xl border border-line bg-card p-6 lg:col-span-2">
+        <p class="flex items-center gap-2 text-sm font-medium text-primary"><Icon name="checks" size={16} /> Plate consensus</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">Agree three times, or abstain</h3>
+        <div class="mt-4 rounded-xl border border-line bg-bg/60 p-3">
+          <ConsensusDemo client:visible />
+        </div>
+        <p class="mt-3 text-[11px] text-muted-fg">Illustration with synthetic plates.</p>
+      </article>
+
+      <article class="spotlight reveal rounded-2xl border border-line bg-card p-6 lg:col-span-2">
+        <p class="flex items-center gap-2 text-sm font-medium text-primary"><Icon name="clock" size={16} /> Shared scheduler</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">Add cameras, add workers</h3>
+        <div class="mt-4 grid grid-cols-8 gap-1.5" aria-hidden="true">
+          {Array.from({ length: 24 }, (_, i) => (
+            <span class:list={["rr-pip aspect-square rounded-[5px] bg-muted", i === 9 && "animate-none! border border-dashed border-critical/60 bg-transparent!"]} style={`animation-delay:${(i * 4.5) / 24}s`}></span>
           ))}
-          <circle class="pipe__packet" r="6" />
+        </div>
+        <p class="mt-4 text-sm text-muted-fg">One frame budget for every camera, round robin. Offline sources take no slot.</p>
+      </article>
+
+      <article class="spotlight reveal rounded-2xl border border-line bg-card p-6 lg:col-span-2">
+        <p class="flex items-center gap-2 text-sm font-medium text-primary"><Icon name="search" size={16} /> Bounded queries</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">Ask plainly, get exact answers</h3>
+        <div class="mt-4 space-y-2 text-[13px]">
+          <p class="ml-auto w-fit rounded-lg rounded-br-sm bg-fg px-3 py-1.5 font-medium text-bg">Busiest camera right now?</p>
+          <p class="w-fit rounded-lg rounded-bl-sm border border-line bg-bg px-3 py-1.5">Camera-local passages, ranked by camera.</p>
+          <p class="ml-auto w-fit rounded-lg rounded-br-sm bg-fg px-3 py-1.5 font-medium text-bg">Show me red cars</p>
+          <p class="flex w-fit items-center gap-1.5 rounded-lg rounded-bl-sm border border-critical/40 bg-critical-surface px-3 py-1.5 text-critical"><Icon name="x" size={13} /> Unsupported: colour is not indexed</p>
+        </div>
+      </article>
+
+      <article class="spotlight reveal rounded-2xl border border-line bg-card p-6 lg:col-span-2">
+        <p class="flex items-center gap-2 text-sm font-medium text-primary"><Icon name="file" size={16} /> Evidence export</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">Reports that verify themselves</h3>
+        <div class="mt-4 rounded-xl border border-line bg-bg p-3 font-mono text-[11px] leading-5">
+          <p class="text-muted-fg">report v5 · frames + crops ZIP</p>
+          <p class="truncate">sha256 9c1e…a47f <span class="text-muted-fg">(example)</span></p>
+          <p class="mt-1 flex items-center gap-1.5 text-ok"><Icon name="check" size={12} /> bytes match stored digest</p>
+          <p class="flex items-center gap-1.5 text-ok"><Icon name="check" size={12} /> Ed25519 signature valid</p>
+        </div>
+        <p class="mt-3 text-sm text-muted-fg">Immutable JSON, print views, expiry, empty reports refused.</p>
+      </article>
+
+      <article class="spotlight reveal rounded-2xl border border-line bg-card p-6 lg:col-span-2">
+        <p class="flex items-center gap-2 text-sm font-medium text-primary"><Icon name="shield" size={16} /> Privacy mode</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">People blurred before sharing</h3>
+        <div class="relative mt-4 h-[104px] overflow-hidden rounded-xl border border-line bg-bg" aria-hidden="true">
+          <svg viewBox="0 0 200 104" class="absolute inset-0 h-full w-full text-muted-fg/60"><circle cx="70" cy="30" r="12" fill="currentColor" /><path d="M50 104 V62 q0-14 20-14 q20 0 20 14 v42z" fill="currentColor" /><rect x="120" y="58" width="64" height="30" rx="6" fill="currentColor" /><rect x="140" y="76" width="24" height="7" rx="1.5" class="fill-bg" /></svg>
+          <div class="pixelate absolute inset-0 grid grid-cols-[repeat(20,1fr)] grid-rows-[repeat(10,1fr)]">
+            {Array.from({ length: 200 }, (_, i) => {
+              const x = i % 20, y = Math.floor(i / 20);
+              const on = (x >= 4 && x <= 9 && y >= 1) || (x >= 12 && x <= 18 && y >= 5 && y <= 8);
+              return <span class:list={[on && "bg-primary/25 outline outline-1 outline-bg/40"]} style={on ? `opacity:${0.4 + ((x * 7 + y * 3) % 6) / 10}` : undefined}></span>;
+            })}
+          </div>
+        </div>
+        <p class="mt-3 text-sm text-muted-fg">Sampled people and plates are pixelated and raw playback is disabled.</p>
+      </article>
+
+      <article class="spotlight reveal rounded-2xl border border-line bg-card p-6 md:col-span-1 lg:col-span-3">
+        <p class="flex items-center gap-2 text-sm font-medium text-primary"><Icon name="bell" size={16} /> Rules and alerts</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">Local rules that prompt review</h3>
+        <ul class="mt-4 m-0 grid list-none gap-2 p-0 text-sm sm:grid-cols-3">
+          <li class="rounded-lg border border-line bg-bg px-3 py-2"><span class="block font-medium">Watchlist</span><span class="text-xs text-muted-fg">supported plate matches</span></li>
+          <li class="rounded-lg border border-line bg-bg px-3 py-2"><span class="block font-medium">Zone sighting</span><span class="text-xs text-muted-fg">per-camera zones</span></li>
+          <li class="rounded-lg border border-line bg-bg px-3 py-2"><span class="block font-medium">Dwell</span><span class="text-xs text-muted-fg">elapsed time, ≥ 3 samples</span></li>
+        </ul>
+        <p class="mt-3 text-sm text-muted-fg">Escalations persist with reassignment and audit history. An alert is a prompt, not a finding.</p>
+      </article>
+
+      <article class="spotlight reveal rounded-2xl border border-line bg-card p-6 md:col-span-2 lg:col-span-3">
+        <p class="flex items-center gap-2 text-sm font-medium text-primary"><Icon name="map" size={16} /> Cross-camera journeys</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">Candidate routes across the city</h3>
+        <svg viewBox="0 0 320 90" class="mt-4 h-[90px] w-full" aria-hidden="true">
+          <path d="M30 60 C 90 10, 130 10, 160 45 S 250 80, 290 30" fill="none" stroke="var(--border-strong)" stroke-width="1.5" />
+          <path d="M30 60 C 90 10, 130 10, 160 45" fill="none" stroke="var(--consent-active)" stroke-width="2" />
+          <path d="M160 45 S 250 80, 290 30" fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 5" />
+          {[[30, 60, "CAM A"], [160, 45, "CAM B"], [290, 30, "CAM C"]].map(([x, y, t]) => (
+            <g><circle cx={x} cy={y} r="7" fill="var(--card)" stroke="var(--primary)" stroke-width="2" /><text x={x} y={Number(y) + 22} text-anchor="middle" font-size="9" fill="var(--muted-foreground)" font-family="var(--font-mono)">{t}</text></g>
+          ))}
         </svg>
-        <figcaption><span class="key key--ai"></span>pretrained model <span class="key"></span>deterministic code</figcaption>
-      </figure>
-      <div class="cols" data-stagger>
-        <div><h3>Shared processor</h3><p>A single bounded scheduler samples every available camera under one global frame budget. Viewers read cached output.</p></div>
-        <div><h3>Pretrained AI</h3><p>Ultralytics YOLOv8 nano finds vehicles. A plate detector crops, and a MobileViT-v2 model reads characters.</p></div>
-        <div><h3>Conservative glue</h3><p>Motion-and-box assignment with an ambiguity margin. A track that could belong to two boxes is retired, not guessed.</p></div>
+        <p class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-fg"><span class="text-ok">— accepted</span><span class="text-warn">- - unresolved</span><span>route + time gates</span></p>
+        <p class="mt-2 text-sm text-muted-fg">Links stay candidates for review until camera clocks are synchronised and locations verified.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- TOUR -->
+  {shots.length > 0 && (
+    <section id="tour" class="mx-auto max-w-6xl scroll-mt-20 px-4 pt-28 sm:px-6 sm:pt-36" aria-labelledby="tour-title">
+      <SectionHead id="tour-title" center eyebrow="Tour" title="The real app, screen by screen" lede="Captured from the running prototype. Click a tab, or let it play." />
+      <div class="reveal mt-12">
+        <ScreenTabs client:visible shots={shots} />
       </div>
-    </Chapter>
 
-    <Chapter id="consensus" n={3} title="An unsure model should say so" lede="Every plate read passes normalisation, confidence and format checks, then a three-read consensus per track.">
-      <ol class="gates" data-stagger>
-        <li><b>Normalise</b><span>Clean the text, then repair look-alike characters (O and 0, B and 8) by position in the Indian plate format. Every repair is logged.</span></li>
-        <li><b>Gate</b><span>Low confidence or an impossible format is kept as a failed read, never dropped and never promoted.</span></li>
-        <li><b>Agree</b><span>Three consistent reads on one track make a canonical plate. Any conflict and the track abstains.</span></li>
-        <li><b>Keep all three</b><span>Raw, failed and canonical reads are stored separately, each with the model weight digest that produced it.</span></li>
-      </ol>
-      <p class="aside">In the small review, the gates rejected every mismatched reading. That shows how the gate behaves on those crops, not a general false-identity rate.</p>
-    </Chapter>
-
-    <Chapter id="evidence" n={4} title="Built so someone can check the work" lede="An observation is only useful if you can say where it came from and prove it has not changed.">
-      <div class="cols" data-stagger>
-        <div><h3>Provenance</h3><p>ALPR weight and config digests and pipeline component hashes identify how each new read was made.</p></div>
-        <div><h3>Audit</h3><p>Reviews, rule edits, camera metadata revisions and alert actions write audit records that survive restarts.</p></div>
-        <div><h3>Exports</h3><p>Reports are immutable snapshots. Frame and crop ZIPs are hash-verified, and optional signing is available.</p></div>
+      <div class="mt-20 grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        {phone && (
+          <div class="reveal mx-auto w-full max-w-[280px]">
+            <PhoneFrame>
+              <Picture src={phone} formats={["avif", "webp"]} widths={[390, 780]} sizes="280px" fallbackFormat="jpg" alt="Sakshi dashboard on a phone" class="block h-auto w-full" />
+            </PhoneFrame>
+          </div>
+        )}
+        <div class:list={["reveal", !phone && "lg:col-span-2"]}>
+          <p class="font-mono text-xs font-medium tracking-[0.18em] text-primary uppercase">Any screen</p>
+          <h3 class="text-gradient mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">From the control room to a phone in the field</h3>
+          <p class="mt-3 max-w-xl text-muted-fg">The dashboard is responsive, keyboard friendly and dark by default. Queries return deterministic answers, so the same question gives the same result on any device.</p>
+          {clip("app-query") && (
+            <BrowserFrame url="localhost:5174/query" class="mt-8">
+              <Clip name="app-query" label="Screen recording of a query in the Sakshi dashboard" width={1280} height={800} />
+            </BrowserFrame>
+          )}
+        </div>
       </div>
-      <p class="aside">A hash detects that a report changed. It is not a digital signature on its own, and the site does not pretend it is.</p>
-    </Chapter>
+    </section>
+  )}
 
-    <Chapter id="can" n={5} title="What you can do with it today" wide>
-      <div class="grid" data-stagger>
-        {can.map(([t, d]) => <div class="cell surface"><h3>{t}</h3><p>{d}</p></div>)}
+  <!-- PIPELINE -->
+  <section id="pipeline" class="mx-auto max-w-6xl scroll-mt-20 px-4 pt-28 sm:px-6 sm:pt-36" aria-labelledby="pipeline-title">
+    <SectionHead id="pipeline-title" eyebrow="Pipeline" title="Learned models where rules fail. Plain code everywhere else." lede="Pretrained detection and OCR propose. Deterministic tracking, gates and consensus decide what is allowed to count." />
+    <div class="reveal mt-14 rounded-2xl border border-line bg-card/50 p-4 sm:p-8">
+      <PipelineBeam client:visible />
+      <p class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-5 text-xs text-muted-fg">
+        <span class="flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-primary"></span> decision points</span>
+        <span>YOLOv8n · YOLOv9-tiny plate detector · MobileViT-v2 OCR via ONNX Runtime</span>
+      </p>
+    </div>
+
+    <!-- Sticky scroll reveal -->
+    <div class="mt-24 grid gap-12 lg:grid-cols-2 lg:gap-16" data-sticky-steps>
+      <div class="hidden lg:block">
+        <div class="sticky top-28">
+          <div class="relative aspect-video overflow-hidden rounded-2xl border border-line bg-[#07090b] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.6)]">
+            {steps.map((s, i) => (
+              <div class:list={["absolute inset-0 transition-opacity duration-500", i ? "opacity-0" : "opacity-100"]} data-visual={i}>
+                <Clip name={s.clip} label={`Animation: ${s.title}`} manual>
+                  <div slot="fallback" class="grid h-full place-items-center font-mono text-sm text-white/40">{s.eyebrow}</div>
+                </Clip>
+              </div>
+            ))}
+            <span class="border-beam" aria-hidden="true"></span>
+          </div>
+          <div class="mt-4 flex gap-1.5" aria-hidden="true">
+            {steps.map((_, i) => <span class:list={["h-1 flex-1 rounded-full transition-colors duration-500", i ? "bg-muted" : "bg-primary"]} data-bar={i}></span>)}
+          </div>
+        </div>
       </div>
-    </Chapter>
-
-    <Chapter id="numbers" n={6} title="What was measured" lede="Execution measurements on one 12-thread workstation. Speed and reliability, not recognition accuracy." wide>
-      <div class="nums" data-stagger>
-        <div class="num surface"><b data-count="9">9</b><p>cameras in the latest replay</p></div>
-        <div class="num surface"><b data-count="349">349</b><p>sampled frames in 298.011 s</p></div>
-        <div class="num surface"><b>1.171</b><p>frames per second, against a 2 FPS budget</p></div>
-        <div class="num surface"><b data-count="0">0</b><p>failed inference attempts</p></div>
-        <div class="num surface"><b class="num__pair">92.8<small> → </small>55.8</b><p>ms median detector forward, FP32 to static INT8</p></div>
-        <div class="num surface"><b data-count="442">442</b><p>tests across 47 regression files</p></div>
-      </div>
-    </Chapter>
-
-    <Chapter id="limits" n={7} title="What we do not claim" lede="The evidence is strong for the software and weak for model quality. Here is the line.">
-      <ul class="limits" data-stagger>
-        {limits.map(([t, d]) => (
-          <li>
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-            <div><b>{t}</b><span>{d}</span></div>
+      <ol class="m-0 list-none space-y-16 p-0 lg:space-y-0">
+        {steps.map((s, i) => (
+          <li class="lg:flex lg:min-h-[70vh] lg:items-center" data-step={i}>
+            <div class="transition-opacity duration-500 lg:opacity-40 lg:data-[active]:opacity-100" data-step-body>
+              <p class="font-mono text-xs tracking-[0.18em] text-primary uppercase">{s.eyebrow}</p>
+              <h3 class="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">{s.title}</h3>
+              <p class="mt-4 max-w-md text-muted-fg">{s.body}</p>
+              <div class="mt-6 overflow-hidden rounded-xl border border-line bg-[#07090b] lg:hidden">
+                <Clip name={s.clip} label={`Animation: ${s.title}`} />
+              </div>
+            </div>
           </li>
         ))}
-      </ul>
-    </Chapter>
-
-    <Chapter id="future" n={8} title="Where it goes next" lede="The parts talk through narrow interfaces, so they can be split across machines. Only scenario A was measured; the rest are estimates." wide>
-      <figure class="proj surface" data-draw-root>
-        <svg viewBox="0 0 760 300" role="img" aria-label="Projected aggregate frames per second: A 1.17 measured, B 1.22, C 4.9, D 11.7 estimated">
-          <defs>
-            <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <rect width="8" height="8" class="hatch-bg" /><path d="M0 0 V8" class="hatch-line" />
-            </pattern>
-          </defs>
-          <path class="axis" d="M60 250 H740" />
-          {scenarios.map(([k, label, v, measured], i) => {
-            const h = (v / 12) * 210;
-            const x = 90 + i * 165;
-            return (
-              <g>
-                <rect class:list={["bar", { "bar--est": !measured }]} x={x} y={250 - h} width="110" height={h} rx="6" />
-                <text class="bar__v" x={x + 55} y={242 - h} text-anchor="middle">{v}</text>
-                <text class="bar__k" x={x + 55} y="274" text-anchor="middle">{k}</text>
-                <text class="bar__l" x={x + 55} y="294" text-anchor="middle">{label}</text>
-              </g>
-            );
-          })}
-        </svg>
-        <figcaption>Aggregate sampled FPS. Solid: measured. Hatched: projection from stated assumptions, not tested.</figcaption>
-      </figure>
-      <ol class="road" data-stagger>
-        <li><b>Label honestly.</b> An authorised, prediction-blind test set split by vehicle, camera, session and place.</li>
-        <li><b>Measure accuracy.</b> Run the existing evaluator on held-out outputs with denominators and confidence intervals.</li>
-        <li><b>Fit the region.</b> Compare the pretrained OCR with a model tuned on licensed local plate data.</li>
-        <li><b>Scale out.</b> Ship the INT8 detector, then partition cameras across workers or a GPU.</li>
-        <li><b>Earn journeys.</b> Synchronised clocks and surveyed camera locations before any cross-camera route claim.</li>
       </ol>
-    </Chapter>
+    </div>
+  </section>
 
-    <Chapter id="run" n={9} title="Run it yourself">
-      <p>Linux with Python 3.12, Node.js 22.12+ and <code>uv</code>. Six included vehicle clips work locally.</p>
-      <pre class="code"><code>git clone {REPO}.git
-cd ai26
-uv run run.py          # dashboard on http://localhost:5174, API on :8001</code></pre>
-      <div class="hero__actions">
-        <a class="btn btn-primary" href={`${base}/present`}>Open the slides</a>
-        <a class="btn" href={REPO}>Source on GitHub</a>
+  <!-- RESULTS -->
+  <section id="results" class="mx-auto max-w-6xl scroll-mt-20 px-4 pt-28 sm:px-6 sm:pt-36" aria-labelledby="results-title">
+    <SectionHead id="results-title" eyebrow="Results" title="Measured, not marketed" lede="What the prototype did on the sample footage, straight from the project report. Execution and gate behaviour are measured; recognition accuracy is next." />
+
+    <div class="mt-14 grid gap-4 lg:grid-cols-2">
+      <article class="reveal rounded-2xl border border-line bg-card p-6 sm:p-8">
+        <p class="text-sm font-medium text-primary">Replay profile</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">Five minutes, every source, zero failures</h3>
+        <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-5">
+          <div><dt class="text-xs text-muted-fg">Sampled frames</dt><dd class="m-0 font-mono text-3xl tracking-tight">349</dd></div>
+          <div><dt class="text-xs text-muted-fg">Failed inferences</dt><dd class="m-0 font-mono text-3xl tracking-tight text-ok">0</dd></div>
+          <div><dt class="text-xs text-muted-fg">Valid window</dt><dd class="m-0 font-mono text-3xl tracking-tight">298.0<span class="text-base text-muted-fg"> s</span></dd></div>
+          <div><dt class="text-xs text-muted-fg">Per-source share</dt><dd class="m-0 font-mono text-3xl tracking-tight">38–39</dd></div>
+        </dl>
+        <div class="mt-7">
+          <div class="flex flex-wrap justify-between gap-x-3 text-xs text-muted-fg"><span>Throughput vs configured budget</span><span class="font-mono">1.171 / 2.0 FPS</span></div>
+          <div class="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div class="h-full w-[58.6%] rounded-full bg-primary"></div></div>
+          <p class="mt-3 text-xs text-muted-fg">Below budget; high-resolution plate sources took most of the overruns, so plate inference is the first stage to scale out.</p>
+        </div>
+      </article>
+
+      <article class="reveal rounded-2xl border border-line bg-card p-6 sm:p-8">
+        <p class="text-sm font-medium text-primary">Detector benchmark</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">INT8 cuts model-forward time by about 41%</h3>
+        <ul class="mt-6 m-0 list-none space-y-5 p-0">
+          {runtimes.map((r) => (
+            <li>
+              <div class="flex items-baseline justify-between gap-3 text-sm"><span class:list={[r.best && "font-medium"]}>{r.name}</span><span class="font-mono text-xs text-muted-fg">{r.size}</span></div>
+              <div class="mt-2 flex items-center gap-3">
+                <div class="h-2.5 flex-1 overflow-hidden rounded-full bg-muted"><div class:list={["h-full rounded-full", r.best ? "bg-primary" : "bg-c2/60"]} style={`width:${(r.median / 101.24) * 100}%`}></div></div>
+                <span class="w-24 text-right font-mono text-sm">{r.median.toFixed(1)} ms</span>
+              </div>
+              <p class="mt-1 font-mono text-[11px] text-muted-fg">p95 {r.p95.toFixed(1)} ms</p>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-5 text-xs text-muted-fg">Median of 10 runs at 640 × 640, detector only. INT8 matched 15 of 16 FP32 detections: model-to-model agreement, not accuracy.</p>
+      </article>
+
+      <article class="reveal rounded-2xl border border-line bg-card p-6 sm:p-8">
+        <p class="text-sm font-medium text-primary">Plate gate review</p>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">Every mismatched read was stopped</h3>
+        <div class="mt-6 flex h-9 overflow-hidden rounded-lg text-[11px] font-medium" role="img" aria-label="21 crops: 16 unreadable, 4 readable, 1 uncertain">
+          <div class="grid place-items-center bg-muted text-muted-fg" style="width:76.2%">16 unreadable</div>
+          <div class="grid place-items-center bg-primary text-primary-fg" style="width:19%">4 readable</div>
+          <div class="grid place-items-center bg-warn-surface text-warn" style="width:4.8%">1</div>
+        </div>
+        <div class="mt-6 flex items-center gap-4 rounded-xl border border-line bg-bg p-4">
+          <span class="font-mono text-3xl tracking-tight">4<span class="text-muted-fg">/4</span></span>
+          <p class="text-sm text-muted-fg">readable-crop mismatches rejected by the gates. None became a supported identity.</p>
+        </div>
+        <ul class="mt-4 m-0 flex list-none flex-wrap gap-2 p-0 font-mono text-[11px] text-muted-fg">
+          <li class="rounded-md border border-line px-2 py-1">confidence ≥ 0.35</li>
+          <li class="rounded-md border border-line px-2 py-1">registration format</li>
+          <li class="rounded-md border border-line px-2 py-1">3 consistent of ≤ 8 reads</li>
+          <li class="rounded-md border border-line px-2 py-1">no ambiguous track</li>
+        </ul>
+        <p class="mt-4 text-xs text-muted-fg">A small, selected diagnostic sample of 21 crops. It shows abstention behaviour, not an accuracy or false-accept rate.</p>
+      </article>
+
+      <article class="reveal relative rounded-2xl border border-line bg-card p-6 sm:p-8">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-sm font-medium text-primary">Scale-out</p>
+            <h3 class="mt-2 text-lg font-semibold tracking-tight">The architecture partitions by camera</h3>
+          </div>
+          <span class="shrink-0 rounded-full border border-warn/40 bg-warn-surface px-2.5 py-1 text-[11px] font-medium text-warn">B–D projected</span>
+        </div>
+        <ul class="mt-6 m-0 list-none space-y-4 p-0">
+          {scenarios.map((s) => (
+            <li>
+              <div class="flex items-baseline justify-between gap-3 text-sm"><span><span class="mr-2 font-mono text-muted-fg">{s.id}</span>{s.name}</span><span class="font-mono text-xs text-muted-fg">{s.cams} cams</span></div>
+              <div class="mt-2 flex items-center gap-3">
+                <div class="h-2.5 flex-1 overflow-hidden rounded-full bg-muted"><div class:list={["h-full rounded-full", s.measured ? "bg-primary" : "stripes"]} style={`width:${Math.max(3, (s.fps / 11.7) * 100)}%`}></div></div>
+                <span class="w-20 text-right font-mono text-sm">{s.measured ? "" : "≈"}{s.fps}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-5 text-xs text-muted-fg">Aggregate sampled FPS; cameras served at one frame per second each. Only A was measured. B applies the measured INT8 latency saving; C assumes linear partitioning across four workers; D assumes a tenfold faster inference worker. None of B–D has been tested.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- TODAY / NEXT -->
+  <section id="limits" class="mx-auto max-w-6xl scroll-mt-20 px-4 pt-28 sm:px-6 sm:pt-36" aria-labelledby="limits-title">
+    <SectionHead id="limits-title" eyebrow="Where it stands" title="Working today. Earning its claims next." lede="The pipeline runs end to end. Accuracy and cross-camera identity are the next claims, and they wait for the data that can support them." />
+    <div class="mt-14 grid gap-4 md:grid-cols-2">
+      <article class="reveal rounded-2xl border border-line bg-card p-6 sm:p-8">
+        <p class="flex items-center gap-2 text-sm font-medium text-ok"><span class="grid size-6 place-items-center rounded-md bg-ok-surface"><Icon name="check" size={14} /></span> Today</p>
+        <ul class="mt-5 m-0 list-none space-y-3.5 p-0 text-sm">
+          <li class="flex gap-3"><Icon name="check" size={16} class="mt-0.5 shrink-0 text-ok" />End-to-end pipeline on the sample footage, with zero failed inferences in the replay profile.</li>
+          <li class="flex gap-3"><Icon name="check" size={16} class="mt-0.5 shrink-0 text-ok" />Uncertain, invalid and conflicting plate reads are kept for review and never become identities.</li>
+          <li class="flex gap-3"><Icon name="check" size={16} class="mt-0.5 shrink-0 text-ok" />Every observation carries model digests, an audit trail and hash-referenced images.</li>
+          <li class="flex gap-3"><Icon name="check" size={16} class="mt-0.5 shrink-0 text-ok" />Evidence exports verify by hash, with optional Ed25519 signatures.</li>
+        </ul>
+      </article>
+      <article class="reveal rounded-2xl border border-line bg-card p-6 sm:p-8">
+        <p class="flex items-center gap-2 text-sm font-medium text-primary"><span class="grid size-6 place-items-center rounded-md bg-primary-soft"><Icon name="arrow" size={14} /></span> Next</p>
+        <ul class="mt-5 m-0 list-none space-y-3.5 p-0 text-sm">
+          <li class="flex gap-3"><Icon name="arrow" size={16} class="mt-0.5 shrink-0 text-primary" />Measure detector and plate accuracy on an authorised, labelled, held-out dataset.</li>
+          <li class="flex gap-3"><Icon name="arrow" size={16} class="mt-0.5 shrink-0 text-primary" />Verify camera locations and synchronise clocks before journeys become travel-time claims.</li>
+          <li class="flex gap-3"><Icon name="arrow" size={16} class="mt-0.5 shrink-0 text-primary" />Profile live streams and multi-worker deployments to confirm the scale-out projection.</li>
+          <li class="flex gap-3"><Icon name="arrow" size={16} class="mt-0.5 shrink-0 text-primary" />Promote the INT8 detector into live inference once it passes held-out validation.</li>
+        </ul>
+      </article>
+    </div>
+    <p class="reveal mt-5 text-center text-sm text-muted-fg">Until then, Sakshi makes no recognition-accuracy or cross-camera identity claim.</p>
+  </section>
+
+  <!-- QUICKSTART -->
+  <section id="start" class="mx-auto max-w-6xl scroll-mt-20 px-4 pt-28 sm:px-6 sm:pt-36" aria-labelledby="start-title">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
+      <div>
+        <SectionHead id="start-title" eyebrow="Run it" title="One command to a working dashboard" lede="The launcher installs dependencies, starts the API and serves the dashboard. Bundled sample clips work out of the box." />
+        <ul class="reveal mt-8 m-0 list-none space-y-2 p-0 text-sm">
+          <li><a class="inline-flex items-center gap-2 text-fg no-underline hover:text-primary" href={`${REPO}/blob/main/RUN.md`}><Icon name="arrow" size={14} class="text-primary" /> Configuration and checks (RUN.md)</a></li>
+          <li><a class="inline-flex items-center gap-2 text-fg no-underline hover:text-primary" href={`${REPO}/blob/main/docs/IMPLEMENTATION.md`}><Icon name="arrow" size={14} class="text-primary" /> Architecture and data contracts</a></li>
+          <li><a class="inline-flex items-center gap-2 text-fg no-underline hover:text-primary" href={`${REPO}/blob/main/docs/DEPLOYMENT.md`}><Icon name="arrow" size={14} class="text-primary" /> Docker Compose deployment</a></li>
+        </ul>
       </div>
-    </Chapter>
-  </div>
+      <div class="reveal min-w-0">
+        <Terminal client:visible />
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="mx-auto max-w-3xl scroll-mt-20 px-4 pt-28 sm:px-6 sm:pt-36" aria-labelledby="faq-title">
+    <SectionHead id="faq-title" center eyebrow="FAQ" title="Questions worth asking" />
+    <div class="mt-12 divide-y divide-line border-y border-line">
+      {faq.map(([q, a]) => (
+        <details class="faq group" name="faq">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-left font-medium">
+            {q}
+            <span class="faq-icon grid size-7 shrink-0 place-items-center rounded-full border border-line text-muted-fg transition-transform duration-300">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+            </span>
+          </summary>
+          <p class="pb-6 pr-12 text-muted-fg">{a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="mx-auto max-w-6xl px-4 pt-28 sm:px-6 sm:pt-36" aria-labelledby="cta-title">
+    <div class="reveal relative isolate overflow-hidden rounded-3xl border border-line bg-card px-6 py-16 text-center sm:px-12 sm:py-20">
+      <div class="bg-dots absolute inset-0 -z-10 opacity-60 [mask-image:radial-gradient(ellipse_at_center,#000,transparent_70%)]" aria-hidden="true"></div>
+      <div class="absolute -top-24 left-1/2 -z-10 h-64 w-[36rem] max-w-full -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,var(--glow),transparent)] blur-2xl" aria-hidden="true"></div>
+      <span class="border-beam" style="--beam-duration: 12s" aria-hidden="true"></span>
+      <h2 id="cta-title" class="text-gradient mx-auto max-w-2xl text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">See the witness at work</h2>
+      <p class="mx-auto mt-4 max-w-xl text-muted-fg">Walk through the slides, read the report, or run it yourself.</p>
+      <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a href={`${base}/present`} class="inline-flex h-11 items-center gap-2 rounded-full bg-fg px-6 text-sm font-medium text-bg no-underline transition hover:opacity-90 hover:text-bg">View the slides <Icon name="arrow" size={15} /></a>
+        <a href={REPORT} class="inline-flex h-11 items-center rounded-full border border-line bg-bg/60 px-6 text-sm font-medium text-fg no-underline transition hover:border-primary/40 hover:text-fg">Read the report</a>
+        <a href={REPO} class="inline-flex h-11 items-center rounded-full border border-line bg-bg/60 px-6 text-sm font-medium text-fg no-underline transition hover:border-primary/40 hover:text-fg">Source on GitHub</a>
+      </div>
+      <div class="mx-auto mt-14 max-w-2xl border-t border-line pt-8">
+        <p class="text-xs tracking-[0.18em] text-muted-fg uppercase">Built by</p>
+        <p class="mt-3 text-sm">{team.join(" · ")}</p>
+        <p class="mt-2 text-xs text-muted-fg">Guided by Dr. Sreeja M U · Department of CSE, IIIT Kottayam</p>
+      </div>
+    </div>
+  </section>
 </Base>
 
-<style>
-  .hero {
-    position: relative;
-    padding: clamp(3rem, 8vw, 6rem) var(--gutter) 2rem var(--content-start);
-    max-width: calc(var(--wide) + var(--content-start) + var(--gutter));
-    margin: 0 auto;
-    min-height: min(92svh, 860px);
-  }
-  .hero__trace { position: absolute; left: 0; right: 0; top: clamp(1rem, 4vw, 2.5rem); width: 100%; height: 110px; opacity: 0.5; }
-  .hero__trace path { fill: none; stroke: var(--primary); stroke-width: 2; vector-effect: non-scaling-stroke; }
-  .hero__grid { position: relative; display: grid; gap: 3rem; align-items: center; padding-top: 4.5rem; }
-  @media (min-width: 1000px) { .hero__grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 4rem; } }
-  .hero__kicker { color: var(--primary); font-weight: 500; margin-bottom: 1rem; }
-  .hero__title { font-size: var(--step-5); letter-spacing: -0.035em; line-height: 1.02; max-width: 14ch; }
-  .hero__lede { margin-top: 1.6rem; font-size: var(--step-1); line-height: 1.5; color: var(--muted-foreground); max-width: 38ch; }
-  .hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
-  .hero__facts { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: 0.95rem; max-width: 52ch; }
-
-  .hero__cam { border-radius: calc(var(--radius) * 1.8); padding: 1.1rem; width: 100%; max-width: 500px; justify-self: center; }
-  .cam__head { display: flex; justify-content: space-between; gap: 1rem; font-weight: 700; font-size: 0.95rem; padding: 0.2rem 0.25rem 0.8rem; font-family: var(--font-mono); }
-  .muted { color: var(--muted-foreground); font-weight: 400; font-size: 0.82rem; }
-  .rec { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--critical); margin-right: 0.5rem; animation: blink 1.2s steps(2) infinite; }
-  @keyframes blink { 50% { opacity: 0.2; } }
-  .cam__view { width: 100%; height: auto; border-radius: var(--radius); background: var(--muted); }
-  .v-road { fill: var(--foreground); opacity: 0.1; }
-  .v-lane { stroke: var(--foreground); opacity: 0.35; stroke-width: 3; stroke-dasharray: 26 22; animation: lane 1.4s linear infinite; }
-  @keyframes lane { to { stroke-dashoffset: -48; } }
-  .v-car { animation: drive 7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-  @keyframes drive { 0% { transform: translate(-260px, 108px); } 45%, 70% { transform: translate(120px, 108px); } 100% { transform: translate(520px, 108px); } }
-  .v-body { fill: var(--chart-2); }
-  .v-glass { fill: var(--card); opacity: 0.8; }
-  .v-wheel { fill: var(--foreground); }
-  .v-plate { fill: var(--card); stroke: var(--foreground); stroke-width: 1.5; }
-  .v-box { fill: none; stroke: var(--primary); stroke-width: 2.5; stroke-dasharray: 640; animation: snap 7s infinite; }
-  @keyframes snap { 0%, 22% { stroke-dashoffset: 640; } 38%, 100% { stroke-dashoffset: 0; } }
-  .v-tag { animation: tag 7s infinite; }
-  .v-tag rect { fill: var(--primary); }
-  .v-tag text { fill: var(--primary-foreground); font: 600 13px var(--font-mono); }
-  @keyframes tag { 0%, 34% { opacity: 0; } 40%, 100% { opacity: 1; } }
-  .v-scan { stroke: var(--primary); stroke-width: 2; opacity: 0.45; animation: scan 3.5s ease-in-out infinite alternate; }
-  @keyframes scan { to { transform: translateY(220px); } }
-  .v-corner { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; }
-
-  .reads { list-style: none; padding: 0; margin: 0.9rem 0 0; display: grid; gap: 0.45rem; }
-  .read { display: grid; grid-template-columns: 4rem 1fr auto; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--radius); background: var(--card); border: 1px solid var(--border); font-size: 0.88rem; }
-  .read span { color: var(--muted-foreground); }
-  .read code { font-size: 0.95rem; letter-spacing: 0.06em; background: none; border: 0; padding: 0; }
-  .read b { font-size: 0.78rem; padding: 0.1rem 0.55rem; border-radius: 999px; }
-  .read.ok b { color: var(--consent-active); background: var(--consent-active-surface); }
-  .read.bad b { color: var(--critical); background: var(--critical-surface); }
-  .read mark { background: var(--critical-surface); color: var(--critical); border-radius: 3px; }
-  .verdict { display: flex; gap: 0.7rem; align-items: flex-start; margin-top: 0.8rem; padding: 0.8rem 1rem; border-radius: var(--radius); background: var(--warn-surface); color: var(--warn); font-size: 0.9rem; line-height: 1.45; }
-  .verdict svg { flex: none; margin-top: 0.1rem; }
-
-  .story { position: relative; padding-bottom: 4rem; }
-  .story :global(h3) { font-size: var(--step-1); margin-bottom: 0.4rem; }
-  .cols { display: grid; gap: 1.5rem; margin-top: 2rem; }
-  @media (min-width: 800px) { .cols { grid-template-columns: repeat(3, 1fr); } }
-  .cols p, .cell p, .num p { color: var(--muted-foreground); font-size: 0.97rem; }
-  .aside { margin-top: 1.75rem; padding-left: 1rem; border-left: 3px solid var(--warn); color: var(--muted-foreground); font-size: 0.97rem; }
-
-  .pipe { padding: 1.25rem; overflow-x: auto; }
-  .pipe svg { min-width: 760px; width: 100%; height: auto; }
-  .pipe__wire { fill: none; stroke: var(--primary); stroke-width: 2.5; }
-  .pipe__wire--back { stroke-dasharray: 6 6; opacity: 0.6; }
-  .pipe__note { font-size: 14px; fill: var(--muted-foreground); }
-  .pipe__node rect { fill: var(--card); stroke: var(--border); stroke-width: 2; }
-  .pipe__node--ai rect { fill: var(--primary-soft); stroke: var(--primary); }
-  .pipe__t { font-size: 16px; font-weight: 700; fill: var(--foreground); }
-  .pipe__d { margin: 0; font-size: 11.5px; line-height: 1.25; text-align: center; color: var(--muted-foreground); }
-  .pipe__packet { fill: var(--critical); offset-path: path("M76 70 H990"); animation: packet 4s ease-in-out infinite; }
-  @keyframes packet { from { offset-distance: 0%; } to { offset-distance: 100%; } }
-  .pipe figcaption { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.75rem; font-size: 0.88rem; color: var(--muted-foreground); }
-  .key { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 2px solid var(--border); background: var(--card); margin-left: 0.5rem; }
-  .key--ai { background: var(--primary-soft); border-color: var(--primary); margin-left: 0; }
-
-  .gates { list-style: none; counter-reset: g; padding: 0; margin: 0; display: grid; gap: 0.9rem; }
-  .gates li { counter-increment: g; display: grid; grid-template-columns: 2.4rem 1fr; column-gap: 1rem; }
-  .gates li::before { content: counter(g); grid-row: span 2; display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); font-weight: 700; }
-  .gates span { color: var(--muted-foreground); }
-
-  .grid { display: grid; gap: 1rem; }
-  @media (min-width: 700px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (min-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-  .cell { padding: 1.25rem 1.4rem; }
-  .cell h3 { color: var(--primary); }
-
-  .nums { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .num { padding: 1.25rem 1.4rem; }
-  .num b { display: block; font-size: var(--step-4); line-height: 1; color: var(--primary); font-variant-numeric: tabular-nums; margin-bottom: 0.5rem; }
-  .num__pair { white-space: nowrap; font-size: var(--step-3) !important; }
-  .num small { font-size: 0.5em; color: var(--muted-foreground); }
-
-  .limits { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
-  .limits li { display: flex; gap: 0.9rem; align-items: flex-start; }
-  .limits svg { flex: none; color: var(--critical); margin-top: 0.2rem; }
-  .limits b, .road b { display: block; }
-  .limits span { color: var(--muted-foreground); }
-
-  .proj { padding: 1.25rem; }
-  .proj svg { width: 100%; height: auto; }
-  .proj figcaption { margin-top: 0.5rem; font-size: 0.88rem; color: var(--muted-foreground); }
-  .axis { stroke: var(--border); stroke-width: 2; }
-  .bar { fill: var(--primary); }
-  .bar--est { fill: url(#hatch); stroke: var(--primary); stroke-width: 2; stroke-dasharray: 6 4; }
-  .hatch-bg { fill: var(--primary-soft); }
-  .hatch-line { stroke: var(--primary); stroke-width: 2; opacity: 0.6; }
-  .bar__v { font-size: 20px; font-weight: 700; fill: var(--foreground); }
-  .bar__k { font-size: 16px; font-weight: 700; fill: var(--primary); }
-  .bar__l { font-size: 12.5px; fill: var(--muted-foreground); }
-  .road { margin: 2rem 0 0; padding-left: 1.4rem; display: grid; gap: 0.8rem; }
-  .road li::marker { color: var(--primary); font-weight: 700; }
-
-  #run :global(.chapter__body) > p { margin-bottom: 1rem; }
-  .code { white-space: pre; }
-</style>
-
 <script>
-  import { gsap, reducedMotion, initReveals, initCounts } from "../scripts/motion";
-  initReveals();
-  initCounts();
-  if (!reducedMotion()) {
-    const trace = document.querySelector<SVGPathElement>("[data-hero-trace]");
-    if (trace) {
-      const len = trace.getTotalLength();
-      gsap.fromTo(trace, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" });
-    }
-    gsap.from(".read", { x: 24, opacity: 0, duration: 0.6, stagger: 0.25, delay: 0.8, ease: "power3.out" });
-    gsap.from(".verdict", { y: 12, opacity: 0, duration: 0.6, delay: 1.7, ease: "power3.out" });
+  // Sticky scroll reveal: the step nearest the middle of the viewport drives the visual.
+  const root = document.querySelector("[data-sticky-steps]");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (root) {
+    const visuals = root.querySelectorAll<HTMLElement>("[data-visual]");
+    const bars = root.querySelectorAll<HTMLElement>("[data-bar]");
+    const bodies = root.querySelectorAll<HTMLElement>("[data-step-body]");
+    const show = (n: number) => {
+      visuals.forEach((v, i) => v.classList.toggle("opacity-0", i !== n));
+      visuals.forEach((v, i) => v.classList.toggle("opacity-100", i === n));
+      bars.forEach((b, i) => { b.classList.toggle("bg-primary", i <= n); b.classList.toggle("bg-muted", i > n); });
+      bodies.forEach((b, i) => b.toggleAttribute("data-active", i === n));
+      if (reduce) return;
+      visuals.forEach((v, i) => {
+        const video = v.querySelector("video");
+        if (!video) return;
+        if (i !== n) return video.pause();
+        if (!video.dataset.loaded) {
+          video.querySelectorAll<HTMLSourceElement>("source[data-src]").forEach((s) => (s.src = s.dataset.src!));
+          video.dataset.loaded = "1";
+          video.load();
+        }
+        video.play().catch(() => {});
+      });
+    };
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) show(Number((e.target as HTMLElement).dataset.step));
+    }, { rootMargin: "-45% 0px -45% 0px" });
+    root.querySelectorAll("[data-step]").forEach((s) => io.observe(s));
   }
 </script>
-
-<style is:global>
-  @media (prefers-reduced-motion: reduce) {
-    .v-car { animation: none !important; transform: translate(120px, 108px); }
-    .v-box { stroke-dashoffset: 0 !important; }
-    .v-tag { opacity: 1 !important; }
-    .pipe__packet { display: none; }
-  }
-</style>

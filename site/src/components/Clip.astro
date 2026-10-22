@@ -1,0 +1,34 @@
+---
+// Lazy, muted, looping clip. Sources attach only when the clip nears the
+// viewport; reduced-motion visitors get the poster plus controls. Missing clip:
+// renders the fallback slot (or nothing).
+import { clip } from "../lib/media";
+interface Props { name: string; label: string; class?: string; width?: number; height?: number; manual?: boolean }
+const { name, label, class: cls, width = 1280, height = 720, manual } = Astro.props;
+const c = clip(name);
+---
+{c ? (
+  <video class:list={["block h-auto w-full", cls]} data-lazy-clip data-manual={manual || undefined} muted loop playsinline preload="none" poster={c.poster} width={width} height={height} aria-label={label}>
+    {c.webm && <source data-src={c.webm} type="video/webm" />}
+    {c.mp4 && <source data-src={c.mp4} type="video/mp4" />}
+  </video>
+) : <slot name="fallback" />}
+
+<script>
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const io = new IntersectionObserver((entries) => {
+    for (const { target, isIntersecting } of entries) {
+      const v = target as HTMLVideoElement;
+      if (isIntersecting && !v.dataset.loaded) {
+        v.querySelectorAll<HTMLSourceElement>("source[data-src]").forEach((s) => (s.src = s.dataset.src!));
+        v.dataset.loaded = "1";
+        v.load();
+      }
+      if (reduce) { v.controls = true; continue; }
+      if (v.dataset.manual !== undefined) continue;
+      if (isIntersecting) v.play().catch(() => {});
+      else v.pause();
+    }
+  }, { rootMargin: "200px 0px" });
+  document.querySelectorAll("video[data-lazy-clip]").forEach((v) => io.observe(v));
+</script>

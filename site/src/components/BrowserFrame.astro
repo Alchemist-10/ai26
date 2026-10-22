@@ -1,0 +1,15 @@
+---
+// Browser-window mockup for app screenshots.
+interface Props { url?: string; class?: string }
+const { url = "localhost:5174", class: cls } = Astro.props;
+---
+<div class:list={["relative overflow-hidden rounded-xl border border-line bg-[#07090b] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.6)]", cls]}>
+  <div class="flex h-9 items-center gap-2 border-b border-white/10 bg-[#0e1215] px-3.5">
+    <span class="size-2.5 rounded-full bg-white/15"></span>
+    <span class="size-2.5 rounded-full bg-white/15"></span>
+    <span class="size-2.5 rounded-full bg-white/15"></span>
+    <span class="mx-auto truncate rounded-md bg-white/5 px-3 py-0.5 font-mono text-[11px] text-white/45">{url}</span>
+    <span class="w-[42px]"></span>
+  </div>
+  <slot />
+</div>
