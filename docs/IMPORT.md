@@ -8,7 +8,7 @@ repository do not automatically update the other.
 ## Copied and adapted
 
 - Backend inference, tracking, events, normalization, queries, API, dependency lock,
-  six existing playback clips, and the YOLO model checkpoint.
+  existing playback clips, and the YOLO model checkpoint.
 - React frontend and its package lock.
 - Static HTML/CSS/JS walkthrough with synthetic data, renamed to Sakshi.
 - Launcher, rewritten for Sakshi's ports and first-run dependency installation.

@@ -9,7 +9,7 @@ claims accuracy before annotations and corresponding predictions exist.
 
 The first set is stored locally at
 `backend/data/review/frame-set-2026-10-18/`. It contains 45 full-size JPEG images:
-five evenly spaced frame positions in each of the nine available clips. The
+five evenly spaced frame positions in each available sample feed. The
 frames are the midpoints of equal-duration strata, chosen without inspecting
 predictions. CAM-01–06 use available 960×540 playback fallback files because
 their configured originals are absent. CAM-07–09 use the supplied managed
@@ -103,7 +103,7 @@ JPEG images are research derivatives, not original evidence frames.
 
 This set is exploratory. These source clips have already been inspected during
 development, different frames can repeat the same vehicles, source sessions
-are not independently verified and six sources are playback copies. It is not
+are not independently verified and CAM-01–06 sources are playback copies. It is not
 an independent held-out dataset or a ready train/validation/test manifest.
 Report these limitations and frame/clip denominators with later results.
 

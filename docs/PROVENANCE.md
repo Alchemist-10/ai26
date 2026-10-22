@@ -24,7 +24,7 @@ an initialized frame does not rescan model files or package metadata.
 
 Metadata records model names, file roles, digests, sizes and basenames; it does not
 expose local absolute paths. It also records Fast-ALPR/FastPlateOCR/Open Image
-Models/ONNX Runtime versions, execution providers and the thread budget. CPU ONNX
+Models/ONNX Runtime versions, execution providers and the thread budget. ONNX
 sessions use the configured Sakshi thread count (default 2) and one inter-op thread.
 The loader APIs are locked to Open Image Models 0.6.0 and FastPlateOCR 1.1.0.
 

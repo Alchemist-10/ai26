@@ -103,7 +103,7 @@ constant-confidence boxes/track IDs, writing into disposable directories:
 The previous policy wrote only the first frame/crops in these constant-confidence
 cases and reused them afterward (2 / 16 / 128 image attempts). Current capture made
 40 / 180 / 1,300 attempts, including one shared frame per batch. Additional ongoing
-CPU/storage work is intentional for current-read coverage; these numbers do not
+processing/storage work is intentional for current-read coverage; these numbers do not
 establish end-to-end FPS, sustained throughput or accuracy. All benchmark outputs
 were removed. The sampling/thread budgets and small browser previews are unchanged.
 

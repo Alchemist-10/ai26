@@ -1,7 +1,7 @@
 # Camera revisions and journey decision persistence
 
 Schema version 15 stores users, per-case grants, case-to-camera access grants, hashed authentication sessions, atomic authentication-attempt windows, encrypted TOTP enrollment, one-use recovery-code hashes and the last accepted TOTP counter,
-the nine-camera catalog, and immutable queried link decisions alongside existing
+the camera catalog, and immutable queried link decisions alongside existing
 directed camera-pair travel constraints, sessions, immutable reads, camera-local passages, alerts, rules, reports and
 hash-chained audit records, and 90-day camera/quarter-hour aggregate buckets for live-source processed samples and unique vehicle passages. Supported legacy versions migrate automatically; future schema
 versions fail explicitly. Startup seeds missing catalog IDs without replacing
