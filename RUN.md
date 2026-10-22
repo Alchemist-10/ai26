@@ -6,7 +6,7 @@
 - Python 3.12 (`backend/.python-version`), `uv`, Node.js 22.12+ and npm.
 - Internet for initial dependencies/models and browser map tiles/fonts. Vehicle
   models initialize in the background; ALPR initializes only for plate inputs.
-- The committed lock selects CPU PyTorch on Linux. GPU setup is a separate,
+- The committed lock selects the default PyTorch build on Linux. GPU setup is a separate,
   untested configuration; a normal frozen sync must not select CUDA packages.
 
 ## Startup and restart
@@ -175,8 +175,8 @@ polling. The source video and inference sample positions may differ after seekin
 use two FFmpeg threads by default (bounded by `AI26_RECORDED_DECODE_THREADS`, 1–4);
 live capture retains its single-thread decoder. The processor retains the total
 sampling budget configured by `AI26_TOTAL_INFERENCE_FPS`. Changing these budgets
-trades CPU and temporal coverage;
-benchmark on the target machine before claiming throughput or detection accuracy.
+trades processing cost and temporal coverage;
+benchmark on the test host before claiming throughput or detection accuracy.
 
 ## Runtime profiling
 

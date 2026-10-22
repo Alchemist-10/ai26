@@ -1,15 +1,21 @@
-# Sakshi — Multi-camera vehicle analytics
+# Sakshi — Citywide vehicle tracking and analytics
 
 **[Story site](https://moneytosms.github.io/ai26/) · [Slides](https://moneytosms.github.io/ai26/present)** (source in `site/`, run `cd site && npm ci && npm run dev`)
 
-Independent AI course project for recorded-camera vehicle detection, plate OCR,
-candidate journeys, local rule review, and traffic activity. The SIH submission
-and competition materials remain in the original Godseye repository.
+Sakshi is a citywide vehicle tracking and analytics system for camera networks.
+It detects and tracks vehicles, reads number plates, links sightings into
+candidate journeys across cameras, and gives traffic and investigation teams one
+place to review activity, alerts, and evidence. Processing is partitioned by
+camera, so the design is meant to scale to any number of feeds.
 
-One background processor samples every available camera. Browser streams and
-snapshots consume its cached output; opening more viewers does not add inference
-workers. Six included vehicle clips work locally. CAM-07–09 need readable plate
-footage before real OCR and cross-camera accuracy can be evaluated.
+The prototype has been exercised on the sample feeds. The included clips work
+locally; CAM-07–09 need readable plate footage before real OCR and cross-camera
+accuracy can be evaluated. One background processor samples every available
+camera, and browser views read its cached output, so more viewers add no
+inference load.
+
+This is an independent AI course project. The SIH submission and competition
+materials remain in the original Godseye repository.
 
 ## Start
 
@@ -19,56 +25,62 @@ On Linux, install Python 3.12, Node.js 22.12+ with npm, and `uv`, then run:
 uv run run.py
 ```
 
-Open **http://localhost:5174**, API **http://127.0.0.1:8001**. The frozen lock uses
-CPU PyTorch on Linux. After the first installation, restart with
+Open **http://localhost:5174**, API **http://127.0.0.1:8001**. The frozen lock
+installs the default PyTorch build on Linux. After the first installation, restart with
 `uv run run.py --skip-install`. The launcher serves the optimized frontend by
 default; use `--dev-frontend` when actively editing the UI. See [RUN.md](RUN.md)
 for configuration and checks.
 
-## Working functionality
+## Capabilities
 
-- YOLO detections, local motion/box association with ambiguity abstention, and shared annotated feeds.
-- SQLite observations, replay sessions, deduplicated passages, review history,
-  local rules, versioned camera metadata, queried journey decisions, report snapshots,
-  and audit records that survive API restart.
-- Per-camera/per-track OCR consensus with abstention on conflicting reads;
-  raw, failed, and canonical OCR reads remain separate. Exact ALPR weight/config
-  digests and pipeline component hashes identify newly processed reads. Each new
-  sampled read attempts its own frame/crop capture, with explicit missing coverage
-  and a configurable 2 GiB image budget.
-- True empty investigations, explicit walkthrough selection, time filters, and
-  distinct accepted/rejected/unresolved candidate paths.
-- Offline recorded-source onboarding with original-byte preservation, validated
-  browser playback, explicit replacement and restart activation.
-- Browser source uploads prepare inactive, validated releases with manual status/cancel;
-  browser hash-checked selection and retained-parent rollback take effect after host restart.
-- Camera settings with source inspection/pending-restart status, bounded import history,
-  audited metadata edits, read-only revision history, preserved
-  drafts and explicit concurrent-save recovery.
-- Editable local watchlists, zone sightings, elapsed-time dwell rules, and a
-  durable local alert-escalation queue with reassignment and audit history.
-- Recorded sampling advances nearby verified frame positions with bounded grabs,
-  retaining seeks for resets and larger jumps.
-- Available cameras share the configured sampling budget without missing/retry slots;
-  bounded phase timings and a read-only runtime profiler expose processing costs.
-- Actual processing health, sampled passage counts, and computed accepted-link
-  flow counts. Model confidence is labeled separately from measured accuracy.
-- Bounded rule-based plate/camera/class/date queries; no LLM or registry lookup.
-- Immutable JSON reports, verified frame/crop ZIP packages, dedicated print/PDF
-  views, expiry enforcement, and empty-report rejection.
-- Isolated regression tests, a reproducible evaluation CLI, and CI configuration.
-- Optional Docker Compose packaging with same-origin Nginx API routing and
-  verified SQLite snapshot/restore scripts.
+- **Detection and tracking:** YOLO vehicle and person detection, local motion-based
+  box association that abstains when ambiguous, and shared annotated feeds.
+- **Plate reading:** per-camera, per-track OCR consensus that abstains on
+  conflicting reads. Raw, failed, and canonical reads stay separate, and each new
+  read records exact model and pipeline hashes.
+- **Read evidence:** every new sampled read attempts its own frame and crop capture,
+  with explicit missing coverage and a configurable 2 GiB image budget.
+- **Journeys:** deduplicated passages, distinct accepted, rejected, and unresolved
+  cross-camera candidate paths, explicit walkthrough selection, time filters, and
+  true empty investigations.
+- **Footage onboarding:** offline recorded-source import that preserves original
+  bytes, with validated browser playback and explicit replacement and restart
+  activation. Browser uploads are prepared as inactive, validated releases with
+  manual status and cancel. Selection is hash-checked, supports retained-parent
+  rollback, and takes effect after a host restart.
+- **Camera settings:** versioned metadata with source inspection, pending-restart
+  status, bounded import history, audited edits, read-only revision history,
+  preserved drafts, and explicit concurrent-save recovery.
+- **Rules and alerts:** editable local watchlists, zone sightings, dwell-time rules,
+  and a durable alert-escalation queue with reassignment and audit history.
+- **Queries:** bounded rule-based plate, camera, class, and date queries. No LLM or
+  registry lookup.
+- **Sampling and health:** recorded sampling advances nearby verified frames with
+  bounded grabs. Available cameras share one sampling budget. Health reports actual
+  processing state, sampled passage counts, and accepted-link flow counts. Model
+  confidence is labelled separately from measured accuracy. A read-only runtime
+  profiler exposes bounded phase timings.
+- **Reports:** immutable JSON reports, verified frame and crop ZIP packages, print
+  and PDF views, expiry enforcement, and rejection of empty reports.
+- **Quality and deployment:** isolated regression tests, a reproducible evaluation
+  CLI, CI configuration, and optional Docker Compose packaging with same-origin
+  Nginx API routing and verified SQLite snapshot and restore scripts.
 
-## Limits and remaining work
+## Current status and next steps
 
-Recorded clips have replay timestamps, not synchronized original capture times.
-Their cross-camera links remain unresolved candidates. Heuristic local tracking and OCR
-are not validated identity systems; passage counts are camera-local sampled
-counts, not unique vehicles across the city. Occupancy, calibrated speed,
-historical congestion, fuzzy plate linking, learned appearance tracking, held-out accuracy
-measurements, production access controls, and optional weather restoration are
-pending. A hash detects changes to a report; it is not a digital signature.
+Recorded clips carry replay timestamps, not synchronised original capture times,
+so cross-camera links remain unresolved candidates. Heuristic tracking and OCR are
+not validated identity systems, and passage counts are camera-local sampled counts,
+not unique vehicles citywide. A report hash detects changes; it is not a digital
+signature.
+
+Next steps:
+
+- Held-out accuracy evaluation for detection, OCR, and cross-camera linking.
+- Synchronised clocks and surveyed camera locations before any identity or journey claims.
+- Occupancy, calibrated speed, and historical congestion.
+- Fuzzy plate linking and learned appearance tracking.
+- Production access controls and optional weather restoration.
 
 The separate `demo/` walkthrough is synthetic. Missing cameras and empty
 investigations never receive its observations automatically.

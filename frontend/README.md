@@ -1,6 +1,6 @@
 # Sakshi frontend
 
-React + TypeScript interface for the Sakshi vehicle analytics project.
+React + TypeScript interface for Sakshi, the citywide vehicle tracking and analytics system.
 
 ```bash
 npm ci
