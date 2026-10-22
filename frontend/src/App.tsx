@@ -87,7 +87,7 @@ function Dashboard({ user, caseIds, context, signOut, changeContext }: {
           <span className="flex h-7 w-7 flex-none items-center justify-center rounded-md border border-white/20 bg-white text-black shadow-sm">
             <ShieldCheck className="h-4 w-4" strokeWidth={2} />
           </span>
-          <span className="truncate text-sm font-bold tracking-[0.2em] text-white font-sans">AI26</span>
+          <span className="truncate text-sm font-bold tracking-[0.2em] text-white font-sans">Sakshi</span>
           <span className="hidden truncate border-l border-zinc-800 pl-3 text-[10px] uppercase tracking-[0.22em] text-zinc-400 font-sans sm:inline">
             {TITLES[page]} / Kochi
           </span>

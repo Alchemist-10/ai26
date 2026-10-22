@@ -1,4 +1,6 @@
-# AI26 — Multi-camera vehicle analytics
+# Sakshi — Multi-camera vehicle analytics
+
+**[Story site](https://moneytosms.github.io/ai26/) · [Slides](https://moneytosms.github.io/ai26/present)** (source in `site/`, run `cd site && npm ci && npm run dev`)
 
 Independent AI course project for recorded-camera vehicle detection, plate OCR,
 candidate journeys, local rule review, and traffic activity. The SIH submission

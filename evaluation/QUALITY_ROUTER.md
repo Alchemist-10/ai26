@@ -19,7 +19,7 @@ uv run --frozen --directory backend python evaluation/quality_router.py input.jp
 
 To request boxes from the currently selected hash-snapshotted ALPR detector,
 use `--detect-plates` instead of `--plate-box`. This explicit option can download
-the model assets on first use and stores hashed snapshots in the configured AI26
+the model assets on first use and stores hashed snapshots in the configured Sakshi
 model cache. The report includes detector file hashes, records when no candidates
 were returned, and deliberately discards OCR text. Detector boxes are still
 unverified review hints; they do not represent plate-detection accuracy.

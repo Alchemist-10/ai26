@@ -1,6 +1,6 @@
-# AI26 retention windows
+# Sakshi retention windows
 
-AI26 applies these windows in its background maintenance task, including when
+Sakshi applies these windows in its background maintenance task, including when
 camera inference is paused. The defaults are deployment settings, not a legal
 retention recommendation. Set the environment values before startup; increasing
 a window cannot restore data that an earlier cleanup has already removed.

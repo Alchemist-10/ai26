@@ -1,5 +1,5 @@
 [Unit]
-Description=AI26 camera analytics API and frontend
+Description=Sakshi camera analytics API and frontend
 After=network-online.target
 Wants=network-online.target
 

@@ -77,7 +77,7 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
 
   return <div className="mt-4 border-t border-zinc-800 pt-4">
     <h3 className="font-medium">Prepare footage from your browser</h3>
-    <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Upload a clip up to 128 MiB. AI26 preserves its bytes and prepares a separate playback copy. Current inference and playback continue using their existing source. Select ready footage here, then restart on the host to activate it.</p>
+    <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-zinc-300">Upload a clip up to 128 MiB. Sakshi preserves its bytes and prepares a separate playback copy. Current inference and playback continue using their existing source. Select ready footage here, then restart on the host to activate it.</p>
     <form onSubmit={upload} className="mt-4">
       <fieldset disabled={disabled || busy || preparing || checking} className="grid min-w-0 gap-4 sm:grid-cols-2">
         <label htmlFor="source-upload-file" className="block text-sm font-medium sm:col-span-2">Recorded video
@@ -98,7 +98,7 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
         </label>
         <details className="rounded border border-zinc-800 p-3 text-sm sm:col-span-2">
           <summary className="min-h-11 cursor-pointer py-2 font-medium">Source provenance claims (optional)</summary>
-          <p className="mb-3 max-w-[70ch] leading-relaxed text-zinc-400">These are operator-provided claims only. AI26 does not independently verify source ownership, export details, recording timezone, authorization or retention terms.</p>
+          <p className="mb-3 max-w-[70ch] leading-relaxed text-zinc-400">These are operator-provided claims only. Sakshi does not independently verify source ownership, export details, recording timezone, authorization or retention terms.</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">Archive creator or supplier<input maxLength={200} value={provenance.archive_creator} className={`${control} mt-1`} onChange={event=>setProvenance(value=>({...value,archive_creator:event.target.value}))} /></label>
             <label className="block">Export system / NVR<input maxLength={200} value={provenance.export_system} className={`${control} mt-1`} onChange={event=>setProvenance(value=>({...value,export_system:event.target.value}))} /></label>
@@ -109,7 +109,7 @@ export default function SourceUpload({cameraId,source,disabled,onBusyChange,onSe
           </div>
         </details>
         {needsReplace && <label htmlFor="source-upload-replace" className="flex min-h-11 items-start gap-3 text-sm leading-relaxed sm:col-span-2"><input id="source-upload-replace" type="checkbox" required checked={replace} className="mt-1 h-5 w-5 shrink-0 accent-teal-400" onChange={event=>setReplace(event.target.checked)} />I intend to replace this camera’s footage after validation, selection and restart.</label>}
-        <p className="text-sm leading-relaxed text-zinc-300 sm:col-span-2">One clip can be prepared at a time. Your name, source details and recording clocks are operator claims, not verification. When sign-in is enabled, AI26 records the authenticated uploader account separately. A supplied start time is paired with frame index ÷ reported FPS as an approximate source offset; it does not replace replay time or enable calibrated cross-camera links. Ready releases remain on the host until managed separately.</p>
+        <p className="text-sm leading-relaxed text-zinc-300 sm:col-span-2">One clip can be prepared at a time. Your name, source details and recording clocks are operator claims, not verification. When sign-in is enabled, Sakshi records the authenticated uploader account separately. A supplied start time is paired with frame index ÷ reported FPS as an approximate source offset; it does not replace replay time or enable calibrated cross-camera links. Ready releases remain on the host until managed separately.</p>
         <button type="submit" className={`${button} w-fit border-white bg-white text-black hover:bg-zinc-200`} disabled={!file}>{busy ? "Uploading clip…" : "Upload and prepare clip"}</button>
       </fieldset>
     </form>

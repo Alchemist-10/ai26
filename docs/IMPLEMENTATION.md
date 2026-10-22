@@ -1,4 +1,4 @@
-# AI26 implementation
+# Sakshi implementation
 
 ## Data path
 

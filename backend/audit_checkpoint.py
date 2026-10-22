@@ -83,7 +83,7 @@ def create_checkpoint(database_path, private_key_path, created_at=None):
         if verified_hash != head_hash:
             raise AuditCheckpointError("Audit chain head changed while creating checkpoint")
     except sqlite3.Error as exc:
-        raise AuditCheckpointError("Database does not contain a readable AI26 audit table") from exc
+        raise AuditCheckpointError("Database does not contain a readable Sakshi audit table") from exc
     finally:
         db.close()
     public = private_key.public_key()
@@ -142,7 +142,7 @@ def verify_checkpoint(checkpoint, public_key_path, database_path):
         count, head_hash = _chain_to(db, checkpoint_id)
         records_after = db.execute("SELECT count(*) FROM audit WHERE id>?", (checkpoint_id,)).fetchone()[0]
     except sqlite3.Error as exc:
-        raise AuditCheckpointError("Database does not contain a readable AI26 audit table") from exc
+        raise AuditCheckpointError("Database does not contain a readable Sakshi audit table") from exc
     finally:
         db.close()
     if count != checkpoint["audit_record_count"] or head_hash != checkpoint["audit_head_hash"]:

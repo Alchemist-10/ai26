@@ -137,7 +137,7 @@ def prepare(sources: list[dict], output: Path, count: int = 5, previous: list[di
         payload = json.dumps({"manifest": manifest, "labels": blank}).replace("<", "\\u003c")
         (staging / "index.html").write_text(template.replace("/* REVIEW_PAYLOAD */ null", payload))
         (staging / "README.md").write_text(
-            "# AI26 manual frame review\n\nOpen index.html using a local HTTP server.\n"
+            "# Sakshi manual frame review\n\nOpen index.html using a local HTTP server.\n"
             "1. Enter your reviewer name.\n2. Count visible cars, buses, trucks, motorcycles and bicycles. Include partial vehicles when identifiable; exclude parked-image signs/reflections.\n"
             "3. Optionally draw every vehicle box for detector scoring and tick the complete-boxes checkbox.\n"
             "4. Optionally draw plate regions, mark readability, and transcribe only readable plates.\n"

@@ -8,7 +8,7 @@ stopped.
 
 ## Procedure
 
-1. Stop every AI26 API process that uses the data directory. Create a new key
+1. Stop every Sakshi API process that uses the data directory. Create a new key
    outside the repository and restrict it to the service account:
 
    ```sh

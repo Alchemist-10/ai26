@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AI26 — Agent</title>
+<title>Sakshi — Agent</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <header class="topbar">
-  <div class="brand">AI26 <small>AI course project — Kochi demo</small></div>
+  <div class="brand">Sakshi <small>AI course project — Kochi demo</small></div>
   <nav class="tabs">
     <a href="index.html">Operations</a>
     <a href="investigation.html">Investigation</a>
@@ -20,13 +20,13 @@
 <div class="mock-banner"><strong>Demo build.</strong> No LLM runs here. This is a hardcoded tool-call simulator illustrating a possible extension: a local model with a fixed, allowlisted, read-only tool list. Every response below shows which tool it "called" and with what arguments.</div>
 
 <main>
-  <h1>AI26 Agent</h1>
+  <h1>Sakshi Agent</h1>
   <p class="agent-note">Unlike the camera-wall search (scoped to cameras you select), this agent can reach across the whole allowlisted tool surface — trajectories, alerts, congestion, camera events, OD flows — the same way the real NL-query layer would, just with canned answers instead of a live model and database.</p>
 
   <div class="panel">
     <div class="agent-chat" id="chat"></div>
     <div class="query-row" style="margin-top:14px;">
-      <input type="text" id="agent-input" placeholder="Ask AI26 something…">
+      <input type="text" id="agent-input" placeholder="Ask Sakshi something…">
       <button id="agent-send">Send</button>
     </div>
     <div class="chips" id="agent-chips"></div>
@@ -48,7 +48,7 @@
   </div>
 </main>
 
-<footer class="pagefoot">AI26 demo — Synthetic walkthrough dataset. Not connected to live cameras or VAHAN.</footer>
+<footer class="pagefoot">Sakshi demo — Synthetic walkthrough dataset. Not connected to live cameras or VAHAN.</footer>
 
 <script src="js/data.js"></script>
 <script src="js/agent.js"></script>
@@ -97,7 +97,7 @@
     chipWrap.appendChild(chip);
   });
 
-  addAgentMsg({ toolCall: null, html: "<p>Hi — I'm the AI26 agent (demo). Ask about a plate's trajectory, alerts, congestion, camera events, or OD routes. Try one of the sample prompts below.</p>" });
+  addAgentMsg({ toolCall: null, html: "<p>Hi — I'm the Sakshi agent (demo). Ask about a plate's trajectory, alerts, congestion, camera events, or OD routes. Try one of the sample prompts below.</p>" });
 </script>
 </body>
 </html>

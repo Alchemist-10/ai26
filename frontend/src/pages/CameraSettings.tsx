@@ -158,7 +158,7 @@ export default function CameraSettings({ cameras, initialCamera, isAdmin }: { ca
           {discoveryError && <p role="alert" className="mt-3 text-sm text-red-200">{discoveryError}</p>}
           {discovery && <div className="mt-3" role="status" aria-live="polite">
             <p className="text-sm text-zinc-300">Found {discovery.devices.length} device{discovery.devices.length === 1 ? "" : "s"} in {discovery.elapsed_seconds}s.</p>
-            {discovery.devices.length === 0 ? <p className="mt-2 text-sm text-zinc-400">No devices replied. Check that the camera and AI26 host share a network that allows WS-Discovery multicast.</p> :
+            {discovery.devices.length === 0 ? <p className="mt-2 text-sm text-zinc-400">No devices replied. Check that the camera and Sakshi host share a network that allows WS-Discovery multicast.</p> :
               <ul className="mt-2 divide-y divide-zinc-800">{discovery.devices.map((device, index) => <li key={device.endpoint_id ?? `${device.source_address}-${index}`} className="py-3 text-sm">
                 <p className="font-medium">{device.source_address}{device.endpoint_id ? ` · ${device.endpoint_id}` : ""}</p>
                 <ul className="mt-1 grid gap-1 break-all text-xs text-zinc-300">{device.service_addresses.map(address => <li key={address}><code>{address}</code></li>)}</ul>
@@ -179,7 +179,7 @@ export default function CameraSettings({ cameras, initialCamera, isAdmin }: { ca
                   <input id="onvif-password" type="password" autoComplete="new-password" required maxLength={256} className={`${control} mt-1`} value={onvifPassword} onChange={event => setOnvifPassword(event.target.value)} />
                 </label>
               </div>
-              <p className="text-xs text-zinc-400">Credentials are sent to this AI26 server for a bounded ONVIF request and cleared from the form when it finishes. This lookup does not store credentials, activate streams or change source mappings. Only safe private-address RTSP URLs are shown.</p>
+              <p className="text-xs text-zinc-400">Credentials are sent to this Sakshi server for a bounded ONVIF request and cleared from the form when it finishes. This lookup does not store credentials, activate streams or change source mappings. Only safe private-address RTSP URLs are shown.</p>
               <button type="submit" className={button} disabled={inspectingProfiles || !onvifUsername || !onvifPassword}>{inspectingProfiles ? "Checking camera…" : "Read camera profiles"}</button>
               {profileError && <p role="alert" className="text-sm text-red-200">{profileError}</p>}
               {profileResult && <div role="status" aria-live="polite" className="rounded border border-zinc-800 p-3 text-sm">
@@ -188,8 +188,8 @@ export default function CameraSettings({ cameras, initialCamera, isAdmin }: { ca
                   <p className="font-medium text-white">Read-only camera clock check</p>
                   {profileResult.clock.status === "estimated" && profileResult.clock.estimated_host_offset_seconds !== null ? <>
                     <p className="mt-1">Camera time: {profileResult.clock.camera_utc} · {profileResult.clock.date_time_type ?? "time source unreported"}</p>
-                    <p>Estimated camera offset from AI26 host: {profileResult.clock.estimated_host_offset_seconds >= 0 ? "+" : ""}{profileResult.clock.estimated_host_offset_seconds}s ±{profileResult.clock.uncertainty_seconds}s.</p>
-                    <p>Uncertainty includes one-second camera timestamp resolution and half the request round trip; AI26 host clock accuracy is not assessed.</p>
+                    <p>Estimated camera offset from Sakshi host: {profileResult.clock.estimated_host_offset_seconds >= 0 ? "+" : ""}{profileResult.clock.estimated_host_offset_seconds}s ±{profileResult.clock.uncertainty_seconds}s.</p>
+                    <p>Uncertainty includes one-second camera timestamp resolution and half the request round trip; Sakshi host clock accuracy is not assessed.</p>
                   </> : <p className="mt-1">The device did not provide a usable UTC clock value. Clock synchronization remains unverified.</p>}
                   {profileResult.clock.daylight_savings !== null && <p>Device daylight-saving setting: {profileResult.clock.daylight_savings ? "on" : "off"}.</p>}
                   <p>No camera time was changed. This estimate is diagnostic, not clock calibration.</p>

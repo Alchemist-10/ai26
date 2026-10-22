@@ -1,6 +1,6 @@
 # Student frame review
 
-This local tool prepares a prediction-blind review set for AI26's mini-project
+This local tool prepares a prediction-blind review set for Sakshi's mini-project
 evaluation. It runs independently of the dashboard and inference processor.
 It never fills human labels from model output, edits prior plate reviews, or
 claims accuracy before annotations and corresponding predictions exist.
@@ -59,7 +59,7 @@ labels and retain that file with `manifest.json` for subsequent evaluation.
 
 ### Interface and accessibility
 
-The review tool extends AI26's inherited dark/zinc/teal identity and Plex Sans
+The review tool extends Sakshi's inherited dark/zinc/teal identity and Plex Sans
 with system fallbacks. On desktop, the source image and navigation sit beside
 the observation form; at widths of 1000px or less, the form stacks below the
 image. Visible labels, native controls and teal focus outlines support keyboard

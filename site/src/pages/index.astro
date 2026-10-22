@@ -1,0 +1,376 @@
+---
+// Sakshi story page. Every number here comes from report/report.md or the
+// repo itself (checked 2026-10-22): 47 test files / 442 tests in tests/,
+// 55 API routes in backend/, replay and benchmark figures from the report.
+import Base from "../layouts/Base.astro";
+import Spine from "../components/Spine.astro";
+import Chapter from "../components/Chapter.astro";
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const REPO = "https://github.com/moneytosms/ai26";
+
+const pipeline = [
+  ["Sources", "Recorded clips or RTSP", 20],
+  ["Scheduler", "One global frame budget", 150],
+  ["YOLOv8n", "Vehicles (and people, for masking)", 280],
+  ["Tracker", "Camera-local motion + box", 410],
+  ["Plate OCR", "Detector, then MobileViT-v2", 540],
+  ["Consensus", "3 reads or abstain", 670],
+  ["SQLite", "Observations, audit, provenance", 800],
+  ["Dashboard", "FastAPI + React", 930],
+];
+
+const can = [
+  ["Watch every camera", "One background processor samples all sources. More browser tabs never add inference workers."],
+  ["Search observations", "Bounded plate, camera, class and date queries. Fixed rules, no language model, no registry lookup."],
+  ["Review candidates", "Accepted, rejected and unresolved journey candidates stay distinct. Review history is kept."],
+  ["Set local rules", "Watchlists, zone sightings, dwell timers, and an alert queue with reassignment and audit."],
+  ["Export evidence", "Immutable JSON reports, hash-checked frame and crop ZIPs, print views, optional signing."],
+  ["Onboard footage", "Upload a recording, validate it, activate it on restart, roll back to the retained parent."],
+];
+
+const limits = [
+  ["No held-out accuracy", "No independent labelled split exists yet. Detector precision and exact-plate accuracy are unknown."],
+  ["Replay time is not capture time", "Clips carry replay timestamps, so speed, travel time and city-wide counts cannot be inferred."],
+  ["Links are candidates", "Track IDs are camera-local. Cross-camera journeys stay unresolved until clocks and routes are verified."],
+  ["Not a surveillance product", "No production security, legal or privacy assessment. An alert is a prompt for review, not a finding."],
+];
+
+const scenarios = [
+  ["A", "Measured CPU, FP32", 1.17, true],
+  ["B", "INT8 detector, same host", 1.22, false],
+  ["C", "Four CPU hosts, INT8", 4.9, false],
+  ["D", "One GPU worker (assumed 10x)", 11.7, false],
+] as const;
+---
+
+<Base
+  title="Sakshi, a witness for recorded traffic"
+  description="Sakshi turns multi-camera traffic footage into reviewable, auditable vehicle observations, and keeps every uncertain plate read uncertain."
+>
+  <section class="hero" aria-labelledby="hero-title">
+    <svg class="hero__trace" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true">
+      <path data-hero-trace d="M0 100 H220 V60 H300 V100 H560 V40 H680 V100 H900 V70 H960 V100 H1200" />
+    </svg>
+
+    <div class="hero__grid">
+      <div class="hero__copy">
+        <p class="hero__kicker">Sakshi, Sanskrit for <em>witness</em></p>
+        <h1 id="hero-title" class="hero__title">Hours of footage in. Evidence you can check out.</h1>
+        <p class="hero__lede">
+          Sakshi watches several traffic cameras at once, detects vehicles, reads plates, and stores every
+          observation with how it was made. When the model is unsure, Sakshi says so instead of guessing.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn-primary" href={`${base}/present`}>Open the slides</a>
+          <a class="btn" href="#story">Follow the story</a>
+        </div>
+        <p class="hero__facts">
+          9 cameras in the latest replay. 349 frames, 0 failed inferences. 442 tests. Accuracy not yet claimed,
+          because nobody has labelled a held-out set.
+        </p>
+      </div>
+
+      <figure class="hero__cam glass" aria-label="Illustration: a camera frame detects a car, reads its plate three times, and abstains on a conflict">
+        <figcaption class="cam__head">
+          <span><span class="rec" aria-hidden="true"></span>CAM-03, replay</span>
+          <span class="muted">synthetic plate</span>
+        </figcaption>
+        <svg class="cam__view" viewBox="0 0 480 220" aria-hidden="true">
+          <rect class="v-road" x="0" y="120" width="480" height="100" />
+          <path class="v-lane" d="M0 170 H480" />
+          <g class="v-car">
+            <path class="v-body" d="M0 52 V30 Q0 20 12 18 L50 14 L76 -4 H150 L176 14 L208 18 Q220 20 220 32 V52 Z" />
+            <path class="v-glass" d="M84 0 H144 L164 14 H70 Z" />
+            <circle class="v-wheel" cx="52" cy="54" r="15" /><circle class="v-wheel" cx="172" cy="54" r="15" />
+            <rect class="v-plate" x="190" y="34" width="26" height="10" rx="2" />
+            <rect class="v-box" x="-8" y="-12" width="236" height="84" />
+            <g class="v-tag"><rect x="-8" y="-34" width="92" height="22" rx="4" /><text x="0" y="-18">car 0.91</text></g>
+          </g>
+          <path class="v-scan" d="M0 0 H480" />
+          <path class="v-corner" d="M14 40 V14 H40 M440 14 H466 V40 M466 180 V206 H440 M40 206 H14 V180" />
+        </svg>
+        <ol class="reads">
+          <li class="read ok"><span>read 1</span><code>KA01AB1234</code><b>agree</b></li>
+          <li class="read ok"><span>read 2</span><code>KA01AB1234</code><b>agree</b></li>
+          <li class="read bad"><span>read 3</span><code>KA01A<mark>8</mark>1234</code><b>conflict</b></li>
+        </ol>
+        <p class="verdict">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l10 18H2z" stroke-linejoin="round" /><path d="M12 10v5M12 18v.5" stroke-linecap="round" /></svg>
+          <span><strong>Abstained.</strong> Conflicting reads never become an identity. All three stay on file for review.</span>
+        </p>
+      </figure>
+    </div>
+  </section>
+
+  <div class="story" id="story">
+    <Spine />
+
+    <Chapter id="problem" n={1} title="Cameras record everything. Investigators need a few rows." lede="A day of video from nine cameras is mostly empty road. The useful part is small: a vehicle class, a possible plate, a camera, a time.">
+      <p>
+        Searching recordings by hand is slow and hard to repeat. A detector finds a car in one frame, but the real
+        questions span many frames: was it the same car, which plate, and how sure are we? Plate OCR misreads small or
+        blurred plates, and a replay timestamp is easy to mistake for the moment of capture.
+      </p>
+      <p>
+        Sakshi handles that whole workflow, not just the detection. It keeps raw reads, records which model made
+        them, marks uncertain identities, and keeps what was <em>measured</em> apart from what was not.
+      </p>
+    </Chapter>
+
+    <Chapter id="pipeline" n={2} title="One frame through the pipeline" lede="Learned models where rules are weak, plain deterministic code everywhere else." wide>
+      <figure class="pipe surface" data-draw-root>
+        <svg viewBox="0 0 1060 210" role="img" aria-label="Pipeline: sources, scheduler, YOLOv8n detector, tracker, plate OCR, consensus, SQLite, dashboard">
+          <path class="pipe__wire" data-draw="1.8" d="M80 70 H990" />
+          <path class="pipe__wire pipe__wire--back" data-draw="1.4" d="M860 110 V170 H340 V110" />
+          <text class="pipe__note" x="600" y="196" text-anchor="middle">review, rules and queries read the same store</text>
+          {pipeline.map(([t, d, x], i) => (
+            <g class:list={["pipe__node", { "pipe__node--ai": i === 2 || i === 4 }]}>
+              <rect x={x as number} y="30" width="112" height="80" rx="12" />
+              <text x={(x as number) + 56} y="64" text-anchor="middle" class="pipe__t">{t}</text>
+              <foreignObject x={(x as number) + 4} y="72" width="104" height="36"><p class="pipe__d">{d}</p></foreignObject>
+            </g>
+          ))}
+          <circle class="pipe__packet" r="6" />
+        </svg>
+        <figcaption><span class="key key--ai"></span>pretrained model <span class="key"></span>deterministic code</figcaption>
+      </figure>
+      <div class="cols" data-stagger>
+        <div><h3>Shared processor</h3><p>A single bounded scheduler samples every available camera under one global frame budget. Viewers read cached output.</p></div>
+        <div><h3>Pretrained AI</h3><p>Ultralytics YOLOv8 nano finds vehicles. A plate detector crops, and a MobileViT-v2 model reads characters.</p></div>
+        <div><h3>Conservative glue</h3><p>Motion-and-box assignment with an ambiguity margin. A track that could belong to two boxes is retired, not guessed.</p></div>
+      </div>
+    </Chapter>
+
+    <Chapter id="consensus" n={3} title="An unsure model should say so" lede="Every plate read passes normalisation, confidence and format checks, then a three-read consensus per track.">
+      <ol class="gates" data-stagger>
+        <li><b>Normalise</b><span>Clean the text, then repair look-alike characters (O and 0, B and 8) by position in the Indian plate format. Every repair is logged.</span></li>
+        <li><b>Gate</b><span>Low confidence or an impossible format is kept as a failed read, never dropped and never promoted.</span></li>
+        <li><b>Agree</b><span>Three consistent reads on one track make a canonical plate. Any conflict and the track abstains.</span></li>
+        <li><b>Keep all three</b><span>Raw, failed and canonical reads are stored separately, each with the model weight digest that produced it.</span></li>
+      </ol>
+      <p class="aside">In the small review, the gates rejected every mismatched reading. That shows how the gate behaves on those crops, not a general false-identity rate.</p>
+    </Chapter>
+
+    <Chapter id="evidence" n={4} title="Built so someone can check the work" lede="An observation is only useful if you can say where it came from and prove it has not changed.">
+      <div class="cols" data-stagger>
+        <div><h3>Provenance</h3><p>ALPR weight and config digests and pipeline component hashes identify how each new read was made.</p></div>
+        <div><h3>Audit</h3><p>Reviews, rule edits, camera metadata revisions and alert actions write audit records that survive restarts.</p></div>
+        <div><h3>Exports</h3><p>Reports are immutable snapshots. Frame and crop ZIPs are hash-verified, and optional signing is available.</p></div>
+      </div>
+      <p class="aside">A hash detects that a report changed. It is not a digital signature on its own, and the site does not pretend it is.</p>
+    </Chapter>
+
+    <Chapter id="can" n={5} title="What you can do with it today" wide>
+      <div class="grid" data-stagger>
+        {can.map(([t, d]) => <div class="cell surface"><h3>{t}</h3><p>{d}</p></div>)}
+      </div>
+    </Chapter>
+
+    <Chapter id="numbers" n={6} title="What was measured" lede="Execution measurements on one 12-thread workstation. Speed and reliability, not recognition accuracy." wide>
+      <div class="nums" data-stagger>
+        <div class="num surface"><b data-count="9">9</b><p>cameras in the latest replay</p></div>
+        <div class="num surface"><b data-count="349">349</b><p>sampled frames in 298.011 s</p></div>
+        <div class="num surface"><b>1.171</b><p>frames per second, against a 2 FPS budget</p></div>
+        <div class="num surface"><b data-count="0">0</b><p>failed inference attempts</p></div>
+        <div class="num surface"><b class="num__pair">92.8<small> → </small>55.8</b><p>ms median detector forward, FP32 to static INT8</p></div>
+        <div class="num surface"><b data-count="442">442</b><p>tests across 47 regression files</p></div>
+      </div>
+    </Chapter>
+
+    <Chapter id="limits" n={7} title="What we do not claim" lede="The evidence is strong for the software and weak for model quality. Here is the line.">
+      <ul class="limits" data-stagger>
+        {limits.map(([t, d]) => (
+          <li>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            <div><b>{t}</b><span>{d}</span></div>
+          </li>
+        ))}
+      </ul>
+    </Chapter>
+
+    <Chapter id="future" n={8} title="Where it goes next" lede="The parts talk through narrow interfaces, so they can be split across machines. Only scenario A was measured; the rest are estimates." wide>
+      <figure class="proj surface" data-draw-root>
+        <svg viewBox="0 0 760 300" role="img" aria-label="Projected aggregate frames per second: A 1.17 measured, B 1.22, C 4.9, D 11.7 estimated">
+          <defs>
+            <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="8" height="8" class="hatch-bg" /><path d="M0 0 V8" class="hatch-line" />
+            </pattern>
+          </defs>
+          <path class="axis" d="M60 250 H740" />
+          {scenarios.map(([k, label, v, measured], i) => {
+            const h = (v / 12) * 210;
+            const x = 90 + i * 165;
+            return (
+              <g>
+                <rect class:list={["bar", { "bar--est": !measured }]} x={x} y={250 - h} width="110" height={h} rx="6" />
+                <text class="bar__v" x={x + 55} y={242 - h} text-anchor="middle">{v}</text>
+                <text class="bar__k" x={x + 55} y="274" text-anchor="middle">{k}</text>
+                <text class="bar__l" x={x + 55} y="294" text-anchor="middle">{label}</text>
+              </g>
+            );
+          })}
+        </svg>
+        <figcaption>Aggregate sampled FPS. Solid: measured. Hatched: projection from stated assumptions, not tested.</figcaption>
+      </figure>
+      <ol class="road" data-stagger>
+        <li><b>Label honestly.</b> An authorised, prediction-blind test set split by vehicle, camera, session and place.</li>
+        <li><b>Measure accuracy.</b> Run the existing evaluator on held-out outputs with denominators and confidence intervals.</li>
+        <li><b>Fit the region.</b> Compare the pretrained OCR with a model tuned on licensed local plate data.</li>
+        <li><b>Scale out.</b> Ship the INT8 detector, then partition cameras across workers or a GPU.</li>
+        <li><b>Earn journeys.</b> Synchronised clocks and surveyed camera locations before any cross-camera route claim.</li>
+      </ol>
+    </Chapter>
+
+    <Chapter id="run" n={9} title="Run it yourself">
+      <p>Linux with Python 3.12, Node.js 22.12+ and <code>uv</code>. Six included vehicle clips work locally.</p>
+      <pre class="code"><code>git clone {REPO}.git
+cd ai26
+uv run run.py          # dashboard on http://localhost:5174, API on :8001</code></pre>
+      <div class="hero__actions">
+        <a class="btn btn-primary" href={`${base}/present`}>Open the slides</a>
+        <a class="btn" href={REPO}>Source on GitHub</a>
+      </div>
+    </Chapter>
+  </div>
+</Base>
+
+<style>
+  .hero {
+    position: relative;
+    padding: clamp(3rem, 8vw, 6rem) var(--gutter) 2rem var(--content-start);
+    max-width: calc(var(--wide) + var(--content-start) + var(--gutter));
+    margin: 0 auto;
+    min-height: min(92svh, 860px);
+  }
+  .hero__trace { position: absolute; left: 0; right: 0; top: clamp(1rem, 4vw, 2.5rem); width: 100%; height: 110px; opacity: 0.5; }
+  .hero__trace path { fill: none; stroke: var(--primary); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .hero__grid { position: relative; display: grid; gap: 3rem; align-items: center; padding-top: 4.5rem; }
+  @media (min-width: 1000px) { .hero__grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 4rem; } }
+  .hero__kicker { color: var(--primary); font-weight: 500; margin-bottom: 1rem; }
+  .hero__title { font-size: var(--step-5); letter-spacing: -0.035em; line-height: 1.02; max-width: 14ch; }
+  .hero__lede { margin-top: 1.6rem; font-size: var(--step-1); line-height: 1.5; color: var(--muted-foreground); max-width: 38ch; }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+  .hero__facts { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: 0.95rem; max-width: 52ch; }
+
+  .hero__cam { border-radius: calc(var(--radius) * 1.8); padding: 1.1rem; width: 100%; max-width: 500px; justify-self: center; }
+  .cam__head { display: flex; justify-content: space-between; gap: 1rem; font-weight: 700; font-size: 0.95rem; padding: 0.2rem 0.25rem 0.8rem; font-family: var(--font-mono); }
+  .muted { color: var(--muted-foreground); font-weight: 400; font-size: 0.82rem; }
+  .rec { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--critical); margin-right: 0.5rem; animation: blink 1.2s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0.2; } }
+  .cam__view { width: 100%; height: auto; border-radius: var(--radius); background: var(--muted); }
+  .v-road { fill: var(--foreground); opacity: 0.1; }
+  .v-lane { stroke: var(--foreground); opacity: 0.35; stroke-width: 3; stroke-dasharray: 26 22; animation: lane 1.4s linear infinite; }
+  @keyframes lane { to { stroke-dashoffset: -48; } }
+  .v-car { animation: drive 7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+  @keyframes drive { 0% { transform: translate(-260px, 108px); } 45%, 70% { transform: translate(120px, 108px); } 100% { transform: translate(520px, 108px); } }
+  .v-body { fill: var(--chart-2); }
+  .v-glass { fill: var(--card); opacity: 0.8; }
+  .v-wheel { fill: var(--foreground); }
+  .v-plate { fill: var(--card); stroke: var(--foreground); stroke-width: 1.5; }
+  .v-box { fill: none; stroke: var(--primary); stroke-width: 2.5; stroke-dasharray: 640; animation: snap 7s infinite; }
+  @keyframes snap { 0%, 22% { stroke-dashoffset: 640; } 38%, 100% { stroke-dashoffset: 0; } }
+  .v-tag { animation: tag 7s infinite; }
+  .v-tag rect { fill: var(--primary); }
+  .v-tag text { fill: var(--primary-foreground); font: 600 13px var(--font-mono); }
+  @keyframes tag { 0%, 34% { opacity: 0; } 40%, 100% { opacity: 1; } }
+  .v-scan { stroke: var(--primary); stroke-width: 2; opacity: 0.45; animation: scan 3.5s ease-in-out infinite alternate; }
+  @keyframes scan { to { transform: translateY(220px); } }
+  .v-corner { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; }
+
+  .reads { list-style: none; padding: 0; margin: 0.9rem 0 0; display: grid; gap: 0.45rem; }
+  .read { display: grid; grid-template-columns: 4rem 1fr auto; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--radius); background: var(--card); border: 1px solid var(--border); font-size: 0.88rem; }
+  .read span { color: var(--muted-foreground); }
+  .read code { font-size: 0.95rem; letter-spacing: 0.06em; background: none; border: 0; padding: 0; }
+  .read b { font-size: 0.78rem; padding: 0.1rem 0.55rem; border-radius: 999px; }
+  .read.ok b { color: var(--consent-active); background: var(--consent-active-surface); }
+  .read.bad b { color: var(--critical); background: var(--critical-surface); }
+  .read mark { background: var(--critical-surface); color: var(--critical); border-radius: 3px; }
+  .verdict { display: flex; gap: 0.7rem; align-items: flex-start; margin-top: 0.8rem; padding: 0.8rem 1rem; border-radius: var(--radius); background: var(--warn-surface); color: var(--warn); font-size: 0.9rem; line-height: 1.45; }
+  .verdict svg { flex: none; margin-top: 0.1rem; }
+
+  .story { position: relative; padding-bottom: 4rem; }
+  .story :global(h3) { font-size: var(--step-1); margin-bottom: 0.4rem; }
+  .cols { display: grid; gap: 1.5rem; margin-top: 2rem; }
+  @media (min-width: 800px) { .cols { grid-template-columns: repeat(3, 1fr); } }
+  .cols p, .cell p, .num p { color: var(--muted-foreground); font-size: 0.97rem; }
+  .aside { margin-top: 1.75rem; padding-left: 1rem; border-left: 3px solid var(--warn); color: var(--muted-foreground); font-size: 0.97rem; }
+
+  .pipe { padding: 1.25rem; overflow-x: auto; }
+  .pipe svg { min-width: 760px; width: 100%; height: auto; }
+  .pipe__wire { fill: none; stroke: var(--primary); stroke-width: 2.5; }
+  .pipe__wire--back { stroke-dasharray: 6 6; opacity: 0.6; }
+  .pipe__note { font-size: 14px; fill: var(--muted-foreground); }
+  .pipe__node rect { fill: var(--card); stroke: var(--border); stroke-width: 2; }
+  .pipe__node--ai rect { fill: var(--primary-soft); stroke: var(--primary); }
+  .pipe__t { font-size: 16px; font-weight: 700; fill: var(--foreground); }
+  .pipe__d { margin: 0; font-size: 11.5px; line-height: 1.25; text-align: center; color: var(--muted-foreground); }
+  .pipe__packet { fill: var(--critical); offset-path: path("M76 70 H990"); animation: packet 4s ease-in-out infinite; }
+  @keyframes packet { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+  .pipe figcaption { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.75rem; font-size: 0.88rem; color: var(--muted-foreground); }
+  .key { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 2px solid var(--border); background: var(--card); margin-left: 0.5rem; }
+  .key--ai { background: var(--primary-soft); border-color: var(--primary); margin-left: 0; }
+
+  .gates { list-style: none; counter-reset: g; padding: 0; margin: 0; display: grid; gap: 0.9rem; }
+  .gates li { counter-increment: g; display: grid; grid-template-columns: 2.4rem 1fr; column-gap: 1rem; }
+  .gates li::before { content: counter(g); grid-row: span 2; display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); font-weight: 700; }
+  .gates span { color: var(--muted-foreground); }
+
+  .grid { display: grid; gap: 1rem; }
+  @media (min-width: 700px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  .cell { padding: 1.25rem 1.4rem; }
+  .cell h3 { color: var(--primary); }
+
+  .nums { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .num { padding: 1.25rem 1.4rem; }
+  .num b { display: block; font-size: var(--step-4); line-height: 1; color: var(--primary); font-variant-numeric: tabular-nums; margin-bottom: 0.5rem; }
+  .num__pair { white-space: nowrap; font-size: var(--step-3) !important; }
+  .num small { font-size: 0.5em; color: var(--muted-foreground); }
+
+  .limits { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
+  .limits li { display: flex; gap: 0.9rem; align-items: flex-start; }
+  .limits svg { flex: none; color: var(--critical); margin-top: 0.2rem; }
+  .limits b, .road b { display: block; }
+  .limits span { color: var(--muted-foreground); }
+
+  .proj { padding: 1.25rem; }
+  .proj svg { width: 100%; height: auto; }
+  .proj figcaption { margin-top: 0.5rem; font-size: 0.88rem; color: var(--muted-foreground); }
+  .axis { stroke: var(--border); stroke-width: 2; }
+  .bar { fill: var(--primary); }
+  .bar--est { fill: url(#hatch); stroke: var(--primary); stroke-width: 2; stroke-dasharray: 6 4; }
+  .hatch-bg { fill: var(--primary-soft); }
+  .hatch-line { stroke: var(--primary); stroke-width: 2; opacity: 0.6; }
+  .bar__v { font-size: 20px; font-weight: 700; fill: var(--foreground); }
+  .bar__k { font-size: 16px; font-weight: 700; fill: var(--primary); }
+  .bar__l { font-size: 12.5px; fill: var(--muted-foreground); }
+  .road { margin: 2rem 0 0; padding-left: 1.4rem; display: grid; gap: 0.8rem; }
+  .road li::marker { color: var(--primary); font-weight: 700; }
+
+  #run :global(.chapter__body) > p { margin-bottom: 1rem; }
+  .code { white-space: pre; }
+</style>
+
+<script>
+  import { gsap, reducedMotion, initReveals, initCounts } from "../scripts/motion";
+  initReveals();
+  initCounts();
+  if (!reducedMotion()) {
+    const trace = document.querySelector<SVGPathElement>("[data-hero-trace]");
+    if (trace) {
+      const len = trace.getTotalLength();
+      gsap.fromTo(trace, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" });
+    }
+    gsap.from(".read", { x: 24, opacity: 0, duration: 0.6, stagger: 0.25, delay: 0.8, ease: "power3.out" });
+    gsap.from(".verdict", { y: 12, opacity: 0, duration: 0.6, delay: 1.7, ease: "power3.out" });
+  }
+</script>
+
+<style is:global>
+  @media (prefers-reduced-motion: reduce) {
+    .v-car { animation: none !important; transform: translate(120px, 108px); }
+    .v-box { stroke-dashoffset: 0 !important; }
+    .v-tag { opacity: 1 !important; }
+    .pipe__packet { display: none; }
+  }
+</style>

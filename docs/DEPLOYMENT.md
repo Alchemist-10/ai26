@@ -1,6 +1,6 @@
 # Local Compose deployment and database backups
 
-AI26 can run as one inference/API container and one production-built Nginx
+Sakshi can run as one inference/API container and one production-built Nginx
 frontend. Nginx serves the static React build and proxies `/api/` to the backend
 over Compose's private network. Hashed frontend assets use gzip compression and
 immutable cache headers. Only the frontend port is published, bound to
@@ -197,7 +197,7 @@ WS-Discovery probe to the local network. The API returns device service
 addresses and scopes. The **Read camera profiles** action can then make bounded
 read-only `GetCapabilities`, `GetProfiles` and `GetStreamUri` requests using
 operator-entered ONVIF UsernameToken PasswordDigest credentials. The credentials
-are sent to the AI26 API and then to the discovered camera, are not persisted,
+are sent to the Sakshi API and then to the discovered camera, are not persisted,
 and are cleared from the form after the request. Redirects and environment
 proxies are disabled, and endpoint and returned stream hosts must match the
 discovered private IPv4 address. Returned URLs with credentials, query strings,
@@ -207,7 +207,7 @@ clock offset estimate with network and one-second timestamp-resolution
 uncertainty; it does not set the camera clock. The ONVIF Core specification
 defines this operation as read-only and returns UTC date/time, daylight-saving,
 and time-source information ([official specification](https://www.onvif.org/specs/core/ONVIF-Core-Spec-v2412.pdf)).
-The estimate is relative to the AI26 host clock, whose own UTC accuracy is not
+The estimate is relative to the Sakshi host clock, whose own UTC accuracy is not
 assessed, so it is diagnostic and not a calibration claim. This inspection does
 not activate a stream or change source mappings; a reviewed RTSP/RTSPS URL
 must still be placed in the protected host-side source file. ONVIF digest-auth
@@ -232,7 +232,7 @@ docker compose -f compose.yaml -f compose.monitoring.yaml --profile monitoring u
 ```
 
 The Prometheus UI binds to `127.0.0.1:9090` by default. Restrict the token file's
-group to the AI26 host operator, and do not expose the Prometheus UI outside a
+group to the Sakshi host operator, and do not expose the Prometheus UI outside a
 trusted machine without adding access control and TLS. The included rules surface
 API scrape failure, total source loss, stale processed frames and repeated camera
 processing failures. They do not send notifications; configure Alertmanager if
@@ -281,7 +281,7 @@ AI26_ADMIN_BOOTSTRAP_PASSWORD_FILE=/absolute/path/to/ai26-admin-password \
 docker compose -f compose.yaml -f compose.caddy.yaml up --build -d
 ```
 
-The overlay enables AI26 authentication with Secure cookies and requires the
+The overlay enables Sakshi authentication with Secure cookies and requires the
 bootstrap password file. Before starting, point the domain's DNS A/AAAA records
 to the host and allow inbound TCP 80/443 (UDP 443 is optional for HTTP/3).
 `AI26_CADDY_HOST` defaults to `0.0.0.0` for public certificate challenges; set

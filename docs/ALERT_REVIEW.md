@@ -1,6 +1,6 @@
 # Alert review and escalation
 
-AI26 stores rule-alert decisions in SQLite. Review actions include acknowledge,
+Sakshi stores rule-alert decisions in SQLite. Review actions include acknowledge,
 mark reviewed, dismiss and escalate. An escalation requires a recipient and can
 be reassigned by recording another escalation decision. Each decision appends a
 reviewer, optional note, recipient when relevant, timestamp and audit record.
@@ -41,5 +41,5 @@ configured up to 365 days, but longer retention does not expand this rule window
 Local zone permits match a canonical plate, camera and half-open validity
 period. A matching permit changes a restricted-camera warning into an informational
 permitted-visit alert. These records are manually entered and persisted in local
-settings; AI26 does not verify issuers, legal validity or external permit status.
+settings; Sakshi does not verify issuers, legal validity or external permit status.
 Rule configuration changes are appended to the local hash-chained audit log.

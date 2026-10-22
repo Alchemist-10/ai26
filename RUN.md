@@ -1,4 +1,4 @@
-# Running AI26
+# Running Sakshi
 
 ## Prerequisites
 

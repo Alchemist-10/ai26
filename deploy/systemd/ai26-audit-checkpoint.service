@@ -1,5 +1,5 @@
 [Unit]
-Description=Create and sign an AI26 audit-chain checkpoint
+Description=Create and sign an Sakshi audit-chain checkpoint
 After=docker.service remote-fs.target
 Requires=docker.service
 

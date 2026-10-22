@@ -7,19 +7,19 @@ repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
-  echo "Docker Compose is required to restart the AI26 backend." >&2
+  echo "Docker Compose is required to restart the Sakshi backend." >&2
   exit 2
 fi
 if ! docker compose config --services | awk '$0 == "backend" { found=1 } END { exit !found }'; then
-  echo "The current Compose project has no backend service. Run this from the AI26 deployment directory." >&2
+  echo "The current Compose project has no backend service. Run this from the Sakshi deployment directory." >&2
   exit 2
 fi
 if [[ -z "$(docker compose ps -q backend)" ]]; then
-  echo "The AI26 Compose backend is not running; start the deployment before activating a source." >&2
+  echo "The Sakshi Compose backend is not running; start the deployment before activating a source." >&2
   exit 2
 fi
 
-echo "Restarting the AI26 backend to activate selected camera sources…"
+echo "Restarting the Sakshi backend to activate selected camera sources…"
 docker compose restart backend
 
 deadline=$((SECONDS + 90))

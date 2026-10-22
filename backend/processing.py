@@ -153,7 +153,7 @@ class Processor:
         try: fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             owner.close()
-            raise RuntimeError('Another processor owns this AI26 data directory; use one API worker')
+            raise RuntimeError('Another processor owns this Sakshi data directory; use one API worker')
         self.owner_file = owner
         self.live_captures = {camera_id:LiveCapture(camera_id,url)
                               for camera_id,url in self.live_sources.items()}

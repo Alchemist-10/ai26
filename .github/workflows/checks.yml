@@ -1,4 +1,4 @@
-name: AI26 regression checks
+name: Sakshi regression checks
 on:
   push:
   pull_request:

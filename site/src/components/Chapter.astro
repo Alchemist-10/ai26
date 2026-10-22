@@ -1,0 +1,63 @@
+---
+// A chapter of the story. It hangs off the spine: the marker sits on the
+// spine line and the spine draws a detection bracket at each chapter (see Spine.astro).
+interface Props {
+  id: string;
+  n: number; // chapters are a real sequence, so they are numbered
+  title: string;
+  lede?: string;
+  wide?: boolean; // let the body run to --wide instead of --measure
+}
+const { id, n, title, lede, wide = false } = Astro.props;
+---
+
+<section class="chapter" id={id} aria-labelledby={`${id}-title`} data-beat>
+  <div class="chapter__head">
+    <span class="chapter__marker" aria-hidden="true"></span>
+    <p class="chapter__n">Chapter {n}</p>
+    <h2 id={`${id}-title`} class="chapter__title">{title}</h2>
+    {lede && <p class="chapter__lede">{lede}</p>}
+  </div>
+  <div class:list={["chapter__body", { "chapter__body--wide": wide }]}>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .chapter {
+    position: relative;
+    padding: clamp(5rem, 10vw, 9rem) var(--gutter) 0 var(--content-start);
+    max-width: calc(var(--wide) + var(--content-start) + var(--gutter));
+    margin: 0 auto;
+    scroll-margin-top: 64px;
+  }
+  .chapter__head { position: relative; max-width: var(--measure); }
+  .chapter__marker {
+    position: absolute;
+    left: calc(var(--spine-x) - var(--content-start) - 7px);
+    top: 0.2rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--background);
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 0 5px color-mix(in oklch, var(--primary) 14%, transparent);
+  }
+  .chapter__n {
+    color: var(--primary);
+    font-weight: 500;
+    font-size: var(--step--1);
+    letter-spacing: 0.01em;
+    margin-bottom: 0.6rem;
+  }
+  .chapter__title { font-size: var(--step-4); }
+  .chapter__lede {
+    margin-top: 1.1rem;
+    font-size: var(--step-1);
+    line-height: 1.45;
+    color: var(--muted-foreground);
+  }
+  .chapter__body { margin-top: clamp(2rem, 4vw, 3rem); max-width: var(--measure); }
+  .chapter__body--wide { max-width: var(--wide); }
+  .chapter__body :global(> p + p) { margin-top: 1em; }
+</style>

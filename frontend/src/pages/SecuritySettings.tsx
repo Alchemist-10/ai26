@@ -100,7 +100,7 @@ export default function SecuritySettings() {
       </div>}
       {recoveryCodes.length > 0 && <div className="mt-5 rounded border border-amber-400/40 bg-amber-950/20 p-4">
         <h2 className="font-medium text-amber-100">Save your recovery codes</h2>
-        <p className="mt-1 text-sm text-amber-100/80">Each code works once. Store them somewhere private; AI26 will not show them again.</p>
+        <p className="mt-1 text-sm text-amber-100/80">Each code works once. Store them somewhere private; Sakshi will not show them again.</p>
         <ul className="mt-3 grid grid-cols-2 gap-2 font-mono text-sm text-white sm:grid-cols-5">{recoveryCodes.map(value => <li key={value}>{value}</li>)}</ul>
       </div>}
     </div>

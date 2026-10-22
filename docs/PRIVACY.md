@@ -1,6 +1,6 @@
 # Optional privacy display mode
 
-AI26 can pseudonymize valid plate identifiers in analytics responses and pixelate detected person and plate regions in sampled camera views. Person-region pixelation covers the face when it falls inside a detected person box. This mode is opt-in and is intended to reduce exposure in day-to-day dashboards; it is not a guarantee that all personally identifying information has been removed.
+Sakshi can pseudonymize valid plate identifiers in analytics responses and pixelate detected person and plate regions in sampled camera views. Person-region pixelation covers the face when it falls inside a detected person box. This mode is opt-in and is intended to reduce exposure in day-to-day dashboards; it is not a guarantee that all personally identifying information has been removed.
 
 ## Enable it
 

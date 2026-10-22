@@ -1,8 +1,8 @@
 # Requesting CAM-07–09 source footage
 
-The AI26 catalog expects readable-plate sources for these locations:
+The Sakshi catalog expects readable-plate sources for these locations:
 
-| AI26 ID | Catalog location | Expected footage path (catalog) |
+| Sakshi ID | Catalog location | Expected footage path (catalog) |
 | --- | --- | --- |
 | CAM-07 | Subhash Chandra Bose Jn | `numberplate-vids/clip 4.mp4` |
 | CAM-08 | Kathrikkadavu Junction | `numberplate-vids/clip_2_00_25-00_50.mp4` |
@@ -21,7 +21,7 @@ lists the public CSML contact details.
 
 On 2026-10-16, the current upstream `moneytosms/ai26` main commit
 (`d41500d5e9d79ecd0a7c14461fd3322de5944bbd`) and all three current
-`moneytosms/godseye` branches were checked again. AI26 main and each Godseye
+`moneytosms/godseye` branches were checked again. Sakshi main and each Godseye
 branch contain only `CAM-01.mp4` through `CAM-06.mp4` as camera playback; the
 Godseye branches also contain `frontend/public/sakshi-intro.mp4`, which is not a
 camera source. No CAM-07–09 footage, video archive or new media branch was
@@ -106,7 +106,7 @@ been sent as part of this work.
 >
 > Hello Cochin Smart Mission Limited,
 >
-> We are preparing an academic AI26 traffic-observation prototype. Could you
+> We are preparing an academic Sakshi traffic-observation prototype. Could you
 > advise whether CSML can authorize a short, low-resolution research sample from
 > the ITMS cameras at Subhash Chandra Bose Junction, Kathrikkadavu Junction and
 > Petta Junction, corresponding to our CAM-07, CAM-08 and CAM-09 catalog entries?
@@ -126,7 +126,7 @@ been sent as part of this work.
 
 ## Intake checklist
 
-Before putting a received clip into AI26:
+Before putting a received clip into Sakshi:
 
 - Confirm written permission covers the actual intended use, storage location,
   people with access, retention period and any display or publication.

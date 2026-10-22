@@ -1,6 +1,6 @@
 # Vehicle model pinning and camera canaries
 
-AI26 loads the bundled `backend/yolov8n.pt` lazily by default. Operators may
+Sakshi loads the bundled `backend/yolov8n.pt` lazily by default. Operators may
 override it with a pinned compatible vehicle checkpoint, or assign a second
 checkpoint to a fixed list of cameras. Assignments are read once when the API
 starts. Candidate files are copied into the protected data volume under their
@@ -36,7 +36,7 @@ rollback, remove the three canary variables and restart the API; the camera
 allowlist then uses the stable model. A stable-checkpoint change also requires
 an API restart. Existing events retain the model version that produced them.
 
-On first use of either checkpoint, AI26 requires Ultralytics task `detect`, the
+On first use of either checkpoint, Sakshi requires Ultralytics task `detect`, the
 COCO class IDs/names used by this pipeline (and `person` when privacy masking is
 enabled), then runs a 640×640 synthetic BGR forward pass and verifies the returned
 detection-box/class interface. Failed compatibility checks prevent the model

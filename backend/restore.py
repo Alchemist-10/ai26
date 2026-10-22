@@ -1,4 +1,4 @@
-"""Restore a verified SQLite snapshot while the AI26 backend is stopped."""
+"""Restore a verified SQLite snapshot while the Sakshi backend is stopped."""
 import argparse
 from contextlib import closing
 import os
@@ -10,7 +10,7 @@ import tempfile
 def restore_database(source: Path, destination: Path, *, confirm_backend_stopped: bool,
                      owner_uid: int | None = None, owner_gid: int | None = None) -> Path:
     if not confirm_backend_stopped:
-        raise ValueError("Stop the AI26 backend and explicitly confirm before restoring")
+        raise ValueError("Stop the Sakshi backend and explicitly confirm before restoring")
     source = Path(source).expanduser().resolve(strict=True)
     destination = Path(destination).expanduser().resolve()
     if source == destination:

@@ -37,7 +37,7 @@ export function AuthGate({ children }: { children: (user: AuthUser | null, caseI
       setReady(true)
     }).catch(cause => {
       if (!active) return
-      setError(cause instanceof Error ? cause.message : "Could not reach the AI26 service")
+      setError(cause instanceof Error ? cause.message : "Could not reach the Sakshi service")
       setReady(true)
     })
     return () => { active = false }
@@ -91,11 +91,11 @@ export function AuthGate({ children }: { children: (user: AuthUser | null, caseI
     setSecurityContext(nextCaseId, nextPurpose)
   }
 
-  if (!ready) return <div className="flex min-h-screen items-center justify-center bg-background text-sm text-zinc-300" role="status">Connecting to AI26…</div>
+  if (!ready) return <div className="flex min-h-screen items-center justify-center bg-background text-sm text-zinc-300" role="status">Connecting to Sakshi…</div>
   if (error && !enabled && !user) return <div className="flex min-h-screen items-center justify-center bg-background p-6 text-sm text-red-200" role="alert">{error}</div>
   if (enabled && !user) return <main className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground">
     <form onSubmit={submit} className="w-full max-w-md rounded-lg border border-zinc-800 bg-black p-7 shadow-xl shadow-black/40">
-      <div className="mb-7 flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-black"><ShieldCheck size={21} /></span><div><h1 className="text-xl font-semibold text-white">{recovering ? "Recover your account" : "Sign in to AI26"}</h1><p className="mt-1 text-sm text-zinc-400">{recovering ? "Use your authenticator or an unused MFA recovery code." : "Use your assigned account to access camera evidence."}</p></div></div>
+      <div className="mb-7 flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-black"><ShieldCheck size={21} /></span><div><h1 className="text-xl font-semibold text-white">{recovering ? "Recover your account" : "Sign in to Sakshi"}</h1><p className="mt-1 text-sm text-zinc-400">{recovering ? "Use your authenticator or an unused MFA recovery code." : "Use your assigned account to access camera evidence."}</p></div></div>
       <label className="mb-4 block text-sm text-zinc-300">Username<input autoComplete="username" required value={username} onChange={event => setUsername(event.target.value)} className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-white placeholder:text-zinc-500" /></label>
       {recovering ? <>
         <label className="mb-4 block text-sm text-zinc-300">New password<input type="password" autoComplete="new-password" minLength={14} maxLength={256} required value={recoveryPassword} onChange={event => setRecoveryPassword(event.target.value)} className="mt-1.5 block w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-white" /></label>

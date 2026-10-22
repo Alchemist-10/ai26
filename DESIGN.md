@@ -1,5 +1,5 @@
 ---
-name: AI26
+name: Sakshi
 description: inherited dark shell and Camera settings metadata, source inspection, browser clip preparation, and next-startup selection interface
 colors:
   background: "#080d12"
@@ -104,11 +104,11 @@ components:
     padding: "0.75rem"
 ---
 
-# Design System: AI26
+# Design System: Sakshi
 
 ## Overview
 
-This record covers the inherited AI26 dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.
+This record covers the inherited Sakshi dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.
 
 The implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Source inspection precedes native labelled metadata fields, which sit beside retained revision history on desktop and above it on mobile. Source details use native disclosures within the same internally scrolling section beneath the application header. The Operate direction extends these settings: source inspection leads into browser upload inside the import disclosure, ready footage gains an explicit browser selection form, and recent releases provide retained-parent rollback. Separate nested disclosures retain host-command alternatives and host-file guidance. Metadata editing remains a separate workflow.
 
@@ -155,7 +155,7 @@ The shell and settings use **IBM Plex Sans** with system sans fallbacks. The glo
 - **Label:** Form labels and button copy use medium weight.
 - **Control:** Text inputs, number inputs, select, and textarea use the base size.
 
-The inherited AI26 wordmark uses a bold small face with wide letter spacing (0.2em). Header context is smaller uppercase copy. These are shell details, not a requirement for field labels.
+The inherited Sakshi wordmark uses a bold small face with wide letter spacing (0.2em). Header context is smaller uppercase copy. These are shell details, not a requirement for field labels.
 
 ## Layout
 
@@ -191,7 +191,7 @@ Existing alerts use bordered, lightly rounded containers. Settings groups and hi
 
 ### Navigation
 
-The AI26 drawer pairs navigation labels with short descriptions and icons. The active item uses white with black text; inactive items use muted zinc with brighter text and a dark fill on hover. Keyboard focus is trapped while open, Escape closes it, and closing restores prior focus. Camera settings appears alongside the incumbent navigation destinations.
+The Sakshi drawer pairs navigation labels with short descriptions and icons. The active item uses white with black text; inactive items use muted zinc with brighter text and a dark fill on hover. Keyboard focus is trapped while open, Escape closes it, and closing restores prior focus. Camera settings appears alongside the incumbent navigation destinations.
 
 ### Chips / Status
 
@@ -199,7 +199,7 @@ Header availability chips use zinc surfaces, light text, thin borders, and a sma
 
 ### Metadata revisions
 
-The settings form remains mounted after its first visit so draft state survives navigation within AI26. Browser reload or closure still loses the draft. A dirty draft disables camera switching and current-revision refresh; source-status refresh remains independent of that draft. Upload/preparation and selection verification also disable source-status refresh, camera switching, and current-revision refresh; the metadata form stays independent of footage operations. Discarding is explicit. Revision history is read-only and does not replace the draft. A concurrent or unconfirmed save preserves the draft and requires explicit latest-revision review before saving again. Keeping a draft or loading latest values is a separate decision from saving. Existing observations retain their captured revision.
+The settings form remains mounted after its first visit so draft state survives navigation within Sakshi. Browser reload or closure still loses the draft. A dirty draft disables camera switching and current-revision refresh; source-status refresh remains independent of that draft. Upload/preparation and selection verification also disable source-status refresh, camera switching, and current-revision refresh; the metadata form stays independent of footage operations. Discarding is explicit. Revision history is read-only and does not replace the draft. A concurrent or unconfirmed save preserves the draft and requires explicit latest-revision review before saving again. Keeping a draft or loading latest values is a separate decision from saving. Existing observations retain their captured revision.
 
 ### Source inspection
 
@@ -217,7 +217,7 @@ Uploading disables the upload fieldset and exposes a status label plus Cancel up
 
 Ready footage remains inactive until explicitly selected and activated by an API host restart. A ready receipt offers Select for restart with separate Selection reviewer and Selection reason fields. Selected-for-restart and already-running receipts use distinct copy. A collapsed Select with a host command instead disclosure retains the camera-specific `select_source.py` command with `--expected-current` and the stop/select/restart/refresh sequence. Preparation-time validation does not verify actual content or original clocks. Existing inference and playback continue throughout preparation and browser selection.
 
-The app keeps Camera settings mounted after first use, so the file, name, reason, and replacement draft survive navigation to other AI26 pages and source-status refresh. These drafts are lost on browser reload; changing cameras remounts the source workflow. Only the job ID is saved under a camera-specific localStorage key, allowing a status restoration attempt when that same camera is revisited after reload. This does not persist the upload file or claim fields, and a failed restoration asks the user to choose a file again. Metadata drafts have their own lifecycle and can still be edited while source preparation runs.
+The app keeps Camera settings mounted after first use, so the file, name, reason, and replacement draft survive navigation to other Sakshi pages and source-status refresh. These drafts are lost on browser reload; changing cameras remounts the source workflow. Only the job ID is saved under a camera-specific localStorage key, allowing a status restoration attempt when that same camera is revisited after reload. This does not persist the upload file or claim fields, and a failed restoration asks the user to choose a file again. Metadata drafts have their own lifecycle and can still be edited while source preparation runs.
 
 ### Browser selection and retained-parent rollback
 
@@ -237,7 +237,7 @@ A native Last browser selection disclosure exposes the local reviewer, reason, t
 - **Do** preserve visible field labels, native control semantics, and the shared teal focus outline.
 - **Do** stack settings and history on narrow screens; keep the desktop 3:2 column arrangement.
 - **Do** keep revision identity and draft state visible; clear old success/no-save notices when a draft field changes.
-- **Do** retain AI26 naming and the boundary between metadata settings and deployment configuration.
+- **Do** retain Sakshi naming and the boundary between metadata settings and deployment configuration.
 - **Do** distinguish running sources, inactive prepared releases, and selections awaiting restart in Camera settings; keep source refresh independent of metadata drafts and guarded during upload/preparation and selection verification.
 - **Do** keep browser preparation, explicit next-startup selection, host restart, and location metadata editing distinct, with explicit replacement and manual preparation checks.
 - **Do** preserve selection reviewer/reason after an error and require manual source refresh before another explicit attempt; label Last browser selection as a local claim about selection.
@@ -245,7 +245,7 @@ A native Last browser selection disclosure exposes the local reviewer, reason, t
 ### Don't:
 
 - **Don't** import Godseye branding or infer a new shared identity.
-- **Don't** turn this settings layout into a mandatory composition for every AI26 page.
+- **Don't** turn this settings layout into a mandatory composition for every Sakshi page.
 - **Don't** replace revision history with an editable snapshot or hide the explicit concurrent-save review.
 - **Don't** add media or new settings polling as decoration or imply that operator confirmation establishes calibration.
 - **Don't** treat these screenshots as whole-document coverage or this pass as new global validation.

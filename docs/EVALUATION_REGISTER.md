@@ -1,4 +1,4 @@
-# AI26 experiment and validation register
+# Sakshi experiment and validation register
 
 This index records the sample size, environment, observed failures and limits for
 the current local evidence set. Counts are not interchangeable across tests.

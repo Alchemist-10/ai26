@@ -150,7 +150,7 @@ def main(argv=None):
         print(f'MFA key rotation failed: {error}', file=sys.stderr)
         return 1
     print(json.dumps(result, indent=2, sort_keys=True))
-    print('Before restarting AI26, set AI26_AUTH_MFA_KEY_FILE to the reported new_key_file. Startup verifies the rotated key fingerprint.', file=sys.stderr)
+    print('Before restarting Sakshi, set AI26_AUTH_MFA_KEY_FILE to the reported new_key_file. Startup verifies the rotated key fingerprint.', file=sys.stderr)
     return 0
 
 

@@ -3,7 +3,7 @@
 # requires-python = ">=3.10"
 # dependencies = []
 # ///
-"""Install locked dependencies and start the AI26 backend and frontend."""
+"""Install locked dependencies and start the Sakshi backend and frontend."""
 import atexit
 import argparse
 import os

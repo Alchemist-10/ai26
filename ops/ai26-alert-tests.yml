@@ -21,8 +21,8 @@ tests:
               instance: backend:8001
               severity: critical
             exp_annotations:
-              summary: AI26 API metrics endpoint is unavailable
-              description: Prometheus has failed to scrape AI26 for at least one minute.
+              summary: Sakshi API metrics endpoint is unavailable
+              description: Prometheus has failed to scrape Sakshi for at least one minute.
       - eval_time: 2m
         alertname: AI26APIDown
         exp_alerts: []
@@ -42,7 +42,7 @@ tests:
           - exp_labels:
               severity: warning
             exp_annotations:
-              summary: AI26 has no available camera sources
+              summary: Sakshi has no available camera sources
               description: Every configured camera source has been unavailable for at least two minutes.
       - eval_time: 3m
         alertname: AI26NoAvailableCameraSources
@@ -66,7 +66,7 @@ tests:
               camera_id: CAM-01
               severity: warning
             exp_annotations:
-              summary: AI26 camera processing has stopped producing fresh frames
+              summary: Sakshi camera processing has stopped producing fresh frames
               description: A configured source has had no processed frame or its latest processed frame is older than 30 seconds.
 
   - name: stale frame alert clears after a fresh frame
@@ -86,7 +86,7 @@ tests:
               camera_id: CAM-01
               severity: warning
             exp_annotations:
-              summary: AI26 camera processing has stopped producing fresh frames
+              summary: Sakshi camera processing has stopped producing fresh frames
               description: A configured source has had no processed frame or its latest processed frame is older than 30 seconds.
       - eval_time: 2m
         alertname: AI26CameraFrameStale
@@ -108,7 +108,7 @@ tests:
               camera_id: CAM-01
               severity: warning
             exp_annotations:
-              summary: AI26 camera processing is repeatedly failing
+              summary: Sakshi camera processing is repeatedly failing
               description: A camera has recorded at least three failed processing attempts in five minutes.
       - eval_time: 10m
         alertname: AI26CameraProcessingFailures
@@ -129,7 +129,7 @@ tests:
           - exp_labels:
               severity: warning
             exp_annotations:
-              summary: AI26 sampled-read image storage is nearly full
+              summary: Sakshi sampled-read image storage is nearly full
               description: Managed evidence images have used at least 90% of the configured storage budget for two minutes. New image capture may be incomplete until capacity is increased or retention cleanup runs.
       - eval_time: 4m
         alertname: AI26ArtifactStorageNearCapacity

@@ -1,6 +1,6 @@
 # Signed audit-chain checkpoints
 
-AI26 stores a locally hash-chained audit log. A signed checkpoint lets an
+Sakshi stores a locally hash-chained audit log. A signed checkpoint lets an
 operator periodically bind the verified chain head to an Ed25519 key and retain
 that small record outside the application host. It is useful only when the
 checkpoint and trusted public key are actually copied to independent storage.

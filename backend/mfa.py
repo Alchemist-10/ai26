@@ -89,7 +89,7 @@ def matched_totp_counter(secret, code, timestamp=None):
 
 def provisioning_uri(secret, username):
     label = quote(f"AI26:{username}", safe="")
-    return f"otpauth://totp/{label}?secret={secret}&issuer=AI26&algorithm=SHA1&digits=6&period=30"
+    return f"otpauth://totp/{label}?secret={secret}&issuer=Sakshi&algorithm=SHA1&digits=6&period=30"
 
 
 def new_recovery_codes(count=10):

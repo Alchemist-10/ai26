@@ -101,7 +101,7 @@ export default function CameraSources({ cameraId,sourceBusy,onBusyChange }: { ca
         <details className="mt-4 border-t border-zinc-800 pt-2">
         <summary className="min-h-11 cursor-pointer py-3 font-medium">Import a file already on the API host</summary>
         <ol className="list-decimal space-y-3 pl-5 leading-relaxed text-zinc-300">
-          <li>On the API host, install FFmpeg with libx264 and ffprobe. Open a terminal in the AI26 repository and export the same data/source settings as the app.</li>
+          <li>On the API host, install FFmpeg with libx264 and ffprobe. Open a terminal in the Sakshi repository and export the same data/source settings as the app.</li>
           <li>Check your file first. Replace the example path with the file’s absolute path.<code className="mt-2 block whitespace-pre-wrap break-all rounded bg-zinc-900 p-3 font-mono text-white">{command} --check</code></li>
           <li>Stop the app with Ctrl+C in its terminal. Import the file, supplying your name and reason. Use <code>--replace</code> only when replacing existing footage.<code className="mt-2 block whitespace-pre-wrap break-all rounded bg-zinc-900 p-3 font-mono text-white">{command}{active.inference.available || selected.release ? " --replace" : ""} --reviewer "Your name" --reason "Why this footage belongs to this camera"</code></li>
           <li>Restart the app with <code>uv run run.py --skip-install</code>, then refresh source status. Review location metadata separately; importing footage does not verify its location.</li>

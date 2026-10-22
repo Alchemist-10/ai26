@@ -80,7 +80,7 @@ export function NavDrawer({
               <ShieldCheck className="h-4 w-4" strokeWidth={2} />
             </span>
             <div className="flex flex-col">
-              <span className="text-sm font-bold tracking-[0.2em] text-white">AI26</span>
+              <span className="text-sm font-bold tracking-[0.2em] text-white">Sakshi</span>
               <span className="text-[10px] uppercase tracking-wider text-zinc-500">SURVEILLANCE GRID</span>
             </div>
           </div>
@@ -143,7 +143,7 @@ export function NavDrawer({
 
         {/* Footer info */}
         <div className="border-t border-zinc-800/80 bg-zinc-950/60 px-4 py-3 text-[11px] text-zinc-500 font-sans">
-          AI26 course project · Recorded inputs
+          Sakshi course project · Recorded inputs
         </div>
       </aside>
     </>

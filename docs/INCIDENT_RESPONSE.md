@@ -1,6 +1,6 @@
-# AI26 incident response runbook
+# Sakshi incident response runbook
 
-This runbook covers first response and recovery for the self-hosted AI26
+This runbook covers first response and recovery for the self-hosted Sakshi
 prototype. It does not provide automated incident detection, paging, external
 notification, forensic acquisition, or a substitute for the deploying
 organization's incident policy. The default Compose stack has authentication
@@ -47,7 +47,7 @@ disabled; do not treat its local audit records as proof of who accessed it.
 | Privacy pseudonym key lost or exposed | Restrict analytics access and assess which aliases were exposed. Follow [privacy-key rotation](PRIVACY_KEY_ROTATION.md); rotation changes aliases and cannot recall previously viewed/copied aliases. Raw observations and signed reports are not rewritten. |
 | Report-signing private key suspected compromised | Stop using that key for new reports. Generate and deploy a new pair using [report-signing key rotation](REPORT_SIGNING.md); distribute the new public-key fingerprint independently, preserve old public keys for historical verification, and document the suspected exposure period. A valid signature does not prove source authenticity. |
 | Audit-checkpoint key or checkpoint destination compromised | Preserve existing checkpoints and public keys. Rotate the signer as described in [signed audit checkpoints](AUDIT_CHECKPOINTS.md). Check that the configured independent mount is present before creating another checkpoint; the schedule does not itself prove off-host custody or send an alert. |
-| TLS certificate/private key compromised or expired | Stop the `frontend_tls` listener if it is exposed, replace the certificate/key through the deployment's certificate authority process, then recreate the TLS service and verify the HTTPS listener. AI26 does not renew certificates automatically. Keep the private key outside routine database backups. |
+| TLS certificate/private key compromised or expired | Stop the `frontend_tls` listener if it is exposed, replace the certificate/key through the deployment's certificate authority process, then recreate the TLS service and verify the HTTPS listener. Sakshi does not renew certificates automatically. Keep the private key outside routine database backups. |
 | Audit integrity check fails | Preserve the database and latest trusted checkpoints. In authenticated mode, an administrator can inspect `GET /api/audit/integrity`; do not edit or truncate audit rows to make the result pass. Verify the database against each independently retained checkpoint with its trusted public key and record the exact verification output. A valid checkpoint only protects history through its signed record. |
 | Database corruption or accidental data loss | Preserve the current database and WAL/SHM files before any restore. Run `./scripts/backup.sh` if the service can still produce a consistent snapshot. Restore only with the backend stopped, using the explicit confirmation workflow in [deployment and backups](DEPLOYMENT.md). Verify integrity, audit chain, users, and application health before reopening access. |
 | Source media missing, changed, or selected incorrectly | Do not run source cleanup. Preserve `active.json`, release manifests, and both original/playback files. Camera settings reports missing/size-changed files; startup verifies managed-file hashes. Follow [source selection and rollback](SOURCE_SELECTION.md) or [source import recovery](SOURCE_IMPORT.md) with the app stopped where required. A full data-volume backup restores managed source releases; external footage and host-mounted files must be recovered separately. |
@@ -84,7 +84,7 @@ containment and recovery actions, snapshot/checkpoint identifiers, verification
 outputs, key fingerprints (never key contents), unresolved exposure window, and
 follow-up owners. Record which conclusions are verified and which remain
 uncertain. Preserve original artifacts according to the organization's retention
-and evidence-handling rules; AI26 does not supply those external policies.
+and evidence-handling rules; Sakshi does not supply those external policies.
 
 ## Related procedures and limits
 
@@ -98,7 +98,7 @@ and evidence-handling rules; AI26 does not supply those external policies.
 - [Source selection and rollback](SOURCE_SELECTION.md)
 - [Source import and cleanup](SOURCE_IMPORT.md)
 
-AI26 currently has no automated TLS lifecycle, external alert delivery, complete
+Sakshi currently has no automated TLS lifecycle, external alert delivery, complete
 off-host media backup workflow, automatic incident-response workflow, or
 independently managed case registry. Key-compromise, TLS, media-restoration and
 off-host procedures still need deployment-specific exercises before relying on

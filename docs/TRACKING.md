@@ -1,4 +1,4 @@
-# AI26 local tracking update — 9 October 2026
+# Sakshi local tracking update — 9 October 2026
 
 The earlier tracker greedily chose nearest centers and expired identities only by
 missed-frame count. At sparse inference rates this could retain stale identities,

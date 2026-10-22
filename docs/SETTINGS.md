@@ -16,7 +16,7 @@ for legacy snapshot fallbacks and the API contract.
 
 ## Drafts, conflicts and interruptions
 
-A draft survives navigation to another AI26 page because the editor stays mounted
+A draft survives navigation to another Sakshi page because the editor stays mounted
 once visited. Catalog refreshes do not replace it. Save or discard before switching
 cameras; **Discard draft** is available even during a revision conflict. Unsaved
 drafts are in browser memory only. Reloading or closing the browser loses them;

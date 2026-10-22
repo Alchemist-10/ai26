@@ -1,4 +1,4 @@
-"""Create and restore verified, stopped-service AI26 data-volume snapshots."""
+"""Create and restore verified, stopped-service Sakshi data-volume snapshots."""
 import argparse
 from contextlib import closing
 from datetime import datetime, timezone
@@ -81,7 +81,7 @@ def create_full_backup(data_root, directory, *, keep=30, owner_uid=None, owner_g
     intentionally not included.
     """
     if not confirm_backend_stopped:
-        raise ValueError("Stop the AI26 backend and explicitly confirm before a full backup")
+        raise ValueError("Stop the Sakshi backend and explicitly confirm before a full backup")
     if type(keep) is not int or keep < 1:
         raise ValueError("Retention count must be a positive integer")
     if (owner_uid is None) != (owner_gid is None):
@@ -91,7 +91,7 @@ def create_full_backup(data_root, directory, *, keep=30, owner_uid=None, owner_g
     if not root.is_dir():
         raise ValueError("AI26 data root must be a directory")
     if directory == root or directory.is_relative_to(root):
-        raise ValueError("Full backups must be stored outside the AI26 data root")
+        raise ValueError("Full backups must be stored outside the Sakshi data root")
     files = _managed_files(root)
     directory.mkdir(parents=True, exist_ok=True)
 
@@ -166,7 +166,7 @@ def _read_manifest(archive):
             raise ValueError("Full backup manifest entry is invalid")
         expected[path] = {"sha256": digest, "size": size}
     if "ai26.sqlite3" not in expected:
-        raise ValueError("Full backup does not contain the AI26 database")
+        raise ValueError("Full backup does not contain the Sakshi database")
     return expected
 
 
@@ -221,7 +221,7 @@ def restore_full_backup(source, data_root, *, confirm_backend_stopped=False,
                         owner_uid=None, owner_gid=None):
     """Verify then transactionally replace managed data paths while stopped."""
     if not confirm_backend_stopped:
-        raise ValueError("Stop the AI26 backend and explicitly confirm before restoring")
+        raise ValueError("Stop the Sakshi backend and explicitly confirm before restoring")
     if (owner_uid is None) != (owner_gid is None):
         raise ValueError("Both restored-data owner IDs must be provided together")
     source_input = Path(source).expanduser()
@@ -232,7 +232,7 @@ def restore_full_backup(source, data_root, *, confirm_backend_stopped=False,
     if not source.is_file() or source.is_symlink():
         raise ValueError("Full backup must be a regular archive file")
     if source.is_relative_to(root):
-        raise ValueError("Keep the full backup outside the AI26 data root during restore")
+        raise ValueError("Keep the full backup outside the Sakshi data root during restore")
     root.mkdir(parents=True, exist_ok=True)
     for name in SWAP_TARGETS:
         target = root / name

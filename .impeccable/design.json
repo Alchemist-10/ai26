@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-10-11T12:37:59.206289+00:00",
-  "title": "Design System: AI26",
+  "title": "Design System: Sakshi",
   "extensions": {
     "colorMeta": {
       "background": {
@@ -280,7 +280,7 @@
   ],
   "narrative": {
     "northStar": "Unrecorded",
-    "overview": "This record covers the inherited AI26 dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.\n\nThe implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Source inspection precedes native labelled metadata fields, which sit beside retained revision history on desktop and above it on mobile. Source details use native disclosures within the same internally scrolling section beneath the application header. The Operate direction extends these settings: source inspection leads into browser upload inside the import disclosure, ready footage gains an explicit browser selection form, and recent releases provide retained-parent rollback. Separate nested disclosures retain host-command alternatives and host-file guidance. Metadata editing remains a separate workflow.",
+    "overview": "This record covers the inherited Sakshi dark application shell and the Camera settings extension. It describes the current implementation, not a replacement identity or a universal redesign. Godseye is outside this record. PRODUCT.md is absent; a creative North Star, brand adjectives, anti-references, and qualitative component philosophy are unrecorded.\n\nThe implemented surface uses black backgrounds, zinc controls and dividers, white text and primary actions, and teal focus and status treatments. Source inspection precedes native labelled metadata fields, which sit beside retained revision history on desktop and above it on mobile. Source details use native disclosures within the same internally scrolling section beneath the application header. The Operate direction extends these settings: source inspection leads into browser upload inside the import disclosure, ready footage gains an explicit browser selection form, and recent releases provide retained-parent rollback. Separate nested disclosures retain host-command alternatives and host-file guidance. Metadata editing remains a separate workflow.",
     "keyCharacteristics": [
       "Black and zinc surfaces with white actions.",
       "IBM Plex Sans for this shell and form.",
@@ -294,14 +294,14 @@
       "Do preserve visible field labels, native control semantics, and the shared teal focus outline.",
       "Do stack settings and history on narrow screens; keep the desktop 3:2 column arrangement.",
       "Do keep revision identity and draft state visible; clear old success/no-save notices when a draft field changes.",
-      "Do retain AI26 naming and the boundary between metadata settings and deployment configuration.",
+      "Do retain Sakshi naming and the boundary between metadata settings and deployment configuration.",
       "Do distinguish running sources, inactive prepared releases, and selections awaiting restart in Camera settings; keep source refresh independent of metadata drafts and guarded during upload/preparation and selection verification.",
       "Do keep browser preparation, explicit next-startup selection, host restart, and location metadata editing distinct, with explicit replacement and manual preparation checks.",
       "Do preserve selection reviewer/reason after an error and require manual source refresh before another explicit attempt; label Last browser selection as a local claim about selection."
     ],
     "donts": [
       "Don't import Godseye branding or infer a new shared identity.",
-      "Don't turn this settings layout into a mandatory composition for every AI26 page.",
+      "Don't turn this settings layout into a mandatory composition for every Sakshi page.",
       "Don't replace revision history with an editable snapshot or hide the explicit concurrent-save review.",
       "Don't add media or new settings polling as decoration or imply that operator confirmation establishes calibration.",
       "Don't treat these screenshots as whole-document coverage or this pass as new global validation.",

@@ -58,7 +58,7 @@ export default function RouteConstraintsPage({ cameras }: { cameras: Camera[] })
   return <section className="h-full overflow-y-auto bg-background px-4 py-6 text-foreground sm:px-6">
     <div className="mx-auto max-w-4xl">
       <h1 className="text-2xl font-semibold text-white">Camera-pair travel constraints</h1>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">Configure directed travel-time windows only after confirming both camera locations. Windows are local operator inputs, not independently validated road travel times. AI26 keeps matches unresolved when a pair has no constraint.</p>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">Configure directed travel-time windows only after confirming both camera locations. Windows are local operator inputs, not independently validated road travel times. Sakshi keeps matches unresolved when a pair has no constraint.</p>
       {error && <p role="alert" className="mt-4 rounded border border-red-400/30 bg-red-950/40 px-3 py-2 text-sm text-red-100">{error}</p>}
       {notice && <p role="status" className="mt-4 rounded border border-teal-400/30 bg-teal-950/30 px-3 py-2 text-sm text-teal-100">{notice}</p>}
       {loading ? <p role="status" className="mt-6 text-sm text-zinc-400">Loading configured camera pairs…</p> : <form onSubmit={submit} className="mt-6 space-y-5 border-y border-zinc-800 py-5">

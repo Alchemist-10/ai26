@@ -54,7 +54,7 @@ these samples and creates no extra inference workers, decoder or polling timer.
 
 ## Read-only profiler
 
-Start AI26 normally, then run from the repository root:
+Start Sakshi normally, then run from the repository root:
 
 ```bash
 uv run --frozen --directory backend python ../evaluation/profile_runtime.py \

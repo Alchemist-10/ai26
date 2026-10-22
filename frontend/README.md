@@ -1,6 +1,6 @@
-# AI26 frontend
+# Sakshi frontend
 
-React + TypeScript interface for the AI26 vehicle analytics project.
+React + TypeScript interface for the Sakshi vehicle analytics project.
 
 ```bash
 npm ci

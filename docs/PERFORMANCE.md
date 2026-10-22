@@ -1,4 +1,4 @@
-# AI26 performance and retention update — 9 October 2026
+# Sakshi performance and retention update — 9 October 2026
 
 The wall previously mounted a native MP4 for each camera plus a low-rate focused
 MJPEG stream. The available inputs are six 960×540, 25 FPS recordings; three plate

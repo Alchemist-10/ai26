@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily signed AI26 audit checkpoint
+Description=Daily signed Sakshi audit checkpoint
 
 [Timer]
 OnCalendar=*-*-* 02:00:00

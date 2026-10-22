@@ -1,4 +1,4 @@
-# AI26 — static walkthrough
+# Sakshi — static walkthrough
 
 A no-build, no-backend walkthrough of the operations screens and agent tab. Plain HTML/CSS/JS, Leaflet
 via CDN for the map, Chart.js via CDN for the density chart. Open

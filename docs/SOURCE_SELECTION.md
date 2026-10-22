@@ -2,7 +2,7 @@
 
 In **Camera settings**, choose a camera and prepare a clip through the browser
 upload form. At **ready**, enter a **Selection reviewer** and **Selection reason**,
-then choose **Select for restart**. AI26 verifies the retained original and playback
+then choose **Select for restart**. Sakshi verifies the retained original and playback
 SHA-256 digests before publishing the next-startup pointer. This works while the
 processor is running because its original/playback paths were cached at startup.
 A different selection shows **Restart required** with both currently running roles.

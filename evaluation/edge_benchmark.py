@@ -1,4 +1,4 @@
-"""Export and benchmark AI26's YOLO detector on the current CPU host.
+"""Export and benchmark Sakshi's YOLO detector on the current CPU host.
 
 This measures model-forward latency and raw tensor agreement only. It is not a
 target-device claim and does not measure detection accuracy.
@@ -320,7 +320,7 @@ def run_benchmark(model_path: Path, sources: Sequence[Path], output: Path, *,
             "limitations": [
                 "The six bundled camera clips are calibration inputs only, not held-out labeled accuracy data.",
                 "This development workstation is not confirmed as the deployed edge target.",
-                "The measured detector output is not integrated into the live AI26 processor.",
+                "The measured detector output is not integrated into the live Sakshi processor.",
                 "No plate detector/OCR model export, full-pipeline latency, power, thermals, sustained-load, or dropped-frame measurement is included.",
             ],
         }

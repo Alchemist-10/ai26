@@ -1,5 +1,5 @@
 /**
- * AI26 Agent — MOCKED interactive agent (replaces a plain chat tab).
+ * Sakshi Agent — MOCKED interactive agent (replaces a plain chat tab).
  *
  * This walkthrough simulates a local model with a fixed
  * tool list (find_trajectory, list_camera_events, get_congestion, get_alerts)

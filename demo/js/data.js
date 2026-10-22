@@ -1,5 +1,5 @@
 /**
- * AI26 demo — mock dataset.
+ * Sakshi demo — mock dataset.
  * Everything here is fabricated for the pitch demo. No live cameras, no
  * live registry, no live LLM. See demo/README.md for what's real vs mocked.
  * Locations are real Kochi landmarks; camera feeds, plates, and events are not.

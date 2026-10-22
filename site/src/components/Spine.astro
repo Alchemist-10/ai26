@@ -1,0 +1,45 @@
+---
+// The story's spine: one scan line down the page. It is drawn as you
+// scroll and brackets every chapter, so the page reads as a timeline. Without JS (or with reduced motion) it is a static line.
+---
+
+<div class="spine" aria-hidden="true">
+  <svg class="spine__svg" data-spine-svg>
+    <path class="spine__track" data-spine-track d="" />
+    <path class="spine__ink" data-spine-ink d="" />
+  </svg>
+</div>
+
+<style>
+  .spine {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--spine-x) + 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .spine::before {
+    /* static fallback line, hidden once JS draws the real path */
+    content: "";
+    position: absolute;
+    left: calc(var(--spine-x) - 1px);
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--border) 4%, var(--border) 96%, transparent);
+  }
+  :global(.js) .spine.is-drawn::before { display: none; }
+  .spine__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .spine__track, .spine__ink {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .spine__track { stroke: var(--border); stroke-width: 2; }
+  .spine__ink { stroke: var(--primary); stroke-width: 2.5; }
+</style>
+
+<script>
+  import { initSpine } from "../scripts/motion";
+  initSpine();
+</script>

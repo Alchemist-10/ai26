@@ -1,4 +1,4 @@
-"""Create verified SQLite snapshots while the AI26 service is running."""
+"""Create verified SQLite snapshots while the Sakshi service is running."""
 import argparse
 from contextlib import closing
 from datetime import datetime, timezone

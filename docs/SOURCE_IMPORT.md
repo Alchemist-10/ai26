@@ -1,6 +1,6 @@
 # Import recorded footage
 
-AI26 now accepts a recorded clip for an existing camera through an offline local
+Sakshi now accepts a recorded clip for an existing camera through an offline local
 command. This supplies a managed original and a separate browser playback copy
 without editing Python source or overwriting the bundled clips. It does not supply
 missing real footage automatically, add cameras, enable RTSP, validate a plate or

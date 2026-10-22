@@ -1,5 +1,5 @@
 ---
-target: AI26 Camera Wall dashboard
+target: Sakshi Camera Wall dashboard
 total_score: 23
 max_score: 40
 na_heuristics: ""
@@ -8,7 +8,7 @@ p1_count: 2
 timestamp: 2026-10-18T07-04-40Z
 slug: frontend-src-app-tsx
 ---
-## AI26 Camera Wall UX review
+## Sakshi Camera Wall UX review
 
 **Method:** dual-agent (A: `/root/ux_design_assessment` · B: `/root/ux_detector_assessment`). The design review inspected the live dashboard and source independently from the detector. The detector returned no findings for the initial App target; the browser inspection confirmed nine cameras, source availability, view controls, and the large idle media region. Browser overlay injection was unavailable in that assessment environment, so no overlay result is claimed.
 
@@ -29,7 +29,7 @@ slug: frontend-src-app-tsx
 
 ### Specificity and flow
 
-The camera grid and separate playback/detection modes fit AI26’s evidence-review task, but generic system chips and status badges make much of the dashboard feel interchangeable with other camera tools. The initial experience is controlled and privacy-conscious, then stalls at a large blank region with a small prompt. Cognitive load is moderate: nine camera choices plus search, three filters, and two modes appear together, while header status language competes for attention.
+The camera grid and separate playback/detection modes fit Sakshi’s evidence-review task, but generic system chips and status badges make much of the dashboard feel interchangeable with other camera tools. The initial experience is controlled and privacy-conscious, then stalls at a large blank region with a small prompt. Cognitive load is moderate: nine camera choices plus search, three filters, and two modes appear together, while header status language competes for attention.
 
 ### Priority issues
 

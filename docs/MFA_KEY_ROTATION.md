@@ -7,7 +7,7 @@ run while any API process owns the database.
 
 ## Procedure
 
-1. Stop every AI26 API process that uses this data directory. Prepare a new
+1. Stop every Sakshi API process that uses this data directory. Prepare a new
    32-byte random key outside the repository and make it owner-readable only:
 
    ```sh
@@ -42,7 +42,7 @@ run while any API process owns the database.
    recovery codes to the terminal.
 
 4. Set `AI26_AUTH_MFA_KEY_FILE` to the new key path in the service environment,
-   then start AI26. Startup compares the configured key fingerprint with the
+   then start Sakshi. Startup compares the configured key fingerprint with the
    rotation audit record and refuses to serve if the old or another key is still
    configured. Users must sign in again and replace their old recovery codes
    with the contents of the protected output file.

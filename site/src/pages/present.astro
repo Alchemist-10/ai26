@@ -1,0 +1,804 @@
+---
+// Click-through presentation of Sakshi: story first, then the architecture,
+// then the measurements and their limits. Every number comes from
+// report/report.md (validation profile of 18 Oct 2026, benchmark of 14 Oct 2026).
+// Plate strings on the story slides are synthetic illustrations.
+import "@fontsource/noto-sans/400.css";
+import "@fontsource/noto-sans/500.css";
+import "@fontsource/noto-sans/700.css";
+import "@fontsource/noto-sans-mono/400.css";
+import "../styles/global.css";
+
+const REPO = "https://github.com/moneytosms/ai26";
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const team = ["A S Sri Dathan", "Akshay V.S", "Bharadwaj B Chand", "Shivansh Neekhra", "Srimoneyshankar Ajith"].join(", ");
+const course = "CSE311 Artificial Intelligence, mini project";
+const inst = "Department of CSE, IIIT Kottayam. Guide: Dr. Sreeja M U";
+
+const cams = [
+  { x: 330, t: 0.76, id: "CAM-01" },
+  { x: 700, t: 1.25, id: "CAM-02" },
+  { x: 1070, t: 1.75, id: "CAM-03" },
+];
+
+const functional = [
+  ["Camera wall", "One background processor, shared annotated feeds. More viewers add no workers."],
+  ["Plate review", "Per-track consensus. Raw, failed and canonical reads kept apart."],
+  ["Investigations", "Candidate journeys, accepted, rejected or unresolved. Time filters."],
+  ["Bounded queries", "Plate, camera, class and date. No LLM, no generated SQL."],
+  ["Rules and alerts", "Watchlists, zones, dwell rules, a durable escalation queue."],
+  ["Evidence export", "Immutable JSON reports, verified frame and crop ZIPs, print views."],
+  ["Source onboarding", "Validated uploads, original bytes kept, rollback to a parent."],
+  ["Privacy and access", "Pixelation, roles, camera and case scopes, TOTP, access audit."],
+];
+const supported = [
+  ["Nine-source replay finished with zero failed attempts.", "A sustained 2 FPS rate or live-camera reliability."],
+  ["38 to 39 sampled outputs per camera in the window.", "Full-rate analytics or equal frame coverage."],
+  ["INT8 ran faster than FP32 ONNX, detector only.", "Detector accuracy, or that INT8 is safe to promote."],
+  ["Plate gates rejected four mismatched reads.", "Indian plate accuracy or a false-identification rate."],
+  ["Hashes and signatures verify stored artefacts.", "That the scene or the plate text is true."],
+];
+const faqs = [
+  ["How accurate is the plate OCR?", "Unknown, and we say so. No held-out labels exist. The 4 readable crops we checked were all misread, and all 4 were rejected."],
+  ["Did you train the models?", "No. YOLOv8n, YOLOv9-tiny and MobileViT-v2 are pretrained. Our work is the pipeline that keeps their doubt visible."],
+  ["Why only 1.17 FPS?", "One laptop CPU, and 2 FPS is the total budget across all cameras. Full-resolution plate inference is the bottleneck."],
+  ["Can it follow a car across the city?", "No. Tracks are camera-local and clips carry replay time, not capture time. Cross-camera links stay candidates."],
+  ["Why not an AI chatbot for search?", "A bounded grammar is predictable and auditable. Unsupported questions are rejected, not guessed."],
+  ["Is any plate in this deck real?", "No. Story plates are synthetic. The report reproduces no plate strings or private frames."],
+];
+const roadmap = [
+  ["Label", "An authorised, prediction-blind held-out set, split by vehicle, camera, place and session."],
+  ["Measure", "Precision, recall and exact-plate match with abstention coverage and intervals."],
+  ["Adapt", "Fine-tune OCR on licensed regional plates; promote only after paired evaluation."],
+  ["Scale", "INT8 in live inference, GPU and multi-worker profiling on target hardware."],
+  ["Connect", "Verified locations and synchronised clocks before any cross-camera claim."],
+];
+const projection = [
+  ["A", "CPU, FP32", 1.17, "measured"],
+  ["B", "INT8, same host", 1.22, "estimate"],
+  ["C", "4 hosts, INT8", 4.9, "estimate"],
+  ["D", "1 GPU worker", 11.7, "estimate"],
+];
+const total = 17;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sakshi, the presentation</title>
+    <meta name="description" content="A click-through presentation of Sakshi: multi-camera vehicle analytics that keeps uncertainty visible, told as a story, an architecture and a set of honest measurements." />
+    <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+    <script is:inline>
+      try {
+        const t = localStorage.getItem("sakshi-theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
+  </head>
+  <body class="present">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2" /></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /><path d="M12 10v5M12 18v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></symbol>
+      <symbol id="i-q" viewBox="0 0 24 24"><path d="M9 9a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9V15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /><circle cx="12" cy="18.5" r="1.2" fill="currentColor" /></symbol>
+    </svg>
+
+    <div class="viewport" id="viewport">
+      <div class="stage" id="stage">
+
+        <!-- 1 · Title -->
+        <section class="slide s-title" data-builds="0" data-t="fade" aria-label="Title">
+          <svg class="finder" viewBox="0 0 520 400" aria-hidden="true">
+            <path class="corner" d="M10 70 V10 H70" /><path class="corner" d="M450 10 H510 V70" />
+            <path class="corner" d="M510 330 V390 H450" /><path class="corner" d="M70 390 H10 V330" />
+            <path class="f-road" d="M60 330 L210 170 H310 L460 330 Z" />
+            <path class="f-lane" d="M260 180 V330" />
+            <g class="f-car">
+              <rect x="190" y="205" width="140" height="84" rx="14" />
+              <rect x="206" y="214" width="108" height="30" rx="6" class="f-glass" />
+              <rect x="232" y="266" width="56" height="14" rx="2" class="f-plate" />
+            </g>
+            <rect class="f-box" x="180" y="194" width="160" height="106" rx="4" />
+            <text class="f-tag" x="182" y="186">car</text>
+            <rect class="f-scan" x="14" y="14" width="492" height="3" />
+            <circle class="f-rec" cx="42" cy="42" r="7" /><text class="f-hud" x="58" y="48">REC</text>
+            <text class="f-hud" x="506" y="48" text-anchor="end">CAM-03 · replay 00:04:12</text>
+          </svg>
+          <div class="title-block">
+            <p class="kicker">{course}</p>
+            <h1>Sakshi</h1>
+            <p class="lede">Sakshi means <i>witness</i>. Multi-camera vehicle analytics that records what it saw, and admits what it could not read.</p>
+            <p class="team">{team}</p>
+            <p class="inst">{inst}</p>
+          </div>
+        </section>
+
+        <!-- 2 · Many cameras -->
+        <section class="slide s-scene" data-builds="2" data-t="slide" aria-label="Story: many cameras, one vehicle">
+          <svg class="scene" viewBox="0 0 1280 720" aria-hidden="true">
+            <rect x="0" y="560" width="1280" height="160" class="road" />
+            <path d="M0 650 H1280" class="lane" />
+            {cams.map((c) => (
+              <g>
+                <path class="pole" d={`M${c.x + 60} 560 V390 H${c.x + 20}`} />
+                <polygon class="cone rv" data-at="1" style={`animation-delay:${c.t}s`} points={`${c.x} 410 ${c.x - 150} 600 ${c.x + 150} 600`} />
+                <rect class="cam-body" x={c.x - 30} y="378" width="56" height="30" rx="6" />
+                <circle class="cam-led" cx={c.x - 16} cy="393" r="5" />
+                <text class="cam-id" x={c.x} y="372" text-anchor="middle">{c.id}</text>
+                <g class="snap rv" data-at="1" style={`animation-delay:${c.t}s`}>
+                  <rect x={c.x - 172} y="562" width="344" height="118" rx="4" />
+                  <text x={c.x - 170} y="554">car · {c.id}</text>
+                </g>
+              </g>
+            ))}
+            <g class="car rv" data-at="1">
+              <path d="M0 62 V30 Q0 14 18 12 L70 8 L110 -22 H210 L252 8 L300 14 Q320 18 320 36 V62 Z" class="car__body" />
+              <path d="M122 -14 H198 L228 8 H100 Z" class="car__glass" />
+              <circle cx="80" cy="64" r="22" class="wheel" /><circle cx="250" cy="64" r="22" class="wheel" />
+            </g>
+          </svg>
+          <div class="copy">
+            <p class="kicker">The problem</p>
+            <h2>Nine cameras. Hours of video. One question.</h2>
+            <p class="lede rv" data-at="1">Which cameras saw this vehicle, and when?</p>
+            <p class="lede rv" data-at="2">Watching it all by hand does not scale. Trusting a model blindly is worse.</p>
+          </div>
+        </section>
+
+        <!-- 3 · Abstain -->
+        <section class="slide s-split" data-builds="3" data-t="slide" aria-label="Story: three reads, three answers">
+          <div class="copy">
+            <p class="kicker">Inside one camera</p>
+            <h2>The model reads a plate. Then reads it again.</h2>
+            <p class="lede rv" data-at="2">Three reads. Three different answers.</p>
+            <p class="lede rv strong" data-at="3">Sakshi refuses to pick one. The raw reads stay for a human. No identity is created.</p>
+          </div>
+          <div class="console">
+            <div class="console__bar"><span>CAM-07 · track 14</span><span class="muted">synthetic plate</span></div>
+            <svg class="frontcar" viewBox="0 0 400 190" aria-hidden="true">
+              <path class="f-road" d="M20 190 L150 40 H250 L380 190 Z" />
+              <rect x="110" y="60" width="180" height="110" rx="18" class="fc-body" />
+              <rect x="128" y="70" width="144" height="40" rx="8" class="f-glass" />
+              <circle cx="132" cy="132" r="9" class="fc-light" /><circle cx="268" cy="132" r="9" class="fc-light" />
+              <rect x="165" y="140" width="70" height="18" rx="3" class="f-plate" />
+              <rect class="wire box" data-at="0" x="100" y="50" width="200" height="130" rx="4" />
+              <rect class="wire pbox" data-at="1" x="158" y="134" width="84" height="30" rx="3" />
+            </svg>
+            <div class="reads">
+              <div class="read rv" data-at="1"><span>Read 1</span><code>KL07AB1234</code><b>0.61</b></div>
+              <div class="read rv" data-at="2"><span>Read 2</span><code>KL07AB1Z34</code><b>0.44</b></div>
+              <div class="read rv" data-at="2"><span>Read 3</span><code>KL01AB1234</code><b>0.52</b></div>
+            </div>
+            <span class="pill warn-p rv" data-at="3"><svg class="ic"><use href="#i-q" /></svg>Abstained: reads conflict</span>
+          </div>
+        </section>
+
+        <!-- 4 · Gates -->
+        <section class="slide s-plain" data-builds="4" data-t="slide" aria-label="The plate gates">
+          <p class="kicker">The rule everything rests on</p>
+          <h2>A plate becomes an identity only when every gate agrees</h2>
+          <div class="flow">
+            <div class="step rv" data-at="1"><span class="n">1</span><h3>Confidence</h3><p>OCR score at least 0.35. Below it, the read is kept in history and excluded from plate queries.</p><span class="pill ok"><svg class="ic"><use href="#i-check" /></svg>&ge; 0.35</span></div>
+            <div class="step rv" data-at="2"><span class="n">2</span><h3>Format</h3><p>Normalised to Indian registration syntax. Raw text, canonical value and every edit are stored.</p><span class="pill ok"><svg class="ic"><use href="#i-check" /></svg>Valid syntax</span></div>
+            <div class="step rv" data-at="3"><span class="n">3</span><h3>Clean track</h3><p>A read from an ambiguous track never counts toward an identity.</p><span class="pill ok"><svg class="ic"><use href="#i-check" /></svg>Not ambiguous</span></div>
+            <div class="step rv" data-at="4"><span class="n">4</span><h3>Consensus</h3><p>At least 3 consistent reads among the last 8, scoped to one camera and one track.</p><span class="pill ok"><svg class="ic"><use href="#i-lock" /></svg>Supported plate</span></div>
+          </div>
+          <p class="foot rv" data-at="4">Conflicting strings stay conflicting. Character-level suggestions are for review only.</p>
+        </section>
+
+        <!-- 5 · Introduction -->
+        <section class="slide s-plain" data-builds="4" data-t="slide" aria-label="Introduction">
+          <p class="kicker">Introduction</p>
+          <h2>Sakshi turns multi-camera footage into reviewable, auditable vehicle observations.</h2>
+          <div class="roles">
+            <div class="role rv" data-at="1"><h3>See</h3><p>Pretrained YOLOv8n finds cars, motorcycles, buses and trucks. People too, for privacy masking.</p></div>
+            <div class="role rv" data-at="2"><h3>Read</h3><p>A plate detector and a MobileViT-v2 OCR propose text. Doubt means abstain.</p></div>
+            <div class="role rv" data-at="3"><h3>Follow</h3><p>A camera-local tracker links boxes over time by motion and geometry.</p></div>
+            <div class="role rv" data-at="4"><h3>Witness</h3><p>Every read, model hash, review and export is stored and auditable.</p></div>
+          </div>
+          <p class="foot rv on" data-at="0">Pretrained models do the seeing. Our contribution is the pipeline that keeps their uncertainty visible.</p>
+        </section>
+
+        <!-- 6 · Problem and objectives -->
+        <section class="slide s-two" data-builds="2" data-t="slide" aria-label="Problem statement and objectives">
+          <div>
+            <p class="kicker">Problem statement</p>
+            <h2>Too much video. Too little trust in what a model says about it.</h2>
+            <ul class="plain">
+              <li class="rv" data-at="0">Searching every recording by hand is slow and hard to repeat.</li>
+              <li class="rv" data-at="0">OCR misreads small, blurred plates.</li>
+              <li class="rv" data-at="1">A replay timestamp is not when the scene happened.</li>
+              <li class="rv" data-at="1">A wrong identity costs more than no identity.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="kicker">Objectives</p>
+            <ol class="obj">
+              <li class="rv" data-at="2"><b>Share.</b> One processor samples every camera under a global frame budget.</li>
+              <li class="rv" data-at="2"><b>See.</b> Pretrained detection and plate OCR.</li>
+              <li class="rv" data-at="2"><b>Doubt.</b> Keep raw and ambiguous reads, abstain on conflict.</li>
+              <li class="rv" data-at="2"><b>Prove.</b> Hashes, audit records, verifiable exports.</li>
+              <li class="rv" data-at="2"><b>Review.</b> A dashboard with queries, rules and reports.</li>
+            </ol>
+          </div>
+        </section>
+
+        <!-- 7 · Functional -->
+        <section class="slide s-plain" data-builds="3" data-t="slide" aria-label="What it does">
+          <p class="kicker">Working today</p>
+          <h2>What it does</h2>
+          <div class="grid4">
+            {functional.map(([t, d], i) => (
+              <div class="cell rv" data-at={Math.floor(i / 3)}><h3>{t}</h3><p>{d}</p></div>
+            ))}
+          </div>
+        </section>
+
+        <!-- 8 · Architecture -->
+        <section class="slide s-plain" data-builds="4" data-t="zoom" aria-label="System architecture">
+          <p class="kicker">System architecture</p>
+          <h2>One processor owns inference. Everything else reads its output.</h2>
+          <svg class="arch" viewBox="0 0 1120 440" role="img" aria-label="Sources feed one scheduler, which runs a vehicle detector and a plate reader. A tracker and a consensus gate feed SQLite, which serves FastAPI, the dashboard and evidence reports.">
+            <g class="node rv" data-at="0"><rect x="10" y="170" width="140" height="100" rx="12" /><text x="80" y="208" text-anchor="middle">Sources</text><text x="80" y="232" text-anchor="middle" class="sub">MP4 or RTSP</text><text x="80" y="254" text-anchor="middle" class="sub">9 cameras</text></g>
+            <path class="wire" data-at="0" d="M150 220 H180" />
+            <g class="node big rv" data-at="0"><rect x="180" y="170" width="170" height="100" rx="12" /><text x="265" y="208" text-anchor="middle">Scheduler</text><text x="265" y="232" text-anchor="middle" class="sub">one processor</text><text x="265" y="254" text-anchor="middle" class="sub">2 FPS total budget</text></g>
+            <path class="wire" data-at="1" d="M350 205 C368 205 368 105 385 105" />
+            <path class="wire" data-at="1" d="M350 235 C368 235 368 340 385 340" />
+            <g class="node rv" data-at="1"><rect x="385" y="60" width="180" height="90" rx="12" /><text x="475" y="98" text-anchor="middle">Detector</text><text x="475" y="124" text-anchor="middle" class="sub">YOLOv8n, 640 px</text></g>
+            <g class="node rv" data-at="1"><rect x="385" y="290" width="180" height="100" rx="12" /><text x="475" y="324" text-anchor="middle">Plate reader</text><text x="475" y="348" text-anchor="middle" class="sub">YOLOv9-tiny plates</text><text x="475" y="370" text-anchor="middle" class="sub">MobileViT-v2 OCR</text></g>
+            <path class="wire" data-at="2" d="M565 105 H600" />
+            <path class="wire" data-at="2" d="M565 340 H600" />
+            <g class="node rv" data-at="2"><rect x="600" y="60" width="160" height="90" rx="12" /><text x="680" y="98" text-anchor="middle">Tracker</text><text x="680" y="124" text-anchor="middle" class="sub">camera-local</text></g>
+            <g class="node rv" data-at="2"><rect x="600" y="290" width="160" height="100" rx="12" /><text x="680" y="324" text-anchor="middle">Consensus</text><text x="680" y="348" text-anchor="middle" class="sub">3 of last 8</text><text x="680" y="370" text-anchor="middle" class="sub">or abstain</text></g>
+            <path class="wire" data-at="2" d="M760 105 C778 105 778 205 790 205" />
+            <path class="wire" data-at="2" d="M760 340 C778 340 778 235 790 235" />
+            <g class="node big rv" data-at="2"><rect x="790" y="170" width="150" height="100" rx="12" /><text x="865" y="208" text-anchor="middle">SQLite</text><text x="865" y="232" text-anchor="middle" class="sub">WAL, audit,</text><text x="865" y="254" text-anchor="middle" class="sub">model hashes</text></g>
+            <path class="wire" data-at="3" d="M940 205 C955 205 955 105 970 105" />
+            <path class="wire" data-at="3" d="M1040 150 V180" />
+            <path class="wire" data-at="3" d="M940 235 C955 235 955 340 970 340" />
+            <g class="node rv" data-at="3"><rect x="970" y="60" width="140" height="90" rx="12" /><text x="1040" y="98" text-anchor="middle">FastAPI</text><text x="1040" y="124" text-anchor="middle" class="sub">bounded queries</text></g>
+            <g class="node rv" data-at="3"><rect x="970" y="180" width="140" height="80" rx="12" /><text x="1040" y="214" text-anchor="middle">Dashboard</text><text x="1040" y="238" text-anchor="middle" class="sub">React + TS</text></g>
+            <g class="node rv" data-at="3"><rect x="970" y="290" width="140" height="100" rx="12" /><text x="1040" y="324" text-anchor="middle">Reports</text><text x="1040" y="348" text-anchor="middle" class="sub">SHA-256</text><text x="1040" y="370" text-anchor="middle" class="sub">opt. Ed25519</text></g>
+            <circle class="packet" data-at="4" r="7" />
+          </svg>
+          <p class="foot rv" data-at="4">Browsers read cached frames and results. Opening more viewers adds no inference workers.</p>
+        </section>
+
+        <!-- 9 · Tracking -->
+        <section class="slide s-two" data-builds="3" data-t="slide" aria-label="Camera-local tracking">
+          <div>
+            <p class="kicker">Tracking</p>
+            <h2>Follow a car within one camera, and let go when unsure</h2>
+            <ul class="plain">
+              <li class="rv" data-at="2">Minimum-cost assignment per frame, with an "unmatched" option.</li>
+              <li class="rv" data-at="2">Class mismatch, odd size change or a far jump rejects a pair.</li>
+              <li class="rv" data-at="3">Near-equal competing matches are ambiguous. Those tracks retire.</li>
+              <li class="rv" data-at="3">No appearance model, so no cross-camera identity is claimed.</li>
+            </ul>
+          </div>
+          <div class="costbox">
+            <p class="eq rv on" data-at="0"><code>cost = 0.75 · distance + 0.20 · (1 − IoU) + 0.05 · area change</code></p>
+            <div class="bars">
+              <div class="bar rv" data-at="1"><span class="bar__fill" style="--w:0.75"></span><b>0.75</b><span>predicted centre distance</span></div>
+              <div class="bar rv" data-at="1"><span class="bar__fill c2" style="--w:0.20"></span><b>0.20</b><span>box overlap, 1 − IoU</span></div>
+              <div class="bar rv" data-at="1"><span class="bar__fill c3" style="--w:0.05"></span><b>0.05</b><span>change in box area</span></div>
+            </div>
+            <p class="note rv" data-at="1">Heuristic scores from <code>backend/tracking.py</code>, not identity probabilities.</p>
+          </div>
+        </section>
+
+        <!-- 10 · Evidence -->
+        <section class="slide s-plain" data-builds="3" data-t="slide" aria-label="Evidence and audit">
+          <p class="kicker">Evidence</p>
+          <h2>Every result can say where it came from</h2>
+          <div class="flow">
+            <div class="step rv" data-at="0"><span class="n">1</span><h3>Observation</h3><p>Source, session, frame position, model and pipeline-component digests.</p><span class="pill ok"><svg class="ic"><use href="#i-check" /></svg>Provenance</span></div>
+            <div class="step rv" data-at="1"><span class="n">2</span><h3>Frame and crop</h3><p>SHA-256-referenced JPEGs. A failed capture is recorded as missing, never hidden.</p><span class="pill ok"><svg class="ic"><use href="#i-check" /></svg>Hashed</span></div>
+            <div class="step rv" data-at="2"><span class="n">3</span><h3>Report</h3><p>Immutable snapshot, verified ZIP, expiry enforced. Empty reports are refused.</p><span class="pill ok"><svg class="ic"><use href="#i-lock" /></svg>Frozen</span></div>
+            <div class="step rv" data-at="3"><span class="n">4</span><h3>Signature</h3><p>Optional Ed25519 against a trusted public key. Hash-chained audit checkpoints.</p><span class="pill ok"><svg class="ic"><use href="#i-lock" /></svg>Verifiable</span></div>
+          </div>
+          <p class="foot rv" data-at="3">A hash detects a change. It does not prove the scene, or the plate text, is true.</p>
+        </section>
+
+        <!-- 11 · Replay numbers -->
+        <section class="slide s-plain" data-builds="2" data-t="zoom" aria-label="Measured: nine-camera replay">
+          <p class="kicker">Measured · five-minute replay, 12-thread laptop CPU</p>
+          <h2>Nine cameras, both AI branches on, zero failures</h2>
+          <div class="grid3 nums">
+            <div class="cell num rv" data-at="1"><b class="big"><span data-count="9">0</span> / 9</b><p>sources processing at start and end</p></div>
+            <div class="cell num rv" data-at="1"><b class="big" data-count="349">0</b><p>sampled frames completed</p></div>
+            <div class="cell num rv" data-at="1"><b class="big"><span data-count="298.011" data-dec="3">0</span> s</b><p>valid counter window</p></div>
+            <div class="cell num rv" data-at="1"><b class="big" data-count="1.171" data-dec="3">0</b><p>FPS total, against a 2.0 budget</p></div>
+            <div class="cell num rv" data-at="1"><b class="big" data-count="0">0</b><p>failed inference attempts</p></div>
+            <div class="cell num rv" data-at="1"><b class="big"><span data-count="830.2" data-dec="1">0</span> MiB</b><p>median resident memory</p></div>
+          </div>
+          <p class="foot rv" data-at="2">Nearly every 500 ms overrun came from CAM-07 to CAM-09: plate inference on 1080p, not detection.</p>
+        </section>
+
+        <!-- 12 · INT8 -->
+        <section class="slide s-two wide" data-builds="2" data-t="slide" aria-label="Measured: INT8 quantisation">
+          <div>
+            <p class="kicker">Measured · detector only, i5-12450H</p>
+            <h2>INT8 cut detector latency by about 41%</h2>
+            <ul class="plain">
+              <li class="rv" data-at="1">Model file: 12.82 MB down to 3.60 MB.</li>
+              <li class="rv" data-at="1">15 of 16 detections agree with FP32 on unlabelled frames.</li>
+              <li class="rv" data-at="2">Agreement is not accuracy. INT8 is not in live inference yet.</li>
+            </ul>
+          </div>
+          <svg class="hbars" viewBox="0 0 640 380" role="img" aria-label="Median model-forward latency: PyTorch FP32 92.834 ms, ONNX FP32 95.309 ms, ONNX INT8 55.782 ms">
+            {[["PyTorch FP32", 92.834], ["ONNX FP32", 95.309], ["ONNX INT8", 55.782]].map(([l, v], k) => (
+              <g class="hb rv" data-at="0" style={`transition-delay:${k * 0.15}s`}>
+                <text x="0" y={52 + k * 115} class="hb-l">{l}</text>
+                <rect x="0" y={66 + k * 115} width={(Number(v) / 95.309) * 520} height="44" rx="8" class:list={["hb-r", { int8: k === 2 }]} />
+                <text x={(Number(v) / 95.309) * 520 + 12} y={96 + k * 115} class="hb-v">{v} ms</text>
+              </g>
+            ))}
+          </svg>
+        </section>
+
+        <!-- 13 · Crop review -->
+        <section class="slide s-two" data-builds="3" data-t="slide" aria-label="Measured: plate crop review">
+          <div>
+            <p class="kicker">Measured · selected, not representative</p>
+            <h2>When the OCR was wrong, the gates said no</h2>
+            <ul class="plain">
+              <li class="rv" data-at="1">21 crops from CAM-07 to CAM-09: 16 unreadable, 4 readable, 1 uncertain.</li>
+              <li class="rv" data-at="2">All 4 readable plates were misread by the OCR.</li>
+              <li class="rv" data-at="3">All 4 were rejected. None became an identity.</li>
+            </ul>
+          </div>
+          <div class="waffle-wrap">
+            <div class="waffle rv" data-at="1">
+              {Array.from({ length: 21 }, (_, k) => (
+                <span class:list={["sq", k < 16 ? "unread" : k < 20 ? "readable" : "unsure"]}>
+                  {k >= 16 && k < 20 && <svg class="ic x"><use href="#i-x" /></svg>}
+                </span>
+              ))}
+            </div>
+            <div class="legend rv" data-at="1"><span><i class="unread"></i>unreadable</span><span><i class="readable"></i>readable</span><span><i class="unsure"></i>uncertain</span></div>
+            <span class="pill bad rv" data-at="3"><svg class="ic"><use href="#i-x" /></svg>4 of 4 mismatches rejected</span>
+            <p class="note rv" data-at="3">This shows abstention on these crops. It is not an accuracy or false-accept rate.</p>
+          </div>
+        </section>
+
+        <!-- 14 · Honesty -->
+        <section class="slide s-plain" data-builds="3" data-t="slide" aria-label="What the evidence supports">
+          <p class="kicker">Honest scope</p>
+          <h2>What we can show, and what we do not claim</h2>
+          <div class="adrs">
+            <div class="adr head"><span>Supported by recorded evidence</span><span>Not established</span></div>
+            {supported.map(([y, n], i) => (
+              <div class="adr rv" data-at={Math.min(3, Math.floor(i / 2) + 1)}>
+                <span class="yes"><svg class="ic"><use href="#i-check" /></svg>{y}</span>
+                <span class="no"><svg class="ic"><use href="#i-x" /></svg>{n}</span>
+              </div>
+            ))}
+          </div>
+          <p class="foot rv" data-at="3">Replay timestamps are not capture times. Cross-camera links are candidates, not proof.</p>
+        </section>
+
+        <!-- 15 · Future -->
+        <section class="slide s-two" data-builds="3" data-t="slide" aria-label="What it becomes">
+          <div>
+            <p class="kicker">What it becomes</p>
+            <h2>Same architecture. Labels, then hardware.</h2>
+            <ol class="obj roadmap">
+              {roadmap.map(([t, d], i) => <li class="rv" data-at={i < 2 ? 1 : i < 4 ? 2 : 3}><b>{t}.</b> {d}</li>)}
+            </ol>
+          </div>
+          <div class="proj">
+            <svg viewBox="0 0 520 420" role="img" aria-label="Aggregate sampled FPS: A measured 1.17; estimates B 1.22, C 4.9, D 11.7">
+              <path class="axis" d="M20 360 H510" />
+              {projection.map(([k, l, v, kind], i) => {
+                const h = (Number(v) / 11.7) * 290;
+                return (
+                  <g class="pb rv" data-at="1" style={`transition-delay:${i * 0.15}s`}>
+                    <rect x={40 + i * 120} y={360 - h} width="84" height={h} rx="6" class:list={["pb-r", kind]} />
+                    <text x={82 + i * 120} y={350 - h} text-anchor="middle" class="pb-v">{v}</text>
+                    <text x={82 + i * 120} y="388" text-anchor="middle" class="pb-k">{k}</text>
+                    <text x={82 + i * 120} y="410" text-anchor="middle" class="pb-l">{l}</text>
+                  </g>
+                );
+              })}
+            </svg>
+            <p class="note rv" data-at="1">Aggregate sampled FPS. Only A was measured. B to D are projections, not tested.</p>
+          </div>
+        </section>
+
+        <!-- 16 · FAQ -->
+        <section class="slide s-plain" data-builds="3" data-t="slide" aria-label="Questions and answers">
+          <p class="kicker">FAQ</p>
+          <h2>Questions we expect</h2>
+          <div class="faq">
+            {faqs.map(([q, a], i) => (
+              <div class="qa rv" data-at={Math.floor(i / 2) + 1}><h3>{q}</h3><p>{a}</p></div>
+            ))}
+          </div>
+        </section>
+
+        <!-- 17 · Close -->
+        <section class="slide s-title" data-builds="0" data-t="fade" aria-label="Close">
+          <div class="title-block">
+            <p class="kicker">Sakshi</p>
+            <h1 class="close">It names a plate only when the evidence agrees. Everything else stays a question for a human.</h1>
+            <p class="team">{team}</p>
+            <p class="inst">{inst}</p>
+            <p class="inst">Run it: <code>uv run run.py</code> · <a href={REPO}>{REPO.replace("https://", "")}</a></p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <nav class="hud" aria-label="Slides">
+      <a class="hud__btn" href={`${base}/`} aria-label="Leave the presentation">Exit</a>
+      <button class="hud__btn" id="prev" type="button" aria-label="Previous">&lsaquo;</button>
+      <ol class="dots" id="dots">
+        {Array.from({ length: total }, (_, i) => <li><button type="button" data-go={i} aria-label={`Slide ${i + 1}`}></button></li>)}
+      </ol>
+      <button class="hud__btn" id="next" type="button" aria-label="Next">&rsaquo;</button>
+      <span class="count" id="count" aria-live="polite">1 / {total}</span>
+      <button class="hud__btn" id="fs" type="button" aria-label="Toggle fullscreen">Full screen</button>
+    </nav>
+  </body>
+</html>
+
+<style is:global>
+  body.present { margin: 0; height: 100dvh; overflow: hidden; background-attachment: fixed; user-select: none; }
+  .viewport { position: fixed; inset: 0; }
+  .stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform: translate(-50%, -50%) scale(var(--s, 1)); transform-origin: center; }
+
+  .slide { position: absolute; inset: 0; padding: 56px 80px 80px; visibility: hidden; opacity: 0;
+    transition: opacity 0.5s var(--ease-out), transform 0.6s var(--ease-out), visibility 0s linear 0.6s; }
+  .slide.is-active { visibility: visible; opacity: 1; transform: none; transition-delay: 0s; z-index: 2; }
+  .slide.is-past { transform: translateX(-7%); }
+  .slide.is-future { transform: translateX(7%); }
+  .slide[data-t="zoom"].is-past { transform: scale(1.06); }
+  .slide[data-t="zoom"].is-future { transform: scale(0.94); }
+  .slide[data-t="fade"].is-past, .slide[data-t="fade"].is-future { transform: none; }
+
+  .rv { opacity: 0; transform: translateY(16px); transition: opacity 0.5s var(--ease-out), transform 0.55s var(--ease-out); }
+  .rv.on { opacity: 1; transform: none; }
+  svg .rv { transform: none; }
+
+  .kicker { margin: 0 0 12px; font-size: 20px; font-weight: 500; color: var(--primary); letter-spacing: 0.01em; }
+  .slide h2 { margin: 0 0 20px; font-size: 44px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; max-width: 22ch; }
+  .s-two h2, .s-plain h2 { max-width: 42ch; }
+  .slide h3 { margin: 0 0 6px; font-size: 24px; font-weight: 700; }
+  .slide p, .slide li { font-size: 22px; line-height: 1.4; }
+  .lede { font-size: 26px !important; color: var(--muted-foreground); max-width: 30ch; margin: 0 0 12px; }
+  .lede.strong { color: var(--foreground); }
+  .foot { position: absolute; left: 80px; bottom: 100px; margin: 0; color: var(--muted-foreground); font-size: 20px !important; }
+  .muted { color: var(--muted-foreground); font-weight: 400; }
+  .note { margin: 14px 0 0; font-size: 17px !important; color: var(--muted-foreground); }
+
+  /* title */
+  .s-title { display: grid; place-items: start; padding-top: 70px; }
+  .title-block { position: relative; z-index: 2; max-width: 580px; }
+  .s-title h1 { margin: 0; font-size: 150px; line-height: 1; letter-spacing: -0.03em; color: var(--primary); }
+  .s-title h1.close { font-size: 54px; letter-spacing: -0.01em; max-width: 22ch; line-height: 1.15; color: var(--foreground); margin-bottom: 28px; }
+  .s-title .title-block:has(.close) { max-width: 1100px; }
+  .s-title .lede { margin-top: 12px; }
+  .team { margin: 28px 0 6px; font-weight: 500; font-size: 19px !important; }
+  .inst { margin: 0; color: var(--muted-foreground); font-size: 18px !important; }
+  .inst a { color: var(--primary); }
+  .finder { position: absolute; right: 70px; top: 130px; width: 520px; height: 400px; overflow: visible; }
+  .corner { fill: none; stroke: var(--primary); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 130; stroke-dashoffset: 130; }
+  .slide.is-active .corner { animation: draw 1.1s var(--ease-out) 0.2s forwards; }
+  .f-road { fill: var(--foreground); opacity: 0.08; }
+  .f-lane { stroke: var(--foreground); opacity: 0.3; stroke-width: 3; stroke-dasharray: 18 16; animation: lane 1.2s linear infinite; }
+  .f-car rect:first-child, .fc-body { fill: var(--secondary); stroke: var(--foreground); stroke-width: 3; }
+  .f-glass { fill: var(--primary-soft); }
+  .f-plate { fill: var(--card); stroke: var(--foreground); stroke-width: 2; }
+  .fc-light { fill: var(--chart-4); }
+  .f-box { fill: none; stroke: var(--primary); stroke-width: 3; stroke-dasharray: 10 6; opacity: 0; }
+  .f-tag { fill: var(--primary); font: 500 18px var(--font-mono); opacity: 0; }
+  .slide.is-active .f-box, .slide.is-active .f-tag { animation: snap 0.5s var(--ease-out) 1.2s forwards; }
+  @keyframes snap { 0% { opacity: 0; } 40% { opacity: 1; } 60% { opacity: 0.3; } 100% { opacity: 1; } }
+  .f-scan { fill: var(--primary); opacity: 0.55; animation: scan 3.2s ease-in-out infinite alternate; }
+  @keyframes scan { to { transform: translateY(370px); } }
+  .f-rec { fill: var(--critical); animation: blink 1.2s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0.15; } }
+  .f-hud { fill: var(--muted-foreground); font: 500 16px var(--font-mono); }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  /* scenes */
+  .scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .s-scene .copy { position: absolute; left: 80px; top: 56px; max-width: 640px; z-index: 2; }
+  .s-scene .lede { font-size: 24px !important; max-width: 40ch; }
+  .road { fill: var(--foreground); opacity: 0.1; }
+  .lane { stroke: var(--foreground); opacity: 0.35; stroke-width: 4; stroke-dasharray: 36 30; animation: lane 1.6s linear infinite; }
+  @keyframes lane { to { stroke-dashoffset: -66; } }
+  .pole { fill: none; stroke: var(--foreground); stroke-width: 7; opacity: 0.45; stroke-linejoin: round; }
+  .cam-body { fill: var(--card); stroke: var(--foreground); stroke-width: 3; }
+  .cam-led { fill: var(--critical); animation: blink 1.4s steps(2) infinite; }
+  .cam-id { fill: var(--muted-foreground); font: 500 15px var(--font-mono); }
+  .cone { fill: var(--primary); fill-opacity: 0.12; }
+  .cone.on { animation: cone 1.2s ease-out forwards; }
+  @keyframes cone { 0% { fill-opacity: 0.06; } 20% { fill-opacity: 0.4; } 100% { fill-opacity: 0.12; } }
+  .snap rect { fill: none; stroke: var(--primary); stroke-width: 3; stroke-dasharray: 10 6; }
+  .snap text { fill: var(--primary); font: 500 16px var(--font-mono); }
+  .snap.rv { opacity: 0; transition: none; }
+  .snap.on { animation: flash 1.4s ease-out forwards; }
+  @keyframes flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0.4; } }
+  svg .car { transform: translate(-400px, 588px); transition: transform 2.4s linear; opacity: 1; }
+  svg .car.on { transform: translate(1400px, 588px); }
+  .car__body { fill: var(--primary); }
+  .car__glass { fill: var(--card); opacity: 0.85; }
+  .wheel { fill: var(--foreground); }
+
+  /* split / console */
+  .s-split { display: grid; grid-template-columns: 1fr 460px; gap: 64px; align-items: center; }
+  .s-split .copy { max-width: 560px; }
+  .console { border: 2px solid var(--border); border-radius: 22px; background: var(--card); padding: 20px 22px; box-shadow: var(--shadow-card); }
+  .console__bar { display: flex; justify-content: space-between; font: 500 16px var(--font-mono); padding-bottom: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .frontcar { width: 100%; height: 190px; }
+  .frontcar .wire { stroke-dasharray: 700; stroke-dashoffset: 700; stroke-width: 3; }
+  .frontcar .wire.on { stroke-dashoffset: 0; }
+  .frontcar .pbox { stroke: var(--chart-4); }
+  .reads { display: grid; gap: 8px; margin: 10px 0 14px; }
+  .read { display: grid; grid-template-columns: 70px 1fr auto; gap: 12px; align-items: center; padding: 8px 12px; border-radius: 10px; background: var(--muted); font-size: 17px; }
+  .read span { color: var(--muted-foreground); }
+  .read code, .eq code { background: none; border: 0; padding: 0; }
+  .read code { font-family: var(--font-mono); font-size: 20px; letter-spacing: 0.08em; }
+  .read b { font-family: var(--font-mono); font-weight: 500; color: var(--muted-foreground); }
+
+  .ic { width: 24px; height: 24px; flex: none; color: var(--consent-active); margin-top: 3px; }
+
+  /* plain layouts */
+  .s-plain, .s-two { display: block; }
+  .s-two { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-content: start; }
+  .s-two.wide { grid-template-columns: 0.8fr 1.2fr; }
+  .roles, .grid4, .grid3, .adrs { display: grid; gap: 18px; margin-top: 24px; }
+  .roles { grid-template-columns: repeat(4, 1fr); }
+  .grid4 { grid-template-columns: repeat(4, 1fr); }
+  .grid3 { grid-template-columns: repeat(3, 1fr); }
+  .role, .cell, .adr, .step { border: 1px solid var(--border); background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-card); }
+  .role h3 { color: var(--primary); font-size: 30px; }
+  .cell p, .role p { font-size: 19px; margin: 0; color: var(--muted-foreground); }
+  .cell h3 { font-size: 22px; color: var(--primary); }
+  .plain, .obj { padding-left: 24px; margin: 8px 0 0; display: grid; gap: 14px; }
+  .obj b { color: var(--primary); }
+  .obj.roadmap { gap: 10px; }
+  .obj.roadmap li { font-size: 20px; }
+  .nums .num { text-align: left; padding: 18px 20px; }
+  .big { display: block; font-size: 60px; line-height: 1; color: var(--primary); font-variant-numeric: tabular-nums; margin-bottom: 8px; }
+
+  .arch { width: 100%; height: 400px; margin-top: -24px; }
+  .node rect { fill: var(--card); stroke: var(--border); stroke-width: 2; }
+  .node.big rect:first-child { fill: var(--primary-soft); stroke: var(--primary); stroke-width: 2.5; }
+  .node text { fill: var(--foreground); font-size: 21px; font-weight: 700; }
+  .node .sub { font-size: 16px; font-weight: 400; fill: var(--muted-foreground); }
+  .wire { fill: none; stroke: var(--primary); stroke-width: 3; stroke-dasharray: 400; stroke-dashoffset: 400; transition: stroke-dashoffset 0.7s var(--ease-out); }
+  .wire.on { stroke-dashoffset: 0; }
+  .packet { fill: var(--critical); opacity: 0; offset-path: path("M80 220 L265 220 L475 340 L680 340 L865 220 L1040 105 L1040 220"); offset-distance: 0%; }
+  .packet.on { opacity: 1; animation: packet 3.2s ease-in-out infinite; }
+  @keyframes packet { to { offset-distance: 100%; } }
+
+  .costbox { align-self: center; border: 1px solid var(--border); background: var(--card); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow-card); }
+  .eq code { font-family: var(--font-mono); font-size: 17px; line-height: 1.5; }
+  .bars { display: grid; gap: 18px; margin-top: 22px; }
+  .bar { display: grid; grid-template-columns: 1fr; gap: 4px; }
+  .bar__fill { display: block; height: 30px; width: calc(var(--w) * 100%); min-width: 14px; border-radius: 8px; background: var(--primary); transform-origin: left; transform: scaleX(0); transition: transform 0.9s var(--ease-out) 0.15s; }
+  .bar.on .bar__fill { transform: none; }
+  .bar__fill.c2 { background: var(--chart-3); }
+  .bar__fill.c3 { background: var(--chart-4); }
+  .bar b { font-family: var(--font-mono); font-size: 20px; }
+  .bar span:last-child { font-size: 18px; color: var(--muted-foreground); }
+
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 28px; }
+  .step { position: relative; padding-top: 28px; }
+  .step .n { position: absolute; top: -16px; left: 18px; width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); display: grid; place-items: center; font-weight: 700; }
+  .step p { font-size: 19px; color: var(--muted-foreground); min-height: 136px; margin: 0 0 12px; }
+  .pill { display: inline-flex; gap: 8px; align-items: center; padding: 6px 14px; border-radius: 999px; font-size: 18px; font-weight: 500; }
+  .pill .ic { margin: 0; width: 20px; height: 20px; color: inherit; }
+  .pill.ok { background: var(--consent-active-surface); color: var(--consent-active); }
+  .pill.bad { background: var(--critical-surface); color: var(--critical); }
+  .pill.warn-p { background: color-mix(in oklch, var(--chart-4) 18%, transparent); color: var(--chart-4); border: 1px solid var(--chart-4); }
+
+  .hbars { width: 100%; height: 380px; align-self: center; }
+  .hb-l { fill: var(--foreground); font-size: 20px; font-weight: 500; }
+  .hb-r { fill: var(--muted-foreground); opacity: 0.55; transform-box: fill-box; transform-origin: left; transform: scaleX(0); transition: transform 0.9s var(--ease-out); }
+  .hb-r.int8 { fill: var(--primary); opacity: 1; }
+  .hb.on .hb-r { transform: none; }
+  .hb-v { fill: var(--foreground); font: 500 20px var(--font-mono); }
+
+  .waffle-wrap { align-self: center; }
+  .waffle { display: grid; grid-template-columns: repeat(7, 56px); gap: 10px; }
+  .sq { width: 56px; height: 56px; border-radius: 10px; display: grid; place-items: center; }
+  .unread { background: var(--muted); border: 1px solid var(--border); }
+  .readable { background: var(--primary); }
+  .unsure { background: var(--chart-4); }
+  .sq .x { width: 30px; height: 30px; margin: 0; color: var(--primary-foreground); opacity: 0; transition: opacity 0.4s 0.3s; }
+  .slide[data-b="2"] .sq .x, .slide[data-b="3"] .sq .x { opacity: 1; }
+  .legend { display: flex; gap: 20px; margin: 16px 0 18px; font-size: 17px; color: var(--muted-foreground); }
+  .legend span { display: inline-flex; gap: 8px; align-items: center; }
+  .legend i { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
+
+  .adrs { grid-template-columns: 1fr; gap: 8px; margin-top: 8px; }
+  .adr { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; padding: 11px 20px; }
+  .adr.head { background: transparent; border: 0; box-shadow: none; padding-top: 0; padding-bottom: 0; font-size: 18px; font-weight: 500; color: var(--muted-foreground); }
+  .adr .yes, .adr .no { display: flex; gap: 10px; align-items: flex-start; font-size: 19px; line-height: 1.3; }
+  .adr .no { color: var(--muted-foreground); }
+  .adr .no .ic { color: var(--critical); margin-top: 0; }
+  .adr .yes .ic { margin-top: 0; }
+
+  .proj svg { width: 100%; height: 420px; }
+  .axis { stroke: var(--border); stroke-width: 2; }
+  .pb-r { transform-box: fill-box; transform-origin: bottom; transform: scaleY(0); transition: transform 0.9s var(--ease-out); }
+  .pb.on .pb-r { transform: none; }
+  .pb-r.measured { fill: var(--primary); }
+  .pb-r.estimate { fill: var(--primary-soft); stroke: var(--primary); stroke-width: 2; stroke-dasharray: 8 6; }
+  .pb-v { fill: var(--foreground); font: 700 22px var(--font-sans); }
+  .pb-k { fill: var(--primary); font-size: 20px; font-weight: 700; }
+  .pb-l { fill: var(--muted-foreground); font-size: 15px; }
+  .proj .note { margin-top: 0; }
+
+  .faq { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 20px; }
+  .qa { border: 1px solid var(--border); background: var(--card); border-radius: var(--radius); padding: 16px 22px; box-shadow: var(--shadow-card); }
+  .qa h3 { font-size: 22px; color: var(--primary); }
+  .qa p { margin: 0; font-size: 18px; line-height: 1.35; color: var(--muted-foreground); }
+
+  /* HUD */
+  .hud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; padding: 8px 12px;
+    border-radius: 999px; background: var(--glass-fill); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); z-index: 10; transition: opacity 0.4s; }
+  .hud.idle { opacity: 0.0; }
+  .hud:hover, .hud:focus-within { opacity: 1; }
+  .hud__btn { font: inherit; font-size: 15px; font-weight: 500; color: var(--foreground); background: transparent; border: 1px solid var(--border); border-radius: 999px;
+    min-height: 40px; min-width: 40px; padding: 0 14px; white-space: nowrap; cursor: pointer; text-decoration: none; display: inline-grid; place-items: center; }
+  .hud__btn:hover { background: var(--accent); }
+  .hud__btn:focus-visible, .dots button:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+  .dots { display: flex; gap: 2px; list-style: none; margin: 0; padding: 0; }
+  .dots button { width: 18px; height: 40px; background: transparent; border: 0; padding: 0; cursor: pointer; position: relative; }
+  .dots button::after { content: ""; position: absolute; left: 3px; right: 3px; top: 17px; height: 6px; border-radius: 3px; background: var(--input); transition: background 0.3s, transform 0.3s; }
+  .dots button.done::after { background: var(--primary-soft); }
+  .dots button.cur::after { background: var(--primary); transform: scaleY(1.4); }
+  .count { font-size: 15px; min-width: 52px; text-align: center; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  @media (max-width: 760px) { .count, #fs { display: none; } .dots button { width: 10px; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .rv, .wire, .car, .bar__fill, .hb-r, .pb-r, .sq .x { transition-duration: 0.01ms !important; transition-delay: 0s !important; }
+    .lane, .f-lane, .f-scan, .f-rec, .cam-led, .packet, .cone, .snap, .corner, .f-box, .f-tag { animation: none !important; }
+    .corner { stroke-dashoffset: 0; }
+    .packet { display: none; }
+    .f-box, .f-tag { opacity: 1; }
+    .snap.on { opacity: 0.6; }
+    svg .car.on { transform: translate(560px, 588px); }
+  }
+</style>
+
+<script>
+  const slides = [...document.querySelectorAll<HTMLElement>(".slide")];
+  const stage = document.getElementById("stage")!;
+  const hud = document.querySelector<HTMLElement>(".hud")!;
+  const count = document.getElementById("count")!;
+  const dots = [...document.querySelectorAll<HTMLButtonElement>("[data-go]")];
+  const total = slides.length;
+  const builds = slides.map((s) => Number(s.dataset.builds || 0));
+
+  let i = 0;
+  let b = 0;
+
+  const fit = () => {
+    const s = Math.min(innerWidth / 1280, innerHeight / 720);
+    stage.style.setProperty("--s", String(s));
+  };
+
+  const runCount = (el: HTMLElement) => {
+    const target = Number(el.dataset.count);
+    const dec = Number(el.dataset.dec || 0);
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const k = Math.min(1, (t - t0) / 1100);
+      const v = target * (1 - Math.pow(1 - k, 3));
+      el.textContent = v.toLocaleString("en-IN", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const applyBuild = (slide: HTMLElement, upTo: number) => {
+    slide.dataset.b = String(upTo);
+    slide.querySelectorAll<HTMLElement | SVGElement>("[data-at]").forEach((el) => {
+      const at = Number(el.getAttribute("data-at"));
+      const out = el.getAttribute("data-out");
+      const on = at <= upTo && (out === null || upTo < Number(out));
+      const was = el.classList.contains("on");
+      el.classList.toggle("on", on);
+      if (on && !was) el.querySelectorAll<HTMLElement>("[data-count]").forEach(runCount);
+      if (on && !was && el.matches("[data-count]")) runCount(el as HTMLElement);
+    });
+  };
+
+  const show = (nextI: number, nextB: number) => {
+    const changed = nextI !== i;
+    i = nextI;
+    b = nextB;
+    slides.forEach((s, k) => {
+      s.classList.toggle("is-active", k === i);
+      s.classList.toggle("is-past", k < i);
+      s.classList.toggle("is-future", k > i);
+      if (k !== i) s.querySelectorAll(".on").forEach((el) => el.classList.remove("on"));
+    });
+    if (changed) {
+      slides[i].querySelectorAll(".on").forEach((el) => el.classList.remove("on"));
+      void slides[i].offsetWidth;
+      requestAnimationFrame(() => applyBuild(slides[i], b));
+    } else {
+      applyBuild(slides[i], b);
+    }
+    count.textContent = `${i + 1} / ${total}`;
+    dots.forEach((d, k) => {
+      d.classList.toggle("cur", k === i);
+      d.classList.toggle("done", k < i);
+    });
+    history.replaceState(null, "", `#${i + 1}`);
+  };
+
+  const next = () => {
+    if (b < builds[i]) show(i, b + 1);
+    else if (i < total - 1) show(i + 1, 0);
+  };
+  const prev = () => {
+    if (b > 0) show(i, b - 1);
+    else if (i > 0) show(i - 1, builds[i - 1]);
+  };
+
+  addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === "Home") show(0, 0);
+    else if (e.key === "End") show(total - 1, builds[total - 1]);
+    else if (e.key.toLowerCase() === "f") toggleFs();
+  });
+
+  stage.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).closest("a, button")) return;
+    next();
+  });
+
+  let x0: number | null = null;
+  addEventListener("pointerdown", (e) => { x0 = e.clientX; });
+  addEventListener("pointerup", (e) => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 60) (dx < 0 ? next : prev)();
+  });
+
+  document.getElementById("next")!.addEventListener("click", next);
+  document.getElementById("prev")!.addEventListener("click", prev);
+  dots.forEach((d) => d.addEventListener("click", () => show(Number(d.dataset.go), 0)));
+
+  const toggleFs = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void document.documentElement.requestFullscreen?.();
+  };
+  document.getElementById("fs")!.addEventListener("click", toggleFs);
+
+  let idle: number | undefined;
+  const wake = () => {
+    hud.classList.remove("idle");
+    clearTimeout(idle);
+    idle = window.setTimeout(() => hud.classList.add("idle"), 2800);
+  };
+  addEventListener("mousemove", wake);
+  addEventListener("keydown", wake);
+  wake();
+
+  addEventListener("resize", fit);
+  addEventListener("hashchange", () => {
+    const n = Number(location.hash.slice(1)) - 1;
+    if (n >= 0 && n < total && n !== i) show(n, 0);
+  });
+
+  fit();
+  const start = Number(location.hash.slice(1)) - 1;
+  show(start >= 0 && start < total ? start : 0, 0);
+</script>

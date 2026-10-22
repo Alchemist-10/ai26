@@ -1,7 +1,7 @@
 # Per-track plate-fusion comparison
 
 The bounded evaluator compares the last OCR string in each labeled sequence
-against AI26's conservative `PlateConsensus` result. It requires explicitly
+against Sakshi's conservative `PlateConsensus` result. It requires explicitly
 synthetic JSONL records so the fixture cannot be mistaken for a model accuracy
 benchmark:
 
