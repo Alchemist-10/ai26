@@ -1,6 +1,7 @@
 # Requesting CAM-07–09 source footage
 
-The Sakshi catalog expects readable-plate sources for these locations:
+Sakshi is a citywide vehicle tracking system, exercised so far on sample footage.
+Its catalog expects readable-plate sources for these three junction locations:
 
 | Sakshi ID | Catalog location | Expected footage path (catalog) |
 | --- | --- | --- |

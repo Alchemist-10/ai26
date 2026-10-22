@@ -1,13 +1,13 @@
 # Sakshi performance and retention update — 9 October 2026
 
 The wall previously mounted a native MP4 for each camera plus a low-rate focused
-MJPEG stream. The available inputs are six 960×540, 25 FPS recordings; three plate
-sources are missing. Nine video elements were observed before missing-source
-errors settled. Actual concurrent decode work depended on source availability.
+MJPEG stream. The available sample inputs are 960×540, 25 FPS recordings; three plate
+sources are missing. A video element was observed for every camera tile before
+missing-source errors settled. Actual concurrent decode work depended on source availability.
 The focused MJPEG updates at the inference sampling rate, about 0.2 FPS per source,
 so apparent video stutter was also a sampling limitation.
 
-The wall now mounts six cached 320×180 JPEG previews and one focused native player.
+The wall now shows a cached 320×180 JPEG preview per camera tile and one focused native player.
 Recorded playback and sampled detections are separate controls with explicit labels.
 Inference still processes independently of viewers. Hidden pages stop serial polls,
 abort pending reads, pause native playback, and remove the MJPEG consumer. Returning
@@ -16,7 +16,7 @@ read in the window. Analytics/activity reuse the root catalog request.
 
 ## Local measurements
 
-These were 12 sequential HTTP reads per endpoint on the same desktop while the
+These were 12 sequential HTTP reads per endpoint on the same test host while the
 main processor was active. CPU and RSS are short process samples (3.31 seconds
 before, 3.37 seconds after), with no fixed replay-frame alignment or controlled
 background load. They are observations, not sustained throughput guarantees.
@@ -41,7 +41,7 @@ missing-source selection and recovery work, analytics mounts no video, and an
 unknown plate still shows an empty result with export disabled.
 
 A separate warm YOLO test used the same CAM-05 decoded frame, 12 samples per
-thread count, under the existing desktop load. Medians: 8 threads 319.4 ms;
+thread count, under the existing host load. Medians: 8 threads 319.4 ms;
 1 thread 135.4 ms; 2 threads 77.1 ms. The default now uses two Torch intra-op
 threads and one FFmpeg decoder thread per source. Ultralytics resets its thread
 count during initial predictor setup, so the application restores the configured
@@ -92,7 +92,7 @@ full-rate detection, long-term throughput or real plate accuracy.
 ## Disabled-processor preview polling — 14 October 2026
 
 The local app was running with `AI26_PROCESSING_ENABLED=0`. Before the UI checked
-processor health, its six camera tiles each retried `/api/preview` every three
+processor health, its camera tiles each retried `/api/preview` every three
 seconds and received 503, adding about two failing preview requests per second
 while no sampled image could exist. Camera health now exposes the processing
 switch; tiles poll only when an available source reports an active loading or
@@ -122,7 +122,7 @@ Vitals.
 
 ## Six-camera replay soak — 14 October 2026
 
-An isolated API process replayed the six bundled camera clips for 120 seconds
+An isolated API process replayed the bundled sample camera clips for 120 seconds
 with the vehicle branch enabled, plate recognition disabled, and the configured
 2 FPS total sampling budget. Its database and artifacts were kept in a temporary
 directory. Across 13 health/metrics samples, the processor advanced 239 frames
@@ -136,7 +136,7 @@ and host/commit metadata in
 
 ## Five-minute six-camera replay soak — 15 October 2026
 
-A second isolated run used the same six bundled clips, a fresh disposable data
+A second isolated run used the same bundled sample clips, a fresh disposable data
 root, vehicle detection enabled, plate recognition disabled, and the same
 2 FPS total sampling budget. Its verified counter window completed 555 frames,
 with zero failed attempts and zero health-read failures. There was one
@@ -157,7 +157,7 @@ production stream behavior, OCR, or accuracy.
 
 ## Two-minute continuous repeat — 15 October 2026
 
-A repeat with the same six hashed clips, branch switches and sampling budget
+A repeat with the same hashed sample clips, branch switches and sampling budget
 completed 232 frames over a verified 118-second window (1.966 FPS). Across 59
 samples, the largest poll interval was 2.008 seconds and maximum observed frame
 age was 2.97 seconds; no clock discontinuity or long sample gap appeared. There
@@ -214,11 +214,11 @@ dropped frames since media load ([MDN reference](https://developer.mozilla.org/e
 
 A matched 30-second in-app browser comparison used the same camera wall, CAM-07
 playback asset (1280×720, 11,700,824 bytes, matching its active-source manifest),
-browser tab and 572×758 CSS viewport. With the normal nine-camera processor
+browser tab and 572×758 CSS viewport. With the normal nine-source processor
 active, playback added 36 dropped frames out of 865 (4.16%). With processing
 disabled, playback added 21 out of 850 (2.47%). The rate was 1.69 percentage
 points lower in the disabled run. This is a single local pair under uncontrolled
-desktop load. The disabled wall also showed paused placeholders instead of active
+host load. The disabled wall also showed paused placeholders instead of active
 preview tiles, so the result captures end-to-end app behavior and does not isolate
 inference from preview rendering, video decode, GPU/CPU contention or background
 load. The app was restarted with inference enabled afterward; all nine cameras
@@ -257,7 +257,7 @@ sustained inference performance.
 ## Browser responsiveness with inference enabled — 15 October 2026
 
 An isolated optimized production preview ran with vehicle/person processing
-enabled, plate recognition disabled, six bundled sources and a temporary data
+enabled, plate recognition disabled, bundled sample sources and a temporary data
 root. During a 10.1-second sample, API health latency was 8.3 ms median / 25.0 ms
 p95, CPU was 75% of one core by `/proc` process ticks, and no camera attempt
 failed. Accessibility-driven browser action calls took 145–182 ms for opening
@@ -265,7 +265,7 @@ navigation, switching to sampled detections, opening Analytics after its first
 lazy load, and returning to the Camera Wall. The resulting route states were
 visible, but these are single action-call durations, not INP or click-to-paint.
 The sample suggests the optimized local UI stayed responsive during warmed
-inference on this host; it does not explain lag on lower-powered hardware or
+inference on the test host; it does not explain lag on lower-powered hardware or
 network conditions. Full scope and limits are in
 [`validation/live-ui-responsiveness-2026-10-15.json`](validation/live-ui-responsiveness-2026-10-15.json).
 
@@ -296,7 +296,7 @@ processor counters and interval samples are in
 
 ## Focused sampled-detection startup feedback — 16 October 2026
 
-The six-camera inference profile recorded a 4,567 ms first successful attempt
+The sample-feed inference profile recorded a 4,567 ms first successful attempt
 for CAM-01, including cold model startup. The focused sampled-detections panel
 previously had no loading state during that first-frame wait. It now reports
 that it is waiting for the first sampled frame, changes to a paused message when
@@ -360,7 +360,7 @@ lazy model initialization, and exceeded its interval once. After that initial
 attempt, the valid 19.006-second counter window recorded 38 completed frames
 (1.999 warmed FPS), no failed attempts or health failures, and no additional
 budget overruns. API health latency was 6.45 ms median / 10.23 ms p95; process
-CPU was 63.0% median / 102.1% p95 across 12 logical CPUs, and RSS was 547.4 MiB
+CPU was 63.0% median / 102.1% p95 on the test host, and RSS was 547.4 MiB
 median / 548.8 MiB p95. Three source clips were missing.
 
 During that run, the warmed Analytics route rendered its observation heading
@@ -399,9 +399,9 @@ and explains the loading feedback now shown by the UI; it does not indicate a
 slow navigation or interaction by itself.
 
 During this sample, backend RSS was 548.9 MiB median (550.8 MiB p95), CPU was
-62.1% median and 468.4% p95 across 12 logical CPUs, and health reads were 7.1 ms
+62.1% median and 468.4% p95 on the test host, and health reads were 7.1 ms
 median / 37.7 ms p95 across 19 requests. The high CPU percentile is a brief
-sample and can include other desktop load. The isolated run used no camera media
+sample and can include other host load. The isolated run used no camera media
 for CAM-07–09 and measured no OCR accuracy. Its API timing does not include
 click-to-paint, INP, video decode drops, or physical mobile behavior. At that
 time, a separate 15 October warmed-inference browser check measured 145–182 ms
@@ -414,7 +414,7 @@ The production launcher ran all nine available managed/replay sources with the
 shared 2 FPS budget. A 119.007-second verified counter window completed 138
 frames (1.1596 FPS), with no failed inference attempts or health reads. CAM-07,
 CAM-08 and CAM-09 recorded 15, 15 and 16 budget overruns respectively. Backend
-CPU was 118.5% median / 205.2% p95 across 12 logical CPUs, RSS was 756.8 MiB
+CPU was 118.5% median / 205.2% p95 on the test host, RSS was 756.8 MiB
 median / 773.8 MiB p95, and health latency was 9.8 / 14.2 ms median / p95.
 
 The phase timings identify 1087 ms, 1664 ms and 1219 ms median decoding time
@@ -440,7 +440,7 @@ After restarting the full nine-source application with two threads, a 119.010
 second valid counter window completed 163 frames (1.3696 FPS), up from 138
 (1.1596 FPS) in the adjacent one-thread run. Plate-source decode medians fell
 from 1.09/1.66/1.22 seconds to 0.51/0.71/0.75 seconds on CAM-07/08/09. CPU p95
-rose from 205.2% to 256.8% across 12 logical CPUs and RSS p95 from 773.8 to
+rose from 205.2% to 256.8% on the test host and RSS p95 from 773.8 to
 809.7 MiB. This is an observed improvement under the tested local workload, not
 a controlled benchmark; throughput remains below 2 FPS and the repeated plate
 camera budget overruns remain. Browser interaction latency, playback drops, and
@@ -451,7 +451,7 @@ and [full-system profile](validation/active-inference-profile-9cams-2026-10-18-2
 A separate full-system four-thread run completed 152 frames (1.2772 FPS), versus
 163 at two threads. It also raised CPU p95 to 326.0% and RSS p95 to 907.6 MiB,
 so the application was restored to its two-thread default. These are adjacent
-local replay samples with uncontrolled desktop load; the comparison is evidence
+local replay samples with uncontrolled host load; the comparison is evidence
 for this host and footage only.
 
 ## Headless browser responsiveness under active inference — 18 October 2026

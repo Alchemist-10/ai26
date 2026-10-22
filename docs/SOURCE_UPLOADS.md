@@ -129,7 +129,7 @@ succeeded; a prepared replacement retained the running/selected first release.
 Offline selection was rejected under processor ownership, then selection/restart
 activated both roles. A real worker cancellation cleaned private stages. A 502
 check recovered after API restart; browser reload restored the retained ready job.
-The fixture had zero observations/audit rows and nine seeded camera revisions.
+The fixture had zero observations/audit rows and seeded camera revisions.
 Temporary fixture services/storage were removed; generated footage never entered
 the main app.
 

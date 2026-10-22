@@ -187,7 +187,7 @@ separate work packages; their implementation and evidence status is tracked ther
 
 ## Desktop performance
 
-The wall mounts six 320×180 sampled previews and one focused native MP4 player.
+The camera wall shows one 320×180 sampled preview per visible tile and one focused native MP4 player.
 Switch to “Sampled detections” for the shared annotated stream, which shows its
 actual low sampling FPS. Playback has no detection overlay and can be paused or
 seeked independently; it does not seek the shared processor. The camera wall

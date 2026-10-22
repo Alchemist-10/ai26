@@ -42,7 +42,7 @@ wraps, with one FFmpeg decode thread. All 144 bounded-forward raw frame SHA-256
 values matched always-seek values. Target positions were identical; hashes are
 computed outside the timed decoding interval. Main-service concurrency was not
 sampled during that preliminary test and is not claimed. Benchmark order and
-background desktop load were uncontrolled.
+background host load were uncontrolled.
 
 The final implementation was checked against all 144 same-source reference hashes.
 An independent 180-frame moving, colour-changing MJPG fixture had 180 unique frames
@@ -91,7 +91,7 @@ budget overruns during that window. Timing windows retain at most 64 successful
 samples per camera; first-success timing remains separate. More work or different
 footage/load can change these results.
 
-The prior scheduler profile ran on another day under different desktop load; its
+The prior scheduler profile ran on another day under different host load; its
 CPU/FPS numbers are context, not a controlled optimization comparison. The paired
 same-index decoder checks provide the narrower measured timing evidence. Decode
 medians varied by clip and benchmark order. Native playback frame drops, UI

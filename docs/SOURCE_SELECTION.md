@@ -117,7 +117,7 @@ services on 5175/8002. Both stale selection and rollback requests preserved entr
 required refresh and succeeded on explicit retry. Pending operations retained the
 running original and byte-matching playback. Two owned API restarts activated blue,
 then restored red; six committed linked records and old files were retained. The
-fixture had zero observations/audit rows and nine seeded cameras, then its services,
+fixture had zero observations/audit rows and a seeded camera set, then its services,
 data and tab were removed. No generated clips entered the main app.
 
 Thirteen new contracts cover processing-lock independence, cached roles/no SQL,

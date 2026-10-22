@@ -108,8 +108,8 @@ late-sample quality handling and frame-age clock-jump detection. That profiling
 milestone recorded 182 passing tests. The later
 [decoder milestone](DECODE_SAMPLING.md) has the current 190-test suite.
 
-The local before/after measurement uses the six bundled vehicle clips and the same
-two-attempt budget under normal desktop load. It is not aligned to identical replay
+The local before/after measurement uses the bundled sample vehicle clips and the same
+two-attempt budget under normal host load. It is not aligned to identical replay
 frames or controlled background conditions. The before window is 30 seconds; the
 after profile requests 120 seconds including its initial health check. The actual
 verified counter window is recorded separately. Results are in
@@ -121,7 +121,7 @@ remain unmeasured. Sparse replay sampling intentionally omits source frames.
 A later [five-minute nine-camera profile](validation/active-inference-profile-9cams-2026-10-18-300s.json)
 recorded 349 completed frames in a verified 298.011-second counter window
 (1.1711 FPS against the 2 FPS budget), with no failed attempts, health failures,
-counter resets or sampling/clock anomalies. All nine recorded sources were
+counter resets or sampling/clock anomalies. All recorded sample sources were
 processing at both ends of the window. CAM-07–09 exceeded their shared-budget
 interval on most attempts. This is local replay evidence, not a live recovery,
 multi-hour, browser frame-drop, or accuracy measurement.
