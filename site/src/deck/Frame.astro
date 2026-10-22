@@ -1,0 +1,36 @@
+---
+// Screenshot in a browser (or phone) frame. Each view can crop the image ([x, y, w, h] in %),
+// so header chips and empty tiles stay out of frame. Image and pins pan together (Ken Burns).
+import { Image } from "astro:assets";
+type View = { crop?: [number, number, number, number]; pins?: { x: number; y: number; at: number; n?: number }[]; pan?: [number, number] };
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  url?: string;
+  views?: View[];
+  phone?: boolean;
+  width?: number;
+}
+const { src, alt, url = "localhost:5174", views = [{}], phone = false, width = 1600 } = Astro.props;
+let n = 0;
+const shown = views.map((v) => {
+  const [x, y, w, h] = v.crop ?? [0, 0, 100, 100];
+  return {
+    ...v,
+    vp: `aspect-ratio:${(src.width * w).toFixed(0)}/${(src.height * h).toFixed(0)}`,
+    img: v.crop ? `position:absolute;width:${(10000 / w).toFixed(3)}%;height:auto;left:${((-x / w) * 100).toFixed(3)}%;top:${((-y / h) * 100).toFixed(3)}%` : "",
+    pins: (v.pins ?? []).map((p) => ({ ...p, n: p.n ?? ++n })),
+  };
+});
+---
+<figure class:list={["browser", { phone }]}>
+  {!phone && <div class="browser__bar" aria-hidden="true"><i></i><i></i><i></i><span>{url}</span></div>}
+  {shown.map((v, k) => (
+    <div class="browser__vp" style={v.vp}>
+      <div class="kb" style={`--kx:${(v.pan ?? [0, 0])[0]}%;--ky:${(v.pan ?? [0, 0])[1]}%`}>
+        <Image src={src} alt={k === 0 ? alt : ""} width={width} loading="eager" style={v.img} class:list={[{ cropped: v.crop }]} />
+        {v.pins.map((p) => <span class="pin rv" data-at={p.at} style={`left:${p.x}%;top:${p.y}%`}>{p.n}</span>)}
+      </div>
+    </div>
+  ))}
+</figure>

@@ -1,0 +1,25 @@
+---
+// Video (webm first: Chromium builds without H.264 can still play it), else poster image, else the slot.
+// `crop` = [x, y, w, h] in % of a `size` = [width, height] frame keeps only that region in view.
+import { clip } from "./clips";
+interface Props { name: string; label: string; crop?: [number, number, number, number]; size?: [number, number] }
+const { name, label, crop, size = [1280, 720] } = Astro.props;
+const c = clip(name);
+const [x, y, w, h] = crop ?? [0, 0, 100, 100];
+const box = crop ? `aspect-ratio:${(size[0] * w).toFixed(0)}/${(size[1] * h).toFixed(0)}` : undefined;
+const inner = crop ? `position:absolute;max-width:none;max-height:none;border:0;border-radius:0;width:${(10000 / w).toFixed(3)}%;height:auto;left:${((-x / w) * 100).toFixed(3)}%;top:${((-y / h) * 100).toFixed(3)}%` : undefined;
+---
+{c.webm || c.mp4 || c.png ? (
+  <div class:list={["clipwrap", { cropped: crop }]} style={box}>
+    {c.webm || c.mp4 ? (
+      <video class="clip" muted playsinline loop preload="metadata" poster={c.png} aria-label={label} style={inner}>
+        {c.webm && <source src={c.webm} type="video/webm" />}
+        {c.mp4 && <source src={c.mp4} type="video/mp4" />}
+      </video>
+    ) : (
+      <img class="clip" src={c.png} alt={label} style={inner} />
+    )}
+  </div>
+) : (
+  <slot />
+)}
