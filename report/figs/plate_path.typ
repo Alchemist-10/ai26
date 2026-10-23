@@ -1,0 +1,22 @@
+#import "style.typ": *
+#set page(width: auto, height: auto, margin: 6pt, fill: white)
+#set text(font: "Liberation Serif", size: 7.5pt)
+#canvas(length: 1cm, {
+  import draw: *
+  node("a", (0, 0), 2.6, 1.1, [Plate crop from\ plate detector], bg: c-src)
+  node("b", (3.5, 0), 2.6, 1.1, [OCR text,\ per-read confidence])
+  node("c", (7, 0), 2.6, 1.1, [Normalise to\ Indian plate grammar])
+  arrow("a.east", "b.west"); arrow("b.east", "c.west")
+  node("d1", (3.5, -2.3), 2.6, 1.2, [Confidence\ >= 0.35 ?], bg: c-ui)
+  node("d2", (7, -2.3), 2.6, 1.2, [Valid format and\ unambiguous track ?], bg: c-ui)
+  node("d3", (10.5, -2.3), 2.6, 1.2, [>= 3 consistent reads\ in last 8 ?], bg: c-ui)
+  arrow("c.south", "d2.north"); line("b.south", "d1.north", mark: (end: ">", fill: ink, size: 0.18), stroke: 0.9pt + ink)
+  arrow("d1.east", "d2.west"); arrow("d2.east", "d3.west")
+  node("ok", (10.5, -4.6), 2.8, 1.0, [Supported plate identity\ (queryable)], bg: c-store)
+  node("no", (3.5, -4.6), 5.6, 1.0, [Kept as raw evidence only: low confidence,\ invalid format, conflicting reads or ambiguous track], bg: c-out)
+  arrow("d3.south", "ok.north")
+  line("d1.south", "no.north", mark: (end: ">", fill: ink, size: 0.18), stroke: 0.9pt + ink)
+  line("d2.south", (7, -3.5), (5.2, -3.5), (5.2, -4.1), mark: (end: ">", fill: ink, size: 0.18), stroke: 0.9pt + ink)
+  content((5.2, -3.15), text(size: 8pt)[no])
+  content((5.35, -2.0), text(size: 8pt)[yes]); content((8.85, -2.0), text(size: 8pt)[yes]); content((11.1, -3.5), text(size: 8pt)[yes])
+})
